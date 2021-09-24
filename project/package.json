@@ -1,0 +1,17 @@
+{
+  "name": "graph-state",
+  "version": "0.0.0",
+  "description": "New react state managment framework",
+  "author": "ChenTao",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "/dist"
+  ],
+  "dependencies": {
+    "@types/react": "^17.0.24",
+    "react": "^17.0.2"
+  },
+  "devDependencies": {}
+}
