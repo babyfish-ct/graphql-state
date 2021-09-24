@@ -1,5 +1,5 @@
-import { SchemaTypes } from "../meta/SchemaTypes";
-import { StateManager, TransactionStatus } from "../state/StateManager";
+import { SchemaTypes } from "../../meta/SchemaTypes";
+import { StateManager, TransactionStatus } from "../StateManager";
 import { UndoManagerImpl } from "./UndoManagerImpl";
 
 export class StateManagerImpl<TSchema extends SchemaTypes> implements StateManager<TSchema> {

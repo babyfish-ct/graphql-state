@@ -1,5 +1,5 @@
 import { Children, FC, memo, PropsWithChildren } from "react";
-import { StateManagerImpl } from "../impl/StateManagerImpl";
+import { StateManagerImpl } from "./impl/StateManagerImpl";
 import { useStateManager } from "./StateHook";
 
 export const StateScope: FC<

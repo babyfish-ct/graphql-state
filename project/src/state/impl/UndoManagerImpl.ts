@@ -1,4 +1,4 @@
-import { UndoManager } from "../state/StateManager";
+import { UndoManager } from "../StateManager";
 
 export class UndoManagerImpl implements UndoManager {
 

@@ -6,12 +6,13 @@
     "outDir": "./dist",
     "skipLibCheck": true,
     "strictNullChecks": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
   },
   "include": [
-    "src/**/*"
+    "src/**/*"  
   ],
   "exclude": [
+    "src/__tests__/**/*",
     "node_modules",
     "./node_modules",
     "./node_modules/*",

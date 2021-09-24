@@ -4,34 +4,34 @@ import { TypeConfiguration } from "./TypeConfiguration";
 
 export interface Configuration<TConfigurationSchema extends ConfigurationSchemaTypes> {
 
-    declareObjectType<
+    addObjectType<
         TObjectType extends ObjectType, 
-        TName extends TObjectType["__typename"],
-        TSuperTypeName extends keyof TConfigurationSchema["objectTypes"] = never
+        TName extends TObjectType["__typename"]
     >(
         objectTypeRef: TypeRef<TObjectType, TName>,
-        superName?: TSuperTypeName
     ): Configuration<TConfigurationSchema & { objectTypes: { readonly [key in TName]: TObjectType}}>;
 
-    declareConnectionType<TObjectType extends ObjectType, TName extends TObjectType["__typename"]>(
+    addConnectionType<TObjectType extends ObjectType, TName extends TObjectType["__typename"]>(
         objectTypeRef: TypeRef<TObjectType, TName>
     ): Configuration<TConfigurationSchema & { collectionTypes: { readonly [key in TName]: TObjectType}}>;
 
-    declareEdgeType<TObjectType extends ObjectType, TName extends TObjectType["__typename"]>(
+    addEdgeType<TObjectType extends ObjectType, TName extends TObjectType["__typename"]>(
         objectTypeRef: TypeRef<TObjectType, TName>
     ): Configuration<TConfigurationSchema & { edgeTypes: { readonly [key in TName]: TObjectType}}>;
 
-    implementType<
+    seType<
         TTypeName extends 
-            keyof TConfigurationSchema["objectTypes"] | 
+            keyof TConfigurationSchema["objectTypes"] |
             keyof TConfigurationSchema["collectionTypes"] | 
-            keyof TConfigurationSchema["edgeTypes"]
+            keyof TConfigurationSchema["edgeTypes"],
+        TSuperTypeName extends keyof TConfigurationSchema["objectTypes"]
     >(
         typeName: TTypeName,
-        typeConfigurer: (tc: TypeConfiguration<TConfigurationSchema, TTypeName>) => void
+        typeConfigurer: (tc: TypeConfiguration<TConfigurationSchema, TTypeName>) => void,
+        superTypeName?: string
     ): this;
 
-    mappedBy<
+    addMappedByFields<
         TTypeName extends keyof TConfigurationSchema["objectTypes"], 
         TFieldName extends keyof TConfigurationSchema["objectTypes"][TTypeName], 
         TTargetTypeName extends keyof TConfigurationSchema["objectTypes"], 

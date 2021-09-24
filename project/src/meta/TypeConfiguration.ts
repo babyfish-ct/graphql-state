@@ -1,6 +1,6 @@
 import { ConfigurationSchemaTypes } from "./SchemaTypes";
 
-export class TypeConfiguration<
+export interface TypeConfiguration<
     TConfigurationSchema extends ConfigurationSchemaTypes, 
     TName extends 
         keyof TConfigurationSchema["objectTypes"] | 
@@ -8,31 +8,23 @@ export class TypeConfiguration<
         keyof TConfigurationSchema["edgeTypes"]
 > {
 
-    constructor(readonly name: TName) {}
-
     scalar<TFieldName extends keyof TConfigurationSchema["objectTypes"][TName]>(
         name: TFieldName, 
         typeName: "string" | "number" | "boolean", 
         options?: ScalarOptions
-    ): this {
-        return this;
-    }
+    ): this;
 
     reference<TFieldName extends keyof TConfigurationSchema["objectTypes"][TName], TReferencedTypeName extends keyof TConfigurationSchema["objectTypes"]>(
         name: TFieldName, 
         referencedTypeName: TReferencedTypeName, 
         options?: ReferenceOptions<TConfigurationSchema, TReferencedTypeName>
-    ): this {
-        return this;
-    }
+    ): this;
 
     list<TFieldName extends keyof TConfigurationSchema["objectTypes"][TName], TElementTypeName extends keyof TConfigurationSchema["objectTypes"]>(
         name: TFieldName,
         elementTypeName: TElementTypeName,
         options?: CollectionOptions<TConfigurationSchema, TElementTypeName>
-    ): this {
-        return this;
-    }
+    ): this;
 
     connection<
         TFieldName extends keyof TConfigurationSchema["objectTypes"][TName],
@@ -45,9 +37,7 @@ export class TypeConfiguration<
         edgeTypeName: TEdgeTypeName,
         nodeTypeName: TNodeTypeName,
         options?: CollectionOptions<TConfigurationSchema, TNodeTypeName>
-    ): this {
-        return this;
-    }
+    ): this;
 }
 
 export interface ScalarOptions {
