@@ -18,18 +18,13 @@ export type ObjectTypeOf<T, TShape> =
     { 
         readonly [K in keyof TShape & keyof T] : 
         TShape[K] extends object ? (
-            Exclude<keyof TShape[K], " $variables"> extends string ? (
-                T[K] extends ReadonlyArray<any> ?
-                ObjectTypeOf<T[K], Omit<TShape[K], " $variables">> :
-                { readonly b: string}
-                // ReadonlyArray<ObjectTypeOf<T[K], Omit<TShape[K], " $variables">>> :
-                // ObjectTypeOf<T[K], Omit<TShape[K], " $variables">>
-            ) :
-            T[K]
+            T[K] extends ReadonlyArray<infer TElement> ?
+            ReadonlyArray<ObjectTypeOf<TElement, Omit<TShape[K], " $variables">>> :
+            ObjectTypeOf<T[K], Omit<TShape[K], " $variables">>
         ) :
         T[K] 
     } :
-    {}
+    T
 ;
 
 export function variables(variables: object): { " $variables": object} {

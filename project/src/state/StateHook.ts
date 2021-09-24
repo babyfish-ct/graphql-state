@@ -3,8 +3,10 @@ import { SchemaTypes } from "../meta/SchemaTypes";
 import { AsyncResult, AsyncResultType, AsyncState, AsyncStateOptions, BaseState, BaseStateOptions, ComputedState, ComputedStateOptions } from "./State";
 import { StateManager } from "./StateManager";
 import { stateContext } from "./StateManagerProvider";
+import { Shape, ObjectTypeOf } from "../meta/Shape";
+import { GraphQLFetcher } from "../gql/GraphQLFetcher";
 
-export function useStateManager(): StateManager {
+export function useStateManager<TSchema extends SchemaTypes>(): StateManager<TSchema> {
     const stateManager = useContext(stateContext);
     if (stateManager === undefined) {
         throw new Error("'useStateManager' cannoly be used under <StateManagerProvider/>");
@@ -56,16 +58,7 @@ export function useStateAccessor(
     throw new Error();
 }
 
-export function makeManagedObjectHooks<TSchema extends SchemaTypes>(): {
-    readonly useManagedObject: <TTypeName extends keyof TSchema["objectTypes"]>(
-        typeName: TTypeName,
-        id: any
-    ) => Promise<TSchema["objectTypes"][TTypeName] | undefined>,
-    readonly useManagedObjects: <TTypeName extends keyof TSchema["objectTypes"]>(
-        typeName: TTypeName,
-        id: any
-    ) => Promise<TSchema["objectTypes"][TTypeName] | undefined>
-} {
+export function makeManagedObjectHooks<TSchema extends SchemaTypes>(): ManagedObjectHooks<TSchema> {
     throw new Error();
 }
 
@@ -87,3 +80,61 @@ export interface AsyncComputedStateResultAccessor<T, TVariables, TAsyncResultTyp
     (variables: TVariables): AsyncResult<T, TAsyncResultType>;
 }
 
+export interface ManagedObjectHooks<TSchema extends SchemaTypes> {
+
+    useManagedObject<
+        TTypeName extends keyof TSchema,
+        TShape extends Shape<TSchema[TTypeName]>,
+        TAsyncResultType extends AsyncResultType = "PROMISE"
+    >(
+        typeName: TTypeName,
+        options: {
+            readonly id: any,
+            readonly shape: TShape,
+            readonly resultType?: TAsyncResultType
+        }
+    ): AsyncResult<ObjectTypeOf<TSchema[TTypeName], TShape> | undefined, TAsyncResultType>;
+
+    useManagedObjects<
+        TTypeName extends keyof TSchema,
+        TShape extends Shape<TSchema[TTypeName]>,
+        TAsyncResultType extends AsyncResultType = "PROMISE"
+    >(
+        typeName: TTypeName,
+        options: {
+            ids: readonly any[],
+            shape: TShape,
+            readonly resultType?: TAsyncResultType
+        }
+    ): AsyncResult<ReadonlyArray<ObjectTypeOf<TSchema[TTypeName], TShape> | undefined>, TAsyncResultType>;
+
+    useManagedObject<
+        TTypeName extends keyof TSchema & Exclude<string, "Query" | "Mutation">,
+        TData extends object,
+        TVariables extends object,
+        TAsyncResultType extends AsyncResultType = "PROMISE"
+    >(
+        typeName: TTypeName,
+        options: {
+            readonly id: any,
+            readonly fetcher: GraphQLFetcher<TTypeName, TData, TVariables>,
+            readonly variables?: TVariables,
+            readonly resultType?: TAsyncResultType
+        }
+    ): AsyncResult<ObjectTypeOf<TSchema[TTypeName], TData> | undefined, TAsyncResultType>;
+
+    useManagedObjects<
+        TTypeName extends keyof TSchema & Exclude<string, "Query" | "Mutation">,
+        TData extends object,
+        TVariables extends object,
+        TAsyncResultType extends AsyncResultType = "PROMISE"
+    >(
+        typeName: TTypeName,
+        options: {
+            readonly ids: readonly any[],
+            readonly fetcher: GraphQLFetcher<TTypeName, TData, TVariables>,
+            readonly variables?: TVariables,
+            readonly resultType?: TAsyncResultType
+        }
+    ): AsyncResult<ObjectTypeOf<TSchema[TTypeName], TData> | undefined, TAsyncResultType>;
+}

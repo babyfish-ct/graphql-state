@@ -1,7 +1,8 @@
+import { SchemaTypes } from "../meta/SchemaTypes";
 import { StateManager, TransactionStatus } from "../state/StateManager";
 import { UndoManagerImpl } from "./UndoManagerImpl";
 
-export class StateManagerImpl implements StateManager {
+export class StateManagerImpl<TSchema extends SchemaTypes> implements StateManager<TSchema> {
 
     get undoManager(): UndoManagerImpl {
         throw new Error();

@@ -3,7 +3,7 @@ import { StateManager } from "./StateManager";
 
 export const StateManagerProvider: FC<
     PropsWithChildren<{
-        manager: StateManager
+        manager: StateManager<any>
     }>
 > = memo(({manager, children}) => {
     return (
@@ -13,4 +13,4 @@ export const StateManagerProvider: FC<
     );
 });
 
-export const stateContext = createContext<StateManager | undefined>(undefined);
+export const stateContext = createContext<StateManager<any> | undefined>(undefined);

@@ -43,7 +43,7 @@ export interface Configuration<TConfigurationSchema extends ConfigurationSchemaT
         targetFieldName: TTargetFieldName
     ): this;
 
-    buildStateManager(): StateManager;
+    buildStateManager(): StateManager<TConfigurationSchema["objectTypes"]>;
 }
 
 export function typeRefBuilder<

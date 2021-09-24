@@ -1,4 +1,6 @@
-export interface StateManager {
+import { SchemaTypes } from "../meta/SchemaTypes";
+
+export interface StateManager<TSchema extends SchemaTypes> {
 
     readonly undoManager: UndoManager;
 
