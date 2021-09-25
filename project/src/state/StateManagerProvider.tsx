@@ -1,5 +1,6 @@
 import { createContext, FC, memo, PropsWithChildren } from "react";
 import { StateManager } from "./StateManager";
+import { StateScope } from "./StateScope";
 
 export const StateManagerProvider: FC<
     PropsWithChildren<{
@@ -8,7 +9,9 @@ export const StateManagerProvider: FC<
 > = memo(({manager, children}) => {
     return (
         <stateContext.Provider value={manager}>
-            {children}
+            <StateScope>
+                {children}
+            </StateScope>
         </stateContext.Provider>
     );
 });

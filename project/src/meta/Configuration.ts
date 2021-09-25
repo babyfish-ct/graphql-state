@@ -1,4 +1,5 @@
 import { StateManager } from "../state/StateManager";
+import { SchemaMetadata } from "./impl/SchemaMetadata";
 import { ObjectType, ConfigurationSchemaTypes } from "./SchemaTypes";
 import { TypeConfiguration } from "./TypeConfiguration";
 
@@ -9,36 +10,35 @@ export interface Configuration<TConfigurationSchema extends ConfigurationSchemaT
         TName extends TObjectType["__typename"]
     >(
         objectTypeRef: TypeRef<TObjectType, TName>,
-    ): Configuration<TConfigurationSchema & { objectTypes: { readonly [key in TName]: TObjectType}}>;
+    ): Configuration<
+        TConfigurationSchema & 
+        { 
+            objectTypes: { 
+                readonly [key in TName]: TObjectType & 
+                {readonly __typename: TName}
+            }
+        }
+    >;
 
-    addConnectionType<TObjectType extends ObjectType, TName extends TObjectType["__typename"]>(
+    addConnectionType<TObjectType extends ObjectType, TName extends string>(
         objectTypeRef: TypeRef<TObjectType, TName>
-    ): Configuration<TConfigurationSchema & { collectionTypes: { readonly [key in TName]: TObjectType}}>;
+    ): Configuration<
+        TConfigurationSchema & 
+        { collectionTypes: { readonly [key in TName]: TObjectType}}
+    >;
 
-    addEdgeType<TObjectType extends ObjectType, TName extends TObjectType["__typename"]>(
+    addEdgeType<TObjectType extends ObjectType, TName extends string>(
         objectTypeRef: TypeRef<TObjectType, TName>
-    ): Configuration<TConfigurationSchema & { edgeTypes: { readonly [key in TName]: TObjectType}}>;
+    ): Configuration<
+        TConfigurationSchema & 
+        { edgeTypes: { readonly [key in TName]: TObjectType}}
+    >;
 
-    setType<
-        TTypeName extends 
-            keyof TConfigurationSchema["objectTypes"] |
-            keyof TConfigurationSchema["collectionTypes"] | 
-            keyof TConfigurationSchema["edgeTypes"]
+    setObjectType<
+        TTypeName extends keyof TConfigurationSchema["objectTypes"] & string
     >(
         typeName: TTypeName,
         typeConfigurer: (tc: TypeConfiguration<TConfigurationSchema, TTypeName>) => void
-    ): this;
-
-    addMappedByFields<
-        TTypeName extends keyof TConfigurationSchema["objectTypes"], 
-        TFieldName extends keyof TConfigurationSchema["objectTypes"][TTypeName], 
-        TTargetTypeName extends keyof TConfigurationSchema["objectTypes"], 
-        TTargetFieldName extends keyof TConfigurationSchema["objectTypes"][TTargetTypeName]
-    >(
-        sourceTypeName: TTypeName,
-        sourceFieldName: TFieldName,
-        targetTypeName: TTargetTypeName,
-        targetFieldName: TTargetFieldName
     ): this;
 
     buildStateManager(): StateManager<TConfigurationSchema["objectTypes"]>;
@@ -57,7 +57,7 @@ export interface TypeRefBuilder<TObjectType extends ObjectType> {
     " $supressWarnings"(_1: TObjectType): void;
 }
 
-export interface TypeRef<TObjectType extends ObjectType, TName extends TObjectType["__typename"]> {
+export interface TypeRef<TObjectType extends ObjectType, TName extends string> {
     
     readonly name: string;
 

@@ -2,135 +2,179 @@ import { GraphQLFetcher } from "../gql/GraphQLFetcher";
 import { SchemaTypes } from "../meta/SchemaTypes";
 import { ObjectTypeOf, Shape } from "../meta/Shape";
 
-export function createState<T>(value: T): BaseState<T> {
-    throw new Error("");
+export function makeStateFactory<TSchema extends SchemaTypes>(): StateFactory<TSchema> {
+    return new StateFactoryImpl<TSchema>();
 }
 
-export function makeComputedStateCreators<TSchema extends SchemaTypes>(): {
+export interface StateFactory<TSchema extends SchemaTypes> {
 
-    readonly createComputedState: <T, TVariables>(
-        supplier: (ctx: ComputedContext<TSchema>, variables: TVariables) => T
-    ) => ComputedState<T, TVariables>;
+    createState<T, TVariables = {}>(
+        defaultValue: T,
+        options?: StateCreationOptions
+    ): WriteableState<T, TVariables>;
+
+    createComputedState<T, TVariables = {}>(
+        valueSupplier: (ctx: ComputedContext<TSchema>, variables: TVariables) => T,
+        options?: ComputedStateCreationOptions
+    ): ComputedState<T, TVariables>;
     
-    readonly createAsyncState: <T, TVariables>( 
-        supplier: (ctx: ComputedContext<TSchema>, variables: TVariables) => Promise<T>,
-    ) => AsyncState<T, TVariables>;
-} {
-    throw new Error();
+    createAsyncState<T, TVariables = {}>( 
+        valueSupplier: (ctx: ComputedContext<TSchema>, variables: TVariables) => Promise<T>,
+        options?: ComputedStateCreationOptions
+    ): AsyncState<T, TVariables>;
 }
 
-export interface BaseState<T> {
+export type State<T, TVariables> = WriteableState<T, TVariables> | ComputedState<T, TVariables> | AsyncState<T, TVariables>;
 
-    " $supressWarnings"(_1: T): void;
-    " $stateType": "basic";
+export interface WriteableState<T, TVariables> {
+
+    readonly " $stateType": "WRITABLE";
+
+    readonly " $defaultValue": T;
+    readonly " $options"?: StateCreationOptions;
+    " $supressWarnings"(_1: T, _2: TVariables): void;
 }
 
 export interface ComputedState<T, TVariables> {
 
+    readonly " $stateType": "COMPUTED";
+
+    readonly " $valueSupplier": (ctx: ComputedContext<any>, variables: TVariables) => T;
+    readonly " $options"?: ComputedStateCreationOptions;
     " $supressWarnings"(_1: T, _2: TVariables): void;
-    " $stateType": "computed";
 }
 
 export interface AsyncState<T, TVariables> {
 
+    readonly " $stateType": "ASYNC";
+    
+    readonly " $valueSupplier": (ctx: ComputedContext<any>, variables: TVariables) => Promise<T>;
+    readonly " $options"?: ComputedStateCreationOptions;
     " $supressWarnings"(_1: T, _2: TVariables): void;
-    " $stateType": "async";
 }
+
+export interface StateCreationOptions {
+    readonly mode?: StateScopeMode;
+}
+
+export interface ComputedStateCreationOptions extends StateCreationOptions {
+    readonly mount?: (invalidate: () => void) => StateUnmoutHandler | undefined;
+}
+
+export type StateUnmoutHandler = () => void;
+
+export type StateScopeMode = "GLOBAL_SCOPE_ONLY" | "NESTED_SCOPE_ONLY" | "ANY_SCOPE"; 
+
+
+
 
 export interface ComputedContext<TSchema extends SchemaTypes> {
     
-    <T>(
-        state: BaseState<T>, 
-        options?: BaseStateOptions
+    <T, TVariables>(
+        state: WriteableState<T, TVariables> | ComputedState<T, TVariables>, 
+        options?: StateAccessingOptions<TVariables>
     ): T;
     
     <T, TVariables>(
-        state: ComputedState<T, TVariables>, 
-        options?: ComputedStateOptions<TVariables>
-    ): T;
-    
-    <T, TVariables, TAsyncResultType extends AsyncResultType = "PROMISE">(
         state: AsyncState<T, TVariables>, 
-        options: AsyncStateOptions<TVariables, TAsyncResultType>
-    ): AsyncResult<T, TAsyncResultType>;
+        options: StateAccessingOptions<TVariables>
+    ): Promise<T>;
 
     managedObject<
         TTypeName extends keyof TSchema,
-        TShape extends Shape<TSchema[TTypeName]>,
-        TAsyncResultType extends AsyncResultType = "PROMISE"
+        TShape extends Shape<TSchema[TTypeName]>
     >(
         typeName: TTypeName,
         options: {
             readonly id: any,
-            readonly shape: TShape,
-            readonly resultType?: TAsyncResultType
+            readonly shape: TShape
         }
-    ): AsyncResult<ObjectTypeOf<TSchema[TTypeName], TShape> | undefined, TAsyncResultType>;
+    ): Promise<ObjectTypeOf<TSchema[TTypeName], TShape> | undefined>;
 
     managedObjects<
         TTypeName extends keyof TSchema,
-        TShape extends Shape<TSchema[TTypeName]>,
-        TAsyncResultType extends AsyncResultType = "PROMISE"
+        TShape extends Shape<TSchema[TTypeName]>
     >(
         typeName: TTypeName,
         options: {
             ids: readonly any[],
-            shape: TShape,
-            readonly resultType?: TAsyncResultType
+            shape: TShape
         }
-    ): AsyncResult<ReadonlyArray<ObjectTypeOf<TSchema[TTypeName], TShape> | undefined>, TAsyncResultType>;
+    ): Promise<ReadonlyArray<ObjectTypeOf<TSchema[TTypeName], TShape> | undefined>>;
 
     managedObject<
         TTypeName extends keyof TSchema & Exclude<string, "Query" | "Mutation">,
         TData extends object,
-        TVariables extends object,
-        TAsyncResultType extends AsyncResultType = "PROMISE"
+        TVariables extends object
     >(
         typeName: TTypeName,
         options: {
             readonly id: any,
             readonly fetcher: GraphQLFetcher<TTypeName, TData, TVariables>,
-            readonly variables?: TVariables,
-            readonly resultType?: TAsyncResultType
+            readonly variables?: TVariables
         }
-    ): AsyncResult<ObjectTypeOf<TSchema[TTypeName], TData> | undefined, TAsyncResultType>;
+    ): Promise<ObjectTypeOf<TSchema[TTypeName], TData> | undefined>;
 
     managedObjects<
         TTypeName extends keyof TSchema & Exclude<string, "Query" | "Mutation">,
         TData extends object,
-        TVariables extends object,
-        TAsyncResultType extends AsyncResultType = "PROMISE"
+        TVariables extends object
     >(
         typeName: TTypeName,
         options: {
             readonly ids: readonly any[],
             readonly fetcher: GraphQLFetcher<TTypeName, TData, TVariables>,
             readonly variables?: TVariables,
-            readonly resultType?: TAsyncResultType
         }
-    ): AsyncResult<ObjectTypeOf<TSchema[TTypeName], TData> | undefined, TAsyncResultType>;
+    ): Promise<ReadonlyArray<ObjectTypeOf<TSchema[TTypeName], TData> | undefined>>;
 }
 
-export interface BaseStateOptions {
-    readonly globalScope?: boolean;
-}
-
-export interface ComputedStateOptions<TVariables> extends BaseStateOptions {
+export interface StateAccessingOptions<TVariables> {
     readonly variables?: TVariables;
+    readonly propagation?: StatePropagation;
 }
 
-export interface AsyncStateOptions<TVariables, TAsyncResultType extends AsyncResultType> extends ComputedStateOptions<TVariables> {
-    readonly resultType: TAsyncResultType;
-}
+export type StatePropagation = "REQUIRED" | "REQUIRES_NEW" | "MANDATORY";
 
-export type AsyncResultType = "PROMISE" | "TUPLE";
+class StateFactoryImpl<TSchema extends SchemaTypes> implements StateFactory<TSchema> {
 
-export type AsyncResult<T, TAsyncResultType extends AsyncResultType> =
-    TAsyncResultType extends "PROMISE" ?
-    Promise<T> : 
-    {
-        readonly data?: T;
-        readonly loading?: T;
-        readonly error?: Error;
+    createState<T, TVariables = {}>(
+        defaultValue: T,
+        options?: StateCreationOptions
+    ): WriteableState<T, TVariables> {
+        return {
+            " $stateType": "WRITABLE",
+            " $defaultValue": defaultValue,
+            " $options": options,
+            " $supressWarnings": unsupportedOperation
+        };
     }
-;
+
+    createComputedState<T, TVariables = {}>(
+        valueSupplier: (ctx: ComputedContext<TSchema>, variables: TVariables) => T,
+        options?: ComputedStateCreationOptions
+    ): ComputedState<T, TVariables> {
+        return {
+            " $stateType": "COMPUTED",
+            " $valueSupplier": valueSupplier,
+            " $options": options,
+            " $supressWarnings": unsupportedOperation
+        };
+    }
+    
+    createAsyncState<T, TVariables = {}>( 
+        valueSupplier: (ctx: ComputedContext<TSchema>, variables: TVariables) => Promise<T>,
+        options?: ComputedStateCreationOptions
+    ): AsyncState<T, TVariables> {
+        return {
+            " $stateType": "ASYNC",
+            " $valueSupplier": valueSupplier,
+            " $options": options,
+            " $supressWarnings": unsupportedOperation
+        };
+    }
+}
+
+function unsupportedOperation() {
+    throw new Error("UnsupportedOperationException");
+}

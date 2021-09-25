@@ -1,80 +1,60 @@
-import { TypeMetadata } from "./TypeMetdata";
-
-export class FieldMetadata {
-
-    readonly fullName: string;
-
-    private _inversed = false;
-
-    private _undefinable = false;
-
-    private _deleteOperation?: "CASCADE" | "SET_UNDEFINED";
-
-    private _connectionType?: string | TypeMetadata;
-
-    private _edgeType?: string | TypeMetadata;
-
-    private _targetType?: string | TypeMetadata;
-
-    private _oppositeField?: string | FieldMetadata;
-
-    constructor(
-        readonly type: TypeMetadata,
-        readonly category: FieldMetadataCategory,
-        readonly name: string,
-        options?: FieldMetadataOptions
-    ) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.FieldMetadata = void 0;
+class FieldMetadata {
+    constructor(type, category, name, options) {
+        this.type = type;
+        this.category = category;
+        this.name = name;
+        this._inversed = false;
+        this._undefinable = false;
         this.fullName = `${type.name}.${name}`;
-
         if (category === "CONNECTION") {
-            if (options?.connectionTypeName === undefined) {
+            if ((options === null || options === void 0 ? void 0 : options.connectionTypeName) === undefined) {
                 throw new Error(`Illegal connection field "${this.fullName}", collectionTypeName is required`);
             }
-            if (options?.edgeTypeName === undefined) {
+            if ((options === null || options === void 0 ? void 0 : options.edgeTypeName) === undefined) {
                 throw new Error(`Illegal connection field "${this.fullName}", edgeTypeName is required`);
             }
             this._connectionType = options.connectionTypeName;
             this._edgeType = options.edgeTypeName;
-        } else {
-            if (options?.connectionTypeName !== undefined) {
+        }
+        else {
+            if ((options === null || options === void 0 ? void 0 : options.connectionTypeName) !== undefined) {
                 throw new Error(`Illegal field "${this.fullName}", the collectionTypeName should not be specified`);
             }
-            if (options?.edgeTypeName !== undefined) {
+            if ((options === null || options === void 0 ? void 0 : options.edgeTypeName) !== undefined) {
                 throw new Error(`Illegal field "${this.fullName}", the edgeTypeName should not be specified`);
             }
         }
-
         if (isAssociation(category)) {
-            if (options?.targetTypeName === undefined) {
+            if ((options === null || options === void 0 ? void 0 : options.targetTypeName) === undefined) {
                 throw new Error(`Illegal association field "${this.fullName}", targetTypeName is required`);
             }
-            this._targetType = options?.targetTypeName;
-            if (options?.mappedBy !== undefined) {
+            this._targetType = options === null || options === void 0 ? void 0 : options.targetTypeName;
+            if ((options === null || options === void 0 ? void 0 : options.mappedBy) !== undefined) {
                 this.setOppositeFieldName(options.mappedBy);
             }
-        } else {
-            if (options?.targetTypeName !== undefined) {
+        }
+        else {
+            if ((options === null || options === void 0 ? void 0 : options.targetTypeName) !== undefined) {
                 throw new Error(`Illegal id field "${this.fullName}", the targetTypeName should not be specified`);
             }
-            if (options?.mappedBy !== undefined) {
+            if ((options === null || options === void 0 ? void 0 : options.mappedBy) !== undefined) {
                 throw new Error(`Illegal id field "${this.fullName}", the mappedBy should not be specified`);
             }
         }
     }
-
-    get isUndefinable(): boolean {
+    get isUndefinable() {
         return this._undefinable;
     }
-
-    get deleteOperation(): "CASCADE" | "SET_UNDEFINED" | undefined {
+    get deleteOperation() {
         return this._deleteOperation;
     }
-
-    get isInversed(): boolean {
+    get isInversed() {
         return this._inversed;
     }
-
-    get connectionType(): TypeMetadata | undefined {
+    get connectionType() {
         if (typeof this._connectionType !== "string") {
             return this._connectionType;
         }
@@ -88,8 +68,7 @@ export class FieldMetadata {
         this._connectionType = connectionMetadata;
         return connectionMetadata;
     }
-
-    get edgeType(): TypeMetadata | undefined {
+    get edgeType() {
         if (typeof this._edgeType !== "string") {
             return this._edgeType;
         }
@@ -103,8 +82,7 @@ export class FieldMetadata {
         this._edgeType = edgeMetadata;
         return edgeMetadata;
     }
-
-    get targetType(): TypeMetadata | undefined {
+    get targetType() {
         if (typeof this._targetType !== "string") {
             return this._targetType;
         }
@@ -118,13 +96,11 @@ export class FieldMetadata {
         this._targetType = targetMetadata;
         return targetMetadata;
     }
-
-    get oppositeField(): FieldMetadata | undefined {
+    get oppositeField() {
         this.type.schema[" $resolvedInversedFields"]();
-        return this._oppositeField as FieldMetadata | undefined;
+        return this._oppositeField;
     }
-
-    setOppositeFieldName(oppositeFieldName: string) {
+    setOppositeFieldName(oppositeFieldName) {
         if (this._oppositeField !== undefined) {
             throw new Error(`Cannot change the opposite field of ${this.fullName} because its opposite field has been set`);
         }
@@ -135,14 +111,14 @@ export class FieldMetadata {
         this._inversed = true;
         this.type.schema[" $registerUnresolvedInversedField"](this);
     }
-
     " $resolveInversedAssociation"() {
+        var _a;
         if (typeof this._oppositeField !== "string") {
             return;
         }
-        const targetField = this.targetType!.fieldMap.get(this._oppositeField);
+        const targetField = this.targetType.fieldMap.get(this._oppositeField);
         if (targetField === undefined) {
-            throw new Error(`Illegal inversed association field ${this.fullName}, it's mapped by "${this._oppositeField}", but there is no such field in the target type "${this.targetType?.name}"`);
+            throw new Error(`Illegal inversed association field ${this.fullName}, it's mapped by "${this._oppositeField}", but there is no such field in the target type "${(_a = this.targetType) === null || _a === void 0 ? void 0 : _a.name}"`);
         }
         if (targetField.category !== "REFERENCE" && targetField.category !== "LIST" && targetField.category !== "CONNECTION") {
             throw new Error(`Illegal inversed association field ${this.fullName}, it's mapped by "${targetField.fullName}" but that field is not assciation`);
@@ -160,18 +136,7 @@ export class FieldMetadata {
         targetField._oppositeField = this;
     }
 }
-
-export type FieldMetadataCategory = "ID" | "REFERENCE" | "LIST" | "CONNECTION"; 
-
-export interface FieldMetadataOptions {
-    readonly undefinable?: boolean,
-    readonly deleteOperation?: "CASCADE" | "SET_UNDEFINED";
-    readonly connectionTypeName?: string;
-    readonly edgeTypeName?: string;
-    readonly targetTypeName?: string;
-    readonly mappedBy?: string;
-}
-
-function isAssociation(category: FieldMetadataCategory) {
+exports.FieldMetadata = FieldMetadata;
+function isAssociation(category) {
     return category === "REFERENCE" || category === "LIST" || category === "CONNECTION";
 }

@@ -85,6 +85,14 @@ export class TypeMetadata {
         }
         this._declaredFieldMap.set(name, new FieldMetadata(this, category, name, options));
     }
+
+    setFieldMappedBy(name: string, oppositeFieldName: string) {
+        const field = this.fieldMap.get(name);
+        if (field === undefined) {
+            throw new Error(`Cannot set the "mappedBy" of field "${name}" because that field is not exists in type "${this.name}"`);
+        }
+        field.setOppositeFieldName(oppositeFieldName);
+    }
 }
 
 export type TypeMetadataCategory = "OBJECT" | "CONNECTION" | "EDGE";

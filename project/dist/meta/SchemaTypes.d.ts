@@ -8,10 +8,6 @@ export declare type ObjectType = {
 };
 export interface ConfigurationSchemaTypes {
     readonly objectTypes: SchemaTypes;
-    readonly collectionTypes: {
-        readonly [key: string]: ObjectType;
-    };
-    readonly edgeTypes: {
-        readonly [key: string]: ObjectType;
-    };
+    readonly collectionTypes: SchemaTypes;
+    readonly edgeTypes: SchemaTypes;
 }

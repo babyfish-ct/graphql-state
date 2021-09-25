@@ -1,5 +1,3 @@
-import { ObjectType } from "./SchemaTypes";
-
 export type Shape<T> = 
     T extends object ?
     { 

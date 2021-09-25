@@ -25,16 +25,16 @@ export class SchemaMetadata {
         }
     }
 
-    " $registerUnresolvedPassiveField"(passiveField: FieldMetadata) {
+    " $registerUnresolvedInversedField"(passiveField: FieldMetadata) {
         this._unresolvedPassiveFields.push(passiveField);
     }
 
-    " $resolvedPassiveFields"() {
+    " $resolvedInversedFields"() {
         if (this._unresolvedPassiveFields.length === 0) {
             return;
         }
         for (const _unresolvedPassiveField of this._unresolvedPassiveFields) {
-            _unresolvedPassiveField[" $resolvePassiveAssociation"]();
+            _unresolvedPassiveField[" $resolveInversedAssociation"]();
         }
         this._unresolvedPassiveFields = [];
     }

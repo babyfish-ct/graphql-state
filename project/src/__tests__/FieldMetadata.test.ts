@@ -1,15 +1,10 @@
 import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 
-let schema = new SchemaMetadata();
-
-beforeEach(() => {
-    schema = new SchemaMetadata();
-    schema.addType("OBJECT", "Department")
-    schema.addType("OBJECT", "Employee");
-});
-
 test("bind bireactional assocation", () => {
     
+    const schema = new SchemaMetadata();
+    
+    schema.addType("OBJECT", "Department");
     schema.typeMap.get("Department")!.addField(
         "LIST",
         "employees", 
@@ -18,6 +13,8 @@ test("bind bireactional assocation", () => {
             mappedBy: "department"
         }
     );
+    
+    schema.addType("OBJECT", "Employee");
     schema.typeMap.get("Employee")!.addField(
         "REFERENCE",
         "department",
@@ -29,9 +26,9 @@ test("bind bireactional assocation", () => {
     const employees = schema.typeMap.get("Department")!.fieldMap.get("employees")!;
     const department = schema.typeMap.get("Employee")!.fieldMap.get("department")!;
 
-    expect(employees.isPassive).toBe(true);
+    expect(employees.isInversed).toBe(true);
     expect(employees.oppositeField).toBe(department);
 
-    expect(department.isPassive).toBe(false);
+    expect(department.isInversed).toBe(false);
     expect(department.oppositeField).toBe(employees);
 });
