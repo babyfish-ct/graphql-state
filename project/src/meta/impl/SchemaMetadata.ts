@@ -1,8 +1,11 @@
+import { FieldMetadata } from "./FieldMetadata";
 import { TypeMetadata, TypeMetadataCategory } from "./TypeMetdata";
 
 export class SchemaMetadata {
 
     private _typeMap = new Map<string, TypeMetadata>();
+
+    private _unresolvedPassiveFields: FieldMetadata[] = [];
 
     get typeMap(): ReadonlyMap<string, TypeMetadata> {
         return this._typeMap;
@@ -20,6 +23,20 @@ export class SchemaMetadata {
         if (this._typeMap.has(typeName)) {
             throw new Error(`Cannot add the type "${typeName}" becasue it's exists`);
         }
+    }
+
+    " $registerUnresolvedPassiveField"(passiveField: FieldMetadata) {
+        this._unresolvedPassiveFields.push(passiveField);
+    }
+
+    " $resolvedPassiveFields"() {
+        if (this._unresolvedPassiveFields.length === 0) {
+            return;
+        }
+        for (const _unresolvedPassiveField of this._unresolvedPassiveFields) {
+            _unresolvedPassiveField[" $resolvePassiveAssociation"]();
+        }
+        this._unresolvedPassiveFields = [];
     }
 }
 

@@ -19,16 +19,14 @@ export interface Configuration<TConfigurationSchema extends ConfigurationSchemaT
         objectTypeRef: TypeRef<TObjectType, TName>
     ): Configuration<TConfigurationSchema & { edgeTypes: { readonly [key in TName]: TObjectType}}>;
 
-    seType<
+    setType<
         TTypeName extends 
             keyof TConfigurationSchema["objectTypes"] |
             keyof TConfigurationSchema["collectionTypes"] | 
-            keyof TConfigurationSchema["edgeTypes"],
-        TSuperTypeName extends keyof TConfigurationSchema["objectTypes"]
+            keyof TConfigurationSchema["edgeTypes"]
     >(
         typeName: TTypeName,
-        typeConfigurer: (tc: TypeConfiguration<TConfigurationSchema, TTypeName>) => void,
-        superTypeName?: string
+        typeConfigurer: (tc: TypeConfiguration<TConfigurationSchema, TTypeName>) => void
     ): this;
 
     addMappedByFields<

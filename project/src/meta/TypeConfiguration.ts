@@ -8,10 +8,12 @@ export interface TypeConfiguration<
         keyof TConfigurationSchema["edgeTypes"]
 > {
 
-    scalar<TFieldName extends keyof TConfigurationSchema["objectTypes"][TName]>(
-        name: TFieldName, 
-        typeName: "string" | "number" | "boolean", 
-        options?: ScalarOptions
+    superType<XSuperName extends TConfigurationSchema["objectTypes"] | undefined>(
+        superName: XSuperName
+    ): this;
+
+    id<TFieldName extends keyof TConfigurationSchema["objectTypes"][TName]>(
+        name: TFieldName
     ): this;
 
     reference<TFieldName extends keyof TConfigurationSchema["objectTypes"][TName], TReferencedTypeName extends keyof TConfigurationSchema["objectTypes"]>(
@@ -38,13 +40,6 @@ export interface TypeConfiguration<
         nodeTypeName: TNodeTypeName,
         options?: CollectionOptions<TConfigurationSchema, TNodeTypeName>
     ): this;
-}
-
-export interface ScalarOptions {
-    readonly undefinable?: boolean;
-    readonly minLength?: number;
-    readonly maxLength?: number;
-    readonly pattern?: RegExp;
 }
 
 export interface ReferenceOptions<TConfigurationSchema extends ConfigurationSchemaTypes, TReferencedTypeName extends keyof TConfigurationSchema["objectTypes"]> {
