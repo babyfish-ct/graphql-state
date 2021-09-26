@@ -50,6 +50,15 @@ export class InternalComputedContext {
             }
         }
     }
+
+    getSelf(options?: StateAccessingOptions<any>): any {
+        const variables = standardizedVariables(options?.variables);
+        const variablesCode = variables !== undefined ? JSON.stringify(variables) : undefined;
+        if (this.currentStateValue.variablesCode === variablesCode) {
+            throw new Error("Cannot get the current state with same variables in the computing implementation, please support another variables");
+        }
+        return this.get(this.currentStateValue.stateInstance.state, options);
+    }
     
     get(state: State<any, any>, options?: StateAccessingOptions<any>): any {
         if (this.closed) {

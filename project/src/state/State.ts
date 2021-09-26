@@ -80,7 +80,9 @@ export interface ComputedContext<TSchema extends SchemaTypes, T, TVariables> {
         options: StateAccessingOptions<XVariables>
     ): Promise<X>;
 
-    readonly self: ComputedState<T, TVariables>;
+    self(
+        options: StateAccessingOptions<TVariables>
+    ): T;
 
     managedObject<
         TTypeName extends keyof TSchema,

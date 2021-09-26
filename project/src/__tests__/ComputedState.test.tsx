@@ -21,6 +21,23 @@ const sumState = createComputedState<number>(ctx => {
     );
 });
 
+const factorialState = createComputedState<number, { value: number}>((ctx, variables) => {
+    const { value } = variables;
+    if (value <= 1) {
+        return 1;
+    }
+    return value * ctx.self({
+        variables: { value: value - 1}
+    });
+});
+
+const finalFactorialState = createComputedState<number>(ctx => {
+    return ctx(factorialState, {
+        variables: { value: ctx(sumState) }
+    });
+});
+
+
 test("Simple Computed state", () => {
 
     const ui = render(
@@ -28,6 +45,7 @@ test("Simple Computed state", () => {
             <InputView/>
             <OutputView_Depth1/>
             <OutputView_Depth2/>
+            <OutputView_Factorial/>
         </StateManagerProvider>
     );
 
@@ -35,6 +53,7 @@ test("Simple Computed state", () => {
     expect(ui.getByTestId("double").textContent).toBe("2");
     expect(ui.getByTestId("triple").textContent).toBe("3");
     expect(ui.getByTestId("sum").textContent).toBe("6");
+    expect(ui.getByTestId("factorial").textContent).toBe(`${factorial(6)}`);
 
     fireEvent.click(ui.getByTestId("increase"));
 
@@ -42,6 +61,7 @@ test("Simple Computed state", () => {
     expect(ui.getByTestId("double").textContent).toBe("4");
     expect(ui.getByTestId("triple").textContent).toBe("6");
     expect(ui.getByTestId("sum").textContent).toBe("12");
+    expect(ui.getByTestId("factorial").textContent).toBe(`${factorial(12)}`);
 
     fireEvent.click(ui.getByTestId("increase"));
 
@@ -49,6 +69,7 @@ test("Simple Computed state", () => {
     expect(ui.getByTestId("double").textContent).toBe("6");
     expect(ui.getByTestId("triple").textContent).toBe("9");
     expect(ui.getByTestId("sum").textContent).toBe("18");
+    expect(ui.getByTestId("factorial").textContent).toBe(`${factorial(18)}`);
 });
 
 const InputView: FC = memo(() => {
@@ -95,3 +116,21 @@ const OutputView_Depth2: FC = memo(() => {
     );
 });
 
+const OutputView_Factorial: FC = memo(() => {
+
+    const factorialValue = useStateValue(finalFactorialState);
+
+    return (
+        <>
+            <div data-testid="factorial">{factorialValue}</div>
+        </>
+    );
+});
+
+function factorial(value: number) {
+    let result = 1;
+    for (let i = 1; i <= value; i++) {
+        result *= i;
+    }
+    return result;
+}
