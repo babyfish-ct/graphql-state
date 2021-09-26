@@ -9,9 +9,10 @@ export class WritableStateValue extends StateValue {
     
     constructor(
         stateInstance: StateInstance, 
+        variablesCode: string | undefined,
         variables: any
     ) {
-        super(stateInstance, variables);
+        super(stateInstance, variablesCode, variables);
         const defaultValue = this.stateInstance.state[" $defaultValue"];
         this._result = typeof defaultValue === "function" ? defaultValue(variables ?? {}) : defaultValue;
     }
@@ -25,9 +26,7 @@ export class WritableStateValue extends StateValue {
         if (oldResult !== result) {
             this._result = result;
             this.stateInstance.scopedStateManager.stateManager.publishStateChangeEvent({
-                stateValue: this,
-                oldResult,
-                newResult: result
+                stateValue: this
             });
         }
     }

@@ -8,15 +8,10 @@ export abstract class StateValue {
     private _variables: any;
 
     constructor(
-        protected readonly stateInstance: StateInstance,
-        variables: any
-    ) {
-        this._variables = standardizedVariables(variables);
-    }
-
-    get variables(): any {
-        return this._variables;
-    }
+        readonly stateInstance: StateInstance,
+        readonly variablesCode: string | undefined,
+        readonly variables: any
+    ) {}
 
     abstract get result(): any
 
@@ -41,3 +36,5 @@ export abstract class StateValue {
         
     }
 }
+
+export type StateStatus = "LOADING" | "ERROR" | "READY";

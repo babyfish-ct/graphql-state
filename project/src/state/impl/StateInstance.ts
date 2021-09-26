@@ -20,8 +20,8 @@ export class StateInstance {
         const stateValue = this.valueMap.computeIfAbsent(
             variablesCode, 
             () => this.state[" $stateType"] === "WRITABLE" ?
-                new WritableStateValue(this, variables) :
-                new ComputedStateValue(this, variables)
+                new WritableStateValue(this, variablesCode, variables) :
+                new ComputedStateValue(this, variablesCode, variables)
         );
         if (stateValue.retain()) {
             stateValue.mount();

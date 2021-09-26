@@ -68,6 +68,4 @@ export type StateValueChangeListener = (e: StateValueChangeEvent) => void;
 
 export interface StateValueChangeEvent {
     stateValue: StateValue;
-    oldResult: any;
-    newResult: any;
 }

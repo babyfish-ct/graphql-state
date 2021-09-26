@@ -14,12 +14,12 @@ export interface StateFactory<TSchema extends SchemaTypes> {
     ): WriteableState<T, TVariables>;
 
     createComputedState<T, TVariables = {}>(
-        valueSupplier: (ctx: ComputedContext<TSchema>, variables: TVariables) => T,
+        valueSupplier: (ctx: ComputedContext<TSchema, T, TVariables>, variables: TVariables) => T,
         options?: ComputedStateCreationOptions
     ): ComputedState<T, TVariables>;
     
     createAsyncState<T, TVariables = {}>( 
-        valueSupplier: (ctx: ComputedContext<TSchema>, variables: TVariables) => Promise<T>,
+        valueSupplier: (ctx: ComputedContext<TSchema, T, TVariables>, variables: TVariables) => Promise<T>,
         options?: ComputedStateCreationOptions
     ): AsyncState<T, TVariables>;
 }
@@ -39,7 +39,7 @@ export interface ComputedState<T, TVariables> {
 
     readonly " $stateType": "COMPUTED";
 
-    readonly " $valueSupplier": (ctx: ComputedContext<any>, variables: TVariables) => T;
+    readonly " $valueSupplier": (ctx: ComputedContext<any, any, any>, variables: TVariables) => T;
     readonly " $options"?: ComputedStateCreationOptions;
     " $supressWarnings"(_1: T, _2: TVariables): void;
 }
@@ -48,7 +48,7 @@ export interface AsyncState<T, TVariables> {
 
     readonly " $stateType": "ASYNC";
     
-    readonly " $valueSupplier": (ctx: ComputedContext<any>, variables: TVariables) => Promise<T>;
+    readonly " $valueSupplier": (ctx: ComputedContext<any, any, any>, variables: TVariables) => Promise<T>;
     readonly " $options"?: ComputedStateCreationOptions;
     " $supressWarnings"(_1: T, _2: TVariables): void;
 }
@@ -68,17 +68,19 @@ export type StateScopeMode = "GLOBAL_SCOPE_ONLY" | "NESTED_SCOPE_ONLY" | "ANY_SC
 
 
 
-export interface ComputedContext<TSchema extends SchemaTypes> {
+export interface ComputedContext<TSchema extends SchemaTypes, T, TVariables> {
     
-    <T, TVariables>(
-        state: WriteableState<T, TVariables> | ComputedState<T, TVariables>, 
-        options?: StateAccessingOptions<TVariables>
-    ): T;
+    <X, XVariables>(
+        state: WriteableState<X, XVariables> | ComputedState<X, XVariables>, 
+        options?: StateAccessingOptions<XVariables>
+    ): X;
     
-    <T, TVariables>(
-        state: AsyncState<T, TVariables>, 
-        options: StateAccessingOptions<TVariables>
-    ): Promise<T>;
+    <X, XVariables>(
+        state: AsyncState<X, XVariables>, 
+        options: StateAccessingOptions<XVariables>
+    ): Promise<X>;
+
+    readonly self: ComputedState<T, TVariables>;
 
     managedObject<
         TTypeName extends keyof TSchema,
@@ -151,7 +153,7 @@ class StateFactoryImpl<TSchema extends SchemaTypes> implements StateFactory<TSch
     }
 
     createComputedState<T, TVariables = {}>(
-        valueSupplier: (ctx: ComputedContext<TSchema>, variables: TVariables) => T,
+        valueSupplier: (ctx: ComputedContext<TSchema, T, TVariables>, variables: TVariables) => T,
         options?: ComputedStateCreationOptions
     ): ComputedState<T, TVariables> {
         return {
@@ -163,7 +165,7 @@ class StateFactoryImpl<TSchema extends SchemaTypes> implements StateFactory<TSch
     }
     
     createAsyncState<T, TVariables = {}>( 
-        valueSupplier: (ctx: ComputedContext<TSchema>, variables: TVariables) => Promise<T>,
+        valueSupplier: (ctx: ComputedContext<TSchema, T, TVariables>, variables: TVariables) => Promise<T>,
         options?: ComputedStateCreationOptions
     ): AsyncState<T, TVariables> {
         return {
