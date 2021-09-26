@@ -117,13 +117,15 @@ function useInternalStateValue(
     const stateInstance = stateManager.scope.instance(state, options?.propagation ?? "REQUIRED");
 
     const [vs, vsKey] = useMemo<[any, string | undefined]>(() => { 
-        const variables = standardizedVariables(options?.variables);
-        return [variables, variables !== undefined ? JSON.stringify(variables) : undefined]
+        const svs = standardizedVariables(options?.variables);
+        return [svs, svs !== undefined ? JSON.stringify(svs) : undefined]
     }, [options?.variables]);
 
     const [, setStateVerion] = useState(0);
 
-    const [stateValue] = useState<StateValue>(() => stateInstance.retain(vsKey, vs));
+    const stateValue = useMemo<StateValue>(() => {
+        return stateInstance.retain(vsKey, vs); 
+    }, [vsKey, vs]);
     useEffect(() => {
         return () => {
             stateInstance.release(vsKey);

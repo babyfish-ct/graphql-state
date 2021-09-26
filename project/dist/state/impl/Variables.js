@@ -16,7 +16,7 @@ function standardizedVariablesKeys(variables) {
     if (variables === undefined || variables === null) {
         return undefined;
     }
-    if (typeof variables === "object" || Array.isArray(variables)) {
+    if (typeof variables !== "object" || Array.isArray(variables)) {
         throw new Error("variables must be plain object");
     }
     const subKeys = [];
