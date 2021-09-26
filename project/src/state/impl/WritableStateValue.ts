@@ -12,7 +12,8 @@ export class WritableStateValue extends StateValue {
         variables: any
     ) {
         super(stateInstance, variables);
-        this._result = this.stateInstance.state[" $defaultValue"];
+        const defaultValue = this.stateInstance.state[" $defaultValue"];
+        this._result = typeof defaultValue === "function" ? defaultValue(variables ?? {}) : defaultValue;
     }
 
     get result(): any {

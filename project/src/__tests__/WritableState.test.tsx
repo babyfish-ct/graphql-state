@@ -1,6 +1,7 @@
 import { FC, memo, useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { cleanup, fireEvent, render } from '@testing-library/react';
 import { StateManagerProvider, makeStateFactory, useStateValue, useStateAccessor } from '../';
+import { variables } from "../meta/Shape";
 
 afterEach(cleanup);
 
@@ -10,42 +11,48 @@ test("WritableState", () => {
     
     expect(ui.getByTestId("value").textContent).toBe("0");
     expect(ui.getByTestId("accessor.read").textContent).toBe("0");
-    expect(ui.getByTestId("valueA").textContent).toBe("0");
-    expect(ui.getByTestId("accessorA.read").textContent).toBe("0");
-    expect(ui.getByTestId("valueB").textContent).toBe("0");
-    expect(ui.getByTestId("accessorB.read").textContent).toBe("0");
+    expect(ui.getByTestId("valueA").textContent).toBe("65");
+    expect(ui.getByTestId("accessorA.read").textContent).toBe("65");
+    expect(ui.getByTestId("valueB").textContent).toBe("66");
+    expect(ui.getByTestId("accessorB.read").textContent).toBe("66");
 
     fireEvent.click(ui.getByTestId("accessor.write"));
 
     expect(ui.getByTestId("value").textContent).toBe("1");
     expect(ui.getByTestId("accessor.read").textContent).toBe("1");
-    expect(ui.getByTestId("valueA").textContent).toBe("0");
-    expect(ui.getByTestId("accessorA.read").textContent).toBe("0");
-    expect(ui.getByTestId("valueB").textContent).toBe("0");
-    expect(ui.getByTestId("accessorB.read").textContent).toBe("0");
+    expect(ui.getByTestId("valueA").textContent).toBe("65");
+    expect(ui.getByTestId("accessorA.read").textContent).toBe("65");
+    expect(ui.getByTestId("valueB").textContent).toBe("66");
+    expect(ui.getByTestId("accessorB.read").textContent).toBe("66");
 
     fireEvent.click(ui.getByTestId("accessorA.write"));
 
     expect(ui.getByTestId("value").textContent).toBe("1");
     expect(ui.getByTestId("accessor.read").textContent).toBe("1");
-    expect(ui.getByTestId("valueA").textContent).toBe("1");
-    expect(ui.getByTestId("accessorA.read").textContent).toBe("1");
-    expect(ui.getByTestId("valueB").textContent).toBe("0");
-    expect(ui.getByTestId("accessorB.read").textContent).toBe("0");
+    expect(ui.getByTestId("valueA").textContent).toBe("66");
+    expect(ui.getByTestId("accessorA.read").textContent).toBe("66");
+    expect(ui.getByTestId("valueB").textContent).toBe("66");
+    expect(ui.getByTestId("accessorB.read").textContent).toBe("66");
 
     fireEvent.click(ui.getByTestId("accessorB.write"));
 
     expect(ui.getByTestId("value").textContent).toBe("1");
     expect(ui.getByTestId("accessor.read").textContent).toBe("1");
-    expect(ui.getByTestId("valueA").textContent).toBe("1");
-    expect(ui.getByTestId("accessorA.read").textContent).toBe("1");
-    expect(ui.getByTestId("valueB").textContent).toBe("1");
-    expect(ui.getByTestId("accessorB.read").textContent).toBe("1");
+    expect(ui.getByTestId("valueA").textContent).toBe("66");
+    expect(ui.getByTestId("accessorA.read").textContent).toBe("66");
+    expect(ui.getByTestId("valueB").textContent).toBe("67");
+    expect(ui.getByTestId("accessorB.read").textContent).toBe("67");
 });
 
 const { createState } = makeStateFactory();
 
-const countState = createState(0);
+const countState = createState<number, {type?: string}>(variables => {
+    const { type } = variables;
+    if (type !== undefined && type.length !== 0) {
+        return type.charCodeAt(0);
+    }
+    return 0;
+});
 
 const TestedComponent: FC = memo(() => {
     return (

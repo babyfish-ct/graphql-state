@@ -9,7 +9,7 @@ export function makeStateFactory<TSchema extends SchemaTypes = {}>(): StateFacto
 export interface StateFactory<TSchema extends SchemaTypes> {
 
     createState<T, TVariables = {}>(
-        defaultValue: T,
+        defaultValue: T | ((variables: TVariables) => T),
         options?: StateCreationOptions
     ): WriteableState<T, TVariables>;
 
@@ -30,7 +30,7 @@ export interface WriteableState<T, TVariables> {
 
     readonly " $stateType": "WRITABLE";
 
-    readonly " $defaultValue": T;
+    readonly " $defaultValue": T | ((variables: TVariables) => T);
     readonly " $options"?: StateCreationOptions;
     " $supressWarnings"(_1: T, _2: TVariables): void;
 }
@@ -139,7 +139,7 @@ export type StatePropagation = "REQUIRED" | "REQUIRES_NEW" | "MANDATORY";
 class StateFactoryImpl<TSchema extends SchemaTypes> implements StateFactory<TSchema> {
 
     createState<T, TVariables = {}>(
-        defaultValue: T,
+        defaultValue: T | ((variables: TVariables) => T),
         options?: StateCreationOptions
     ): WriteableState<T, TVariables> {
         return {
