@@ -23,6 +23,10 @@ export class ScopedStateManager {
         return this._parent;
     }
 
+    get stateManager(): StateManagerImpl<any> {
+        return this._stateManager;
+    }
+
     instance(
         state: State<any, any>,
         propagation: StatePropagation
@@ -37,7 +41,7 @@ export class ScopedStateManager {
             throw new Error(`This propagation is "MANDATORY" but the state cannot be found`);
         }
 
-        throw this.createInstance(state, propagation);
+        return this.createInstance(state, propagation);
     }
 
     private getInstance(
@@ -81,7 +85,7 @@ export class ScopedStateManager {
             return this._parent.createInstance0(state, mode);
         }
 
-        const instance = new StateInstance(state);
+        const instance = new StateInstance(this, state);
         this._instanceMap.set(state, instance);
         return instance;
     }

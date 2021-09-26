@@ -2,7 +2,7 @@ import { GraphQLFetcher } from "../gql/GraphQLFetcher";
 import { SchemaTypes } from "../meta/SchemaTypes";
 import { ObjectTypeOf, Shape } from "../meta/Shape";
 
-export function makeStateFactory<TSchema extends SchemaTypes>(): StateFactory<TSchema> {
+export function makeStateFactory<TSchema extends SchemaTypes = {}>(): StateFactory<TSchema> {
     return new StateFactoryImpl<TSchema>();
 }
 

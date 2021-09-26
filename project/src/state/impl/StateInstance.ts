@@ -1,27 +1,27 @@
 import { State } from "../State";
+import { ComputedStateValue } from "./ComputedStateValue";
+import { ScopedStateManager } from "./ScopedStateManager";
 import { SpaceSavingMap } from "./SpaceSavingMap";
 import { StateValue } from "./StateValue";
+import { WritableStateValue } from "./WritableStateValue";
 
 export class StateInstance {
 
     private valueMap = new SpaceSavingMap<string | undefined, StateValue>();
 
-    constructor(private state: State<any, any>) {
+    constructor(
+        readonly scopedStateManager: ScopedStateManager,
+        readonly state: State<any, any>
+    ) {
 
-    }
-
-    get(variables: any) {
-        const stateValue = this.valueMap.get(variables);
-        if (stateValue === undefined) {
-            throw new Error("Internal bug");
-        }
-        return stateValue;
     }
 
     retain(variablesCode: string | undefined, variables: any): StateValue {
         const stateValue = this.valueMap.computeIfAbsent(
             variablesCode, 
-            () => new StateValue(this.state, variables)
+            () => this.state[" $stateType"] === "WRITABLE" ?
+                new WritableStateValue(this, variables) :
+                new ComputedStateValue(this, variables)
         );
         if (stateValue.retain()) {
             stateValue.mount();

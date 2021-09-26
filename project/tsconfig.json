@@ -10,7 +10,7 @@
   },
   "include": [
     "src/**/*"  
-  ],
+, "babel.config.js", "test.setup.js"  ],
   "exclude": [
     "src/__tests__/**/*",
     "node_modules",

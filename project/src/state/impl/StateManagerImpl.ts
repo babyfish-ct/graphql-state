@@ -1,30 +1,36 @@
 import { SchemaTypes } from "../../meta/SchemaTypes";
 import { StateManager, TransactionStatus } from "../StateManager";
 import { ScopedStateManager } from "./ScopedStateManager";
+import { StateValue } from "./StateValue";
 import { UndoManagerImpl } from "./UndoManagerImpl";
 
 export class StateManagerImpl<TSchema extends SchemaTypes> implements StateManager<TSchema> {
 
     private _scopedStateManager?: ScopedStateManager;
 
+    private _listeners: StateValueChangeListener[] = [];
+
     get undoManager(): UndoManagerImpl {
         throw new Error();
     }
 
-    createScope(): ScopedStateManager {
-        return new ScopedStateManager(this._scopedStateManager ?? this);
+    registerScope(): ScopedStateManager {
+        return this._scopedStateManager = new ScopedStateManager(this._scopedStateManager ?? this);
     }
 
-    usingScope<TResult>(scopedStateManager: ScopedStateManager, callback: () => TResult): TResult {
-        if (scopedStateManager.parent !== this._scopedStateManager) {
-            throw new Error("Cannot reuse the scope whose parent is not current scope");
+    unregisterScope(scopedStateManager: ScopedStateManager) {
+        
+        /*
+         * The argument "scopedStateManager" may not be this._scopedStateManager
+         * because unmounting logic of useEffect is executed by wrong order: Parent first, child later. 
+         */
+        for (let scope = this._scopedStateManager; scope !== undefined; scope = scope.parent) {
+            if (scope === scopedStateManager) {
+                this._scopedStateManager = scope.parent;
+                return;
+            }
         }
-        this._scopedStateManager = scopedStateManager;
-        try {
-            return callback();
-        } finally {
-            this._scopedStateManager = scopedStateManager.parent;
-        }
+        console.warn('Failed to unregster because the argument "scopedStateManager" is not an existing scope');
     }
 
     get scope(): ScopedStateManager {
@@ -38,4 +44,30 @@ export class StateManagerImpl<TSchema extends SchemaTypes> implements StateManag
     transaction<TResult>(callback: (ts: TransactionStatus) => TResult): TResult {
         throw new Error();
     }
+
+    addStateChangeListener(listener: StateValueChangeListener) {
+        this._listeners.push(listener);
+    }
+
+    removeStateChangeListener(listener: StateValueChangeListener) {
+        const index = this._listeners.indexOf(listener);
+        if (index !== -1) {
+            this._listeners.splice(index, 1);
+        }
+    }
+
+    publishStateChangeEvent(e: StateValueChangeEvent) {
+        for (const listener of this._listeners) {
+            listener(e);
+        }
+    }
+}
+
+
+export type StateValueChangeListener = (e: StateValueChangeEvent) => void;
+
+export interface StateValueChangeEvent {
+    stateValue: StateValue;
+    oldResult: any;
+    newResult: any;
 }

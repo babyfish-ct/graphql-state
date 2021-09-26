@@ -1,13 +1,14 @@
-import { useContext, useEffect, useMemo } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { SchemaTypes } from "../meta/SchemaTypes";
 import { AsyncState, ComputedState, WriteableState, StateAccessingOptions, State } from "./State";
 import { StateManager } from "./StateManager";
 import { stateContext } from "./StateManagerProvider";
 import { Shape, ObjectTypeOf, variables } from "../meta/Shape";
 import { GraphQLFetcher } from "../gql/GraphQLFetcher";
-import { StateManagerImpl } from "./impl/StateManagerImpl";
+import { StateManagerImpl, StateValueChangeEvent } from "./impl/StateManagerImpl";
 import { standardizedVariables } from "./impl/Variables";
 import { StateValue } from "./impl/StateValue";
+import { WritableStateValue } from "./impl/WritableStateValue";
 
 export function useStateManager<TSchema extends SchemaTypes>(): StateManager<TSchema> {
     const stateManager = useContext(stateContext);
@@ -19,22 +20,23 @@ export function useStateManager<TSchema extends SchemaTypes>(): StateManager<TSc
 
 export function useStateValue<T, TVariables>(
     state: WriteableState<T, TVariables> | ComputedState<T, TVariables>,
-    options: StateAccessingOptions<TVariables>
+    options?: StateAccessingOptions<TVariables>
 ): T {
     const stateValue = useInternalStateValue(state, options);
-    throw new Error();
+    return stateValue.result;
 }
 
-export function useStateWriter<T, TVariables>(
+export function useStateAccessor<T, TVariables>(
     state: WriteableState<T, TVariables>,
-    options: StateAccessingOptions<TVariables>
-): StateWriter<T> {
-    throw new Error();
+    options?: StateAccessingOptions<TVariables>
+): StateAccessor<T> {
+    const stateValue = useInternalStateValue(state, options);
+    return (stateValue as WritableStateValue).accessor;
 }
 
 export function useStateAsyncValue<T, TVariables>(
     state: AsyncState<T, TVariables>,
-    options: StateAccessingOptions<TVariables>
+    options?: StateAccessingOptions<TVariables>
 ): UseStateAsyncValueHookResult<T> {
     const stateValue = useInternalStateValue(state, options);
     throw new Error();
@@ -44,7 +46,7 @@ export function makeManagedObjectHooks<TSchema extends SchemaTypes>(): ManagedOb
     throw new Error();
 }
 
-export interface StateWriter<T> {
+export interface StateAccessor<T> {
     (): T;
     (value: T): void;
 }
@@ -108,7 +110,7 @@ export interface UseStateAsyncValueHookResult<T> {
 
 function useInternalStateValue(
     state: State<any, any>,
-    options: StateAccessingOptions<any>
+    options?: StateAccessingOptions<any>
 ): StateValue {
 
     const stateManager = useStateManager() as StateManagerImpl<any>;
@@ -119,12 +121,26 @@ function useInternalStateValue(
         return [variables, variables !== undefined ? JSON.stringify(variables) : undefined]
     }, [options?.variables]);
 
+    const [, setStateVerion] = useState(0);
+
+    const [stateValue] = useState<StateValue>(() => stateInstance.retain(vsKey, vs));
     useEffect(() => {
-        stateInstance.retain(vsKey, vs);
         return () => {
             stateInstance.release(vsKey);
         }
     }, [stateInstance, vsKey]);
 
-    return stateInstance.get(variables);
+    useEffect(() => {
+        const stateValueChange = (e: StateValueChangeEvent) => {
+            if (e.stateValue === stateValue) {
+                setStateVerion(old => old + 1); // Change a local state to update react component
+            }
+        };
+        stateManager.addStateChangeListener(stateValueChange);
+        return () => {
+            stateManager.removeStateChangeListener(stateValueChange);
+        }
+    }, [stateManager, stateValue]);
+
+    return stateValue;
 }
