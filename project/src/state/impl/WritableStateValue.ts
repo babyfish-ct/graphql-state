@@ -1,9 +1,11 @@
 import { StateInstance } from "./StateInstance";
-import { StateValue } from "./StateValue";
+import { Loadable, StateValue } from "./StateValue";
 
 export class WritableStateValue extends StateValue {
 
-    private _result: any;
+    private _lodable: Loadable = {
+        loading: false
+    };
 
     readonly accessor = access.bind(this);
     
@@ -14,19 +16,30 @@ export class WritableStateValue extends StateValue {
     ) {
         super(stateInstance, variablesCode, variables);
         const defaultValue = this.stateInstance.state[" $defaultValue"];
-        this._result = typeof defaultValue === "function" ? defaultValue(variables ?? {}) : defaultValue;
+        this._lodable = { 
+            ...this._lodable,
+            data: typeof defaultValue === "function" ? defaultValue(variables ?? {}) : defaultValue 
+        };
     }
 
     get result(): any {
-        return this._result;
+        return this._lodable.data;
     }
 
-    set result(result: any) {
-        const oldResult = this._result;
-        if (oldResult !== result) {
-            this._result = result;
+    get loadable(): Loadable {
+        return this._lodable;
+    }
+
+    data(data: any) {
+        const oldData = this._lodable.data;
+        if (oldData !== data) {
+            this._lodable = { 
+                ...this._lodable,
+                data 
+            }
             this.stateInstance.scopedStateManager.stateManager.publishStateChangeEvent({
-                stateValue: this
+                stateValue: this,
+                changedType: "RESULT_CHANGE"
             });
         }
     }
@@ -37,6 +50,6 @@ function access(...args: any[]): any {
     if (args.length === 0) {
         return stateValue.result;
     } else {
-        stateValue.result = args[0];
+        stateValue.data(args[0]);
     }
 }

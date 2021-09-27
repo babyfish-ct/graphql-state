@@ -1,13 +1,15 @@
 import { ComputedState, State, StateUnmoutHandler } from "../State";
 import { InternalComputedContext } from "./InternalComputedContext";
 import { StateInstance } from "./StateInstance";
-import { StateValue } from "./StateValue";
+import { Loadable, StateValue } from "./StateValue";
 
 export class ComputedStateValue extends StateValue {
 
     private _unmountHandler?: StateUnmoutHandler;
 
     private _result: any;
+
+    private _loadable: Loadable;
 
     private _invalid = true;
 
@@ -19,6 +21,9 @@ export class ComputedStateValue extends StateValue {
         variables: any
     ) {
         super(stateInstance, variablesCode, variables);
+        this._loadable = {
+            loading: this.isAsync
+        };
     }
 
     mount() {
@@ -47,7 +52,8 @@ export class ComputedStateValue extends StateValue {
         if (!this._invalid) {
             this._invalid = true;
             this.stateInstance.scopedStateManager.stateManager.publishStateChangeEvent({
-                stateValue: this
+                stateValue: this,
+                changedType: "RESULT_CHANGE"
             });
         }
     }
@@ -56,9 +62,16 @@ export class ComputedStateValue extends StateValue {
         return this.compute();
     }
 
+    get loadable(): Loadable {
+        this.compute();
+        return this._loadable;
+    }
+
     compute(parentContext?: InternalComputedContext): any {
         if (this._invalid) {
-            this._result = this.compute0(parentContext);
+            this.beforeCompute();
+            const result = this.compute0(parentContext);
+            this._result = this.afterCompute(result);
             this._invalid = false;
         }
         return this._result;
@@ -73,6 +86,7 @@ export class ComputedStateValue extends StateValue {
             newCtx.close();
             throw ex;
         }
+        
         this.freeContext();
         this._ctx = newCtx;
         return result;
@@ -90,6 +104,53 @@ export class ComputedStateValue extends StateValue {
         let publicContext = getFormContext.bind(ctx);
         publicContext.self = getSelfFormContext.bind(ctx);
         return publicContext;
+    }
+
+    private get isAsync(): boolean {
+        return this.stateInstance.state[" $stateType"] === "ASYNC";
+    }
+
+    private beforeCompute() {
+        if (this.isAsync && !this._loadable.loading) {
+            this._loadable = {
+                data: this._loadable.data,
+                loading: true
+            };
+            this.stateInstance.scopedStateManager.stateManager.publishStateChangeEvent({
+                stateValue: this,
+                changedType: "ASYNC_STATE_CHANGE"
+            });
+        }
+    }
+
+    private afterCompute(result: any): any {
+        if (this.isAsync) {
+            return (result as Promise<any>)
+                .then(data => {
+                    this._loadable = {
+                        data,
+                        loading: false
+                    }
+                    return data;
+                })
+                .catch(error => {
+                    this._loadable = {
+                        error,
+                        loading: false
+                    }
+                })
+                .finally(() => {
+                    this.stateInstance.scopedStateManager.stateManager.publishStateChangeEvent({
+                        stateValue: this,
+                        changedType: "ASYNC_STATE_CHANGE"
+                    })
+                });
+        }
+        this._loadable = {
+            loading: false,
+            data: result
+        }
+        return result;
     }
 }
 

@@ -13,7 +13,9 @@ export abstract class StateValue {
         readonly variables: any
     ) {}
 
-    abstract get result(): any
+    abstract get result(): any;
+
+    abstract get loadable(): any;
 
     retain(): boolean {
         return this._refCount++ === 0;
@@ -37,4 +39,8 @@ export abstract class StateValue {
     }
 }
 
-export type StateStatus = "LOADING" | "ERROR" | "READY";
+export interface Loadable {
+    readonly data?: any;
+    readonly loading: boolean;
+    readonly error?: Error;
+}

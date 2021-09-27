@@ -9,6 +9,7 @@ import { StateManagerImpl, StateValueChangeEvent } from "./impl/StateManagerImpl
 import { standardizedVariables } from "./impl/Variables";
 import { StateValue } from "./impl/StateValue";
 import { WritableStateValue } from "./impl/WritableStateValue";
+import { ComputedStateValue } from "./impl/ComputedStateValue";
 
 export function useStateManager<TSchema extends SchemaTypes>(): StateManager<TSchema> {
     const stateManager = useContext(stateContext);
@@ -39,7 +40,7 @@ export function useStateAsyncValue<T, TVariables>(
     options?: StateAccessingOptions<TVariables>
 ): UseStateAsyncValueHookResult<T> {
     const stateValue = useInternalStateValue(state, options);
-    throw new Error();
+    return (stateValue as ComputedStateValue).loadable as UseStateAsyncValueHookResult<T>;
 }
 
 export function makeManagedObjectHooks<TSchema extends SchemaTypes>(): ManagedObjectHooks<TSchema> {

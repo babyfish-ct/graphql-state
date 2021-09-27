@@ -96,7 +96,7 @@ export class InternalComputedContext {
     }
 
     private onStateValueChange(e: StateValueChangeEvent) {
-        if (this.dependencies.has(e.stateValue)) {
+        if (e.changedType === "RESULT_CHANGE" && this.dependencies.has(e.stateValue)) {
             this.currentStateValue.invalidate();
         }
     }

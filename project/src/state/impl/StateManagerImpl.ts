@@ -68,4 +68,5 @@ export type StateValueChangeListener = (e: StateValueChangeEvent) => void;
 
 export interface StateValueChangeEvent {
     stateValue: StateValue;
+    changedType: "RESULT_CHANGE" | "ASYNC_STATE_CHANGE";
 }
