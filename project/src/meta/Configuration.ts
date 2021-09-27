@@ -7,35 +7,32 @@ export interface Configuration<TConfigurationSchema extends ConfigurationSchemaT
 
     addObjectType<
         TObjectType extends ObjectType, 
-        TName extends TObjectType["__typename"]
+        TName extends string
     >(
-        objectTypeRef: TypeRef<TObjectType, TName>,
+        typeRef: TypeRef<TObjectType, TName>,
     ): Configuration<
         TConfigurationSchema & 
         { 
-            objectTypes: { 
-                readonly [key in TName]: TObjectType & 
-                {readonly __typename: TName}
-            }
+            objectTypes: { readonly [key in TName]: TObjectType }
         }
     >;
 
     addConnectionType<TObjectType extends ObjectType, TName extends string>(
-        objectTypeRef: TypeRef<TObjectType, TName>
+        typeRef: TypeRef<TObjectType, TName>
     ): Configuration<
         TConfigurationSchema & 
         { collectionTypes: { readonly [key in TName]: TObjectType}}
     >;
 
     addEdgeType<TObjectType extends ObjectType, TName extends string>(
-        objectTypeRef: TypeRef<TObjectType, TName>
+        typeRef: TypeRef<TObjectType, TName>
     ): Configuration<
         TConfigurationSchema & 
         { edgeTypes: { readonly [key in TName]: TObjectType}}
     >;
 
     setObjectType<
-        TTypeName extends keyof TConfigurationSchema["objectTypes"] & string
+        TTypeName extends keyof TConfigurationSchema["objectTypes"]
     >(
         typeName: TTypeName,
         typeConfigurer: (tc: TypeConfiguration<TConfigurationSchema, TTypeName>) => void
@@ -52,7 +49,7 @@ export function typeRefBuilder<
 
 export interface TypeRefBuilder<TObjectType extends ObjectType> {
     
-    named<TName extends TObjectType["__typename"]>(name?: TName): TypeRef<TObjectType, TName>;
+    named<TName extends string>(name?: TName): TypeRef<TObjectType, TName>;
 
     " $supressWarnings"(_1: TObjectType): void;
 }

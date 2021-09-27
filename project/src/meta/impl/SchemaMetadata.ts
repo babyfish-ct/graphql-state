@@ -7,11 +7,14 @@ export class SchemaMetadata {
 
     private _unresolvedPassiveFields: FieldMetadata[] = [];
 
+    private _frozen = false;
+
     get typeMap(): ReadonlyMap<string, TypeMetadata> {
         return this._typeMap;
     }
 
     public addType(category: TypeMetadataCategory, typeName) {
+        this.preChange();
         this.validateTypeName(typeName);
         this._typeMap.set(typeName, new TypeMetadata(this, category, typeName));
     }
@@ -22,6 +25,17 @@ export class SchemaMetadata {
         }
         if (this._typeMap.has(typeName)) {
             throw new Error(`Cannot add the type "${typeName}" becasue it's exists`);
+        }
+    }
+
+    freeze(): this {
+        this._frozen = true;
+        return this;
+    }
+
+    preChange() {
+        if (this._frozen) {
+            throw new Error("Cannot change the schema becasue it's frozen");
         }
     }
 

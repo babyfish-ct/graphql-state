@@ -1,3 +1,4 @@
+import { StateManagerImpl } from "../../state/impl/StateManagerImpl";
 import { StateManager } from "../../state/StateManager";
 import { Configuration, TypeRef } from "../Configuration";
 import { ConfigurationSchemaTypes, ObjectType } from "../SchemaTypes";
@@ -16,9 +17,9 @@ class ConfigurationImpl<TConfigurationSchema extends ConfigurationSchemaTypes> i
 
     addObjectType<
         TObjectType extends ObjectType, 
-        TName extends TObjectType["__typename"]
+        TName extends string
     >(
-        objectTypeRef: TypeRef<TObjectType, TName>,
+        typeRef: TypeRef<TObjectType, TName>,
     ): Configuration<
         TConfigurationSchema & 
         { 
@@ -28,49 +29,52 @@ class ConfigurationImpl<TConfigurationSchema extends ConfigurationSchemaTypes> i
             }
         }
     > {
-        this.schema.addType("OBJECT", objectTypeRef.name);
+        this.schema.addType("OBJECT", typeRef.name);
         return this as any;
     }
 
     addConnectionType<TObjectType extends ObjectType, TName extends string>(
-        objectTypeRef: TypeRef<TObjectType, TName>
+        typeRef: TypeRef<TObjectType, TName>
     ): Configuration<
         TConfigurationSchema & 
         { collectionTypes: { readonly [key in TName]: TObjectType}}
     > {
-        this.schema.addType("CONNECTION", objectTypeRef.name);
+        this.schema.addType("CONNECTION", typeRef.name);
         return this as any;
     }
 
     addEdgeType<TObjectType extends ObjectType, TName extends string>(
-        objectTypeRef: TypeRef<TObjectType, TName>
+        typeRef: TypeRef<TObjectType, TName>
     ): Configuration<
         TConfigurationSchema & 
         { edgeTypes: { readonly [key in TName]: TObjectType}}
     > {
-        this.schema.addType("EDGE", objectTypeRef.name);
+        this.schema.addType("EDGE", typeRef.name);
         return this as any;
     }
 
     setObjectType<
-        TTypeName extends keyof TConfigurationSchema["objectTypes"] & string
+        TTypeName extends keyof TConfigurationSchema["objectTypes"]
     >(
         typeName: TTypeName,
         typeConfigurer: (tc: TypeConfiguration<TConfigurationSchema, TTypeName>) => void
     ): this {
-        const type = this.schema.typeMap.get(typeName);
+        const type = this.schema.typeMap.get(typeName as string);
         if (type === undefined) {
             throw new Error(`The type "${typeName}" is not exists in this configuration`);
         }
         if (type === undefined) {
             throw new Error(`The category of  the type "${typeName}" in this configuration is not "ObJECT"`);
         }
-        typeConfigurer(new TypeConfigurationImpl(type));
+        typeConfigurer(new TypeConfigurationImpl<TConfigurationSchema, TTypeName>(type));
         return this;
     }
 
     buildStateManager(): StateManager<TConfigurationSchema["objectTypes"]> {
-        throw new Error();
+        for (const [name, type] of this.schema.typeMap) {
+            type.idField;
+        }
+        return new StateManagerImpl<TConfigurationSchema["objectTypes"]>(this.schema);
     }
 }
 
@@ -84,53 +88,57 @@ class TypeConfigurationImpl<
 
     constructor(private type: TypeMetadata) {}
 
-    superType<XSuperName extends keyof TConfigurationSchema["objectTypes"] & string>(
+    superType<XSuperName extends keyof TConfigurationSchema["objectTypes"]>(
         superName: XSuperName
     ): this {
-        this.type.setSuperType(superName);
+        this.type.setSuperType(superName as string);
         return this;
     }
 
-    id<TFieldName extends keyof TConfigurationSchema["objectTypes"][TName] & string>(
+    id<TFieldName extends keyof TConfigurationSchema["objectTypes"][TName]>(
         name: TFieldName
     ): this {
-        this.type.addField("ID", name);
+        this.type.addField("ID", name as string);
         return this;
     }
 
     reference<
-        TFieldName extends keyof TConfigurationSchema["objectTypes"][TName] & string, 
-        TReferencedTypeName extends keyof TConfigurationSchema["objectTypes"] & string
+        TFieldName extends keyof TConfigurationSchema["objectTypes"][TName], 
+        TReferencedTypeName extends keyof TConfigurationSchema["objectTypes"]
     >(
         name: TFieldName, 
         referencedTypeName: TReferencedTypeName, 
         options?: ReferenceOptions<TConfigurationSchema, TReferencedTypeName>
     ): this {
-        this.type.addField("REFERENCE", name, {
+        this.type.addField("REFERENCE", name as string, {
+            targetTypeName: referencedTypeName as string,
             undefinable: options?.undefinable,
             deleteOperation: options?.deleteOperation,
-            mappedBy: options?.mappedBy
+            mappedBy: options?.mappedBy as string | undefined
         });
         return this;
     }
 
     list<
-        TFieldName extends keyof TConfigurationSchema["objectTypes"][TName] & string, 
-        TElementTypeName extends keyof TConfigurationSchema["objectTypes"] & string
+        TFieldName extends keyof TConfigurationSchema["objectTypes"][TName], 
+        TElementTypeName extends keyof TConfigurationSchema["objectTypes"]
     >(
         name: TFieldName,
         elementTypeName: TElementTypeName,
         options?: CollectionTypeName<TConfigurationSchema, TElementTypeName>
     ): this {
-        this.type.addField("LIST", name, { mappedBy: options?.mappedBy });
+        this.type.addField("LIST", name as string, { 
+            targetTypeName: elementTypeName as string,
+            mappedBy: options?.mappedBy as string | undefined 
+        });
         return this;
     }
 
     connection<
-        TFieldName extends keyof TConfigurationSchema["objectTypes"][TName] & string,
-        TCollectionTypeName extends keyof TConfigurationSchema["collectionTypes"] & string,
-        TEdgeTypeName extends keyof TConfigurationSchema["edgeTypes"] & string,
-        TNodeTypeName extends keyof TConfigurationSchema["objectTypes"] & string
+        TFieldName extends keyof TConfigurationSchema["objectTypes"][TName],
+        TCollectionTypeName extends keyof TConfigurationSchema["collectionTypes"],
+        TEdgeTypeName extends keyof TConfigurationSchema["edgeTypes"],
+        TNodeTypeName extends keyof TConfigurationSchema["objectTypes"]
     >(
         name: TFieldName,
         collectionTypeName: TCollectionTypeName,
@@ -138,17 +146,22 @@ class TypeConfigurationImpl<
         nodeTypeName: TNodeTypeName,
         options?: CollectionTypeName<TConfigurationSchema, TNodeTypeName>
     ): this {
-        this.type.addField("CONNECTION", name, { mappedBy: options?.mappedBy });
+        this.type.addField("CONNECTION", name as string, { 
+            connectionTypeName: collectionTypeName as string,
+            edgeTypeName: edgeTypeName as string,
+            targetTypeName: nodeTypeName as string,
+            mappedBy: options?.mappedBy as string | undefined 
+        });
         return this;
     }
 
     mappedBy<
-        TFieldName extends keyof TConfigurationSchema["objectTypes"][TName] & string,
+        TFieldName extends keyof TConfigurationSchema["objectTypes"][TName],
     >(
         fieldName: TFieldName,
         oppositeFieldName: string
     ): this {
-        this.type.setFieldMappedBy(fieldName, oppositeFieldName);
+        this.type.setFieldMappedBy(fieldName as string, oppositeFieldName);
         return this;
     }
 }

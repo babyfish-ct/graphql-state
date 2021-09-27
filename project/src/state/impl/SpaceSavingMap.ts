@@ -5,6 +5,10 @@ export class SpaceSavingMap<K, V> {
 
     private valueMap?: Map<K, V>;
 
+    get isEmpty(): boolean {
+        return this.value === undefined && this.valueMap === undefined;
+    }
+
     get(key: K): V | undefined {
         return key === undefined ? this.value : this.valueMap?.get(key);
     }
@@ -71,7 +75,20 @@ export class SpaceSavingMap<K, V> {
         }
     }
 
-    forEachValue(callback: (value: V) => boolean | undefined) {
+    forEach(callback: (key: K, value: V) => boolean | void) {
+        if (this.value !== undefined && callback(undefined as any, this.value) === false) {
+            return;
+        }
+        if (this.valueMap !== undefined) {
+            for (const [key, value] of this.valueMap) {
+                if (callback(key, value) === false) {
+                    return;
+                }
+            }
+        }
+    }
+
+    forEachValue(callback: (value: V) => boolean | void) {
         if (this.value !== undefined && callback(this.value) === false) {
             return;
         }

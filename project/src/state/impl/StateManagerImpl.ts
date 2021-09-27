@@ -1,3 +1,6 @@
+import { EntityManager } from "../../entities/EntityManager";
+import { ModificationContext } from "../../entities/ModificationContext";
+import { SchemaMetadata } from "../../meta/impl/SchemaMetadata";
 import { SchemaTypes } from "../../meta/SchemaTypes";
 import { StateManager, TransactionStatus } from "../StateManager";
 import { ScopedStateManager } from "./ScopedStateManager";
@@ -9,6 +12,20 @@ export class StateManagerImpl<TSchema extends SchemaTypes> implements StateManag
     private _scopedStateManager?: ScopedStateManager;
 
     private _listeners: StateValueChangeListener[] = [];
+
+    private _entityManager: EntityManager;
+
+    constructor(schema?: SchemaMetadata) {
+        this._entityManager = new EntityManager(schema ?? new SchemaMetadata());
+    }
+
+    saveObject<TTypeName extends keyof TSchema>(typeName: TTypeName, obj: Partial<TSchema[TTypeName]>): void {
+        this._entityManager.save(new ModificationContext(), typeName as string, obj);
+    }
+
+    deleteObject<TTypeName extends keyof TSchema>(typeName: TTypeName, id: any): boolean {
+        return false;
+    }
 
     get undoManager(): UndoManagerImpl {
         throw new Error();
