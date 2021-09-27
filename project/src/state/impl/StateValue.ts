@@ -11,7 +11,14 @@ export abstract class StateValue {
         readonly stateInstance: StateInstance,
         readonly variablesCode: string | undefined,
         readonly variables: any
-    ) {}
+    ) {
+        if (!stateInstance.state[" $parameterized"] && (
+                variablesCode !== undefined || variables !== undefined
+            )
+        ) {
+            throw new Error("Cannot create state value with varibles for single state without parameters");
+        }
+    }
 
     abstract get result(): any;
 

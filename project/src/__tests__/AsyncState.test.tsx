@@ -1,16 +1,13 @@
 import { FC, memo, useCallback } from "react";
 import { screen, cleanup, fireEvent, render, waitFor, act, waitForElementToBeRemoved } from '@testing-library/react';
 import { StateManagerProvider, makeStateFactory, useStateValue, useStateAccessor } from '..';
-import { variables } from "../meta/Shape";
 import { useStateAsyncValue } from "../state/StateHook";
 
-afterEach(cleanup);
-
-const { createState, createAsyncState } = makeStateFactory();
+const { createState, createAsyncState, createParameterizedAsyncState } = makeStateFactory();
 
 const baseState = createState(1);
 
-const timesState = createAsyncState<number, { times: number}>(async (ctx, variables) => {
+const timesState = createParameterizedAsyncState<number, { times: number}>(async (ctx, variables) => {
     await delay(200);
     return ctx(baseState) * variables.times;
 });
@@ -78,3 +75,5 @@ test("Async static", async () => {
     await waitForElementToBeRemoved(() => screen.queryByTestId("loading"));
     expect((await waitFor(() => screen.getByTestId("data"), { timeout: 1000 })).textContent).toBe("10");
 });
+
+afterEach(cleanup);

@@ -28,7 +28,7 @@ export class ScopedStateManager {
     }
 
     instance(
-        state: State<any, any>,
+        state: State<any>,
         propagation: StatePropagation
     ): StateInstance {
         
@@ -45,7 +45,7 @@ export class ScopedStateManager {
     }
 
     private getInstance(
-        state: State<any, any>,
+        state: State<any>,
         findInParent: boolean
     ): StateInstance | undefined {
         const instance = this._instanceMap.get(state);
@@ -59,7 +59,7 @@ export class ScopedStateManager {
     }
 
     private createInstance(
-        state: State<any, any>,
+        state: State<any>,
         propagation: StatePropagation,
     ): StateInstance {
 

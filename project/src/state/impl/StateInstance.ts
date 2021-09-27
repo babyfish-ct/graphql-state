@@ -11,7 +11,7 @@ export class StateInstance {
 
     constructor(
         readonly scopedStateManager: ScopedStateManager,
-        readonly state: State<any, any>
+        readonly state: State<any>
     ) {
 
     }

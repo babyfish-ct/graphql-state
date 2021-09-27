@@ -1,4 +1,4 @@
-import { ComputedState, State, StateUnmoutHandler } from "../State";
+import { ParameterizedComputedState, SingleComputedState, StateUnmoutHandler } from "../State";
 import { InternalComputedContext } from "./InternalComputedContext";
 import { StateInstance } from "./StateInstance";
 import { Loadable, StateValue } from "./StateValue";
@@ -81,7 +81,11 @@ export class ComputedStateValue extends StateValue {
         const newCtx = new InternalComputedContext(parentContext ?? this.stateInstance.scopedStateManager, this);
         let result: any;
         try {
-            result = (this.stateInstance.state as ComputedState<any, any>)[" $valueSupplier"](this.exportContext(newCtx), this.variables);
+            if (this.stateInstance.state[" $parameterized"]) {
+                result = (this.stateInstance.state as any)[" $valueSupplier"](this.exportContext(newCtx), this.variables);
+            } else {
+                result = (this.stateInstance.state as any)[" $valueSupplier"](this.exportContext(newCtx));
+            }
         } catch (ex) {
             newCtx.close();
             throw ex;

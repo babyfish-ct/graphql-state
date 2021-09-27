@@ -1,6 +1,6 @@
 import { useContext, useEffect, useMemo, useState } from "react";
 import { SchemaTypes } from "../meta/SchemaTypes";
-import { AsyncState, ComputedState, WriteableState, StateAccessingOptions, State } from "./State";
+import { StateAccessingOptions, State, ParameterizedComputedState, ParameterizedStateAccessingOptions, SingleWritableState, ParameterizedWritableState, SingleAsyncState, ParameterizedAsyncState, SingleComputedState } from "./State";
 import { StateManager } from "./StateManager";
 import { stateContext } from "./StateManagerProvider";
 import { Shape, ObjectTypeOf, variables } from "../meta/Shape";
@@ -19,25 +19,55 @@ export function useStateManager<TSchema extends SchemaTypes>(): StateManager<TSc
     return stateManager;
 }
 
+export function useStateValue<T>(
+    state: SingleWritableState<T> | SingleComputedState<T>,
+    options?: StateAccessingOptions
+): T;
+
 export function useStateValue<T, TVariables>(
-    state: WriteableState<T, TVariables> | ComputedState<T, TVariables>,
-    options?: StateAccessingOptions<TVariables>
+    state: ParameterizedWritableState<T, TVariables> | ParameterizedComputedState<T, TVariables>,
+    options: ParameterizedStateAccessingOptions<TVariables>
+): T;
+
+export function useStateValue<T>(
+    state: State<T>,
+    options?: StateAccessingOptions
 ): T {
     const stateValue = useInternalStateValue(state, options);
     return stateValue.result;
 }
 
+export function useStateAccessor<T>(
+    state: SingleWritableState<T>,
+    options?: StateAccessingOptions
+): StateAccessor<T>;
+
 export function useStateAccessor<T, TVariables>(
-    state: WriteableState<T, TVariables>,
-    options?: StateAccessingOptions<TVariables>
+    state: ParameterizedWritableState<T, TVariables>,
+    options: ParameterizedStateAccessingOptions<TVariables>
+): StateAccessor<T>;
+
+export function useStateAccessor<T>(
+    state: SingleWritableState<T> | ParameterizedWritableState<T, any>,
+    options?: StateAccessingOptions
 ): StateAccessor<T> {
     const stateValue = useInternalStateValue(state, options);
     return (stateValue as WritableStateValue).accessor;
 }
 
+export function useStateAsyncValue<T>(
+    state: SingleAsyncState<T>,
+    options?: StateAccessingOptions
+): UseStateAsyncValueHookResult<T>;
+
 export function useStateAsyncValue<T, TVariables>(
-    state: AsyncState<T, TVariables>,
-    options?: StateAccessingOptions<TVariables>
+    state: ParameterizedAsyncState<T, TVariables>,
+    options: ParameterizedStateAccessingOptions<TVariables>
+): UseStateAsyncValueHookResult<T>;
+
+export function useStateAsyncValue<T>(
+    state: SingleAsyncState<T> | ParameterizedAsyncState<T, any>,
+    options?: StateAccessingOptions
 ): UseStateAsyncValueHookResult<T> {
     const stateValue = useInternalStateValue(state, options);
     return (stateValue as ComputedStateValue).loadable as UseStateAsyncValueHookResult<T>;
@@ -110,17 +140,17 @@ export interface UseStateAsyncValueHookResult<T> {
 }
 
 function useInternalStateValue(
-    state: State<any, any>,
-    options?: StateAccessingOptions<any>
+    state: State<any>,
+    options?: StateAccessingOptions
 ): StateValue {
 
     const stateManager = useStateManager() as StateManagerImpl<any>;
     const stateInstance = stateManager.scope.instance(state, options?.propagation ?? "REQUIRED");
 
     const [vs, vsKey] = useMemo<[any, string | undefined]>(() => { 
-        const svs = standardizedVariables(options?.variables);
+        const svs = standardizedVariables((options as Partial<ParameterizedStateAccessingOptions<any>>)?.variables);
         return [svs, svs !== undefined ? JSON.stringify(svs) : undefined]
-    }, [options?.variables]);
+    }, [(options as Partial<ParameterizedStateAccessingOptions<any>>)?.variables]);
 
     const [, setStateVerion] = useState(0);
 

@@ -4,16 +4,16 @@ import { StateManagerProvider, makeStateFactory, useStateValue, useStateAccessor
 
 afterEach(cleanup);
 
-const { createState, createComputedState } = makeStateFactory();
+const { createState, createComputedState, createParameterizedComputedState } = makeStateFactory();
 
 const baseState = createState(1);
 
-const timesState = createComputedState<number, { times: number }>((ctx, variables) => {
+const timesState = createParameterizedComputedState<number, { times: number }>((ctx, variables) => {
     const times = variables.times ?? 1;
     return ctx(baseState) * times;
 });
 
-const sumState = createComputedState<number>(ctx => {
+const sumState = createComputedState(ctx => {
     return (
         ctx(baseState) +
         ctx(timesState, { variables: { times: 2} }) +
@@ -21,7 +21,7 @@ const sumState = createComputedState<number>(ctx => {
     );
 });
 
-const factorialState = createComputedState<number, { value: number}>((ctx, variables) => {
+const factorialState = createParameterizedComputedState<number, { value: number}>((ctx, variables) => {
     const { value } = variables;
     if (value <= 1) {
         return 1;

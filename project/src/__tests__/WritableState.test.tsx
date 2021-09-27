@@ -4,9 +4,9 @@ import { StateManagerProvider, makeStateFactory, useStateValue, useStateAccessor
 
 afterEach(cleanup);
 
-const { createState } = makeStateFactory();
+const { createParameterizedState } = makeStateFactory();
 
-const countState = createState<number, {type?: string}>(variables => {
+const countState = createParameterizedState<number, {type?: string}>(variables => {
     const { type } = variables;
     if (type !== undefined && type.length !== 0) {
         return type.charCodeAt(0);
@@ -59,7 +59,9 @@ test("WritableState", () => {
 });
 
 const SubComponent1: FC = memo(() => {
-    const count = useStateValue(countState);
+    const count = useStateValue(countState, { 
+        variables: {}
+    });
     const countA = useStateValue(countState, {
         variables: { type: "A" }
     });
@@ -78,7 +80,7 @@ const SubComponent1: FC = memo(() => {
 const SubComponent2: FC = memo(() => {
 
     const count$ = useStateAccessor(countState, {
-        variables: {} // empty variables === no variables
+        variables: {}
     });
     const countA$ = useStateAccessor(countState, {
         variables: { type: "A" }

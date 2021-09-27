@@ -18,7 +18,9 @@ export class WritableStateValue extends StateValue {
         const defaultValue = this.stateInstance.state[" $defaultValue"];
         this._lodable = { 
             ...this._lodable,
-            data: typeof defaultValue === "function" ? defaultValue(variables ?? {}) : defaultValue 
+            data: stateInstance.state[" $parameterized"] && typeof defaultValue === "function" ? 
+                defaultValue(variables ?? {}) : 
+                defaultValue 
         };
     }
 

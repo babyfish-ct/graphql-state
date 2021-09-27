@@ -22,7 +22,9 @@ export function standardizedVariablesKeys(variables: any): string[] | undefined 
         if (typeof subKey !== "string") {
             throw new Error("key of variables must string");
         }
-        subKeys.push(subKey);
+        if (variables[subKey] !== undefined) {
+            subKeys.push(subKey);
+        }
     }
     if (subKeys.length === 0) {
         return undefined;
