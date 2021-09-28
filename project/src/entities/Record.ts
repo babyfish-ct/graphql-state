@@ -21,6 +21,7 @@ export class Record {
         entityManager: EntityManager, 
         fieldName: string, 
         field: FieldMetadata | undefined,
+        variablesCode: string | undefined,
         variables: any, 
         value: any
     ) {
@@ -33,6 +34,7 @@ export class Record {
                 entityManager,
                 this,
                 field,
+                variablesCode,
                 variables,
                 value
             );
@@ -60,10 +62,11 @@ class Association {
         entityManager: EntityManager, 
         record: Record, 
         associationField: FieldMetadata, 
+        variablesCode: string | undefined,
         variables: any, 
         value: any
     ) {
-        this.value(variables).set(ctx, entityManager, record, associationField, value);
+        this.value(variables).set(ctx, entityManager, record, associationField, variablesCode, variables, value);
     }
 
     private value(variables: any): AssociationValue {
@@ -89,6 +92,8 @@ abstract class AssociationValue {
         entityManager: EntityManager, 
         record: Record, 
         associationField: FieldMetadata, 
+        variablesCode: string | undefined,
+        variables: any, 
         value: any
     ): void;
 }
@@ -102,6 +107,8 @@ class AssociationReferenceValue extends AssociationValue {
         entityManager: EntityManager, 
         record: Record, 
         associationField: FieldMetadata, 
+        variablesCode: string | undefined,
+        variables: any, 
         value: any
     ) {
         if (value === undefined && !associationField.isUndefinable) {
@@ -112,9 +119,9 @@ class AssociationReferenceValue extends AssociationValue {
             entityManager.saveId(ctx, associationField.targetType!.name, value.id) : 
             undefined;
         if (oldReference !== reference) {
-            oldReference?.backReferences?.remove(associationField, record);
+            oldReference?.backReferences?.remove(associationField, variablesCode, record);
             this.referfence = reference;
-            reference?.backReferences?.add(associationField, record);
+            reference?.backReferences?.add(associationField, variablesCode, variables, record);
         }
     }
 }
@@ -128,6 +135,8 @@ class AssociationListValue extends AssociationValue {
         entityManager: EntityManager, 
         record: Record, 
         associationField: FieldMetadata, 
+        variablesCode: string | undefined,
+        variables: any, 
         value: any
     ) {
         
@@ -154,14 +163,14 @@ class AssociationListValue extends AssociationValue {
 
         for (const [id, element] of oldMap) {
             if (!newIds.has(id)) {
-                element.backReferences.remove(associationField, record);
+                element.backReferences.remove(associationField, variablesCode, record);
             }
         }
         this.elements = newElements.length === 0 ? undefined : newElements;
         for (const newElement of newElements) {
             if (newElement !== undefined) {
                 if (!oldMap.has(newElement.id)) {
-                    newElement.backReferences.add(associationField, record);
+                    newElement.backReferences.add(associationField, variablesCode, variables, record);
                 }
             }
         }
@@ -177,6 +186,8 @@ class AssociationConnectionValue extends AssociationValue {
         entityManager: EntityManager, 
         record: Record, 
         associationField: FieldMetadata, 
+        variablesCode: string | undefined,
+        variables: any, 
         value: any
     ) {
         if (value === undefined) {
@@ -208,7 +219,7 @@ class AssociationConnectionValue extends AssociationValue {
         }
         for (const [id, element] of oldMap) {
             if (!newIds.has(id)) {
-                element.backReferences.remove(associationField, record);
+                element.backReferences.remove(associationField, variablesCode, record);
             }
         }
         this.connection = {
@@ -217,7 +228,7 @@ class AssociationConnectionValue extends AssociationValue {
         };
         for (const newEdge of newEdges) {
             if (!oldMap.has(newEdge.node.id)) {
-                newEdge.node.backReferences.add(associationField, record);
+                newEdge.node.backReferences.add(associationField, variablesCode, variables, record);
             }
         }
     }

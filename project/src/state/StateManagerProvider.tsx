@@ -19,4 +19,4 @@ export const StateManagerProvider: FC<
 
 export const stateContext = createContext<StateManager<any> | undefined>(undefined);
 
-const defaultStateManager = new StateManagerImpl();
+const defaultStateManager = new StateManagerImpl<any>();

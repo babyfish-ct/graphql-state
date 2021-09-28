@@ -54,7 +54,7 @@ export class RecordManager {
         for (const fieldName in obj) { 
             if (fieldName !== idFieldName) {
                 const manager = this.fieldManagerMap.get(fieldName) ?? this;
-                manager.set(ctx, id, fieldName, fieldMap.get(fieldName), undefined, obj[fieldName]);
+                manager.set(ctx, id, fieldName, fieldMap.get(fieldName), undefined, undefined, obj[fieldName]);
             }
         }
     }
@@ -64,11 +64,12 @@ export class RecordManager {
         id: any, 
         fieldName: string, 
         field: FieldMetadata | undefined,
+        variablesCode: string | undefined,
         variables: any, 
         value: any
     ) {
         const record = this.saveId(ctx, id);
-        record.set(ctx, this.entityManager, fieldName, field, variables, value);
+        record.set(ctx, this.entityManager, fieldName, field, variablesCode, variables, value);
     }
 }
 
