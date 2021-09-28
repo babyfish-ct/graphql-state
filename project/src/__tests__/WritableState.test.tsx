@@ -2,8 +2,6 @@ import { FC, memo, useCallback } from "react";
 import { cleanup, fireEvent, render } from '@testing-library/react';
 import { StateManagerProvider, makeStateFactory, useStateValue, useStateAccessor } from '../';
 
-afterEach(cleanup);
-
 const { createParameterizedState } = makeStateFactory();
 
 const countState = createParameterizedState<number, {type?: string}>(variables => {
@@ -12,50 +10,6 @@ const countState = createParameterizedState<number, {type?: string}>(variables =
         return type.charCodeAt(0);
     }
     return 0;
-});
-
-test("WritableState", () => {
-    
-    const ui = render(
-        <StateManagerProvider>
-            <SubComponent1/>
-            <SubComponent2/>         
-        </StateManagerProvider>
-    );
-    
-    expect(ui.getByTestId("value").textContent).toBe("0");
-    expect(ui.getByTestId("accessor.read").textContent).toBe("0");
-    expect(ui.getByTestId("valueA").textContent).toBe("65");
-    expect(ui.getByTestId("accessorA.read").textContent).toBe("65");
-    expect(ui.getByTestId("valueB").textContent).toBe("66");
-    expect(ui.getByTestId("accessorB.read").textContent).toBe("66");
-
-    fireEvent.click(ui.getByTestId("accessor.write"));
-
-    expect(ui.getByTestId("value").textContent).toBe("1");
-    expect(ui.getByTestId("accessor.read").textContent).toBe("1");
-    expect(ui.getByTestId("valueA").textContent).toBe("65");
-    expect(ui.getByTestId("accessorA.read").textContent).toBe("65");
-    expect(ui.getByTestId("valueB").textContent).toBe("66");
-    expect(ui.getByTestId("accessorB.read").textContent).toBe("66");
-
-    fireEvent.click(ui.getByTestId("accessorA.write"));
-
-    expect(ui.getByTestId("value").textContent).toBe("1");
-    expect(ui.getByTestId("accessor.read").textContent).toBe("1");
-    expect(ui.getByTestId("valueA").textContent).toBe("66");
-    expect(ui.getByTestId("accessorA.read").textContent).toBe("66");
-    expect(ui.getByTestId("valueB").textContent).toBe("66");
-    expect(ui.getByTestId("accessorB.read").textContent).toBe("66");
-
-    fireEvent.click(ui.getByTestId("accessorB.write"));
-
-    expect(ui.getByTestId("value").textContent).toBe("1");
-    expect(ui.getByTestId("accessor.read").textContent).toBe("1");
-    expect(ui.getByTestId("valueA").textContent).toBe("66");
-    expect(ui.getByTestId("accessorA.read").textContent).toBe("66");
-    expect(ui.getByTestId("valueB").textContent).toBe("67");
-    expect(ui.getByTestId("accessorB.read").textContent).toBe("67");
 });
 
 const SubComponent1: FC = memo(() => {
@@ -117,4 +71,52 @@ const SubComponent2: FC = memo(() => {
             </div>
         </>
     );
+});
+
+// Test----------------------------
+
+afterEach(cleanup);
+
+test("WritableState", () => {
+    
+    const ui = render(
+        <StateManagerProvider>
+            <SubComponent1/>
+            <SubComponent2/>         
+        </StateManagerProvider>
+    );
+    
+    expect(ui.getByTestId("value").textContent).toBe("0");
+    expect(ui.getByTestId("accessor.read").textContent).toBe("0");
+    expect(ui.getByTestId("valueA").textContent).toBe("65");
+    expect(ui.getByTestId("accessorA.read").textContent).toBe("65");
+    expect(ui.getByTestId("valueB").textContent).toBe("66");
+    expect(ui.getByTestId("accessorB.read").textContent).toBe("66");
+
+    fireEvent.click(ui.getByTestId("accessor.write"));
+
+    expect(ui.getByTestId("value").textContent).toBe("1");
+    expect(ui.getByTestId("accessor.read").textContent).toBe("1");
+    expect(ui.getByTestId("valueA").textContent).toBe("65");
+    expect(ui.getByTestId("accessorA.read").textContent).toBe("65");
+    expect(ui.getByTestId("valueB").textContent).toBe("66");
+    expect(ui.getByTestId("accessorB.read").textContent).toBe("66");
+
+    fireEvent.click(ui.getByTestId("accessorA.write"));
+
+    expect(ui.getByTestId("value").textContent).toBe("1");
+    expect(ui.getByTestId("accessor.read").textContent).toBe("1");
+    expect(ui.getByTestId("valueA").textContent).toBe("66");
+    expect(ui.getByTestId("accessorA.read").textContent).toBe("66");
+    expect(ui.getByTestId("valueB").textContent).toBe("66");
+    expect(ui.getByTestId("accessorB.read").textContent).toBe("66");
+
+    fireEvent.click(ui.getByTestId("accessorB.write"));
+
+    expect(ui.getByTestId("value").textContent).toBe("1");
+    expect(ui.getByTestId("accessor.read").textContent).toBe("1");
+    expect(ui.getByTestId("valueA").textContent).toBe("66");
+    expect(ui.getByTestId("accessorA.read").textContent).toBe("66");
+    expect(ui.getByTestId("valueB").textContent).toBe("67");
+    expect(ui.getByTestId("accessorB.read").textContent).toBe("67");
 });

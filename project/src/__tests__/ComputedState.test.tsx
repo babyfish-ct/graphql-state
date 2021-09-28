@@ -2,8 +2,6 @@ import { FC, memo, useCallback } from "react";
 import { cleanup, fireEvent, render } from '@testing-library/react';
 import { StateManagerProvider, makeStateFactory, useStateValue, useStateAccessor } from '..';
 
-afterEach(cleanup);
-
 const { createState, createComputedState, createParameterizedComputedState } = makeStateFactory();
 
 const baseState = createState(1);
@@ -35,41 +33,6 @@ const finalFactorialState = createComputedState<number>(ctx => {
     return ctx(factorialState, {
         variables: { value: ctx(sumState) }
     });
-});
-
-
-test("Simple Computed state", () => {
-
-    const ui = render(
-        <StateManagerProvider>
-            <InputView/>
-            <OutputView_Depth1/>
-            <OutputView_Depth2/>
-            <OutputView_Factorial/>
-        </StateManagerProvider>
-    );
-
-    expect(ui.getByTestId("base").textContent).toBe("1");
-    expect(ui.getByTestId("double").textContent).toBe("2");
-    expect(ui.getByTestId("triple").textContent).toBe("3");
-    expect(ui.getByTestId("sum").textContent).toBe("6");
-    expect(ui.getByTestId("factorial").textContent).toBe(`${factorial(6)}`);
-
-    fireEvent.click(ui.getByTestId("increase"));
-
-    expect(ui.getByTestId("base").textContent).toBe("2");
-    expect(ui.getByTestId("double").textContent).toBe("4");
-    expect(ui.getByTestId("triple").textContent).toBe("6");
-    expect(ui.getByTestId("sum").textContent).toBe("12");
-    expect(ui.getByTestId("factorial").textContent).toBe(`${factorial(12)}`);
-
-    fireEvent.click(ui.getByTestId("increase"));
-
-    expect(ui.getByTestId("base").textContent).toBe("3");
-    expect(ui.getByTestId("double").textContent).toBe("6");
-    expect(ui.getByTestId("triple").textContent).toBe("9");
-    expect(ui.getByTestId("sum").textContent).toBe("18");
-    expect(ui.getByTestId("factorial").textContent).toBe(`${factorial(18)}`);
 });
 
 const InputView: FC = memo(() => {
@@ -134,3 +97,41 @@ function factorial(value: number) {
     }
     return result;
 }
+
+// Test----------------------------
+
+afterEach(cleanup);
+
+test("Simple Computed state", () => {
+
+    const ui = render(
+        <StateManagerProvider>
+            <InputView/>
+            <OutputView_Depth1/>
+            <OutputView_Depth2/>
+            <OutputView_Factorial/>
+        </StateManagerProvider>
+    );
+
+    expect(ui.getByTestId("base").textContent).toBe("1");
+    expect(ui.getByTestId("double").textContent).toBe("2");
+    expect(ui.getByTestId("triple").textContent).toBe("3");
+    expect(ui.getByTestId("sum").textContent).toBe("6");
+    expect(ui.getByTestId("factorial").textContent).toBe(`${factorial(6)}`);
+
+    fireEvent.click(ui.getByTestId("increase"));
+
+    expect(ui.getByTestId("base").textContent).toBe("2");
+    expect(ui.getByTestId("double").textContent).toBe("4");
+    expect(ui.getByTestId("triple").textContent).toBe("6");
+    expect(ui.getByTestId("sum").textContent).toBe("12");
+    expect(ui.getByTestId("factorial").textContent).toBe(`${factorial(12)}`);
+
+    fireEvent.click(ui.getByTestId("increase"));
+
+    expect(ui.getByTestId("base").textContent).toBe("3");
+    expect(ui.getByTestId("double").textContent).toBe("6");
+    expect(ui.getByTestId("triple").textContent).toBe("9");
+    expect(ui.getByTestId("sum").textContent).toBe("18");
+    expect(ui.getByTestId("factorial").textContent).toBe(`${factorial(18)}`);
+});

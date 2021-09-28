@@ -53,6 +53,10 @@ const OutputView: FC = memo(() => {
     );
 });
 
+// Test----------------------------
+
+afterEach(cleanup);
+
 test("Async static", async () => {
     render(
         <StateManagerProvider>
@@ -74,6 +78,12 @@ test("Async static", async () => {
     
     await waitForElementToBeRemoved(() => screen.queryByTestId("loading"));
     expect((await waitFor(() => screen.getByTestId("data"), { timeout: 1000 })).textContent).toBe("10");
-});
 
-afterEach(cleanup);
+    fireEvent.click(screen.getByTestId("increase"));
+
+    expect((await waitFor(() => screen.getByTestId("loading"), { timeout: 1000 })).textContent).toBe("Loading...");
+    expect((await waitFor(() => screen.getByTestId("data"), { timeout: 1000 })).textContent).toBe("10");
+    
+    await waitForElementToBeRemoved(() => screen.queryByTestId("loading"));
+    expect((await waitFor(() => screen.getByTestId("data"), { timeout: 1000 })).textContent).toBe("15");
+});
