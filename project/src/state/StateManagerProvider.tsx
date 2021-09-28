@@ -5,11 +5,11 @@ import { StateScope } from "./StateScope";
 
 export const StateManagerProvider: FC<
     PropsWithChildren<{
-        manager?: StateManager<any>
+        stateManager?: StateManager<any>
     }>
-> = memo(({manager, children}) => {
+> = memo(({stateManager, children}) => {
     return (
-        <stateContext.Provider value={manager ?? defaultStateManager}>
+        <stateContext.Provider value={stateManager ?? defaultStateManager}>
             <StateScope>
                 {children}
             </StateScope>

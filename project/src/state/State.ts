@@ -1,4 +1,6 @@
+import { GraphQLFetcher } from "../gql/GraphQLFetcher";
 import { SchemaTypes } from "../meta/SchemaTypes";
+import { ObjectTypeOf, Shape } from "../meta/Shape";
 
 export function makeStateFactory<TSchema extends SchemaTypes = {}>(): StateFactory<TSchema> {
     return new StateFactoryImpl<TSchema>();
@@ -128,53 +130,36 @@ export interface ComputedContext<TSchema extends SchemaTypes> {
         options: ParameterizedStateAccessingOptions<XVariables>
     ): Promise<X>;
 
-    // managedObject<
-    //     TTypeName extends keyof TSchema,
-    //     TShape extends Shape<TSchema[TTypeName]>
-    // >(
-    //     typeName: TTypeName,
-    //     options: {
-    //         readonly id: any,
-    //         readonly shape: TShape
-    //     }
-    // ): Promise<ObjectTypeOf<TSchema[TTypeName], TShape> | undefined>;
+    query<
+        TTypeName extends keyof TSchema,
+        TShape extends Shape<TSchema[TTypeName]>
+    >(
+        typeName: TTypeName,
+        id: any,
+        shape: TShape,
+        options?: {}
+    ): Promise<ObjectTypeOf<TSchema[TTypeName], TShape> | undefined>;
 
-    // managedObjects<
-    //     TTypeName extends keyof TSchema,
-    //     TShape extends Shape<TSchema[TTypeName]>
-    // >(
-    //     typeName: TTypeName,
-    //     options: {
-    //         ids: readonly any[],
-    //         shape: TShape
-    //     }
-    // ): Promise<ReadonlyArray<ObjectTypeOf<TSchema[TTypeName], TShape> | undefined>>;
+    query<
+        TData extends object,
+        TVariables extends object
+    >(
+        id: any,
+        fetcher: GraphQLFetcher<Exclude<string, "Query" | "Mutation">, TData, TVariables>,
+        options?: {
+            readonly variables?: TVariables
+        }
+    ): Promise<TData | undefined>;
 
-    // managedObject<
-    //     TTypeName extends keyof TSchema & Exclude<string, "Query" | "Mutation">,
-    //     TData extends object,
-    //     TVariables extends object
-    // >(
-    //     typeName: TTypeName,
-    //     options: {
-    //         readonly id: any,
-    //         readonly fetcher: GraphQLFetcher<TTypeName, TData, TVariables>,
-    //         readonly variables?: TVariables
-    //     }
-    // ): Promise<ObjectTypeOf<TSchema[TTypeName], TData> | undefined>;
-
-    // managedObjects<
-    //     TTypeName extends keyof TSchema & Exclude<string, "Query" | "Mutation">,
-    //     TData extends object,
-    //     TVariables extends object
-    // >(
-    //     typeName: TTypeName,
-    //     options: {
-    //         readonly ids: readonly any[],
-    //         readonly fetcher: GraphQLFetcher<TTypeName, TData, TVariables>,
-    //         readonly variables?: TVariables,
-    //     }
-    // ): Promise<ReadonlyArray<ObjectTypeOf<TSchema[TTypeName], TData> | undefined>>;
+    query<
+        TData extends object,
+        TVariables extends object
+    >(
+        fetcher: GraphQLFetcher<"Query", TData, TVariables>,
+        options?: {
+            readonly variables?: TVariables
+        }
+    ): Promise<TData>;
 }
 
 export interface ParameterizedComputedContext<

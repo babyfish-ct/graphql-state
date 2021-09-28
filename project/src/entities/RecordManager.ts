@@ -3,6 +3,7 @@ import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { EntityManager } from "./EntityManager";
 import { ModificationContext } from "./ModificationContext";
 import { Record } from "./Record";
+import { RecordRef } from "./RecordRef";
 
 export class RecordManager {
 
@@ -31,11 +32,19 @@ export class RecordManager {
         }
     }
 
+    findById(id: any): RecordRef | undefined {
+        const record = this.recordMap.get(id);
+        if (record === undefined) {
+            return undefined;
+        }
+        return record.isDeleted ? {} : { value: record };
+    }
+
     saveId(ctx: ModificationContext, id: any): Record {
         if (typeof id !== "number" && typeof id !== "string") {
             throw new Error(`Illegal id '${id}', id can only be number or string`);
         }
-        let record = this.recordMap.get(id);
+        let record = this.recordMap.get(id)?.undeleted();
         if (record === undefined) {
             record = new Record(id);
             this.recordMap.set(id, record);

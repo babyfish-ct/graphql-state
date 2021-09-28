@@ -107,6 +107,7 @@ export class ComputedStateValue extends StateValue {
     private exportContext(ctx: InternalComputedContext): any {
         let publicContext = getFormContext.bind(ctx);
         publicContext.self = getSelfFormContext.bind(ctx);
+        publicContext.query = queryFormContext.bind(ctx);
         return publicContext;
     }
 
@@ -166,4 +167,9 @@ function getFormContext(state: any, options: any): any {
 function getSelfFormContext(options: any): any {
     const ctx = this as InternalComputedContext;
     return ctx.getSelf(options);
+}
+
+function queryFormContext(...args: any[]): any {
+    const ctx = this as InternalComputedContext;
+    return ctx.query.apply(ctx, args);
 }

@@ -4,7 +4,6 @@ import { standardizedVariables } from "../state/impl/Variables";
 import { BackReferences } from "./BackReferences";
 import { EntityManager } from "./EntityManager";
 import { ModificationContext } from "./ModificationContext";
-import { RecordManager } from "./RecordManager";
 
 export class Record {
 
@@ -14,7 +13,25 @@ export class Record {
 
     readonly backReferences = new BackReferences();
 
+    private deleted = false;
+
     constructor(readonly id: any) {}
+
+    hasScalar(fieldName: string): boolean {
+        return this.scalarMap.has(fieldName);
+    }
+
+    getSalar(fieldName: string): any {
+        return this.scalarMap.get(fieldName);
+    }
+
+    hasAssociation(field: FieldMetadata, variables: any) {
+        return this.associationMap.get(field) !== undefined;
+    }
+
+    getAssociation(field: FieldMetadata, variables: any): Record | ReadonlyArray<Record | undefined> | RecordConnection | undefined {
+        return this.associationMap.get(field)?.get(variables);
+    }
 
     set(
         ctx: ModificationContext, 
@@ -45,6 +62,15 @@ export class Record {
             this.scalarMap.set(fieldName, value);
         }
     }
+
+    undeleted(): this {
+        this.deleted = false;
+        return this;
+    }
+
+    get isDeleted(): boolean {
+        return this.deleted;
+    }
 }
 
 class Association {
@@ -57,6 +83,14 @@ class Association {
         }
     }
 
+    has(variables: any): boolean {
+        return this.valueOrUndefined(variables) !== undefined;
+    }
+
+    get(variables: any): Record | ReadonlyArray<Record | undefined> | RecordConnection | undefined {
+        return this.valueOrUndefined(variables)?.get();
+    }
+
     set(
         ctx: ModificationContext, 
         entityManager: EntityManager, 
@@ -67,6 +101,12 @@ class Association {
         value: any
     ) {
         this.value(variables).set(ctx, entityManager, record, associationField, variablesCode, variables, value);
+    }
+
+    private valueOrUndefined(variables: any): AssociationValue | undefined {
+        const vs = standardizedVariables(variables);
+        const vsCode = vs !== undefined ? JSON.stringify(vs) : undefined;
+        return this.valueMap.get(vsCode);
     }
 
     private value(variables: any): AssociationValue {
@@ -87,6 +127,8 @@ class Association {
 
 abstract class AssociationValue {
 
+    abstract get(): Record | ReadonlyArray<Record | undefined> | RecordConnection | undefined;
+
     abstract set(
         ctx: ModificationContext, 
         entityManager: EntityManager, 
@@ -101,6 +143,10 @@ abstract class AssociationValue {
 class AssociationReferenceValue extends AssociationValue {
 
     private referfence?: Record;
+
+    get(): Record | undefined {
+        return this.referfence;
+    }
 
     set(
         ctx: ModificationContext, 
@@ -129,6 +175,10 @@ class AssociationReferenceValue extends AssociationValue {
 class AssociationListValue extends AssociationValue {
 
     private elements?: Array<Record | undefined>;
+
+    get(): ReadonlyArray<Record | undefined> {
+        return this.elements!;
+    }
 
     set(
         ctx: ModificationContext, 
@@ -180,6 +230,10 @@ class AssociationListValue extends AssociationValue {
 class AssociationConnectionValue extends AssociationValue {
 
     private connection: RecordConnection;
+
+    get(): RecordConnection {
+        return this.connection;
+    }
 
     set(
         ctx: ModificationContext, 
@@ -234,14 +288,14 @@ class AssociationConnectionValue extends AssociationValue {
     }
 }
 
-interface RecordConnection {
+export interface RecordConnection {
 
     readonly edges:  ReadonlyArray<RecordEdge>;
 
     readonly [key: string]: any;
 }
 
-interface RecordEdge {
+export interface RecordEdge {
     readonly node: Record;
         readonly cursor: string;
 }

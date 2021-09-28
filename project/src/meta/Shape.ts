@@ -6,9 +6,9 @@ export type Shape<T> =
             T[K] extends ReadonlyArray<infer TElement> ?
             Shape<TElement> :
             Shape<T[K]>
-        ) & { readonly " $variables"?: object }
+        )
     } :
-    true | { readonly " $variables": object }
+    (boolean | { readonly " $variables": object })
 ;
 
 export type ObjectTypeOf<T, TShape> = 
@@ -20,7 +20,7 @@ export type ObjectTypeOf<T, TShape> =
             ReadonlyArray<ObjectTypeOf<TElement, Omit<TShape[K], " $variables">>> :
             ObjectTypeOf<T[K], Omit<TShape[K], " $variables">>
         ) :
-        T[K] 
+        T[K]
     } :
     T
 ;

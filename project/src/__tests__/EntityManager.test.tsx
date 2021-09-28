@@ -1,5 +1,12 @@
+import { cleanup, render, waitForElementToBeRemoved, screen } from "@testing-library/react";
+import { memo, Suspense } from "react";
 import { typeRefBuilder } from "../meta/Configuration";
 import { newConfiguration } from "../meta/impl/ConfigurationImpl";
+import { SchemaOf } from "../meta/SchemaTypes";
+import { ObjectTypeOf } from "../meta/Shape";
+import { makeStateFactory } from "../state/State";
+import { useStateValue } from "../state/StateHook";
+import { StateManagerProvider } from "../state/StateManagerProvider";
 
 interface Department {
     readonly id: string;
@@ -28,15 +35,95 @@ const cfg = newConfiguration()
     })
 ;
 
-test("Test EntityManager", () => {
-    const stateManager = cfg.buildStateManager();
-    stateManager.saveObject("Department", { id: "id-1", name: "Market" });
-    stateManager.saveObject("Department", { id: "id-2", name: "Sales" });
-    stateManager.saveObject("Employee", { id: "id-1", name: "Jim", department: { id: "id-1" } });
-    stateManager.saveObject("Employee", { id: "id-2", name: "Kate", department: { id: "id-1" } });
-    stateManager.saveObject("Employee", { id: "id-3", name: "Tim", department: { id: "id-2" } });
-    stateManager.saveObject("Employee", { id: "id-4", name: "Mary", department: { id: "id-2" } });
-    stateManager.saveObject("Department", { id: "id-1", employees: [ { id: "id-1"}, { id: "id-2"}, { id: "id-3"} ]});
-    stateManager.saveObject("Department", { id: "id-1", employees: [ { id: "id-3"}, { id: "id-4"} ]});
-    console.log(stateManager);
+const { createParameterizedAsyncState } = makeStateFactory<SchemaOf<typeof cfg>>();
+
+const stateManager = cfg.buildStateManager();
+
+stateManager.saveObject("Department", { id: "id-1", name: "Market" });
+stateManager.saveObject("Department", { id: "id-2", name: "Sales" });
+stateManager.saveObject("Employee", { id: "id-1", name: "Jim", department: { id: "id-1" } });
+stateManager.saveObject("Employee", { id: "id-2", name: "Kate", department: { id: "id-1" } });
+stateManager.saveObject("Employee", { id: "id-3", name: "Tim", department: { id: "id-2" } });
+stateManager.saveObject("Employee", { id: "id-4", name: "Mary", department: { id: "id-2" } });
+stateManager.saveObject("Department", { id: "id-1", employees: [ { id: "id-1"}, { id: "id-2"}, { id: "id-3"} ]});
+stateManager.saveObject("Department", { id: "id-1", employees: [ { id: "id-3"}, { id: "id-4"} ]});
+
+const DEPARTMENT_SHAPE = {
+    id: true,
+    name: true,
+    employees: {
+        id: true,
+        name: true
+    }
+};
+
+const EMPLOYEE_SHAPE = {
+    id: true,
+    name: true,
+    department: {
+        id: true,
+        name: true
+    }
+};
+
+const departmentState = createParameterizedAsyncState<
+    ObjectTypeOf<Employee, typeof DEPARTMENT_SHAPE> | undefined, 
+    { readonly id: string }
+>(async (ctx, variables) => {
+    return await ctx.query("Department", variables.id, DEPARTMENT_SHAPE);
+});
+
+const employeeState = createParameterizedAsyncState<
+    ObjectTypeOf<Employee, typeof EMPLOYEE_SHAPE> | undefined, 
+    { readonly id: string }
+>(async (ctx, variables) => {
+    return await ctx.query("Employee", variables.id, EMPLOYEE_SHAPE);
+});
+
+const Test = memo(() => {
+
+    const employee = useStateValue(employeeState, {
+        variables: { id: "id-1" }
+    });
+    const employee2 = useStateValue(employeeState, {
+        variables: { id: "id-2" }
+    });
+    const employee3 = useStateValue(employeeState, {
+        variables: { id: "id-3" }
+    });
+    const employee4 = useStateValue(employeeState, {
+        variables: { id: "id-4" }
+    });
+    const department1 = useStateValue(departmentState, {
+        variables: { id: "id-1" } 
+    });
+
+    console.log("result---------------------", employee);
+    console.log("result---------------------", employee2);
+    console.log("result---------------------", employee3);
+    console.log("result---------------------", employee4);
+    console.log("result---------------------", department1);
+
+    return (
+        <div>
+            {JSON.stringify(employee)}
+        </div>
+    );
+});
+
+// Test----------------------------
+
+afterEach(cleanup);
+
+test("Test EntityManager", async () => {
+    
+    render(
+        <StateManagerProvider stateManager={stateManager}>
+            <Suspense fallback={<div data-testid="loading">Loading...</div>}>
+                <Test/>
+            </Suspense>
+        </StateManagerProvider>
+    );
+
+    await waitForElementToBeRemoved(() => screen.queryByTestId("loading"));
 });

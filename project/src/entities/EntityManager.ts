@@ -2,6 +2,7 @@ import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 import { ModificationContext } from "./ModificationContext";
 import { Record } from "./Record";
 import { RecordManager } from "./RecordManager";
+import { RecordRef } from "./RecordRef";
 
 export class EntityManager {
 
@@ -21,6 +22,10 @@ export class EntityManager {
             recordManager.initializeOtherManagers();
         }
         return recordManager;
+    }
+
+    findById(typeName: string, id: any): RecordRef | undefined {
+        return this.recordManager(typeName).findById(id);
     }
 
     saveId(ctx: ModificationContext, typeName: string, id: any): Record {

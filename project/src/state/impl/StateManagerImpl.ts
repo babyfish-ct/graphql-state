@@ -13,14 +13,14 @@ export class StateManagerImpl<TSchema extends SchemaTypes> implements StateManag
 
     private _listeners: StateValueChangeListener[] = [];
 
-    private _entityManager: EntityManager;
+    readonly entityManager: EntityManager;
 
     constructor(schema?: SchemaMetadata) {
-        this._entityManager = new EntityManager(schema ?? new SchemaMetadata());
+        this.entityManager = new EntityManager(schema ?? new SchemaMetadata());
     }
 
     saveObject<TTypeName extends keyof TSchema>(typeName: TTypeName, obj: Partial<TSchema[TTypeName]>): void {
-        this._entityManager.save(new ModificationContext(), typeName as string, obj);
+        this.entityManager.save(new ModificationContext(), typeName as string, obj);
     }
 
     deleteObject<TTypeName extends keyof TSchema>(typeName: TTypeName, id: any): boolean {
