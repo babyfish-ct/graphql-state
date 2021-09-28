@@ -1,7 +1,6 @@
 import { FC, memo, Suspense, useCallback } from "react";
-import { screen, cleanup, fireEvent, render, waitFor, act, waitForElementToBeRemoved } from '@testing-library/react';
+import { screen, cleanup, fireEvent, render, waitFor, waitForElementToBeRemoved } from '@testing-library/react';
 import { StateManagerProvider, makeStateFactory, useStateValue, useStateAccessor } from '..';
-import { useStateAsyncValue } from "../state/StateHook";
 
 const { createState, createAsyncState, createParameterizedAsyncState } = makeStateFactory();
 
