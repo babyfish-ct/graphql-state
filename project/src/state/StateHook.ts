@@ -1,6 +1,6 @@
 import { useContext, useEffect, useMemo, useState } from "react";
 import { SchemaTypes } from "../meta/SchemaTypes";
-import { StateAccessingOptions, State, ParameterizedComputedState, ParameterizedStateAccessingOptions, SingleWritableState, ParameterizedWritableState, SingleAsyncState, ParameterizedAsyncState, SingleComputedState } from "./State";
+import { StateAccessingOptions, State, ParameterizedStateAccessingOptions, SingleWritableState, ParameterizedWritableState, SingleAsyncState, ParameterizedAsyncState, SingleState, ParameterizedState } from "./State";
 import { StateManager } from "./StateManager";
 import { stateContext } from "./StateManagerProvider";
 import { Shape, ObjectTypeOf, variables } from "../meta/Shape";
@@ -20,12 +20,12 @@ export function useStateManager<TSchema extends SchemaTypes>(): StateManager<TSc
 }
 
 export function useStateValue<T>(
-    state: SingleWritableState<T> | SingleComputedState<T>,
+    state: SingleState<T>,
     options?: StateAccessingOptions
 ): T;
 
 export function useStateValue<T, TVariables>(
-    state: ParameterizedWritableState<T, TVariables> | ParameterizedComputedState<T, TVariables>,
+    state: ParameterizedState<T, TVariables>,
     options: ParameterizedStateAccessingOptions<TVariables>
 ): T;
 
@@ -34,7 +34,17 @@ export function useStateValue<T>(
     options?: StateAccessingOptions
 ): T {
     const stateValue = useInternalStateValue(state, options);
-    return stateValue.result;
+    if (state[" $stateType"] !== "ASYNC") {
+        return stateValue.result;
+    }
+    const loadable = (stateValue as ComputedStateValue).loadable as UseStateAsyncValueHookResult<T>;
+    if (loadable.loading) {
+        throw stateValue.result; // throws promise, <Suspense/> will catch it
+    }
+    if (loadable.error) {
+        throw loadable.error;
+    }
+    return loadable.data;
 }
 
 export function useStateAccessor<T>(

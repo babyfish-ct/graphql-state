@@ -44,12 +44,9 @@ const InputView: FC = memo(() => {
 });
 
 const OutputView: FC = memo(() => {
-    const { data, loading, error } = useStateAsyncValue(sumState);
+    const data = useStateValue(sumState);
     return (
-        <>
-            { loading && <div data-testid="loading">Loading...</div> }
-            { data && <div data-testid="data">{data}</div> }
-        </>
+        <div data-testid="data">{data}</div>
     );
 });
 
@@ -57,15 +54,17 @@ const OutputView: FC = memo(() => {
 
 afterEach(cleanup);
 
-test("Test async state us useStateAsyncValue", async () => {
+test("Test async state us useStateAsync", async () => {
     render(
         <StateManagerProvider>
             <InputView/>
-            <OutputView/>
+            <Suspense fallback={<div data-testid="loading">Loading(Suspense)...</div>}>
+                <OutputView/>
+            </Suspense>
         </StateManagerProvider>
     );
 
-    expect((await waitFor(() => screen.getByTestId("loading"), { timeout: 1000 })).textContent).toBe("Loading...");
+    expect((await waitFor(() => screen.getByTestId("loading"), { timeout: 1000 })).textContent).toBe("Loading(Suspense)...");
     expect(screen.queryByTestId("data")).toBeNull();
     
     await waitForElementToBeRemoved(() => screen.queryByTestId("loading"));
@@ -73,7 +72,7 @@ test("Test async state us useStateAsyncValue", async () => {
 
     fireEvent.click(screen.getByTestId("increase"));
 
-    expect((await waitFor(() => screen.getByTestId("loading"), { timeout: 1000 })).textContent).toBe("Loading...");
+    expect((await waitFor(() => screen.getByTestId("loading"), { timeout: 1000 })).textContent).toBe("Loading(Suspense)...");
     expect((await waitFor(() => screen.getByTestId("data"), { timeout: 1000 })).textContent).toBe("5");
     
     await waitForElementToBeRemoved(() => screen.queryByTestId("loading"));
@@ -81,7 +80,7 @@ test("Test async state us useStateAsyncValue", async () => {
 
     fireEvent.click(screen.getByTestId("increase"));
 
-    expect((await waitFor(() => screen.getByTestId("loading"), { timeout: 1000 })).textContent).toBe("Loading...");
+    expect((await waitFor(() => screen.getByTestId("loading"), { timeout: 1000 })).textContent).toBe("Loading(Suspense)...");
     expect((await waitFor(() => screen.getByTestId("data"), { timeout: 1000 })).textContent).toBe("10");
     
     await waitForElementToBeRemoved(() => screen.queryByTestId("loading"));
