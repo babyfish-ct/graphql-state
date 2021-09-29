@@ -38,16 +38,26 @@ const cfg = newConfiguration()
 const { createParameterizedAsyncState } = makeStateFactory<SchemaOf<typeof cfg>>();
 
 const stateManager = cfg.buildStateManager();
+stateManager.addListener(e => {
+    let fields = "";
+    for (const fieldName of e.fieldNames) {
+        fields += fieldName;
+        fields += ": ";
+        fields += `[${JSON.stringify(e.oldValue(fieldName))} -> ${JSON.stringify(e.newValue(fieldName))}]`
+        fields += ", ";
+    }
+    console.log(`Database trigger> ChangedType: ${e.changedType}, type: ${e.typeName}, fields: ${fields}`);
+});
 
-stateManager.saveObject("Department", { id: "id-1", name: "Market" });
-stateManager.saveObject("Department", { id: "id-2", name: "Sales" });
-stateManager.saveObject("Department", { id: "id-3", name: "Test" });
-stateManager.saveObject("Employee", { id: "id-1", name: "Jim", department: { id: "id-1" } });
-stateManager.saveObject("Employee", { id: "id-2", name: "Kate", department: { id: "id-1" } });
-stateManager.saveObject("Employee", { id: "id-3", name: "Tim", department: { id: "id-2" } });
-stateManager.saveObject("Employee", { id: "id-4", name: "Mary", department: { id: "id-2" } });
-stateManager.saveObject("Department", { id: "id-1", employees: [ { id: "id-1"}, { id: "id-2"}, { id: "id-3"} ]});
-stateManager.saveObject("Department", { id: "id-1", employees: [ { id: "id-3"}, { id: "id-4"} ]});
+stateManager.save("Department", { id: "id-1", name: "Market" });
+stateManager.save("Department", { id: "id-2", name: "Sales" });
+stateManager.save("Department", { id: "id-3", name: "Test" });
+stateManager.save("Employee", { id: "id-1", name: "Jim", department: { id: "id-1" } });
+stateManager.save("Employee", { id: "id-2", name: "Kate", department: { id: "id-1" } });
+stateManager.save("Employee", { id: "id-3", name: "Tim", department: { id: "id-2" } });
+stateManager.save("Employee", { id: "id-4", name: "Mary", department: { id: "id-2" } });
+stateManager.save("Department", { id: "id-1", employees: [ { id: "id-1"}, { id: "id-2"}, { id: "id-3"} ]});
+stateManager.save("Department", { id: "id-1", employees: [ { id: "id-3"}, { id: "id-4"} ]});
 
 const DEPARTMENT_SHAPE = {
     id: true,

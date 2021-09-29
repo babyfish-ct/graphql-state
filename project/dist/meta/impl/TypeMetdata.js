@@ -7,6 +7,7 @@ class TypeMetadata {
         this.schema = schema;
         this.category = category;
         this.name = name;
+        this._derivedTypes = new Set();
         this._declaredFieldMap = new Map();
         this._fieldMap = undefined;
     }
@@ -27,6 +28,22 @@ class TypeMetadata {
         }
         this._superType = superMetadata;
         return superMetadata;
+    }
+    get derivedType() {
+        let set = this._derivedTypes;
+        if (set !== undefined) {
+            set = new Set();
+            this._derivedTypes = set;
+        }
+        return set;
+    }
+    get rootType() {
+        var _a, _b;
+        let rootMetadata = this._rootType;
+        if (rootMetadata === undefined) {
+            rootMetadata = (_b = (_a = this.superType) === null || _a === void 0 ? void 0 : _a.rootType) !== null && _b !== void 0 ? _b : this;
+        }
+        return rootMetadata;
     }
     get declaredFieldMap() {
         return this._declaredFieldMap;
@@ -52,28 +69,62 @@ class TypeMetadata {
         }
         return fieldMap;
     }
+    get idField() {
+        let field = this._idField;
+        if (field === undefined) {
+            if (this.superType !== undefined) {
+                field = this.superType.idField;
+            }
+            else {
+                throw new Error(`There is no id field in the  type "${this.name}"`);
+            }
+            this._idField = field;
+        }
+        return field;
+    }
     setSuperType(superType) {
-        if (this._fieldMap !== undefined) {
-            throw new Error("The current type is frozen becasue the fieldMap is cached");
+        this.schema.preChange();
+        if (this._superType !== undefined) {
+            throw new Error(`Cannot set the super type for "${this.name}" more than once`);
         }
         if (this.category !== "OBJECT") {
             throw new Error(`Cannot set the super type for "${this.name}" because its category is not "OBJECT"`);
         }
-        if (this._superType !== undefined) {
-            throw new Error(`Cannot set the super type for "${this.name}" more than once`);
+        if (this._idField !== undefined) {
+            throw new Error(`Cannot set the super type for "${this.name}" because its id field has been specified`);
+        }
+        if (this._rootType !== undefined) {
+            throw new Error(`Cannot set the super type for "${this.name}" because its rootType is cached`);
+        }
+        if (this._fieldMap !== undefined) {
+            throw new Error("The current type is frozen becasue its fieldMap is cached");
         }
         this._superType = superType;
     }
     addField(category, name, options) {
+        this.schema.preChange();
         if (this._fieldMap !== undefined) {
             throw new Error("The current type is frozen becasue the fieldMap is cached");
         }
         if (this._declaredFieldMap.has(name)) {
             throw new Error(`The field "${this.name}.${name}" is alreay exists`);
         }
-        this._declaredFieldMap.set(name, new FieldMetadata_1.FieldMetadata(this, category, name, options));
+        if (category === "ID") {
+            if (this._superType !== undefined) {
+                throw new Error(`Cannot add id field into "${this.name}" because its super class is specified`);
+            }
+            if (this._idField !== undefined) {
+                throw new Error(`Cannot add id field into "${this.name}" because its id field is already specified`);
+            }
+        }
+        const field = new FieldMetadata_1.FieldMetadata(this, category, name, options);
+        this._declaredFieldMap.set(name, field);
+        if (category === "ID") {
+            this._idField = field;
+        }
     }
     setFieldMappedBy(name, oppositeFieldName) {
+        this.schema.preChange();
         const field = this.fieldMap.get(name);
         if (field === undefined) {
             throw new Error(`Cannot set the "mappedBy" of field "${name}" because that field is not exists in type "${this.name}"`);

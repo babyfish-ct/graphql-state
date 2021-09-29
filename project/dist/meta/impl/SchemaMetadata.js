@@ -6,11 +6,13 @@ class SchemaMetadata {
     constructor() {
         this._typeMap = new Map();
         this._unresolvedPassiveFields = [];
+        this._frozen = false;
     }
     get typeMap() {
         return this._typeMap;
     }
     addType(category, typeName) {
+        this.preChange();
         this.validateTypeName(typeName);
         this._typeMap.set(typeName, new TypeMetdata_1.TypeMetadata(this, category, typeName));
     }
@@ -20,6 +22,15 @@ class SchemaMetadata {
         }
         if (this._typeMap.has(typeName)) {
             throw new Error(`Cannot add the type "${typeName}" becasue it's exists`);
+        }
+    }
+    freeze() {
+        this._frozen = true;
+        return this;
+    }
+    preChange() {
+        if (this._frozen) {
+            throw new Error("Cannot change the schema becasue it's frozen");
         }
     }
     " $registerUnresolvedInversedField"(passiveField) {

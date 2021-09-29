@@ -10,6 +10,7 @@ function standardizedVariables(variables) {
     for (const subKey of subKeys) {
         standardizedVariables[subKey] = variables[subKey];
     }
+    return standardizedVariables;
 }
 exports.standardizedVariables = standardizedVariables;
 function standardizedVariablesKeys(variables) {
@@ -23,6 +24,8 @@ function standardizedVariablesKeys(variables) {
     for (const subKey in variables) {
         if (typeof subKey !== "string") {
             throw new Error("key of variables must string");
+        }
+        if (variables[subKey] !== undefined) {
             subKeys.push(subKey);
         }
     }

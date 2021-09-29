@@ -1,15 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.StateValue = void 0;
-const Variables_1 = require("./Variables");
 class StateValue {
-    constructor(state, variables) {
-        this.state = state;
+    constructor(stateInstance, variablesCode, variables) {
+        this.stateInstance = stateInstance;
+        this.variablesCode = variablesCode;
+        this.variables = variables;
         this._refCount = 0;
-        this._variables = Variables_1.standardizedVariables(variables);
-    }
-    get variables() {
-        return this._variables;
+        if (!stateInstance.state[" $parameterized"] && (variablesCode !== undefined || variables !== undefined)) {
+            throw new Error("Cannot create state value with varibles for single state without parameters");
+        }
     }
     retain() {
         return this._refCount++ === 0;
@@ -17,28 +17,14 @@ class StateValue {
     release() {
         const rc = --this._refCount;
         if (rc < 0) {
-            throw new Error("Internal bug");
+            this._refCount = 0;
+            throw new Error("Internal bug: refCount is less than zero");
         }
         return rc === 0;
     }
-    invalidate() {
-    }
     mount() {
-        var _a;
-        if (this.state[" $stateType"] !== "WRITABLE") {
-            const mount = (_a = this.state[" $options"]) === null || _a === void 0 ? void 0 : _a.mount;
-            if (mount !== undefined) {
-                const invalidate = this.invalidate.bind(this);
-                this._unmountHandler = mount(invalidate);
-            }
-        }
     }
     umount() {
-        const h = this._unmountHandler;
-        if (h !== undefined) {
-            this._unmountHandler = undefined;
-            h();
-        }
     }
 }
 exports.StateValue = StateValue;

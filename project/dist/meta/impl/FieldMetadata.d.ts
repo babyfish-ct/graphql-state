@@ -1,6 +1,6 @@
 import { TypeMetadata } from "./TypeMetdata";
 export declare class FieldMetadata {
-    readonly type: TypeMetadata;
+    readonly declaringType: TypeMetadata;
     readonly category: FieldMetadataCategory;
     readonly name: string;
     readonly fullName: string;
@@ -11,10 +11,11 @@ export declare class FieldMetadata {
     private _edgeType?;
     private _targetType?;
     private _oppositeField?;
-    constructor(type: TypeMetadata, category: FieldMetadataCategory, name: string, options?: FieldMetadataOptions);
+    constructor(declaringType: TypeMetadata, category: FieldMetadataCategory, name: string, options?: FieldMetadataOptions);
     get isUndefinable(): boolean;
     get deleteOperation(): "CASCADE" | "SET_UNDEFINED" | undefined;
     get isInversed(): boolean;
+    get isAssociation(): boolean;
     get connectionType(): TypeMetadata | undefined;
     get edgeType(): TypeMetadata | undefined;
     get targetType(): TypeMetadata | undefined;

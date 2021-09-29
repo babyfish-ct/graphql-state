@@ -44,10 +44,14 @@ export class RecordManager {
         if (typeof id !== "number" && typeof id !== "string") {
             throw new Error(`Illegal id '${id}', id can only be number or string`);
         }
-        let record = this.recordMap.get(id)?.undeleted();
-        if (record === undefined) {
-            record = new Record(id);
+        let record = this.recordMap.get(id);
+        if (record !== undefined) {
+            record.undeleted();
+            ctx.update(record);
+        } else {
+            record = new Record(this.type, id);
             this.recordMap.set(id, record);
+            ctx.insert(record);
         }
         this.superManager?.saveId(ctx, id);
         return record;

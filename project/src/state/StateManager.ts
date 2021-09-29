@@ -1,14 +1,23 @@
 import { SchemaTypes } from "../meta/SchemaTypes";
+import { EntityChangedEvent } from "./ChangedEntity";
 
 export interface StateManager<TSchema extends SchemaTypes> {
-
-    saveObject<TTypeName extends keyof TSchema>(typeName: TTypeName, obj: RecursivePartial<TSchema[TTypeName]>): void;
-
-    deleteObject<TTypeName extends keyof TSchema>(typeName: TTypeName, id: any): boolean;
 
     readonly undoManager: UndoManager;
 
     transaction<TResult>(callback: (ts: TransactionStatus) => TResult): TResult;
+
+    save<TTypeName extends keyof TSchema>(typeName: TTypeName, obj: RecursivePartial<TSchema[TTypeName]>): void;
+
+    delete<TTypeName extends keyof TSchema>(typeName: TTypeName, id: any): boolean;
+
+    addListener(listener: (e: EntityChangedEvent<{}>) => void): void;
+
+    removeListener(listener: (e: EntityChangedEvent<{}>) => void): void;
+
+    addListeners(listeners: { readonly [TEntity in keyof TSchema]: (e: EntityChangedEvent<TSchema[TEntity]>) => void }): void;
+
+    removeListeners(listeners: { readonly [TEntity in keyof TSchema]: (e: EntityChangedEvent<TSchema[TEntity]>) => void }): void;
 }
 
 export interface UndoManager {

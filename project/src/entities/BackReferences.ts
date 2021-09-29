@@ -9,7 +9,6 @@ export class BackReferences {
     private associationOwnerMap = new SpaceSavingMap<FieldMetadata, SpaceSavingMap<string | undefined, ParameterizedRecordSet>>();
 
     add(associationField: FieldMetadata, variablesCode: string | undefined, variables: any, ownerRecord: Record) {
-        console.log(`Add back referance for assocaition ${associationField.fullName}`)
         this
         .associationOwnerMap
         .computeIfAbsent(associationField, () => new SpaceSavingMap<string, ParameterizedRecordSet>())
@@ -18,7 +17,6 @@ export class BackReferences {
     }
 
     remove(associationField: FieldMetadata, variablesCode: string | undefined, ownerRecord: Record) {
-        console.log(`Remove back referance for assocaition ${associationField.fullName}`)
         const subMap = this.associationOwnerMap.get(associationField);
         if (subMap !== undefined) {
             const set = subMap?.get(variablesCode);

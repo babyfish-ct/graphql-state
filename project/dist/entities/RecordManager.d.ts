@@ -1,0 +1,18 @@
+import { TypeMetadata } from "../meta/impl/TypeMetdata";
+import { EntityManager } from "./EntityManager";
+import { ModificationContext } from "./ModificationContext";
+import { Record } from "./Record";
+import { RecordRef } from "./RecordRef";
+export declare class RecordManager {
+    readonly entityManager: EntityManager;
+    readonly type: TypeMetadata;
+    private superManager?;
+    private fieldManagerMap;
+    private recordMap;
+    constructor(entityManager: EntityManager, type: TypeMetadata);
+    initializeOtherManagers(): void;
+    findById(id: any): RecordRef | undefined;
+    saveId(ctx: ModificationContext, id: any): Record;
+    save(ctx: ModificationContext, obj: any): void;
+    private set;
+}

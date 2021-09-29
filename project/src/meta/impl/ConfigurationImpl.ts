@@ -24,8 +24,7 @@ class ConfigurationImpl<TConfigurationSchema extends ConfigurationSchemaTypes> i
         TConfigurationSchema & 
         { 
             objectTypes: { 
-                readonly [key in TName]: TObjectType & 
-                {readonly __typename: TName}
+                readonly [key in TName]: TObjectType
             }
         }
     > {

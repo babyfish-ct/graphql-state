@@ -1,9 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.makeManagedObjectHooks = exports.useStateAsyncValue = exports.useStateWriter = exports.useStateValue = exports.useStateManager = void 0;
+exports.makeManagedObjectHooks = exports.useStateAsyncValue = exports.useStateAccessor = exports.useStateValue = exports.useStateManager = void 0;
 const react_1 = require("react");
 const StateManagerProvider_1 = require("./StateManagerProvider");
-const Shape_1 = require("../meta/Shape");
 const Variables_1 = require("./impl/Variables");
 function useStateManager() {
     const stateManager = react_1.useContext(StateManagerProvider_1.stateContext);
@@ -15,16 +14,27 @@ function useStateManager() {
 exports.useStateManager = useStateManager;
 function useStateValue(state, options) {
     const stateValue = useInternalStateValue(state, options);
-    throw new Error();
+    if (state[" $stateType"] !== "ASYNC") {
+        return stateValue.result;
+    }
+    const loadable = stateValue.loadable;
+    if (loadable.loading) {
+        throw stateValue.result; // throws promise, <Suspense/> will catch it
+    }
+    if (loadable.error) {
+        throw loadable.error;
+    }
+    return loadable.data;
 }
 exports.useStateValue = useStateValue;
-function useStateWriter(state, options) {
-    throw new Error();
+function useStateAccessor(state, options) {
+    const stateValue = useInternalStateValue(state, options);
+    return stateValue.accessor;
 }
-exports.useStateWriter = useStateWriter;
+exports.useStateAccessor = useStateAccessor;
 function useStateAsyncValue(state, options) {
     const stateValue = useInternalStateValue(state, options);
-    throw new Error();
+    return stateValue.loadable;
 }
 exports.useStateAsyncValue = useStateAsyncValue;
 function makeManagedObjectHooks() {
@@ -32,18 +42,33 @@ function makeManagedObjectHooks() {
 }
 exports.makeManagedObjectHooks = makeManagedObjectHooks;
 function useInternalStateValue(state, options) {
-    var _a;
+    var _a, _b;
     const stateManager = useStateManager();
     const stateInstance = stateManager.scope.instance(state, (_a = options === null || options === void 0 ? void 0 : options.propagation) !== null && _a !== void 0 ? _a : "REQUIRED");
     const [vs, vsKey] = react_1.useMemo(() => {
-        const variables = Variables_1.standardizedVariables(options === null || options === void 0 ? void 0 : options.variables);
-        return [variables, variables !== undefined ? JSON.stringify(variables) : undefined];
-    }, [options === null || options === void 0 ? void 0 : options.variables]);
+        var _a;
+        const svs = Variables_1.standardizedVariables((_a = options) === null || _a === void 0 ? void 0 : _a.variables);
+        return [svs, svs !== undefined ? JSON.stringify(svs) : undefined];
+    }, [(_b = options) === null || _b === void 0 ? void 0 : _b.variables]);
+    const [, setStateVerion] = react_1.useState(0);
+    const stateValue = react_1.useMemo(() => {
+        return stateInstance.retain(vsKey, vs);
+    }, [vsKey, vs]);
     react_1.useEffect(() => {
-        stateInstance.retain(vsKey, vs);
         return () => {
             stateInstance.release(vsKey);
         };
     }, [stateInstance, vsKey]);
-    return stateInstance.get(Shape_1.variables);
+    react_1.useEffect(() => {
+        const stateValueChange = (e) => {
+            if (e.stateValue === stateValue) {
+                setStateVerion(old => old + 1); // Change a local state to update react component
+            }
+        };
+        stateManager.addStateChangeListener(stateValueChange);
+        return () => {
+            stateManager.removeStateChangeListener(stateValueChange);
+        };
+    }, [stateManager, stateValue]);
+    return stateValue;
 }

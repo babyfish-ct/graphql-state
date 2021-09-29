@@ -10,12 +10,12 @@ export interface StateFactory<TSchema extends SchemaTypes> {
 
     createState<T>(
         defaultValue: T,
-        options?: StateCreationOptions
+        options?: WritableStateCreationOptions<T>
     ): SingleWritableState<T>;
 
     createParameterizedState<T, TVariables>(
         defaultValue: T | ((variables: TVariables) => T),
-        options?: StateCreationOptions
+        options?: WritableStateCreationOptions<T>
     ): ParameterizedWritableState<T, TVariables>;
 
     createComputedState<T>(
@@ -271,8 +271,19 @@ export interface StateCreationOptions {
     readonly mode?: StateScopeMode;
 }
 
+export interface WritableStateCreationOptions<T> extends StateCreationOptions {
+    readonly mount?: (ctx: WritableStateCreationgContext<T>) => StateUnmoutHandler | undefined | void;
+}
+
 export interface ComputedStateCreationOptions extends StateCreationOptions {
-    readonly mount?: (invalidate: () => void) => StateUnmoutHandler | undefined;
+    readonly mount?: (ctx: {
+        invalidate: () => void
+    }) => StateUnmoutHandler | undefined | void;
+}
+
+export interface WritableStateCreationgContext<T> {
+    (): T;
+    (value: T): void;
 }
 
 export type StateUnmoutHandler = () => void;

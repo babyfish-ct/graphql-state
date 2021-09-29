@@ -1,4 +1,5 @@
 import { FieldMetadata } from "../meta/impl/FieldMetadata";
+import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { SpaceSavingMap } from "../state/impl/SpaceSavingMap";
 import { standardizedVariables } from "../state/impl/Variables";
 import { BackReferences } from "./BackReferences";
@@ -15,7 +16,7 @@ export class Record {
 
     private deleted = false;
 
-    constructor(readonly id: any) {}
+    constructor(readonly type: TypeMetadata, readonly id: any) {}
 
     hasScalar(fieldName: string): boolean {
         return this.scalarMap.has(fieldName);
@@ -59,7 +60,17 @@ export class Record {
             if (variables !== undefined) {
                 throw new Error('scalar fields does not support variables');
             }
-            this.scalarMap.set(fieldName, value);
+            if (fieldName === this.type.idField.name) {
+                if (value !== this.id) {
+                    throw new Error(`Cannot chanage "${this.type.idField.fullName} because its id field"`);
+                }
+            } else {
+                const oldValue = this.scalarMap.get(fieldName);
+                if (oldValue !== value) {
+                    this.scalarMap.set(fieldName, value);
+                    ctx.change(this, fieldName, oldValue, value);
+                }
+            }
         }
     }
 
@@ -168,6 +179,12 @@ class AssociationReferenceValue extends AssociationValue {
             oldReference?.backReferences?.remove(associationField, variablesCode, record);
             this.referfence = reference;
             reference?.backReferences?.add(associationField, variablesCode, variables, record);
+            ctx.change(
+                record, 
+                associationField.name, 
+                objectWithOnlyId(oldReference),
+                objectWithOnlyId(reference),
+            );
         }
     }
 }
@@ -190,6 +207,26 @@ class AssociationListValue extends AssociationValue {
         value: any
     ) {
         
+        let listChanged = (this.elements?.length ?? 0) !== (value?.length ?? 0);
+        if (!listChanged) {
+            const idFieldName = record.type.idField.name;
+            for (let i = (value?.length ?? 0) - 1; i >= 0; --i) {
+                const oldId = this.elements !== undefined && this.elements[i] !== undefined ? 
+                    this.elements[i]?.id :
+                    undefined
+                ;
+                const newId = value[i] !== undefined && value[i] !== null ?
+                    value[i][idFieldName] :
+                    undefined
+                ;
+                if (oldId !== newId) {
+                    listChanged = true;
+                    break;
+                }
+            }
+        }
+        const oldValueForTriggger = listChanged ? this.elements?.map(objectWithOnlyId) : undefined;
+
         const oldMap = new Map<any, Record>();
         this.elements?.forEach(element => {
             if (element !== undefined) {
@@ -216,13 +253,19 @@ class AssociationListValue extends AssociationValue {
                 element.backReferences.remove(associationField, variablesCode, record);
             }
         }
+
         this.elements = newElements.length === 0 ? undefined : newElements;
+
         for (const newElement of newElements) {
             if (newElement !== undefined) {
                 if (!oldMap.has(newElement.id)) {
                     newElement.backReferences.add(associationField, variablesCode, variables, record);
                 }
             }
+        }
+
+        if (listChanged) {
+            ctx.change(record, associationField.name, oldValueForTriggger, this.elements?.map(objectWithOnlyId));
         }
     }
 }
@@ -271,20 +314,25 @@ class AssociationConnectionValue extends AssociationValue {
                 cursor: edge.cursor
             });
         }
+
         for (const [id, element] of oldMap) {
             if (!newIds.has(id)) {
                 element.backReferences.remove(associationField, variablesCode, record);
             }
         }
+        
         this.connection = {
             ...value,
             edges: newEdges
         };
+        
         for (const newEdge of newEdges) {
             if (!oldMap.has(newEdge.node.id)) {
                 newEdge.node.backReferences.add(associationField, variablesCode, variables, record);
             }
         }
+
+        // TODO: Trigger
     }
 }
 
@@ -299,3 +347,10 @@ export interface RecordEdge {
     readonly node: Record;
         readonly cursor: string;
 }
+
+function objectWithOnlyId(record: Record | undefined): any {
+    if (record === undefined) {
+        return undefined;
+    }
+    return { [record.type.idField.name]: record.id };
+} 

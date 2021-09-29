@@ -2,13 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FieldMetadata = void 0;
 class FieldMetadata {
-    constructor(type, category, name, options) {
-        this.type = type;
+    constructor(declaringType, category, name, options) {
+        this.declaringType = declaringType;
         this.category = category;
         this.name = name;
         this._inversed = false;
         this._undefinable = false;
-        this.fullName = `${type.name}.${name}`;
+        this.fullName = `${declaringType.name}.${name}`;
         if (category === "CONNECTION") {
             if ((options === null || options === void 0 ? void 0 : options.connectionTypeName) === undefined) {
                 throw new Error(`Illegal connection field "${this.fullName}", collectionTypeName is required`);
@@ -27,7 +27,7 @@ class FieldMetadata {
                 throw new Error(`Illegal field "${this.fullName}", the edgeTypeName should not be specified`);
             }
         }
-        if (isAssociation(category)) {
+        if (isAssociationCategory(category)) {
             if ((options === null || options === void 0 ? void 0 : options.targetTypeName) === undefined) {
                 throw new Error(`Illegal association field "${this.fullName}", targetTypeName is required`);
             }
@@ -54,11 +54,14 @@ class FieldMetadata {
     get isInversed() {
         return this._inversed;
     }
+    get isAssociation() {
+        return isAssociationCategory(this.category);
+    }
     get connectionType() {
         if (typeof this._connectionType !== "string") {
             return this._connectionType;
         }
-        const connectionMetadata = this.type.schema.typeMap.get(this._connectionType);
+        const connectionMetadata = this.declaringType.schema.typeMap.get(this._connectionType);
         if (connectionMetadata === undefined) {
             throw new Error(`Illegal connection field "${this.fullName}", its connection type "${this._connectionType}" is not exists`);
         }
@@ -72,7 +75,7 @@ class FieldMetadata {
         if (typeof this._edgeType !== "string") {
             return this._edgeType;
         }
-        const edgeMetadata = this.type.schema.typeMap.get(this._edgeType);
+        const edgeMetadata = this.declaringType.schema.typeMap.get(this._edgeType);
         if (edgeMetadata === undefined) {
             throw new Error(`Illegal connection field "${this.fullName}", its connection type "${this._edgeType}" is not exists`);
         }
@@ -86,7 +89,7 @@ class FieldMetadata {
         if (typeof this._targetType !== "string") {
             return this._targetType;
         }
-        const targetMetadata = this.type.schema.typeMap.get(this._targetType);
+        const targetMetadata = this.declaringType.schema.typeMap.get(this._targetType);
         if (targetMetadata === undefined) {
             throw new Error(`Illegal association field "${this.fullName}", its target type "${this._targetType}" is not exists`);
         }
@@ -97,19 +100,20 @@ class FieldMetadata {
         return targetMetadata;
     }
     get oppositeField() {
-        this.type.schema[" $resolvedInversedFields"]();
+        this.declaringType.schema[" $resolvedInversedFields"]();
         return this._oppositeField;
     }
     setOppositeFieldName(oppositeFieldName) {
+        this.declaringType.schema.preChange();
         if (this._oppositeField !== undefined) {
             throw new Error(`Cannot change the opposite field of ${this.fullName} because its opposite field has been set`);
         }
-        if (!isAssociation(this.category)) {
+        if (!this.isAssociation) {
             throw new Error(`Cannot change the opposite field of ${this.fullName} because its is association`);
         }
         this._oppositeField = oppositeFieldName;
         this._inversed = true;
-        this.type.schema[" $registerUnresolvedInversedField"](this);
+        this.declaringType.schema[" $registerUnresolvedInversedField"](this);
     }
     " $resolveInversedAssociation"() {
         var _a;
@@ -137,6 +141,6 @@ class FieldMetadata {
     }
 }
 exports.FieldMetadata = FieldMetadata;
-function isAssociation(category) {
+function isAssociationCategory(category) {
     return category === "REFERENCE" || category === "LIST" || category === "CONNECTION";
 }

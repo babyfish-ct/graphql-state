@@ -1,14 +1,20 @@
-import { State } from "../State";
-export declare class StateValue {
-    private state;
+import { StateInstance } from "./StateInstance";
+export declare abstract class StateValue {
+    readonly stateInstance: StateInstance;
+    readonly variablesCode: string | undefined;
+    readonly variables: any;
     private _refCount;
     private _variables;
-    private _unmountHandler?;
-    constructor(state: State<any, any>, variables: any);
-    get variables(): any;
+    constructor(stateInstance: StateInstance, variablesCode: string | undefined, variables: any);
+    abstract get result(): any;
+    abstract get loadable(): any;
     retain(): boolean;
     release(): boolean;
-    invalidate(): void;
     mount(): void;
     umount(): void;
+}
+export interface Loadable {
+    readonly data?: any;
+    readonly loading: boolean;
+    readonly error?: Error;
 }

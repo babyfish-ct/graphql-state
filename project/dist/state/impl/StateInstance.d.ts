@@ -1,10 +1,11 @@
 import { State } from "../State";
+import { ScopedStateManager } from "./ScopedStateManager";
 import { StateValue } from "./StateValue";
 export declare class StateInstance {
-    private state;
+    readonly scopedStateManager: ScopedStateManager;
+    readonly state: State<any>;
     private valueMap;
-    constructor(state: State<any, any>);
-    get(variables: any): StateValue;
+    constructor(scopedStateManager: ScopedStateManager, state: State<any>);
     retain(variablesCode: string | undefined, variables: any): StateValue;
     release(variablesCode: string | undefined): void;
 }

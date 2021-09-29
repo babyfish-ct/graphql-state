@@ -16,6 +16,9 @@ class ScopedStateManager {
     get parent() {
         return this._parent;
     }
+    get stateManager() {
+        return this._stateManager;
+    }
     instance(state, propagation) {
         const instance = this.getInstance(state, propagation !== "REQUIRES_NEW");
         if (instance !== undefined) {
@@ -24,7 +27,7 @@ class ScopedStateManager {
         if (propagation === "MANDATORY") {
             throw new Error(`This propagation is "MANDATORY" but the state cannot be found`);
         }
-        throw this.createInstance(state, propagation);
+        return this.createInstance(state, propagation);
     }
     getInstance(state, findInParent) {
         const instance = this._instanceMap.get(state);
@@ -53,7 +56,7 @@ class ScopedStateManager {
         if (mode === "GLOBAL_SCOPE_ONLY" && this._parent !== undefined) {
             return this._parent.createInstance0(state, mode);
         }
-        const instance = new StateInstance_1.StateInstance(state);
+        const instance = new StateInstance_1.StateInstance(this, state);
         this._instanceMap.set(state, instance);
         return instance;
     }

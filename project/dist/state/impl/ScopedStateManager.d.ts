@@ -7,7 +7,8 @@ export declare class ScopedStateManager {
     private _instanceMap;
     constructor(parent: StateManagerImpl<any> | ScopedStateManager);
     get parent(): ScopedStateManager | undefined;
-    instance(state: State<any, any>, propagation: StatePropagation): StateInstance;
+    get stateManager(): StateManagerImpl<any>;
+    instance(state: State<any>, propagation: StatePropagation): StateInstance;
     private getInstance;
     private createInstance;
     private createInstance0;

@@ -2,6 +2,7 @@ import { EntityManager } from "../../entities/EntityManager";
 import { ModificationContext } from "../../entities/ModificationContext";
 import { SchemaMetadata } from "../../meta/impl/SchemaMetadata";
 import { SchemaTypes } from "../../meta/SchemaTypes";
+import { EntityChangedEvent } from "../ChangedEntity";
 import { StateManager, TransactionStatus } from "../StateManager";
 import { ScopedStateManager } from "./ScopedStateManager";
 import { StateValue } from "./StateValue";
@@ -11,24 +12,56 @@ export class StateManagerImpl<TSchema extends SchemaTypes> implements StateManag
 
     private _scopedStateManager?: ScopedStateManager;
 
-    private _listeners: StateValueChangeListener[] = [];
+    private _stateChangeListeners = new Set<StateValueChangeListener>();
+
+    private _entityChagneListenerMap = new Map<string | undefined, Set<(e: EntityChangedEvent<any>) => any>>();
 
     readonly entityManager: EntityManager;
 
     constructor(schema?: SchemaMetadata) {
         this.entityManager = new EntityManager(schema ?? new SchemaMetadata());
     }
-
-    saveObject<TTypeName extends keyof TSchema>(typeName: TTypeName, obj: Partial<TSchema[TTypeName]>): void {
-        this.entityManager.save(new ModificationContext(), typeName as string, obj);
+    
+    get undoManager(): UndoManagerImpl {
+        throw new Error();
     }
 
-    deleteObject<TTypeName extends keyof TSchema>(typeName: TTypeName, id: any): boolean {
+    save<TTypeName extends keyof TSchema>(typeName: TTypeName, obj: Partial<TSchema[TTypeName]>): void {
+        const ctx = new ModificationContext();
+        this.entityManager.save(ctx, typeName as string, obj);
+        ctx.fireEvents(e => {
+            this.publishEntityChangeEvent(e);
+        });
+    }
+
+    delete<TTypeName extends keyof TSchema>(typeName: TTypeName, id: any): boolean {
         return false;
     }
 
-    get undoManager(): UndoManagerImpl {
-        throw new Error();
+    addListener(listener: (e: EntityChangedEvent<{}>) => void): void {
+        this.addEntityStateListener(undefined, listener);
+    }
+
+    removeListener(listener: (e: EntityChangedEvent<{}>) => void): void {
+        this.removeEntityStateListener(undefined, listener);
+    }
+
+    addListeners(listeners: { readonly [TEntity in keyof TSchema]?: (e: EntityChangedEvent<TSchema[TEntity]>) => void }): void {
+        for (const typeName in listeners) {
+            const listener = listeners[typeName];
+            if (listener !== undefined && listener !== null) {
+                this.addEntityStateListener(typeName, listener);
+            }
+        }
+    }
+
+    removeListeners(listeners: { readonly [TEntity in keyof TSchema]?: (e: EntityChangedEvent<TSchema[TEntity]>) => void }): void {
+        for (const typeName in listeners) {
+            const listener = listeners[typeName];
+            if (listener !== undefined && listener !== null) {
+                this.removeEntityStateListener(typeName, listener);
+            }
+        }
     }
 
     registerScope(): ScopedStateManager {
@@ -63,19 +96,47 @@ export class StateManagerImpl<TSchema extends SchemaTypes> implements StateManag
     }
 
     addStateChangeListener(listener: StateValueChangeListener) {
-        this._listeners.push(listener);
-    }
-
-    removeStateChangeListener(listener: StateValueChangeListener) {
-        const index = this._listeners.indexOf(listener);
-        if (index !== -1) {
-            this._listeners.splice(index, 1);
+        if (this._stateChangeListeners.has(listener)) {
+            throw new Error(`Cannot add existing listener`);
+        }
+        if (listener !== undefined && listener !== null) {
+            this._stateChangeListeners.add(listener);
         }
     }
 
+    removeStateChangeListener(listener: StateValueChangeListener) {
+        this._stateChangeListeners.delete(listener);
+    }
+
     publishStateChangeEvent(e: StateValueChangeEvent) {
-        for (const listener of this._listeners) {
+        for (const listener of this._stateChangeListeners) {
             listener(e);
+        }
+    }
+
+    private addEntityStateListener(typeName: string | undefined, listener: (e: EntityChangedEvent<any>) => void): void {
+        if (listener !== undefined && listener !== null) {
+            let set = this._entityChagneListenerMap.get(typeName);
+            if (set === undefined) {
+                set = new Set<(e: EntityChangedEvent<any>) => void>();
+                this._entityChagneListenerMap.set(typeName, set);
+            } 
+            if (set.has(listener)) {
+                throw new Error(`Cannot add exists listener`);
+            }
+            set.add(listener);
+        }
+    }
+
+    private removeEntityStateListener(typeName: string | undefined, listener: (e: EntityChangedEvent<any>) => void): void {
+        this._entityChagneListenerMap.get(typeName)?.delete(listener);
+    }
+
+    private publishEntityChangeEvent(e: EntityChangedEvent<any>) {
+        for (const [, set] of this._entityChagneListenerMap) {
+            for (const listener of set) {
+                listener(e);
+            }
         }
     }
 }

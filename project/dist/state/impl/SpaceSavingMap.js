@@ -2,6 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SpaceSavingMap = void 0;
 class SpaceSavingMap {
+    get isEmpty() {
+        return this.value === undefined && this.valueMap === undefined;
+    }
     get(key) {
         var _a;
         return key === undefined ? this.value : (_a = this.valueMap) === null || _a === void 0 ? void 0 : _a.get(key);
@@ -67,6 +70,18 @@ class SpaceSavingMap {
                 this.valueMap = undefined;
             }
             return oldValue;
+        }
+    }
+    forEach(callback) {
+        if (this.value !== undefined && callback(undefined, this.value) === false) {
+            return;
+        }
+        if (this.valueMap !== undefined) {
+            for (const [key, value] of this.valueMap) {
+                if (callback(key, value) === false) {
+                    return;
+                }
+            }
         }
     }
     forEachValue(callback) {

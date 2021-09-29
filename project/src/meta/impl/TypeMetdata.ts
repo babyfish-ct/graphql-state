@@ -5,6 +5,10 @@ export class TypeMetadata {
 
     private _superType?: string | TypeMetadata;
 
+    private _derivedTypes: Set<TypeMetadata> = new Set<TypeMetadata>();
+
+    private _rootType?: TypeMetadata;
+
     private _declaredFieldMap = new Map<string, FieldMetadata>();
 
     private _fieldMap: Map<string, FieldMetadata> | undefined = undefined;
@@ -34,6 +38,23 @@ export class TypeMetadata {
         }
         this._superType = superMetadata;
         return superMetadata;
+    }
+
+    get derivedType(): ReadonlySet<TypeMetadata> {
+        let set = this._derivedTypes;
+        if (set !== undefined) {
+            set = new Set<TypeMetadata>();
+            this._derivedTypes = set;
+        }
+        return set;
+    }
+
+    get rootType(): TypeMetadata {
+        let rootMetadata = this._rootType;
+        if (rootMetadata === undefined) {
+            rootMetadata = this.superType?.rootType ?? this;
+        }
+        return rootMetadata;
     }
 
     get declaredFieldMap(): ReadonlyMap<string, FieldMetadata> {
@@ -76,17 +97,20 @@ export class TypeMetadata {
 
     setSuperType(superType: string) {
         this.schema.preChange();
-        if (this._fieldMap !== undefined) {
-            throw new Error("The current type is frozen becasue the fieldMap is cached");
+        if (this._superType !== undefined) {
+            throw new Error(`Cannot set the super type for "${this.name}" more than once`);
         }
         if (this.category !== "OBJECT") {
             throw new Error(`Cannot set the super type for "${this.name}" because its category is not "OBJECT"`);
         }
-        if (this._superType !== undefined) {
-            throw new Error(`Cannot set the super type for "${this.name}" more than once`);
-        }
         if (this._idField !== undefined) {
             throw new Error(`Cannot set the super type for "${this.name}" because its id field has been specified`);
+        }
+        if (this._rootType !== undefined) {
+            throw new Error(`Cannot set the super type for "${this.name}" because its rootType is cached`);
+        }
+        if (this._fieldMap !== undefined) {
+            throw new Error("The current type is frozen becasue its fieldMap is cached");
         }
         this._superType = superType;
     }

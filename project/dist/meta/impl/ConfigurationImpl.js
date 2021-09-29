@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.newConfiguration = void 0;
+const StateManagerImpl_1 = require("../../state/impl/StateManagerImpl");
 const SchemaMetadata_1 = require("./SchemaMetadata");
 function newConfiguration() {
     return new ConfigurationImpl();
@@ -10,16 +11,16 @@ class ConfigurationImpl {
     constructor() {
         this.schema = new SchemaMetadata_1.SchemaMetadata();
     }
-    addObjectType(objectTypeRef) {
-        this.schema.addType("OBJECT", objectTypeRef.name);
+    addObjectType(typeRef) {
+        this.schema.addType("OBJECT", typeRef.name);
         return this;
     }
-    addConnectionType(objectTypeRef) {
-        this.schema.addType("CONNECTION", objectTypeRef.name);
+    addConnectionType(typeRef) {
+        this.schema.addType("CONNECTION", typeRef.name);
         return this;
     }
-    addEdgeType(objectTypeRef) {
-        this.schema.addType("EDGE", objectTypeRef.name);
+    addEdgeType(typeRef) {
+        this.schema.addType("EDGE", typeRef.name);
         return this;
     }
     setObjectType(typeName, typeConfigurer) {
@@ -34,7 +35,10 @@ class ConfigurationImpl {
         return this;
     }
     buildStateManager() {
-        throw new Error();
+        for (const [name, type] of this.schema.typeMap) {
+            type.idField;
+        }
+        return new StateManagerImpl_1.StateManagerImpl(this.schema);
     }
 }
 class TypeConfigurationImpl {
@@ -51,6 +55,7 @@ class TypeConfigurationImpl {
     }
     reference(name, referencedTypeName, options) {
         this.type.addField("REFERENCE", name, {
+            targetTypeName: referencedTypeName,
             undefinable: options === null || options === void 0 ? void 0 : options.undefinable,
             deleteOperation: options === null || options === void 0 ? void 0 : options.deleteOperation,
             mappedBy: options === null || options === void 0 ? void 0 : options.mappedBy
@@ -58,11 +63,19 @@ class TypeConfigurationImpl {
         return this;
     }
     list(name, elementTypeName, options) {
-        this.type.addField("LIST", name, { mappedBy: options === null || options === void 0 ? void 0 : options.mappedBy });
+        this.type.addField("LIST", name, {
+            targetTypeName: elementTypeName,
+            mappedBy: options === null || options === void 0 ? void 0 : options.mappedBy
+        });
         return this;
     }
     connection(name, collectionTypeName, edgeTypeName, nodeTypeName, options) {
-        this.type.addField("CONNECTION", name, { mappedBy: options === null || options === void 0 ? void 0 : options.mappedBy });
+        this.type.addField("CONNECTION", name, {
+            connectionTypeName: collectionTypeName,
+            edgeTypeName: edgeTypeName,
+            targetTypeName: nodeTypeName,
+            mappedBy: options === null || options === void 0 ? void 0 : options.mappedBy
+        });
         return this;
     }
     mappedBy(fieldName, oppositeFieldName) {
