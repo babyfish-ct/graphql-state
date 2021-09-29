@@ -1,12 +1,17 @@
 import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
+import { Shape } from "../meta/Shape";
+import { BatchEntityRequest } from "./BatchEntityRequest";
 import { ModificationContext } from "./ModificationContext";
 import { Record } from "./Record";
 import { RecordManager } from "./RecordManager";
 import { RecordRef } from "./RecordRef";
+import { RuntimeShape } from "./RuntimeShape";
 
 export class EntityManager {
 
     private recordManagerMap = new Map<string, RecordManager>();
+
+    readonly batchEntityRequest: BatchEntityRequest = new BatchEntityRequest(this);
     
     constructor(readonly schema: SchemaMetadata) {}
 
@@ -34,5 +39,10 @@ export class EntityManager {
 
     save(ctx: ModificationContext, typeName: string, obj: any) {
         return this.recordManager(typeName).save(ctx, obj);
+    }
+
+    loadByIds(ids: any[], shape: RuntimeShape): Promise<any[]> {
+        console.log(ids, JSON.stringify(shape));
+        throw new Error("bathcLoad is not implemented");
     }
 }

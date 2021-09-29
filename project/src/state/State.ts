@@ -36,7 +36,7 @@ export interface StateFactory<TSchema extends SchemaTypes> {
     createParameterizedAsyncState<T, TVariables>( 
         valueSupplier: (ctx: ParameterizedAsyncContext<TSchema, T, TVariables>, variables: TVariables) => Promise<T>,
         options?: ComputedStateCreationOptions
-    ): ParameterizedState<T, TVariables>;
+    ): ParameterizedAsyncState<T, TVariables>;
 }
 
 export type State<T> = SingleState<T> | ParameterizedState<T, any>;

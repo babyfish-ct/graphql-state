@@ -1,8 +1,10 @@
 import { GraphQLFetcher } from "../gql/GraphQLFetcher";
 import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
+import { BatchEntityRequest } from "./BatchEntityRequest";
 import { EntityManager } from "./EntityManager";
 import { Record, RecordConnection } from "./Record";
+import { RuntimeShape, toRuntimeShape } from "./RuntimeShape";
 
 export class QueryContext {
 
@@ -15,15 +17,20 @@ export class QueryContext {
         options?: {}
     ): Promise<any> {
 
+        const type = this.entityMangager.schema.typeMap.get(typeName);
+        if (type === undefined) {
+            throw Error(`Illegal type name ${typeName}`);
+        }
+        const runtimeShape = toRuntimeShape(type, shape);
         try {
-            return Promise.resolve(this.findObjectByShape(typeName, id, shape));
+            return Promise.resolve(this.findObjectByShape(id, runtimeShape));
         } catch (ex) {
             if (!ex[" $canNotFoundFromCache"]) {
                 throw ex;
             }
         }
 
-        throw new Error("No object in cache");
+        return this.entityMangager.batchEntityRequest.requestByShape(id, runtimeShape);
     }
 
     queryObjectByFetcher(
@@ -46,11 +53,10 @@ export class QueryContext {
     }
 
     private findObjectByShape(
-        typeName: string, 
         id: any, 
-        shape: object
+        shape: RuntimeShape
     ): any {
-        const ref = this.entityMangager.findById(typeName, id);
+        const ref = this.entityMangager.findById(shape.typeName, id);
         if (ref === undefined) {
             canNotFoundFromCache();
         }
@@ -58,7 +64,7 @@ export class QueryContext {
             return undefined;
         }
         return mapRecordByShape(
-            this.entityMangager.schema.typeMap.get(typeName)!,
+            this.entityMangager.schema.typeMap.get(shape.typeName)!,
             ref.value,
             shape
         );
@@ -66,33 +72,26 @@ export class QueryContext {
 }
 
 function mapRecordByShape(
-    type: TypeMetadata, 
+    type: TypeMetadata,
     record: Record, 
-    shape: object
+    runtimeSchape: RuntimeShape
 ): any {
     const idFieldName = type.idField.name;
     const entity = { [idFieldName]: record?.id };
-    for (const fieldName in shape) {
-        const childShape = shape[fieldName];
-        if (childShape) {
-            const variables = childShape[" $variables"];
-            const field = type.fieldMap.get(fieldName);
-            if (field?.isAssociation) {
-                const association = record.getAssociation(field, variables);
-                if (association === undefined && !record.hasAssociation(field, variables)) {
-                    canNotFoundFromCache();
-                }
-                entity[fieldName] = mapAssociationByShape(field, association, typeof childShape === "object" ? childShape : {});
-            } else if (fieldName !== idFieldName) {
-                if (variables !== undefined) {
-                    throw new Error(`Can query ${type.name}.${fieldName}, cannot specifiy variables for scalar field`);
-                }
-                const scalar = record.getSalar(fieldName);
-                if (scalar === undefined && !record.hasScalar(fieldName)) {
-                    canNotFoundFromCache();
-                }
-                entity[fieldName] = scalar;
+    for (const field of runtimeSchape.fields) {
+        if (field.childShape !== undefined) {
+            const fieldMetadata = type.fieldMap.get(field.name)!
+            const association = record.getAssociation(fieldMetadata, field.variables);
+            if (association === undefined && !record.hasAssociation(fieldMetadata, field.variables)) {
+                canNotFoundFromCache();
             }
+            entity[field.alias ?? field.name] = mapAssociationByShape(fieldMetadata, association, field.childShape);
+        } else if (field.name !== idFieldName) {
+            const scalar = record.getSalar(field.name);
+            if (scalar === undefined && !record.hasScalar(field.name)) {
+                canNotFoundFromCache();
+            }
+            entity[field.alias ?? field.name] = scalar;
         }
     }
     return entity;
@@ -101,7 +100,7 @@ function mapRecordByShape(
 function mapAssociationByShape(
     field: FieldMetadata,
     association: Record | ReadonlyArray<Record | undefined> | RecordConnection | undefined,
-    shape: object
+    shape: RuntimeShape
 ): any {
     
     if (association === undefined) {

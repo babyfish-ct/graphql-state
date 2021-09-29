@@ -66,8 +66,7 @@ export function useStateAccessor<T>(
 }
 
 export function useStateAsyncValue<T>(
-    state: SingleAsyncState<T>,
-    options?: StateAccessingOptions
+    state: SingleAsyncState<T>
 ): UseStateAsyncValueHookResult<T>;
 
 export function useStateAsyncValue<T, TVariables>(

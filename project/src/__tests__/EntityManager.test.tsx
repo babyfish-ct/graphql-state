@@ -5,7 +5,7 @@ import { newConfiguration } from "../meta/impl/ConfigurationImpl";
 import { SchemaOf } from "../meta/SchemaTypes";
 import { ObjectTypeOf } from "../meta/Shape";
 import { makeStateFactory } from "../state/State";
-import { useStateValue } from "../state/StateHook";
+import { useStateValue, useStateAsyncValue } from "../state/StateHook";
 import { StateManagerProvider } from "../state/StateManagerProvider";
 
 interface Department {
@@ -41,6 +41,7 @@ const stateManager = cfg.buildStateManager();
 
 stateManager.saveObject("Department", { id: "id-1", name: "Market" });
 stateManager.saveObject("Department", { id: "id-2", name: "Sales" });
+stateManager.saveObject("Department", { id: "id-3", name: "Test" });
 stateManager.saveObject("Employee", { id: "id-1", name: "Jim", department: { id: "id-1" } });
 stateManager.saveObject("Employee", { id: "id-2", name: "Kate", department: { id: "id-1" } });
 stateManager.saveObject("Employee", { id: "id-3", name: "Tim", department: { id: "id-2" } });
@@ -97,6 +98,12 @@ const Test = memo(() => {
     const department1 = useStateValue(departmentState, {
         variables: { id: "id-1" } 
     });
+    // useStateAsyncValue(departmentState, {
+    //     variables: { id: "id-2" } 
+    // });
+    // useStateAsyncValue(departmentState, {
+    //     variables: { id: "id-3" } 
+    // });
 
     console.log("result---------------------", employee);
     console.log("result---------------------", employee2);
@@ -126,4 +133,11 @@ test("Test EntityManager", async () => {
     );
 
     await waitForElementToBeRemoved(() => screen.queryByTestId("loading"));
+    await delay(1000);
 });
+
+function delay(millis: number): Promise<void> {
+    return new Promise(resolve => {
+        setTimeout(resolve, millis);
+    });
+}
