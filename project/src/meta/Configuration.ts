@@ -1,62 +1,7 @@
 import { StateManager } from "../state/StateManager";
-import { SchemaMetadata } from "./impl/SchemaMetadata";
-import { ObjectType, ConfigurationSchemaTypes } from "./SchemaTypes";
-import { TypeConfiguration } from "./TypeConfiguration";
+import { ScheamType } from "./SchemaType";
 
-export interface Configuration<TConfigurationSchema extends ConfigurationSchemaTypes> {
+export interface Configuration<TSchema extends ScheamType> {
 
-    addObjectType<
-        TObjectType extends ObjectType, 
-        TName extends string
-    >(
-        typeRef: TypeRef<TObjectType, TName>,
-    ): Configuration<
-        TConfigurationSchema & 
-        { 
-            objectTypes: { readonly [key in TName]: TObjectType }
-        }
-    >;
-
-    addConnectionType<TObjectType extends ObjectType, TName extends string>(
-        typeRef: TypeRef<TObjectType, TName>
-    ): Configuration<
-        TConfigurationSchema & 
-        { collectionTypes: { readonly [key in TName]: TObjectType}}
-    >;
-
-    addEdgeType<TObjectType extends ObjectType, TName extends string>(
-        typeRef: TypeRef<TObjectType, TName>
-    ): Configuration<
-        TConfigurationSchema & 
-        { edgeTypes: { readonly [key in TName]: TObjectType}}
-    >;
-
-    setObjectType<
-        TTypeName extends keyof TConfigurationSchema["objectTypes"]
-    >(
-        typeName: TTypeName,
-        typeConfigurer: (tc: TypeConfiguration<TConfigurationSchema, TTypeName>) => void
-    ): this;
-
-    buildStateManager(): StateManager<TConfigurationSchema["objectTypes"]>;
-}
-
-export function typeRefBuilder<
-    TObjectType extends ObjectType,
->(): TypeRefBuilder<TObjectType> {
-    return { named: (name: string) => ({name} as TypeRef<TObjectType, any>) } as TypeRefBuilder<TObjectType>; 
-}
-
-export interface TypeRefBuilder<TObjectType extends ObjectType> {
-    
-    named<TName extends string>(name?: TName): TypeRef<TObjectType, TName>;
-
-    " $supressWarnings"(_1: TObjectType): void;
-}
-
-export interface TypeRef<TObjectType extends ObjectType, TName extends string> {
-    
-    readonly name: string;
-
-    " $supressWarnings"(_1: TObjectType, _2: TName): void;
+    buildStateManager(): StateManager<TSchema>;
 }

@@ -14,15 +14,15 @@ class StateManagerImpl {
     get undoManager() {
         throw new Error();
     }
-    save(typeName, obj) {
+    save(fetcher, obj, variables) {
         const ctx = new ModificationContext_1.ModificationContext();
-        this.entityManager.save(ctx, typeName, obj);
+        this.entityManager.save(ctx, fetcher, obj);
         ctx.fireEvents(e => {
             this.publishEntityChangeEvent(e);
         });
     }
     delete(typeName, id) {
-        return false;
+        throw new Error("Unsupported operation exception");
     }
     addListener(listener) {
         this.addEntityStateListener(undefined, listener);

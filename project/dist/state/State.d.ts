@@ -1,8 +1,7 @@
-import { GraphQLFetcher } from "../gql/GraphQLFetcher";
-import { SchemaTypes } from "../meta/SchemaTypes";
-import { ObjectTypeOf, Shape } from "../meta/Shape";
-export declare function makeStateFactory<TSchema extends SchemaTypes = {}>(): StateFactory<TSchema>;
-export interface StateFactory<TSchema extends SchemaTypes> {
+import { Fetcher } from "graphql-ts-client-api";
+import { ScheamType } from "../meta/SchemaType";
+export declare function makeStateFactory<TSchema extends ScheamType = {}>(): StateFactory<TSchema>;
+export interface StateFactory<TSchema extends ScheamType> {
     createState<T>(defaultValue: T, options?: WritableStateCreationOptions<T>): SingleWritableState<T>;
     createParameterizedState<T, TVariables>(defaultValue: T | ((variables: TVariables) => T), options?: WritableStateCreationOptions<T>): ParameterizedWritableState<T, TVariables>;
     createComputedState<T>(valueSupplier: (ctx: ComputedContext<TSchema>) => T, options?: ComputedStateCreationOptions): SingleComputedState<T>;
@@ -55,23 +54,17 @@ export interface ParameterizedAsyncState<T, TVariables> {
     readonly " $options"?: ComputedStateCreationOptions;
     " $supressWarnings"(_1: T, _2: TVariables): void;
 }
-export interface ComputedContext<TSchema extends SchemaTypes> {
+export interface ComputedContext<TSchema extends ScheamType> {
     <X>(state: SingleWritableState<X> | SingleComputedState<X>, options?: StateAccessingOptions): X;
     <X, XVariables>(state: ParameterizedWritableState<X, XVariables> | ParameterizedComputedState<X, XVariables>, options?: ParameterizedStateAccessingOptions<XVariables>): X;
     <X>(state: SingleAsyncState<X>, options: StateAccessingOptions): Promise<X>;
     <X, XVariables>(state: ParameterizedState<X, XVariables>, options: ParameterizedStateAccessingOptions<XVariables>): Promise<X>;
-    query<TTypeName extends keyof TSchema, TShape extends Shape<TSchema[TTypeName]>>(typeName: TTypeName, id: any, shape: TShape, options?: {}): Promise<ObjectTypeOf<TSchema[TTypeName], TShape> | undefined>;
-    query<TData extends object, TVariables extends object>(id: any, fetcher: GraphQLFetcher<Exclude<string, "Query" | "Mutation">, TData, TVariables>, options?: {
-        readonly variables?: TVariables;
-    }): Promise<TData | undefined>;
-    query<TData extends object, TVariables extends object>(fetcher: GraphQLFetcher<"Query", TData, TVariables>, options?: {
-        readonly variables?: TVariables;
-    }): Promise<TData>;
+    query<TName extends Exclude<keyof TSchema & string, "Query" | "Mutation">, T extends object, TVaraibles extends object>(fetcher: Fetcher<TName, T, TVaraibles>, id: TSchema[TName][" $id"], variables?: TVaraibles): Promise<T | undefined>;
 }
-export interface ParameterizedComputedContext<TSchema extends SchemaTypes, T, TVariables> extends ComputedContext<TSchema> {
+export interface ParameterizedComputedContext<TSchema extends ScheamType, T, TVariables> extends ComputedContext<TSchema> {
     self(options: ParameterizedStateAccessingOptions<TVariables>): T;
 }
-export interface ParameterizedAsyncContext<TSchema extends SchemaTypes, T, TVariables> extends ComputedContext<TSchema> {
+export interface ParameterizedAsyncContext<TSchema extends ScheamType, T, TVariables> extends ComputedContext<TSchema> {
     self(options: ParameterizedStateAccessingOptions<TVariables>): Promise<T>;
 }
 export declare type StatePropagation = "REQUIRED" | "REQUIRES_NEW" | "MANDATORY";

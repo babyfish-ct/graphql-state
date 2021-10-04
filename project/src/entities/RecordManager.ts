@@ -4,6 +4,7 @@ import { EntityManager } from "./EntityManager";
 import { ModificationContext } from "./ModificationContext";
 import { Record } from "./Record";
 import { RecordRef } from "./RecordRef";
+import { RuntimeShape } from "./RuntimeShape";
 
 export class RecordManager {
 
@@ -57,17 +58,17 @@ export class RecordManager {
         return record;
     }
 
-    save(ctx: ModificationContext, obj: any) {
+    save(ctx: ModificationContext, shape: RuntimeShape, obj: any) {
         if (typeof obj !== "object" || Array.isArray(obj)) {
             throw new Error("obj can only be plain object");
         }
         const idFieldName = this.type.idField.name;
         const id = obj[idFieldName];
         const fieldMap = this.type.fieldMap;
-        for (const fieldName in obj) { 
-            if (fieldName !== idFieldName) {
-                const manager = this.fieldManagerMap.get(fieldName) ?? this;
-                manager.set(ctx, id, fieldName, fieldMap.get(fieldName), undefined, undefined, obj[fieldName]);
+        for (const field of shape.fields) { 
+            if (field.name !== idFieldName) {
+                const manager = this.fieldManagerMap.get(field.name) ?? this;
+                manager.set(ctx, id, field.name, fieldMap.get(field.name), undefined, undefined, obj[field.name]);
             }
         }
     }

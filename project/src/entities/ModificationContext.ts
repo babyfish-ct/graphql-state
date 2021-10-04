@@ -1,13 +1,12 @@
+import { EntityChangeEvent } from "..";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
-import { ObjectType } from "../meta/SchemaTypes";
-import { EntityChangedEvent, ChangedType } from "../state/ChangedEntity";
 import { Record } from "./Record";
 
 export class ModificationContext {
 
     private objPairMap = new Map<TypeMetadata, Map<any, ObjectPair>>();
 
-    fireEvents(trigger: (event: EntityChangedEvent<any>) => void) {
+    fireEvents(trigger: (event: EntityChangeEvent) => void) {
         for (const [type, subMap] of this.objPairMap) {
             for (const [id, objectPair] of subMap) {
                 const fieldNames = new Set<string>();
@@ -33,18 +32,18 @@ export class ModificationContext {
                     }
                 }
                 if (oldValueMap.size !== 0 || newValueMap.size !== 0) {
-                    const event = new EntityChangedEventImpl<any>(
-                        type.name,
-                        id,
-                        objectPair.oldObj !== undefined && objectPair.newObj !== undefined ? 
-                        "UPDATE" : (
-                            objectPair.newObj !== undefined ? "INSERT" : "DELETE"
-                        ),
-                        fieldNames,
-                        oldValueMap.size === 0 ? undefined : oldValueMap,
-                        newValueMap.size === 0 ? undefined : newValueMap
-                    );
-                    trigger(event);
+                    // const event = new EntityChangeEventImpl(
+                    //     type.name,
+                    //     id,
+                    //     objectPair.oldObj !== undefined && objectPair.newObj !== undefined ? 
+                    //     "UPDATE" : (
+                    //         objectPair.newObj !== undefined ? "INSERT" : "DELETE"
+                    //     ),
+                    //     fieldNames,
+                    //     oldValueMap.size === 0 ? undefined : oldValueMap,
+                    //     newValueMap.size === 0 ? undefined : newValueMap
+                    // );
+                    // trigger(event);
                 }
             }
         }
@@ -117,33 +116,28 @@ interface ObjectPair {
     newObj?: Map<string, any>;
 }
 
-class EntityChangedEventImpl<TEntity extends ObjectType> implements EntityChangedEvent<TEntity> {
+class EntityChangeEventImpl implements EntityChangeEvent {
 
     constructor(
         readonly typeName: string,
-        readonly id: string,
-        readonly changedType: ChangedType,
-        readonly fieldNames: ReadonlySet<keyof TEntity>,
-        private oldValueMap?: ReadonlyMap<keyof TEntity, any>,
-        private newValueMap?: ReadonlyMap<keyof TEntity, any>
+        readonly id: any,
+        readonly changedType: "INSERT" | "UPDATE" | "DELETE",
+        readonly changedKeys: ReadonlyArray<
+            string | {
+                readonly name: string,
+                readonly variables: any
+            }
+        >,
+        oldValueMap: ReadonlyMap<string, any>,
+        newValueMap: ReadonlyMap<string, any>
     ) {
     }
-    
-    oldValue<TFieldName extends keyof TEntity>(
-        fieldName: TFieldName
-    ): TEntity[TFieldName] | undefined {
-        if (!this.fieldNames.has(fieldName)) {
-            throw new Error(`Cannot get old value of field "${fieldName}" because it's not changed`);
-        }
-        return this.oldValueMap?.get(fieldName) as TEntity[TFieldName] | undefined;
+  
+    oldValue(key: string, variables?: any): any {
+
     }
 
-    newValue<TFieldName extends keyof TEntity>(
-        fieldName: TFieldName
-    ): TEntity[TFieldName] | undefined {
-        if (!this.fieldNames.has(fieldName)) {
-            throw new Error(`Cannot get new value of field "${fieldName}" because it's not changed`);
-        }
-        return this.newValueMap?.get(fieldName) as TEntity[TFieldName] | undefined;
+    newValue(key: string, variables?: any): any {
+
     }
 }

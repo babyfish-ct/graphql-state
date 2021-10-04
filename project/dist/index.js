@@ -1,8 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.StateScope = exports.StateManagerProvider = exports.makeManagedObjectHooks = exports.useStateAsyncValue = exports.useStateAccessor = exports.useStateValue = exports.useStateManager = exports.makeStateFactory = exports.newConfiguration = exports.typeRefBuilder = void 0;
-var Configuration_1 = require("./meta/Configuration");
-Object.defineProperty(exports, "typeRefBuilder", { enumerable: true, get: function () { return Configuration_1.typeRefBuilder; } });
+exports.StateScope = exports.StateManagerProvider = exports.makeManagedObjectHooks = exports.useStateAsyncValue = exports.useStateAccessor = exports.useStateValue = exports.useStateManager = exports.makeStateFactory = exports.newConfiguration = void 0;
 var ConfigurationImpl_1 = require("./meta/impl/ConfigurationImpl");
 Object.defineProperty(exports, "newConfiguration", { enumerable: true, get: function () { return ConfigurationImpl_1.newConfiguration; } });
 var State_1 = require("./state/State");

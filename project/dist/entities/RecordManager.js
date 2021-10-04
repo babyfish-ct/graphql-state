@@ -44,7 +44,7 @@ class RecordManager {
         (_a = this.superManager) === null || _a === void 0 ? void 0 : _a.saveId(ctx, id);
         return record;
     }
-    save(ctx, obj) {
+    save(ctx, shape, obj) {
         var _a;
         if (typeof obj !== "object" || Array.isArray(obj)) {
             throw new Error("obj can only be plain object");
@@ -52,10 +52,10 @@ class RecordManager {
         const idFieldName = this.type.idField.name;
         const id = obj[idFieldName];
         const fieldMap = this.type.fieldMap;
-        for (const fieldName in obj) {
-            if (fieldName !== idFieldName) {
-                const manager = (_a = this.fieldManagerMap.get(fieldName)) !== null && _a !== void 0 ? _a : this;
-                manager.set(ctx, id, fieldName, fieldMap.get(fieldName), undefined, undefined, obj[fieldName]);
+        for (const field of shape.fields) {
+            if (field.name !== idFieldName) {
+                const manager = (_a = this.fieldManagerMap.get(field.name)) !== null && _a !== void 0 ? _a : this;
+                manager.set(ctx, id, field.name, fieldMap.get(field.name), undefined, undefined, obj[field.name]);
             }
         }
     }

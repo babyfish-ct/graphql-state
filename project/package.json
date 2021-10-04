@@ -11,11 +11,13 @@
   ],
   "dependencies": {
     "@types/react": "^17.0.24",
+    "graphql-ts-client-api": "^3.0.0",
     "react": "^17.0.2"
   },
   "devDependencies": {
     "@testing-library/react": "^12.1.0",
     "@types/jest": "^27.0.2",
+    "graphql-ts-client-codegen": "^3.0.0",
     "jest": "^27.2.1",
     "react-dom": "^17.0.2",
     "ts-jest": "^27.0.5",
@@ -23,6 +25,7 @@
   },
   "scripts": {
     "test": "jest",
-    "coverage": "jest --coverage"
+    "coverage": "jest --coverage",
+    "codegen": "node scripts/GraphQLCodeGenerator.js"
   }
 }

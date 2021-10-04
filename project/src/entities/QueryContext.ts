@@ -1,4 +1,4 @@
-import { GraphQLFetcher } from "../gql/GraphQLFetcher";
+import { Fetcher } from "graphql-ts-client-api";
 import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { BatchEntityRequest } from "./BatchEntityRequest";
@@ -10,20 +10,19 @@ export class QueryContext {
 
     constructor(private entityMangager: EntityManager) {}
 
-    queryObjectByShape(
-        typeName: string, 
-        id: any, 
-        shape: any, 
-        options?: {}
+    queryObject(
+        fetcher: Fetcher<string, object, object>,
+        id: any,
+        variables?: object
     ): Promise<any> {
 
-        const type = this.entityMangager.schema.typeMap.get(typeName);
+        const type = this.entityMangager.schema.typeMap.get(fetcher.fetchableType.name);
         if (type === undefined) {
-            throw Error(`Illegal type name ${typeName}`);
+            throw Error(`Illegal type name ${fetcher.fetchableType.name}`);
         }
-        const runtimeShape = toRuntimeShape(type, shape);
+        const runtimeShape = toRuntimeShape(fetcher, variables);
         try {
-            return Promise.resolve(this.findObjectByShape(id, runtimeShape));
+            return Promise.resolve(this.findObject(id, runtimeShape));
         } catch (ex) {
             if (!ex[" $canNotFoundFromCache"]) {
                 throw ex;
@@ -33,26 +32,7 @@ export class QueryContext {
         return this.entityMangager.batchEntityRequest.requestByShape(id, runtimeShape);
     }
 
-    queryObjectByFetcher(
-        id: any, 
-        fetcher: GraphQLFetcher<string, any, any>, 
-        options?: {
-            readonly variables: any
-        }
-    ): Promise<any> {
-        throw new Error();
-    }
-
-    queryByFetcher(
-        fetcher: GraphQLFetcher<string, any, any>, 
-        options?: {
-            readonly variables: any
-        }
-    ): Promise<any> {
-        throw new Error();
-    }
-
-    private findObjectByShape(
+    private findObject(
         id: any, 
         shape: RuntimeShape
     ): any {
@@ -63,7 +43,7 @@ export class QueryContext {
         if (ref.value === undefined) {
             return undefined;
         }
-        return mapRecordByShape(
+        return mapRecord(
             this.entityMangager.schema.typeMap.get(shape.typeName)!,
             ref.value,
             shape
@@ -71,7 +51,7 @@ export class QueryContext {
     }
 }
 
-function mapRecordByShape(
+function mapRecord(
     type: TypeMetadata,
     record: Record, 
     runtimeSchape: RuntimeShape
@@ -85,7 +65,7 @@ function mapRecordByShape(
             if (association === undefined && !record.hasAssociation(fieldMetadata, field.variables)) {
                 canNotFoundFromCache();
             }
-            entity[field.alias ?? field.name] = mapAssociationByShape(fieldMetadata, association, field.childShape);
+            entity[field.alias ?? field.name] = mapAssociation(fieldMetadata, association, field.childShape);
         } else if (field.name !== idFieldName) {
             const scalar = record.getSalar(field.name);
             if (scalar === undefined && !record.hasScalar(field.name)) {
@@ -97,7 +77,7 @@ function mapRecordByShape(
     return entity;
 }
 
-function mapAssociationByShape(
+function mapAssociation(
     field: FieldMetadata,
     association: Record | ReadonlyArray<Record | undefined> | RecordConnection | undefined,
     shape: RuntimeShape
@@ -116,7 +96,7 @@ function mapAssociationByShape(
             edges: connection.edges.map(edge => {
                 return {
                     ...edge,
-                    node: mapRecordByShape(targetType, edge.node, shape)
+                    node: mapRecord(targetType, edge.node, shape)
                 };
             })
         };
@@ -127,10 +107,10 @@ function mapAssociationByShape(
             if (element === undefined) {
                 return undefined;
             }
-            return mapRecordByShape(targetType, element, shape);
+            return mapRecord(targetType, element, shape);
         });
     }
-    return mapRecordByShape(targetType, association as Record, shape);
+    return mapRecord(targetType, association as Record, shape);
 }
 
 function canNotFoundFromCache(): never {

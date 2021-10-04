@@ -1,6 +1,4 @@
+import { Fetcher } from "graphql-ts-client-api";
 import { Configuration } from "../Configuration";
-export declare function newConfiguration(): Configuration<{
-    objectTypes: {};
-    collectionTypes: {};
-    edgeTypes: {};
-}>;
+import { ScheamType } from "../SchemaType";
+export declare function newConfiguration<TSchema extends ScheamType>(...fethers: Fetcher<any, {}, {}>[]): Configuration<TSchema>;

@@ -1,27 +1,28 @@
+import { Fetcher } from "graphql-ts-client-api";
+import { EntityChangeEvent } from "../..";
 import { EntityManager } from "../../entities/EntityManager";
 import { SchemaMetadata } from "../../meta/impl/SchemaMetadata";
-import { SchemaTypes } from "../../meta/SchemaTypes";
-import { EntityChangedEvent } from "../ChangedEntity";
+import { ScheamType } from "../../meta/SchemaType";
 import { StateManager, TransactionStatus } from "../StateManager";
 import { ScopedStateManager } from "./ScopedStateManager";
 import { StateValue } from "./StateValue";
 import { UndoManagerImpl } from "./UndoManagerImpl";
-export declare class StateManagerImpl<TSchema extends SchemaTypes> implements StateManager<TSchema> {
+export declare class StateManagerImpl<TSchema extends ScheamType> implements StateManager<TSchema> {
     private _scopedStateManager?;
     private _stateChangeListeners;
     private _entityChagneListenerMap;
     readonly entityManager: EntityManager;
     constructor(schema?: SchemaMetadata);
     get undoManager(): UndoManagerImpl;
-    save<TTypeName extends keyof TSchema>(typeName: TTypeName, obj: Partial<TSchema[TTypeName]>): void;
-    delete<TTypeName extends keyof TSchema>(typeName: TTypeName, id: any): boolean;
-    addListener(listener: (e: EntityChangedEvent<{}>) => void): void;
-    removeListener(listener: (e: EntityChangedEvent<{}>) => void): void;
+    save<TName extends keyof TSchema & string, T extends object, TVariables extends object = {}>(fetcher: Fetcher<TName, T, any>, obj: T, variables: TVariables): void;
+    delete<TName extends keyof TSchema & string>(typeName: TName, id: TSchema[TName][" $id"]): boolean;
+    addListener(listener: (e: EntityChangeEvent) => void): void;
+    removeListener(listener: (e: EntityChangeEvent) => void): void;
     addListeners(listeners: {
-        readonly [TEntity in keyof TSchema]?: (e: EntityChangedEvent<TSchema[TEntity]>) => void;
+        readonly [TName in keyof TSchema & string]: (e: TSchema[TName][" $event"]) => void;
     }): void;
     removeListeners(listeners: {
-        readonly [TEntity in keyof TSchema]?: (e: EntityChangedEvent<TSchema[TEntity]>) => void;
+        readonly [TName in keyof TSchema & string]: (e: TSchema[TName][" $event"]) => void;
     }): void;
     registerScope(): ScopedStateManager;
     unregisterScope(scopedStateManager: ScopedStateManager): void;

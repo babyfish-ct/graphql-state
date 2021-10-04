@@ -1,23 +1,38 @@
-import { SchemaTypes } from "../meta/SchemaTypes";
-import { EntityChangedEvent } from "./ChangedEntity";
+import { FetchableType, Fetcher } from "graphql-ts-client-api";
+import { EntityChangeEvent } from "..";
+import { ScheamType } from "../meta/SchemaType";
 
-export interface StateManager<TSchema extends SchemaTypes> {
+export interface StateManager<TSchema extends ScheamType> {
 
     readonly undoManager: UndoManager;
 
     transaction<TResult>(callback: (ts: TransactionStatus) => TResult): TResult;
 
-    save<TTypeName extends keyof TSchema>(typeName: TTypeName, obj: RecursivePartial<TSchema[TTypeName]>): void;
+    save<TName extends keyof TSchema & string, T extends object, TVariables extends object = {}>(
+        fetcher: Fetcher<TName, T, any>,
+        obj: T,
+        variables: TVariables
+    ): void;
 
-    delete<TTypeName extends keyof TSchema>(typeName: TTypeName, id: any): boolean;
+    delete<TName extends keyof TSchema & string>(
+        typeName: TName, 
+        id: TSchema[TName][" $id"]
+    ): boolean;
 
-    addListener(listener: (e: EntityChangedEvent<{}>) => void): void;
+    addListener(listener: (e: EntityChangeEvent) => void): void;
 
-    removeListener(listener: (e: EntityChangedEvent<{}>) => void): void;
+    removeListener(listener: (e: EntityChangeEvent) => void): void;
 
-    addListeners(listeners: { readonly [TEntity in keyof TSchema]: (e: EntityChangedEvent<TSchema[TEntity]>) => void }): void;
+    addListeners(
+        listeners: { 
+            readonly [TName in keyof TSchema & string]: (e: TSchema[TName][" $event"]) => void 
+        }
+    ): void;
 
-    removeListeners(listeners: { readonly [TEntity in keyof TSchema]: (e: EntityChangedEvent<TSchema[TEntity]>) => void }): void;
+    removeListeners(
+        listeners: { 
+            readonly [TName in keyof TSchema & string]: (e: TSchema[TName][" $event"]) => void 
+    }): void;
 }
 
 export interface UndoManager {

@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntityManager = void 0;
 const BatchEntityRequest_1 = require("./BatchEntityRequest");
 const RecordManager_1 = require("./RecordManager");
+const RuntimeShape_1 = require("./RuntimeShape");
 class EntityManager {
     constructor(schema) {
         this.schema = schema;
@@ -28,8 +29,9 @@ class EntityManager {
     saveId(ctx, typeName, id) {
         return this.recordManager(typeName).saveId(ctx, id);
     }
-    save(ctx, typeName, obj) {
-        return this.recordManager(typeName).save(ctx, obj);
+    save(ctx, fetcher, obj, variables) {
+        const shape = RuntimeShape_1.toRuntimeShape(fetcher, variables);
+        return this.recordManager(fetcher.fetchableType.name).save(ctx, shape, obj);
     }
     loadByIds(ids, shape) {
         console.log(ids, JSON.stringify(shape));

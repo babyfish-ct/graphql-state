@@ -6,14 +6,14 @@ class QueryContext {
     constructor(entityMangager) {
         this.entityMangager = entityMangager;
     }
-    queryObjectByShape(typeName, id, shape, options) {
-        const type = this.entityMangager.schema.typeMap.get(typeName);
+    queryObject(fetcher, id, variables) {
+        const type = this.entityMangager.schema.typeMap.get(fetcher.fetchableType.name);
         if (type === undefined) {
-            throw Error(`Illegal type name ${typeName}`);
+            throw Error(`Illegal type name ${fetcher.fetchableType.name}`);
         }
-        const runtimeShape = RuntimeShape_1.toRuntimeShape(type, shape);
+        const runtimeShape = RuntimeShape_1.toRuntimeShape(fetcher, variables);
         try {
-            return Promise.resolve(this.findObjectByShape(id, runtimeShape));
+            return Promise.resolve(this.findObject(id, runtimeShape));
         }
         catch (ex) {
             if (!ex[" $canNotFoundFromCache"]) {
@@ -22,13 +22,7 @@ class QueryContext {
         }
         return this.entityMangager.batchEntityRequest.requestByShape(id, runtimeShape);
     }
-    queryObjectByFetcher(id, fetcher, options) {
-        throw new Error();
-    }
-    queryByFetcher(fetcher, options) {
-        throw new Error();
-    }
-    findObjectByShape(id, shape) {
+    findObject(id, shape) {
         const ref = this.entityMangager.findById(shape.typeName, id);
         if (ref === undefined) {
             canNotFoundFromCache();
@@ -36,11 +30,11 @@ class QueryContext {
         if (ref.value === undefined) {
             return undefined;
         }
-        return mapRecordByShape(this.entityMangager.schema.typeMap.get(shape.typeName), ref.value, shape);
+        return mapRecord(this.entityMangager.schema.typeMap.get(shape.typeName), ref.value, shape);
     }
 }
 exports.QueryContext = QueryContext;
-function mapRecordByShape(type, record, runtimeSchape) {
+function mapRecord(type, record, runtimeSchape) {
     var _a, _b;
     const idFieldName = type.idField.name;
     const entity = { [idFieldName]: record === null || record === void 0 ? void 0 : record.id };
@@ -51,7 +45,7 @@ function mapRecordByShape(type, record, runtimeSchape) {
             if (association === undefined && !record.hasAssociation(fieldMetadata, field.variables)) {
                 canNotFoundFromCache();
             }
-            entity[(_a = field.alias) !== null && _a !== void 0 ? _a : field.name] = mapAssociationByShape(fieldMetadata, association, field.childShape);
+            entity[(_a = field.alias) !== null && _a !== void 0 ? _a : field.name] = mapAssociation(fieldMetadata, association, field.childShape);
         }
         else if (field.name !== idFieldName) {
             const scalar = record.getSalar(field.name);
@@ -63,7 +57,7 @@ function mapRecordByShape(type, record, runtimeSchape) {
     }
     return entity;
 }
-function mapAssociationByShape(field, association, shape) {
+function mapAssociation(field, association, shape) {
     if (association === undefined) {
         return undefined;
     }
@@ -71,7 +65,7 @@ function mapAssociationByShape(field, association, shape) {
     if (field.category === "CONNECTION") {
         const connection = association;
         return Object.assign(Object.assign({}, connection), { edges: connection.edges.map(edge => {
-                return Object.assign(Object.assign({}, edge), { node: mapRecordByShape(targetType, edge.node, shape) });
+                return Object.assign(Object.assign({}, edge), { node: mapRecord(targetType, edge.node, shape) });
             }) });
     }
     if (field.category === "LIST") {
@@ -80,10 +74,10 @@ function mapAssociationByShape(field, association, shape) {
             if (element === undefined) {
                 return undefined;
             }
-            return mapRecordByShape(targetType, element, shape);
+            return mapRecord(targetType, element, shape);
         });
     }
-    return mapRecordByShape(targetType, association, shape);
+    return mapRecord(targetType, association, shape);
 }
 function canNotFoundFromCache() {
     throw { " $canNotFoundFromCache": true };

@@ -100,11 +100,11 @@ class InternalComputedContext {
         const queryContext = new QueryContext_1.QueryContext(this.scope.stateManager.entityManager);
         if (graphQLFetcher !== undefined) {
             if (id === undefined) {
-                return queryContext.queryObjectByFetcher(id, graphQLFetcher, options);
+                return queryContext.queryObject(id, graphQLFetcher, options);
             }
-            return queryContext.queryByFetcher(graphQLFetcher, options);
+            return queryContext.queryObject(graphQLFetcher, options);
         }
-        return queryContext.queryObjectByShape(args[0], id, args[2], options);
+        return queryContext.queryObject(args[0], id, args[2]);
     }
     onStateValueChange(e) {
         if (e.changedType === "RESULT_CHANGE" && this.dependencies.has(e.stateValue)) {

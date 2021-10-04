@@ -1,42 +1,29 @@
-import { TypeMetadata } from "../meta/impl/TypeMetdata";
+import { Fetcher, FetcherField, ParameterRef } from "graphql-ts-client-api";
+import { standardizedVariables } from "../state/impl/Variables";
 
 export interface RuntimeShape {
-    readonly " $runtimeShape": true;
     readonly typeName: string;
     readonly fields: RuntimeShapeField[];
 }
 
 export interface RuntimeShapeField {
     readonly name: string;
-    readonly alias?: string;
     readonly variables?: any;
-    readonly baseOnType?: string;
-    readonly childShape?: RuntimeShape;
+    readonly alias?: string;
+    readonly directives?: any;
+    readonly childShape?: RuntimeShape
 }
 
-export function toRuntimeShape(type: TypeMetadata, shape: any): RuntimeShape {
-    const fieldMap = new Map<string, RuntimeShapeField>();
-    for (const fieldName in shape) {
-        const shapeValue = shape[fieldName];
-        if (shapeValue) {
-            const field = type.fieldMap.get(fieldName);
-            if (field?.isAssociation) {
-                fieldMap.set(fieldName, {
-                    name: fieldName,
-                    variables: shapeValue[" $variables"],
-                    childShape: toRuntimeShape(field.targetType!, typeof shapeValue === "object" ? shapeValue : {})
-                });
-            } else {
-                if (shapeValue[" $variables"]) {
-                    throw new Error(`Illegal shape, cannot specify variables for scalar field ${type.name}.${fieldName}`);
-                }
-                fieldMap.set(fieldName, { name: fieldName });
-            }
-        }
+export function toRuntimeShape<TVariables extends object>(
+    fetcher: Fetcher<string, any, TVariables>, 
+    variables?: TVariables
+): RuntimeShape {
+    const runtimeShapeFieldMap = new Map<string, RuntimeShapeField>();
+    for (const [fieldName, field] of fetcher.fieldMap) {
+        addField(fieldName, field, runtimeShapeFieldMap, variables);
     }
-    fieldMap.set(type.idField.name, { name: type.idField.name });
     const fields: RuntimeShapeField[] = [];
-    for (const [, field] of fieldMap) {
+    for (const [, field] of runtimeShapeFieldMap) {
         fields.push(field);
     }
     fields.sort((a, b) => {
@@ -49,8 +36,112 @@ export function toRuntimeShape(type: TypeMetadata, shape: any): RuntimeShape {
         return 0;
     });
     return {
-        " $runtimeShape": true,
-        typeName: type.name,
+        typeName: fetcher.fetchableType.name,
         fields
     };
+}
+
+function addField(
+    fieldName: string,
+    field: FetcherField,
+    runtimeShapeFieldMap: Map<string, RuntimeShapeField>,
+    fetcherVaribles: any
+) {
+    if (fieldName.startsWith("...")) {
+        if (field.childFetchers !== undefined) {
+            for (const childFetcher of field.childFetchers) {
+                for (const [subFieldName, subField] of childFetcher.fieldMap) {
+                    addField(subFieldName, subField, runtimeShapeFieldMap, fetcherVaribles);
+                } 
+            }
+        }
+        return;
+    }
+    const variables = standardizedVariables(resolveParameterRefs(field.args, fetcherVaribles));
+    const alias = field.fieldOptionsValue?.alias;
+    const directives = standardizedDirectives(field, fetcherVaribles);
+    const childShape = 
+        field.childFetchers !== undefined ?
+        toRuntimeShape(field.childFetchers[0], fetcherVaribles) :
+        undefined;
+    
+    const key = 
+        variables !== undefined || alias !== undefined || directives !== undefined ?
+        `${fieldName}(${
+            variables !== undefined ? JSON.stringify(variables) : ""
+        }|${
+            alias !== undefined ? alias : ""
+        }|${
+            directives !== undefined ? JSON.stringify(directives) : ""
+        })` :
+        fieldName
+    ;
+    
+    runtimeShapeFieldMap.set(
+        key,
+        {
+            name: fieldName,
+            variables,
+            alias,
+            directives,
+            childShape
+        }
+    );
+}
+
+function standardizedDirectives(
+    field: FetcherField,
+    fetcherVaribles: any
+): any {
+    const map = {};
+    const names: string[] = [];
+    if (field.fieldOptionsValue !== undefined) {
+        for (const [name, variables] of field.fieldOptionsValue.directives) {
+            names.push(name);
+            map[name] = resolveParameterRefs(variables, fetcherVaribles);
+        }
+    }
+    if (names.length === 0) {
+        return undefined;
+    }
+    if (names.length === 1) {
+        return map;
+    }
+    names.sort();
+    const result = {};
+    for (const name of names) {
+        result[name] = map[name];
+    }
+    return result;
+}
+
+function resolveParameterRefs(
+    variables: any, 
+    fetcherVariables: any
+): any {
+    if (variables === undefined || variables === null) {
+        return undefined;
+    }
+    const names: string[] = [];
+    const resolved = {};
+    for (const name of variables) {
+        let value = variables[name];
+        if (value instanceof ParameterRef) {
+            value = fetcherVariables[value.name];
+        }
+        names.push(name);
+        resolved[name] = value;
+    }
+    if (names.length === 0) {
+        return undefined;
+    }
+    if (names.length === 1) {
+        return resolved;
+    }
+    names.sort();
+    const result = {};
+    for (const name of names) {
+        result[name] = resolved[name];
+    }
+    return result;
 }

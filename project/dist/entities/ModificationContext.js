@@ -33,9 +33,18 @@ class ModificationContext {
                     }
                 }
                 if (oldValueMap.size !== 0 || newValueMap.size !== 0) {
-                    const event = new EntityChangedEventImpl(type.name, id, objectPair.oldObj !== undefined && objectPair.newObj !== undefined ?
-                        "UPDATE" : (objectPair.newObj !== undefined ? "INSERT" : "DELETE"), fieldNames, oldValueMap.size === 0 ? undefined : oldValueMap, newValueMap.size === 0 ? undefined : newValueMap);
-                    trigger(event);
+                    // const event = new EntityChangeEventImpl(
+                    //     type.name,
+                    //     id,
+                    //     objectPair.oldObj !== undefined && objectPair.newObj !== undefined ? 
+                    //     "UPDATE" : (
+                    //         objectPair.newObj !== undefined ? "INSERT" : "DELETE"
+                    //     ),
+                    //     fieldNames,
+                    //     oldValueMap.size === 0 ? undefined : oldValueMap,
+                    //     newValueMap.size === 0 ? undefined : newValueMap
+                    // );
+                    // trigger(event);
                 }
             }
         }
@@ -96,27 +105,15 @@ class ModificationContext {
     }
 }
 exports.ModificationContext = ModificationContext;
-class EntityChangedEventImpl {
-    constructor(typeName, id, changedType, fieldNames, oldValueMap, newValueMap) {
+class EntityChangeEventImpl {
+    constructor(typeName, id, changedType, changedKeys, oldValueMap, newValueMap) {
         this.typeName = typeName;
         this.id = id;
         this.changedType = changedType;
-        this.fieldNames = fieldNames;
-        this.oldValueMap = oldValueMap;
-        this.newValueMap = newValueMap;
+        this.changedKeys = changedKeys;
     }
-    oldValue(fieldName) {
-        var _a;
-        if (!this.fieldNames.has(fieldName)) {
-            throw new Error(`Cannot get old value of field "${fieldName}" because it's not changed`);
-        }
-        return (_a = this.oldValueMap) === null || _a === void 0 ? void 0 : _a.get(fieldName);
+    oldValue(key, variables) {
     }
-    newValue(fieldName) {
-        var _a;
-        if (!this.fieldNames.has(fieldName)) {
-            throw new Error(`Cannot get new value of field "${fieldName}" because it's not changed`);
-        }
-        return (_a = this.newValueMap) === null || _a === void 0 ? void 0 : _a.get(fieldName);
+    newValue(key, variables) {
     }
 }

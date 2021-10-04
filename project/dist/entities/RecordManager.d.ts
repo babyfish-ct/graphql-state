@@ -3,6 +3,7 @@ import { EntityManager } from "./EntityManager";
 import { ModificationContext } from "./ModificationContext";
 import { Record } from "./Record";
 import { RecordRef } from "./RecordRef";
+import { RuntimeShape } from "./RuntimeShape";
 export declare class RecordManager {
     readonly entityManager: EntityManager;
     readonly type: TypeMetadata;
@@ -13,6 +14,6 @@ export declare class RecordManager {
     initializeOtherManagers(): void;
     findById(id: any): RecordRef | undefined;
     saveId(ctx: ModificationContext, id: any): Record;
-    save(ctx: ModificationContext, obj: any): void;
+    save(ctx: ModificationContext, shape: RuntimeShape, obj: any): void;
     private set;
 }

@@ -1,11 +1,11 @@
+import { Fetcher } from "graphql-ts-client-api";
 import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
-import { Shape } from "../meta/Shape";
 import { BatchEntityRequest } from "./BatchEntityRequest";
 import { ModificationContext } from "./ModificationContext";
 import { Record } from "./Record";
 import { RecordManager } from "./RecordManager";
 import { RecordRef } from "./RecordRef";
-import { RuntimeShape } from "./RuntimeShape";
+import { RuntimeShape, toRuntimeShape } from "./RuntimeShape";
 
 export class EntityManager {
 
@@ -37,8 +37,14 @@ export class EntityManager {
         return this.recordManager(typeName).saveId(ctx, id);
     }
 
-    save(ctx: ModificationContext, typeName: string, obj: any) {
-        return this.recordManager(typeName).save(ctx, obj);
+    save<T extends object, TVariable extends object>(
+        ctx: ModificationContext, 
+        fetcher: Fetcher<string, T, TVariable>,
+        obj: T,
+        variables?: TVariable
+    ) {
+        const shape = toRuntimeShape(fetcher, variables);
+        return this.recordManager(fetcher.fetchableType.name).save(ctx, shape, obj);
     }
 
     loadByIds(ids: any[], shape: RuntimeShape): Promise<any[]> {

@@ -1,12 +1,11 @@
-import { GraphQLFetcher } from "../gql/GraphQLFetcher";
-import { SchemaTypes } from "../meta/SchemaTypes";
-import { ObjectTypeOf, Shape } from "../meta/Shape";
+import { Fetcher } from "graphql-ts-client-api";
+import { ScheamType } from "../meta/SchemaType";
 
-export function makeStateFactory<TSchema extends SchemaTypes = {}>(): StateFactory<TSchema> {
+export function makeStateFactory<TSchema extends ScheamType = {}>(): StateFactory<TSchema> {
     return new StateFactoryImpl<TSchema>();
 }
 
-export interface StateFactory<TSchema extends SchemaTypes> {
+export interface StateFactory<TSchema extends ScheamType> {
 
     createState<T>(
         defaultValue: T,
@@ -108,7 +107,7 @@ export interface ParameterizedAsyncState<T, TVariables> {
     " $supressWarnings"(_1: T, _2: TVariables): void;
 }
 
-export interface ComputedContext<TSchema extends SchemaTypes> {
+export interface ComputedContext<TSchema extends ScheamType> {
     
     <X>(
         state: SingleWritableState<X> | SingleComputedState<X>, 
@@ -131,39 +130,18 @@ export interface ComputedContext<TSchema extends SchemaTypes> {
     ): Promise<X>;
 
     query<
-        TTypeName extends keyof TSchema,
-        TShape extends Shape<TSchema[TTypeName]>
+        TName extends Exclude<keyof TSchema & string, "Query" | "Mutation">,
+        T extends object,
+        TVaraibles extends object
     >(
-        typeName: TTypeName,
-        id: any,
-        shape: TShape,
-        options?: {}
-    ): Promise<ObjectTypeOf<TSchema[TTypeName], TShape> | undefined>;
-
-    query<
-        TData extends object,
-        TVariables extends object
-    >(
-        id: any,
-        fetcher: GraphQLFetcher<Exclude<string, "Query" | "Mutation">, TData, TVariables>,
-        options?: {
-            readonly variables?: TVariables
-        }
-    ): Promise<TData | undefined>;
-
-    query<
-        TData extends object,
-        TVariables extends object
-    >(
-        fetcher: GraphQLFetcher<"Query", TData, TVariables>,
-        options?: {
-            readonly variables?: TVariables
-        }
-    ): Promise<TData>;
+        fetcher: Fetcher<TName, T, TVaraibles>,
+        id: TSchema[TName][" $id"],
+        variables?: TVaraibles
+    ): Promise<T | undefined>;
 }
 
 export interface ParameterizedComputedContext<
-    TSchema extends SchemaTypes,
+    TSchema extends ScheamType,
     T,
     TVariables
 > extends ComputedContext<TSchema> {
@@ -174,7 +152,7 @@ export interface ParameterizedComputedContext<
 }
 
 export interface ParameterizedAsyncContext<
-    TSchema extends SchemaTypes,
+    TSchema extends ScheamType,
     T,
     TVariables
 > extends ComputedContext<TSchema> {
@@ -186,7 +164,7 @@ export interface ParameterizedAsyncContext<
 
 export type StatePropagation = "REQUIRED" | "REQUIRES_NEW" | "MANDATORY";
 
-class StateFactoryImpl<TSchema extends SchemaTypes> implements StateFactory<TSchema> {
+class StateFactoryImpl<TSchema extends ScheamType> implements StateFactory<TSchema> {
 
     createState<T>(
         defaultValue: T,

@@ -1,5 +1,4 @@
 import { QueryContext } from "../../entities/QueryContext";
-import { GraphQLFetcher } from "../../gql/GraphQLFetcher";
 import { ParameterizedStateAccessingOptions, State, StateAccessingOptions } from "../State";
 import { ComputedStateValue } from "./ComputedStateValue";
 import { ScopedStateManager } from "./ScopedStateManager";
@@ -122,11 +121,11 @@ export class InternalComputedContext {
         const queryContext = new QueryContext(this.scope.stateManager.entityManager);
         if (graphQLFetcher !== undefined) {
             if (id === undefined) {
-                return queryContext.queryObjectByFetcher(id, graphQLFetcher, options);
+                return queryContext.queryObject(id, graphQLFetcher, options);
             }
-            return queryContext.queryByFetcher(graphQLFetcher, options);
+            return queryContext.queryObject(graphQLFetcher, options);
         }
-        return queryContext.queryObjectByShape(args[0], id, args[2], options);
+        return queryContext.queryObject(args[0], id, args[2]);
     }
 
     private onStateValueChange(e: StateValueChangeEvent) {

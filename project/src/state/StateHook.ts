@@ -1,17 +1,16 @@
 import { useContext, useEffect, useMemo, useState } from "react";
-import { SchemaTypes } from "../meta/SchemaTypes";
 import { StateAccessingOptions, State, ParameterizedStateAccessingOptions, SingleWritableState, ParameterizedWritableState, SingleAsyncState, ParameterizedAsyncState, SingleState, ParameterizedState } from "./State";
 import { StateManager } from "./StateManager";
 import { stateContext } from "./StateManagerProvider";
-import { Shape, ObjectTypeOf, variables } from "../meta/Shape";
-import { GraphQLFetcher } from "../gql/GraphQLFetcher";
 import { StateManagerImpl, StateValueChangeEvent } from "./impl/StateManagerImpl";
 import { standardizedVariables } from "./impl/Variables";
 import { StateValue } from "./impl/StateValue";
 import { WritableStateValue } from "./impl/WritableStateValue";
 import { ComputedStateValue } from "./impl/ComputedStateValue";
+import { ScheamType } from "../meta/SchemaType";
+import { Fetcher } from "graphql-ts-client-api";
 
-export function useStateManager<TSchema extends SchemaTypes>(): StateManager<TSchema> {
+export function useStateManager<TSchema extends ScheamType>(): StateManager<TSchema> {
     const stateManager = useContext(stateContext);
     if (stateManager === undefined) {
         throw new Error("'useStateManager' cannoly be used under <StateManagerProvider/>");
@@ -82,7 +81,7 @@ export function useStateAsyncValue<T>(
     return (stateValue as ComputedStateValue).loadable as UseStateAsyncValueHookResult<T>;
 }
 
-export function makeManagedObjectHooks<TSchema extends SchemaTypes>(): ManagedObjectHooks<TSchema> {
+export function makeManagedObjectHooks<TSchema extends ScheamType>(): ManagedObjectHooks<TSchema> {
     throw new Error();
 }
 
@@ -91,55 +90,27 @@ export interface StateAccessor<T> {
     (value: T): void;
 }
 
-export interface ManagedObjectHooks<TSchema extends SchemaTypes> {
+export interface ManagedObjectHooks<TSchema extends ScheamType> {
 
     useManagedObject<
-        TTypeName extends keyof TSchema,
-        TShape extends Shape<TSchema[TTypeName]>
-    >(
-        typeName: TTypeName,
-        options: {
-            readonly id: any,
-            readonly shape: TShape
-        }
-    ): UseStateAsyncValueHookResult<ObjectTypeOf<TSchema[TTypeName], TShape> | undefined>;
-
-    useManagedObjects<
-        TTypeName extends keyof TSchema,
-        TShape extends Shape<TSchema[TTypeName]>
-    >(
-        typeName: TTypeName,
-        options: {
-            ids: readonly any[],
-            shape: TShape
-        }
-    ): UseStateAsyncValueHookResult<ReadonlyArray<ObjectTypeOf<TSchema[TTypeName], TShape> | undefined>>;
-
-    useManagedObject<
-        TTypeName extends keyof TSchema & Exclude<string, "Query" | "Mutation">,
-        TData extends object,
+        TName extends keyof TSchema & string,
+        T extends object,
         TVariables extends object
     >(
-        typeName: TTypeName,
-        options: {
-            readonly id: any,
-            readonly fetcher: GraphQLFetcher<TTypeName, TData, TVariables>,
-            readonly variables?: TVariables
-        }
-    ): UseStateAsyncValueHookResult<ObjectTypeOf<TSchema[TTypeName], TData> | undefined>;
+        fetcher: Fetcher<string, T, TVariables>,
+        id: TSchema[TName][" $id"],
+        variables?: TVariables
+    ): UseStateAsyncValueHookResult<T | undefined>;
 
     useManagedObjects<
-        TTypeName extends keyof TSchema & Exclude<string, "Query" | "Mutation">,
-        TData extends object,
+        TName extends keyof TSchema & string,
+        T extends object,
         TVariables extends object
     >(
-        typeName: TTypeName,
-        options: {
-            readonly ids: readonly any[],
-            readonly fetcher: GraphQLFetcher<TTypeName, TData, TVariables>,
-            readonly variables?: TVariables
-        }
-    ): UseStateAsyncValueHookResult<ObjectTypeOf<TSchema[TTypeName], TData> | undefined>;
+        fetcher: Fetcher<string, T, TVariables>,
+        ids: ReadonlyArray<TSchema[TName][" $id"]>,
+        variables?: TVariables
+    ): UseStateAsyncValueHookResult<ReadonlyArray<T | undefined>>;
 }
 
 export interface UseStateAsyncValueHookResult<T> {
