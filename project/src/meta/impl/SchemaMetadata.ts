@@ -1,5 +1,6 @@
+import { FetchableType } from "graphql-ts-client-api";
 import { FieldMetadata } from "./FieldMetadata";
-import { TypeMetadata, TypeMetadataCategory } from "./TypeMetdata";
+import { TypeMetadata } from "./TypeMetdata";
 
 export class SchemaMetadata {
 
@@ -13,19 +14,11 @@ export class SchemaMetadata {
         return this._typeMap;
     }
 
-    public addType(category: TypeMetadataCategory, typeName) {
-        this.preChange();
-        this.validateTypeName(typeName);
-        this._typeMap.set(typeName, new TypeMetadata(this, category, typeName));
-    }
-
-    private validateTypeName(typeName: string) {
-        if (!TYPE_NAME_PATTERN.test(typeName)) {
-            throw new Error(`typeName "${typeName}" does not match the pattern "${TYPE_NAME_PATTERN.source}"`);
+    addFetchableType(fetchableType: FetchableType<string>) {
+        if (this._typeMap.has(fetchableType.name)) {
+            throw new Error(`The type "${fetchableType.name}" is already exists`);
         }
-        if (this._typeMap.has(typeName)) {
-            throw new Error(`Cannot add the type "${typeName}" becasue it's exists`);
-        }
+        this._typeMap.set(fetchableType.name, new TypeMetadata(this, fetchableType));
     }
 
     freeze(): this {
@@ -53,5 +46,3 @@ export class SchemaMetadata {
         this._unresolvedPassiveFields = [];
     }
 }
-
-const TYPE_NAME_PATTERN = /^[_A-Za-z][_A-Za-z0-0]*$/;

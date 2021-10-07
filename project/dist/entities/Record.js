@@ -106,9 +106,6 @@ class AssociationReferenceValue extends AssociationValue {
     }
     set(ctx, entityManager, record, associationField, variablesCode, variables, value) {
         var _a, _b;
-        if (value === undefined && !associationField.isUndefinable) {
-            throw Error(`Cannot set the undefined or null value to ${associationField.fullName} because it's not undefinable`);
-        }
         const oldReference = this.referfence;
         const reference = value !== undefined ?
             entityManager.saveId(ctx, associationField.targetType.name, value.id) :

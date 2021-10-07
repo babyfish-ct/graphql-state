@@ -1,11 +1,11 @@
 import { Fetcher } from "graphql-ts-client-api";
-import { ScheamType } from "../meta/SchemaType";
+import { SchemaType } from "../meta/SchemaType";
 
-export function makeStateFactory<TSchema extends ScheamType = {}>(): StateFactory<TSchema> {
+export function makeStateFactory<TSchema extends SchemaType = {}>(): StateFactory<TSchema> {
     return new StateFactoryImpl<TSchema>();
 }
 
-export interface StateFactory<TSchema extends ScheamType> {
+export interface StateFactory<TSchema extends SchemaType> {
 
     createState<T>(
         defaultValue: T,
@@ -107,7 +107,7 @@ export interface ParameterizedAsyncState<T, TVariables> {
     " $supressWarnings"(_1: T, _2: TVariables): void;
 }
 
-export interface ComputedContext<TSchema extends ScheamType> {
+export interface ComputedContext<TSchema extends SchemaType> {
     
     <X>(
         state: SingleWritableState<X> | SingleComputedState<X>, 
@@ -129,7 +129,7 @@ export interface ComputedContext<TSchema extends ScheamType> {
         options: ParameterizedStateAccessingOptions<XVariables>
     ): Promise<X>;
 
-    query<
+    object<
         TName extends Exclude<keyof TSchema & string, "Query" | "Mutation">,
         T extends object,
         TVaraibles extends object
@@ -138,10 +138,18 @@ export interface ComputedContext<TSchema extends ScheamType> {
         id: TSchema[TName][" $id"],
         variables?: TVaraibles
     ): Promise<T | undefined>;
+
+    query<
+        T extends object,
+        TVaraibles extends object
+    >(
+        fetcher: Fetcher<"Query", T, TVaraibles>,
+        variables?: TVaraibles
+    ): Promise<T | undefined>;
 }
 
 export interface ParameterizedComputedContext<
-    TSchema extends ScheamType,
+    TSchema extends SchemaType,
     T,
     TVariables
 > extends ComputedContext<TSchema> {
@@ -152,7 +160,7 @@ export interface ParameterizedComputedContext<
 }
 
 export interface ParameterizedAsyncContext<
-    TSchema extends ScheamType,
+    TSchema extends SchemaType,
     T,
     TVariables
 > extends ComputedContext<TSchema> {
@@ -164,7 +172,7 @@ export interface ParameterizedAsyncContext<
 
 export type StatePropagation = "REQUIRED" | "REQUIRES_NEW" | "MANDATORY";
 
-class StateFactoryImpl<TSchema extends ScheamType> implements StateFactory<TSchema> {
+class StateFactoryImpl<TSchema extends SchemaType> implements StateFactory<TSchema> {
 
     createState<T>(
         defaultValue: T,

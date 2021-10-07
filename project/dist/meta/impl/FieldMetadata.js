@@ -2,51 +2,15 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FieldMetadata = void 0;
 class FieldMetadata {
-    constructor(declaringType, category, name, options) {
+    constructor(declaringType, field) {
         this.declaringType = declaringType;
-        this.category = category;
-        this.name = name;
         this._inversed = false;
-        this._undefinable = false;
-        this.fullName = `${declaringType.name}.${name}`;
-        if (category === "CONNECTION") {
-            if ((options === null || options === void 0 ? void 0 : options.connectionTypeName) === undefined) {
-                throw new Error(`Illegal connection field "${this.fullName}", collectionTypeName is required`);
-            }
-            if ((options === null || options === void 0 ? void 0 : options.edgeTypeName) === undefined) {
-                throw new Error(`Illegal connection field "${this.fullName}", edgeTypeName is required`);
-            }
-            this._connectionType = options.connectionTypeName;
-            this._edgeType = options.edgeTypeName;
-        }
-        else {
-            if ((options === null || options === void 0 ? void 0 : options.connectionTypeName) !== undefined) {
-                throw new Error(`Illegal field "${this.fullName}", the collectionTypeName should not be specified`);
-            }
-            if ((options === null || options === void 0 ? void 0 : options.edgeTypeName) !== undefined) {
-                throw new Error(`Illegal field "${this.fullName}", the edgeTypeName should not be specified`);
-            }
-        }
-        if (isAssociationCategory(category)) {
-            if ((options === null || options === void 0 ? void 0 : options.targetTypeName) === undefined) {
-                throw new Error(`Illegal association field "${this.fullName}", targetTypeName is required`);
-            }
-            this._targetType = options === null || options === void 0 ? void 0 : options.targetTypeName;
-            if ((options === null || options === void 0 ? void 0 : options.mappedBy) !== undefined) {
-                this.setOppositeFieldName(options.mappedBy);
-            }
-        }
-        else {
-            if ((options === null || options === void 0 ? void 0 : options.targetTypeName) !== undefined) {
-                throw new Error(`Illegal id field "${this.fullName}", the targetTypeName should not be specified`);
-            }
-            if ((options === null || options === void 0 ? void 0 : options.mappedBy) !== undefined) {
-                throw new Error(`Illegal id field "${this.fullName}", the mappedBy should not be specified`);
-            }
-        }
-    }
-    get isUndefinable() {
-        return this._undefinable;
+        this.name = field.name;
+        this.category = field.category;
+        this.fullName = `${declaringType.name}.${field.name}`;
+        this._connectionType = field.connectionTypeName;
+        this._edgeType = field.edgeTypeName;
+        this._targetType = field.targetTypeName;
     }
     get deleteOperation() {
         return this._deleteOperation;

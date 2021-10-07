@@ -112,8 +112,8 @@ class EntityChangeEventImpl {
         this.changedType = changedType;
         this.changedKeys = changedKeys;
     }
-    oldValue(key, variables) {
+    oldValue(changedKey) {
     }
-    newValue(key, variables) {
+    newValue(kchangedKey) {
     }
 }

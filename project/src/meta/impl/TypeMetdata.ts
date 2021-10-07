@@ -1,9 +1,14 @@
+import { FetchableField, FetchableType } from "graphql-ts-client-api";
 import { FieldMetadata, FieldMetadataCategory, FieldMetadataOptions } from "./FieldMetadata";
 import { SchemaMetadata } from "./SchemaMetadata";
 
 export class TypeMetadata {
 
-    private _superType?: string | TypeMetadata;
+    readonly name: string;
+
+    readonly category: TypeMetadataCategory;
+
+    private _superType: string | TypeMetadata | undefined;
 
     private _derivedTypes: Set<TypeMetadata> = new Set<TypeMetadata>();
 
@@ -17,27 +22,58 @@ export class TypeMetadata {
 
     constructor(
         readonly schema: SchemaMetadata,
-        readonly category: TypeMetadataCategory, 
-        readonly name: string,
-    ) {}
+        fetchableType: FetchableType<string>
+    ) {
+        this.name = fetchableType.name;
+        this.category = fetchableType.category;
+        switch (fetchableType.superTypes.length) {
+            case 0:
+                this._superType = undefined;
+                break;
+            case 1:
+                if (fetchableType.category !== 'OBJECT') {
+                    throw new Error(`The non-object type ${fetchableType.name} cannot accept super type`);
+                }
+                if (fetchableType.superTypes[0].category !== 'OBJECT') {
+                    throw new Error(`The type ${fetchableType.name} cannot accept super type ${fetchableType.superTypes[0].name} because that super class is not object type`);
+                }
+                this._superType = fetchableType.superTypes[0].name;
+                break;
+            default:
+                throw new Error(`graph-state does not support mutliple inheritance but the type "${fetchableType.name}" has ${fetchableType.superTypes.length} super types`);
+        }
+        for (const [, field] of fetchableType.declaredFields) {
+            this.addField(field);
+        }
+        if (fetchableType.name === "Query") {
+            this._idField = new FieldMetadata(this, {
+                name: "id",
+                category: "ID",
+                argGraphQLTypeMap: new Map<string, string>(),
+                isPlural: false,
+                isAssociation: false,
+                isFunction: false
+            });
+        }
+    }
 
     get superType(): TypeMetadata | undefined {
-        if (typeof this._superType !== 'string') {
-            return this._superType;
-        }
-        const superMetadata = this.schema.typeMap.get(this._superType);
-        if (superMetadata === undefined) {
-            throw new Error(`Illegal type "${this.name}" becasue its super type "${this.superType}" is not exists`);
-        }
-        const cycleTypeNames = [this.name];
-        for (let metadata: TypeMetadata | undefined = superMetadata; metadata; metadata = metadata.superType) {
-            cycleTypeNames.push(metadata.name);
-            if (metadata === this) {
-                throw new Error(`Super type reference cycle: ${cycleTypeNames.map(name => `"${name}"`).join(", ")}`);
+        let superType = this._superType;
+        if (typeof superType === "string") {
+            const superMetadata = this.schema.typeMap.get(superType);
+            if (superMetadata === undefined) {
+                throw new Error(`Illegal type "${this.name}" becasue its super type "${superType}" is not exists`);
             }
+            const cycle = [this.name];
+            for (let meta: TypeMetadata | undefined = superMetadata; meta !== undefined; meta = meta.superType) {
+                cycle.push(meta.name);
+                if (cycle[0] === meta.name) {
+                    throw new Error(`Super type reference cycle: ${cycle.map(name => `"${name}"`).join(" -> ")}`);
+                }
+            }
+            this._superType = superType = superMetadata;
         }
-        this._superType = superMetadata;
-        return superMetadata;
+        return superType as TypeMetadata;
     }
 
     get derivedType(): ReadonlySet<TypeMetadata> {
@@ -52,7 +88,7 @@ export class TypeMetadata {
     get rootType(): TypeMetadata {
         let rootMetadata = this._rootType;
         if (rootMetadata === undefined) {
-            rootMetadata = this.superType?.rootType ?? this;
+            this._rootType = rootMetadata = this.superType?.rootType ?? this;
         }
         return rootMetadata;
     }
@@ -88,46 +124,22 @@ export class TypeMetadata {
             if (this.superType !== undefined) {
                 field = this.superType.idField;
             } else {
-                throw new Error(`There is no id field in the  type "${this.name}"`);
+                throw new Error(`There is no id field in the type "${this.name}"`);
             }
             this._idField = field;
         }
         return field;
     }
 
-    setSuperType(superType: string) {
-        this.schema.preChange();
-        if (this._superType !== undefined) {
-            throw new Error(`Cannot set the super type for "${this.name}" more than once`);
-        }
-        if (this.category !== "OBJECT") {
-            throw new Error(`Cannot set the super type for "${this.name}" because its category is not "OBJECT"`);
-        }
-        if (this._idField !== undefined) {
-            throw new Error(`Cannot set the super type for "${this.name}" because its id field has been specified`);
-        }
-        if (this._rootType !== undefined) {
-            throw new Error(`Cannot set the super type for "${this.name}" because its rootType is cached`);
-        }
-        if (this._fieldMap !== undefined) {
-            throw new Error("The current type is frozen becasue its fieldMap is cached");
-        }
-        this._superType = superType;
-    }
-
-    addField(
-        category: FieldMetadataCategory,
-        name: string, 
-        options?: FieldMetadataOptions
-    ) {
+    private addField(field: FetchableField) {
         this.schema.preChange();
         if (this._fieldMap !== undefined) {
             throw new Error("The current type is frozen becasue the fieldMap is cached");
         }
-        if (this._declaredFieldMap.has(name)) {
-            throw new Error(`The field "${this.name}.${name}" is alreay exists`);
+        if (this._declaredFieldMap.has(field.name)) {
+            throw new Error(`The field "${this.name}.${field.name}" is alreay exists`);
         }
-        if (category === "ID") {
+        if (field.category === "ID") {
             if (this._superType !== undefined) {
                 throw new Error(`Cannot add id field into "${this.name}" because its super class is specified`);
             }
@@ -135,10 +147,10 @@ export class TypeMetadata {
                 throw new Error(`Cannot add id field into "${this.name}" because its id field is already specified`);
             }
         }
-        const field = new FieldMetadata(this, category, name, options);
-        this._declaredFieldMap.set(name, field);
-        if (category === "ID") {
-            this._idField = field;
+        const fieldMetadata = new FieldMetadata(this, field);
+        this._declaredFieldMap.set(fieldMetadata.name, fieldMetadata);
+        if (field.category === "ID") {
+            this._idField = fieldMetadata;
         }
     }
 

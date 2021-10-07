@@ -1,12 +1,15 @@
+import { FetchableField } from "graphql-ts-client-api";
 import { TypeMetadata } from "./TypeMetdata";
 
 export class FieldMetadata {
 
+    readonly name: string;
+
+    readonly category: FieldMetadataCategory;
+
     readonly fullName: string;
 
     private _inversed = false;
-
-    private _undefinable = false;
 
     private _deleteOperation?: "CASCADE" | "SET_UNDEFINED";
 
@@ -20,50 +23,14 @@ export class FieldMetadata {
 
     constructor(
         readonly declaringType: TypeMetadata,
-        readonly category: FieldMetadataCategory,
-        readonly name: string,
-        options?: FieldMetadataOptions
+        field: FetchableField
     ) {
-        this.fullName = `${declaringType.name}.${name}`;
-
-        if (category === "CONNECTION") {
-            if (options?.connectionTypeName === undefined) {
-                throw new Error(`Illegal connection field "${this.fullName}", collectionTypeName is required`);
-            }
-            if (options?.edgeTypeName === undefined) {
-                throw new Error(`Illegal connection field "${this.fullName}", edgeTypeName is required`);
-            }
-            this._connectionType = options.connectionTypeName;
-            this._edgeType = options.edgeTypeName;
-        } else {
-            if (options?.connectionTypeName !== undefined) {
-                throw new Error(`Illegal field "${this.fullName}", the collectionTypeName should not be specified`);
-            }
-            if (options?.edgeTypeName !== undefined) {
-                throw new Error(`Illegal field "${this.fullName}", the edgeTypeName should not be specified`);
-            }
-        }
-
-        if (isAssociationCategory(category)) {
-            if (options?.targetTypeName === undefined) {
-                throw new Error(`Illegal association field "${this.fullName}", targetTypeName is required`);
-            }
-            this._targetType = options?.targetTypeName;
-            if (options?.mappedBy !== undefined) {
-                this.setOppositeFieldName(options.mappedBy);
-            }
-        } else {
-            if (options?.targetTypeName !== undefined) {
-                throw new Error(`Illegal id field "${this.fullName}", the targetTypeName should not be specified`);
-            }
-            if (options?.mappedBy !== undefined) {
-                throw new Error(`Illegal id field "${this.fullName}", the mappedBy should not be specified`);
-            }
-        }
-    }
-
-    get isUndefinable(): boolean {
-        return this._undefinable;
+        this.name = field.name;
+        this.category = field.category;
+        this.fullName = `${declaringType.name}.${field.name}`;
+        this._connectionType = field.connectionTypeName;
+        this._edgeType = field.edgeTypeName;
+        this._targetType = field.targetTypeName;
     }
 
     get deleteOperation(): "CASCADE" | "SET_UNDEFINED" | undefined {
@@ -82,6 +49,7 @@ export class FieldMetadata {
         if (typeof this._connectionType !== "string") {
             return this._connectionType;
         }
+        
         const connectionMetadata = this.declaringType.schema.typeMap.get(this._connectionType);
         if (connectionMetadata === undefined) {
             throw new Error(`Illegal connection field "${this.fullName}", its connection type "${this._connectionType}" is not exists`);
@@ -166,7 +134,7 @@ export class FieldMetadata {
     }
 }
 
-export type FieldMetadataCategory = "ID" | "REFERENCE" | "LIST" | "CONNECTION"; 
+export type FieldMetadataCategory = "ID" | "SCALAR" | "REFERENCE" | "LIST" | "CONNECTION"; 
 
 export interface FieldMetadataOptions {
     readonly undefinable?: boolean,

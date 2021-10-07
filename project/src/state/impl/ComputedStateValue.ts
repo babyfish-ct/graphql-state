@@ -1,3 +1,4 @@
+import { Fetcher } from "graphql-ts-client-api";
 import { ParameterizedComputedState, SingleComputedState, StateUnmoutHandler } from "../State";
 import { InternalComputedContext } from "./InternalComputedContext";
 import { StateInstance } from "./StateInstance";
@@ -107,7 +108,7 @@ export class ComputedStateValue extends StateValue {
     private exportContext(ctx: InternalComputedContext): any {
         let publicContext = getFormContext.bind(ctx);
         publicContext.self = getSelfFormContext.bind(ctx);
-        publicContext.query = queryFormContext.bind(ctx);
+        publicContext.object = objectFormContext.bind(ctx);
         return publicContext;
     }
 
@@ -169,7 +170,7 @@ function getSelfFormContext(options: any): any {
     return ctx.getSelf(options);
 }
 
-function queryFormContext(...args: any[]): any {
+function objectFormContext(fetcher: Fetcher<string, object, object>, id: any, variables?: any): any {
     const ctx = this as InternalComputedContext;
-    return ctx.query.apply(ctx, args);
+    return ctx.object(fetcher, id, variables);
 }

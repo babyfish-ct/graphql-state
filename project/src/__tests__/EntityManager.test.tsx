@@ -1,94 +1,66 @@
 import { cleanup, render, waitForElementToBeRemoved, screen } from "@testing-library/react";
+import { ModelType } from "graphql-ts-client-api";
 import { memo, Suspense } from "react";
-import { typeRefBuilder } from "../meta/Configuration";
 import { newConfiguration } from "../meta/impl/ConfigurationImpl";
-import { SchemaOf } from "../meta/SchemaTypes";
-import { ObjectTypeOf } from "../meta/Shape";
 import { makeStateFactory } from "../state/State";
 import { useStateValue, useStateAsyncValue } from "../state/StateHook";
 import { StateManagerProvider } from "../state/StateManagerProvider";
+import { department$, department$$, employee$, employee$$ } from "./__generated/fetchers";
+import { newTypedConfiguration, Schema } from "./__generated/TypedConfiguration";
 
-interface Department {
-    readonly id: string;
-    readonly name: string;
-    readonly employees: Employee[];
-}
+const cfg = newTypedConfiguration();
 
-interface Employee {
-    readonly id: string;
-    readonly name: string;
-    readonly department: Department;
-}
-
-const cfg = newConfiguration()
-    .addObjectType(typeRefBuilder<Department>().named("Department"))
-    .addObjectType(typeRefBuilder<Employee>().named("Employee"))
-    .setObjectType("Department", tc => {
-        tc
-        .id("id")
-        .list("employees", "Employee")
-    })
-    .setObjectType("Employee", tc => {
-        tc
-        .id("id")
-        .reference("department", "Department")
-    })
-;
-
-const { createParameterizedAsyncState } = makeStateFactory<SchemaOf<typeof cfg>>();
+const { createParameterizedAsyncState } = makeStateFactory<Schema>();
 
 const stateManager = cfg.buildStateManager();
 stateManager.addListener(e => {
     let fields = "";
-    for (const fieldName of e.fieldNames) {
-        fields += fieldName;
+    for (const key of e.changedKeys) {
+        fields += key;
         fields += ": ";
-        fields += `[${JSON.stringify(e.oldValue(fieldName))} -> ${JSON.stringify(e.newValue(fieldName))}]`
+        fields += `[${JSON.stringify(e.oldValue(key))} -> ${JSON.stringify(e.newValue(key))}]`
         fields += ", ";
     }
     console.log(`Database trigger> ChangedType: ${e.changedType}, type: ${e.typeName}, fields: ${fields}`);
 });
 
-stateManager.save("Department", { id: "id-1", name: "Market" });
-stateManager.save("Department", { id: "id-2", name: "Sales" });
-stateManager.save("Department", { id: "id-3", name: "Test" });
-stateManager.save("Employee", { id: "id-1", name: "Jim", department: { id: "id-1" } });
-stateManager.save("Employee", { id: "id-2", name: "Kate", department: { id: "id-1" } });
-stateManager.save("Employee", { id: "id-3", name: "Tim", department: { id: "id-2" } });
-stateManager.save("Employee", { id: "id-4", name: "Mary", department: { id: "id-2" } });
-stateManager.save("Department", { id: "id-1", employees: [ { id: "id-1"}, { id: "id-2"}, { id: "id-3"} ]});
-stateManager.save("Department", { id: "id-1", employees: [ { id: "id-3"}, { id: "id-4"} ]});
+const DEPARTMENT_MUTATION_INFO = department$.id.employees(employee$.id);
+const EMPLOYEE_MUTATION_INFO = employee$$.department(department$.id);
 
-const DEPARTMENT_SHAPE = {
-    id: true,
-    name: true,
-    employees: {
-        id: true,
-        name: true
-    }
-};
+stateManager.save(department$$, { id: "id-1", name: "Market" });
+stateManager.save(department$$, { id: "id-2", name: "Sales" });
+stateManager.save(department$$, { id: "id-3", name: "Test" });
+stateManager.save(EMPLOYEE_MUTATION_INFO, { id: "id-1", name: "Jim", department: { id: "id-1" } });
+stateManager.save(EMPLOYEE_MUTATION_INFO, { id: "id-2", name: "Kate", department: { id: "id-1" } });
+stateManager.save(EMPLOYEE_MUTATION_INFO, { id: "id-3", name: "Tim", department: { id: "id-2" } });
+stateManager.save(EMPLOYEE_MUTATION_INFO, { id: "id-4", name: "Mary", department: { id: "id-2" } });
+stateManager.save(DEPARTMENT_MUTATION_INFO, { id: "id-1", employees: [ { id: "id-1"}, { id: "id-2"}, { id: "id-3"} ]});
+stateManager.save(DEPARTMENT_MUTATION_INFO, { id: "id-1", employees: [ { id: "id-3"}, { id: "id-4"} ]});
 
-const EMPLOYEE_SHAPE = {
-    id: true,
-    name: true,
-    department: {
-        id: true,
-        name: true
-    }
-};
+const DEPARTMENT_SHAPE = 
+    department$$
+    .employees(
+        employee$$
+    );
+
+const EMPLOYEE_SHAPE = 
+    employee$$
+    .department(
+        department$$
+    );
 
 const departmentState = createParameterizedAsyncState<
-    ObjectTypeOf<Employee, typeof DEPARTMENT_SHAPE> | undefined, 
+    ModelType<typeof DEPARTMENT_SHAPE> | undefined, 
     { readonly id: string }
 >(async (ctx, variables) => {
-    return await ctx.query("Department", variables.id, DEPARTMENT_SHAPE);
+    return await ctx.object(DEPARTMENT_SHAPE, variables.id);
 });
 
 const employeeState = createParameterizedAsyncState<
-    ObjectTypeOf<Employee, typeof EMPLOYEE_SHAPE> | undefined, 
+    ModelType<typeof EMPLOYEE_SHAPE> | undefined, 
     { readonly id: string }
 >(async (ctx, variables) => {
-    return await ctx.query("Employee", variables.id, EMPLOYEE_SHAPE);
+    return await ctx.object(EMPLOYEE_SHAPE, variables.id);
 });
 
 const Test = memo(() => {

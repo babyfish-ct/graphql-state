@@ -1,12 +1,12 @@
+import { FetchableType } from "graphql-ts-client-api";
 import { FieldMetadata } from "./FieldMetadata";
-import { TypeMetadata, TypeMetadataCategory } from "./TypeMetdata";
+import { TypeMetadata } from "./TypeMetdata";
 export declare class SchemaMetadata {
     private _typeMap;
     private _unresolvedPassiveFields;
     private _frozen;
     get typeMap(): ReadonlyMap<string, TypeMetadata>;
-    addType(category: TypeMetadataCategory, typeName: any): void;
-    private validateTypeName;
+    addFetchableType(fetchableType: FetchableType<string>): void;
     freeze(): this;
     preChange(): void;
     " $registerUnresolvedInversedField"(passiveField: FieldMetadata): void;

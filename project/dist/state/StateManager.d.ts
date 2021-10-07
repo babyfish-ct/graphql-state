@@ -1,10 +1,10 @@
 import { Fetcher } from "graphql-ts-client-api";
 import { EntityChangeEvent } from "..";
-import { ScheamType } from "../meta/SchemaType";
-export interface StateManager<TSchema extends ScheamType> {
+import { SchemaType } from "../meta/SchemaType";
+export interface StateManager<TSchema extends SchemaType> {
     readonly undoManager: UndoManager;
     transaction<TResult>(callback: (ts: TransactionStatus) => TResult): TResult;
-    save<TName extends keyof TSchema & string, T extends object, TVariables extends object = {}>(fetcher: Fetcher<TName, T, any>, obj: T, variables: TVariables): void;
+    save<TName extends keyof TSchema & string, T extends object, TVariables extends object = {}>(fetcher: Fetcher<TName, T, any>, obj: T, variables?: TVariables): void;
     delete<TName extends keyof TSchema & string>(typeName: TName, id: TSchema[TName][" $id"]): boolean;
     addListener(listener: (e: EntityChangeEvent) => void): void;
     removeListener(listener: (e: EntityChangeEvent) => void): void;

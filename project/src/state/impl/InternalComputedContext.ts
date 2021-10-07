@@ -1,3 +1,4 @@
+import { Fetcher } from "graphql-ts-client-api";
 import { QueryContext } from "../../entities/QueryContext";
 import { ParameterizedStateAccessingOptions, State, StateAccessingOptions } from "../State";
 import { ComputedStateValue } from "./ComputedStateValue";
@@ -96,36 +97,14 @@ export class InternalComputedContext {
         }
     }
 
-    query(...args: any[]): Promise<any> {
+    object(fetcher: Fetcher<string, object, object>, id: any, variables?: any): Promise<any> {
         
         if (this.closed) {
             throw new Error("ComputedContext has been closed");
         }
 
-        const graphQLFetcherIndex: number = 
-            args[0][" $isGraphQLFetcher"] ? 0 :
-            args[1][" $isGraphQLFetcher"] ? 1 :
-            -1
-        ;
-
-        let id: any = undefined;
-        if  (graphQLFetcherIndex === -1 || graphQLFetcherIndex === 1) {
-            id = graphQLFetcherIndex === -1 ? args[1] : args[0];
-            if (id === undefined || id === null) {
-                throw new Error("id cannot be undefined or null");
-            }
-        }
-        const graphQLFetcher = graphQLFetcherIndex !== -1 ? args[graphQLFetcherIndex] : undefined;
-        const options = graphQLFetcherIndex === -1 ? args[3] : args[graphQLFetcherIndex + 1];
-        
         const queryContext = new QueryContext(this.scope.stateManager.entityManager);
-        if (graphQLFetcher !== undefined) {
-            if (id === undefined) {
-                return queryContext.queryObject(id, graphQLFetcher, options);
-            }
-            return queryContext.queryObject(graphQLFetcher, options);
-        }
-        return queryContext.queryObject(args[0], id, args[2]);
+        return queryContext.queryObject(fetcher, id, variables);
     }
 
     private onStateValueChange(e: StateValueChangeEvent) {

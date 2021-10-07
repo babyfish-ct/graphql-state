@@ -3,13 +3,13 @@ import { EntityChangeEvent } from "../..";
 import { EntityManager } from "../../entities/EntityManager";
 import { ModificationContext } from "../../entities/ModificationContext";
 import { SchemaMetadata } from "../../meta/impl/SchemaMetadata";
-import { ScheamType } from "../../meta/SchemaType";
+import { SchemaType } from "../../meta/SchemaType";
 import { StateManager, TransactionStatus } from "../StateManager";
 import { ScopedStateManager } from "./ScopedStateManager";
 import { StateValue } from "./StateValue";
 import { UndoManagerImpl } from "./UndoManagerImpl";
 
-export class StateManagerImpl<TSchema extends ScheamType> implements StateManager<TSchema> {
+export class StateManagerImpl<TSchema extends SchemaType> implements StateManager<TSchema> {
 
     private _scopedStateManager?: ScopedStateManager;
 
@@ -30,7 +30,7 @@ export class StateManagerImpl<TSchema extends ScheamType> implements StateManage
     save<TName extends keyof TSchema & string, T extends object, TVariables extends object = {}>(
         fetcher: Fetcher<TName, T, any>,
         obj: T,
-        variables: TVariables
+        variables?: TVariables
     ): void {
         const ctx = new ModificationContext();
         this.entityManager.save(ctx, fetcher, obj);

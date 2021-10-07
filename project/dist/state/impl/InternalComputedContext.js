@@ -81,30 +81,12 @@ class InternalComputedContext {
             return stateValue.result;
         }
     }
-    query(...args) {
+    object(fetcher, id, variables) {
         if (this.closed) {
             throw new Error("ComputedContext has been closed");
         }
-        const graphQLFetcherIndex = args[0][" $isGraphQLFetcher"] ? 0 :
-            args[1][" $isGraphQLFetcher"] ? 1 :
-                -1;
-        let id = undefined;
-        if (graphQLFetcherIndex === -1 || graphQLFetcherIndex === 1) {
-            id = graphQLFetcherIndex === -1 ? args[1] : args[0];
-            if (id === undefined || id === null) {
-                throw new Error("id cannot be undefined or null");
-            }
-        }
-        const graphQLFetcher = graphQLFetcherIndex !== -1 ? args[graphQLFetcherIndex] : undefined;
-        const options = graphQLFetcherIndex === -1 ? args[3] : args[graphQLFetcherIndex + 1];
         const queryContext = new QueryContext_1.QueryContext(this.scope.stateManager.entityManager);
-        if (graphQLFetcher !== undefined) {
-            if (id === undefined) {
-                return queryContext.queryObject(id, graphQLFetcher, options);
-            }
-            return queryContext.queryObject(graphQLFetcher, options);
-        }
-        return queryContext.queryObject(args[0], id, args[2]);
+        return queryContext.queryObject(fetcher, id, variables);
     }
     onStateValueChange(e) {
         if (e.changedType === "RESULT_CHANGE" && this.dependencies.has(e.stateValue)) {

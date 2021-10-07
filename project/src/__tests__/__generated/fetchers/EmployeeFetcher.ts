@@ -110,7 +110,8 @@ export const employee$: EmployeeFetcher<{}, {}> =
                 "name", 
                 {
                     category: "REFERENCE", 
-                    name: "department"
+                    name: "department", 
+                    targetTypeName: "Department"
                 }
             ]
         ), 

@@ -67,7 +67,8 @@ export const query$: QueryFetcher<{}, {}> =
                 {
                     category: "LIST", 
                     name: "findDepartments", 
-                    argGraphQLTypeMap: {name: 'String'}
+                    argGraphQLTypeMap: {name: 'String'}, 
+                    targetTypeName: "Department"
                 }
             ]
         ), 

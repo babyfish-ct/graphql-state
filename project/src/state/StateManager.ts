@@ -1,8 +1,8 @@
 import { FetchableType, Fetcher } from "graphql-ts-client-api";
 import { EntityChangeEvent } from "..";
-import { ScheamType } from "../meta/SchemaType";
+import { SchemaType } from "../meta/SchemaType";
 
-export interface StateManager<TSchema extends ScheamType> {
+export interface StateManager<TSchema extends SchemaType> {
 
     readonly undoManager: UndoManager;
 
@@ -11,7 +11,7 @@ export interface StateManager<TSchema extends ScheamType> {
     save<TName extends keyof TSchema & string, T extends object, TVariables extends object = {}>(
         fetcher: Fetcher<TName, T, any>,
         obj: T,
-        variables: TVariables
+        variables?: TVariables
     ): void;
 
     delete<TName extends keyof TSchema & string>(

@@ -1,5 +1,6 @@
 import { EntityChangeEvent } from "..";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
+import { EntityChangedKey } from "./EntityChangeEvent";
 import { Record } from "./Record";
 
 export class ModificationContext {
@@ -133,11 +134,11 @@ class EntityChangeEventImpl implements EntityChangeEvent {
     ) {
     }
   
-    oldValue(key: string, variables?: any): any {
+    oldValue(changedKey: EntityChangedKey): any {
 
     }
 
-    newValue(key: string, variables?: any): any {
+    newValue(kchangedKey: EntityChangedKey): any {
 
     }
 }

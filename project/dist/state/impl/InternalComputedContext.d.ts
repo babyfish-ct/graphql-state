@@ -1,3 +1,4 @@
+import { Fetcher } from "graphql-ts-client-api";
 import { State, StateAccessingOptions } from "../State";
 import { ComputedStateValue } from "./ComputedStateValue";
 import { ScopedStateManager } from "./ScopedStateManager";
@@ -14,6 +15,6 @@ export declare class InternalComputedContext {
     getSelf(options?: StateAccessingOptions): any;
     get(state: State<any>, options?: StateAccessingOptions): any;
     get0(stateValue: StateValue): any;
-    query(...args: any[]): Promise<any>;
+    object(fetcher: Fetcher<string, object, object>, id: any, variables?: any): Promise<any>;
     private onStateValueChange;
 }

@@ -7,10 +7,10 @@ import { standardizedVariables } from "./impl/Variables";
 import { StateValue } from "./impl/StateValue";
 import { WritableStateValue } from "./impl/WritableStateValue";
 import { ComputedStateValue } from "./impl/ComputedStateValue";
-import { ScheamType } from "../meta/SchemaType";
+import { SchemaType } from "../meta/SchemaType";
 import { Fetcher } from "graphql-ts-client-api";
 
-export function useStateManager<TSchema extends ScheamType>(): StateManager<TSchema> {
+export function useStateManager<TSchema extends SchemaType>(): StateManager<TSchema> {
     const stateManager = useContext(stateContext);
     if (stateManager === undefined) {
         throw new Error("'useStateManager' cannoly be used under <StateManagerProvider/>");
@@ -81,7 +81,7 @@ export function useStateAsyncValue<T>(
     return (stateValue as ComputedStateValue).loadable as UseStateAsyncValueHookResult<T>;
 }
 
-export function makeManagedObjectHooks<TSchema extends ScheamType>(): ManagedObjectHooks<TSchema> {
+export function makeManagedObjectHooks<TSchema extends SchemaType>(): ManagedObjectHooks<TSchema> {
     throw new Error();
 }
 
@@ -90,7 +90,7 @@ export interface StateAccessor<T> {
     (value: T): void;
 }
 
-export interface ManagedObjectHooks<TSchema extends ScheamType> {
+export interface ManagedObjectHooks<TSchema extends SchemaType> {
 
     useManagedObject<
         TName extends keyof TSchema & string,

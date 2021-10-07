@@ -11,18 +11,11 @@ class SchemaMetadata {
     get typeMap() {
         return this._typeMap;
     }
-    addType(category, typeName) {
-        this.preChange();
-        this.validateTypeName(typeName);
-        this._typeMap.set(typeName, new TypeMetdata_1.TypeMetadata(this, category, typeName));
-    }
-    validateTypeName(typeName) {
-        if (!TYPE_NAME_PATTERN.test(typeName)) {
-            throw new Error(`typeName "${typeName}" does not match the pattern "${TYPE_NAME_PATTERN.source}"`);
+    addFetchableType(fetchableType) {
+        if (this._typeMap.has(fetchableType.name)) {
+            throw new Error(`The type "${fetchableType.name}" is already exists`);
         }
-        if (this._typeMap.has(typeName)) {
-            throw new Error(`Cannot add the type "${typeName}" becasue it's exists`);
-        }
+        this._typeMap.set(fetchableType.name, new TypeMetdata_1.TypeMetadata(this, fetchableType));
     }
     freeze() {
         this._frozen = true;
@@ -47,4 +40,3 @@ class SchemaMetadata {
     }
 }
 exports.SchemaMetadata = SchemaMetadata;
-const TYPE_NAME_PATTERN = /^[_A-Za-z][_A-Za-z0-0]*$/;

@@ -1,6 +1,6 @@
 import { EntityChangeEvent } from "..";
 
-export interface ScheamType {
+export interface SchemaType {
     readonly [key: string]: {
         readonly " $id": any;
         readonly " $event": EntityChangeEvent;
