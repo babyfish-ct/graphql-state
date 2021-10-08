@@ -25,26 +25,9 @@ stateManager.addListener(e => {
     console.log(`Database trigger> ChangedType: ${e.changedType}, type: ${e.typeName}, fields: ${fields}`);
 });
 
-const DEPARTMENT_MUTATION_INFO = department$.id.employees(
-    {descending: false},
-    employee$.id
-);
-const EMPLOYEE_MUTATION_INFO = employee$$.department(department$.id);
-
-stateManager.save(department$$, { id: "id-1", name: "Market" });
-stateManager.save(department$$, { id: "id-2", name: "Sales" });
-stateManager.save(department$$, { id: "id-3", name: "Test" });
-stateManager.save(EMPLOYEE_MUTATION_INFO, { id: "id-1", name: "Jim", department: { id: "id-1" } });
-stateManager.save(EMPLOYEE_MUTATION_INFO, { id: "id-2", name: "Kate", department: { id: "id-1" } });
-stateManager.save(EMPLOYEE_MUTATION_INFO, { id: "id-3", name: "Tim", department: { id: "id-2" } });
-stateManager.save(EMPLOYEE_MUTATION_INFO, { id: "id-4", name: "Mary", department: { id: "id-2" } });
-stateManager.save(DEPARTMENT_MUTATION_INFO, { id: "id-1", employees: [ { id: "id-1"}, { id: "id-2"}, { id: "id-3"} ]});
-stateManager.save(DEPARTMENT_MUTATION_INFO, { id: "id-1", employees: [ { id: "id-3"}, { id: "id-4"} ]});
-
 const DEPARTMENT_SHAPE = 
     department$$
     .employees(
-        { descending: false },
         employee$$
     );
 
@@ -68,14 +51,43 @@ const employeeState = createParameterizedAsyncState<
     return await ctx.object(EMPLOYEE_SHAPE, variables.id);
 });
 
+stateManager.save(
+    department$$
+    .employees(
+        employee$$
+    ), 
+    {
+        id: "id-1",
+        name: "Develop",
+        employees: [
+            { id: "id-1", name: "Jim" },
+            { id: "id-2", name: "Kate" }
+        ]
+    }
+);
+stateManager.save(
+    department$$
+    .employees(
+        employee$$
+    ), 
+    {
+        id: "id-2",
+        name: "Test",
+        employees: [
+            { id: "id-3", name: "Smith" },
+            { id: "id-4", name: "Linda" }
+        ]
+    }
+);
+
 // Test----------------------------
 
 afterEach(cleanup);
 
 const Test = memo(() => {
 
-    useStateValue(departmentState, { variables: { id: "id-1" }});
-    useStateValue(employeeState, { variables: { id: "id-1" }});
+    const department1 = useStateValue(departmentState, { variables: { id: "id-1" }});
+    const department2 = useStateValue(departmentState, { variables: { id: "id-2" }});
     return (
         <div>
             

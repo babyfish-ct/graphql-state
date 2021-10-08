@@ -136,10 +136,7 @@ function resolveParameterRefs(
         for (const name in variables) {
             let value = variables[name];
             if (value instanceof ParameterRef) {
-                if (fetcherVariables === undefined) {
-                    throw new Error(`Cannot resolve ParameterRef(${value.name}) becasue the variables of fetcher is not speicified`);
-                }
-                value = fetcherVariables[value.name];
+                value = fetcherVariables !== undefined ? fetcherVariables[value.name] : undefined;
             }
             if (value !== undefined && value !== null) {
                 names.push(name);

@@ -1,5 +1,6 @@
 import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
+import { standardizedVariables } from "../state/impl/Variables";
 import { EntityManager } from "./EntityManager";
 import { ModificationContext } from "./ModificationContext";
 import { Record } from "./Record";
@@ -65,10 +66,46 @@ export class RecordManager {
         const idFieldName = this.type.idField.name;
         const id = obj[idFieldName];
         const fieldMap = this.type.fieldMap;
-        for (const field of shape.fields) { 
-            if (field.name !== idFieldName) {
-                const manager = this.fieldManagerMap.get(field.name) ?? this;
-                manager.set(ctx, id, field.name, fieldMap.get(field.name), undefined, undefined, obj[field.name]);
+        for (const shapeField of shape.fields) { 
+            if (shapeField.name !== idFieldName) {
+                const field = fieldMap.get(shapeField.name);
+                if (field === undefined) {
+                    throw new Error(`Cannot set the non-existing field "${shapeField.name}" for type "${this.type.name}"`);
+                }
+                const manager = this.fieldManagerMap.get(shapeField.name) ?? this;
+                const variables = standardizedVariables(shapeField.variables);
+                const variablesCode = variables !== undefined ? JSON.stringify(variables) : undefined
+                const value = obj[shapeField.alias ?? shapeField.name];
+                manager.set(
+                    ctx, 
+                    id, 
+                    field, 
+                    variablesCode, 
+                    variables, 
+                    value
+                );
+                if (value !== undefined && shapeField.childShape !== undefined) {
+                    switch (field.category) {
+                        case "REFERENCE":
+                            this.save(ctx, shapeField.childShape, value);
+                            break;
+                        case "LIST":
+                            if (Array.isArray(value)) {
+                                for (const element of value) {
+                                    this.save(ctx, shapeField.childShape!, element);
+                                }
+                            }
+                            break;
+                        case "CONNECTION":
+                            const edges = value.edges;
+                            if (Array.isArray(edges)) {
+                                for (const edge of value) {
+                                    this.save(ctx, shapeField.childShape!, edge.node);
+                                }
+                            }
+                            break;
+                    }
+                }
             }
         }
     }
@@ -76,14 +113,13 @@ export class RecordManager {
     private set(
         ctx: ModificationContext, 
         id: any, 
-        fieldName: string, 
-        field: FieldMetadata | undefined,
+        field: FieldMetadata,
         variablesCode: string | undefined,
         variables: any, 
         value: any
     ) {
         const record = this.saveId(ctx, id);
-        record.set(ctx, this.entityManager, fieldName, field, variablesCode, variables, value);
+        record.set(ctx, this.entityManager, field, variablesCode, variables, value);
     }
 }
 

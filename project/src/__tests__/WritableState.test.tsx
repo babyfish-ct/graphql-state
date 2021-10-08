@@ -1,6 +1,6 @@
 import { FC, memo, useCallback } from "react";
 import { cleanup, fireEvent, render } from '@testing-library/react';
-import { StateManagerProvider, makeStateFactory, useStateValue, useStateAccessor } from '../';
+import { StateManagerProvider, makeStateFactory, useStateValue, useStateAccessor } from '..';
 
 const { createParameterizedState } = makeStateFactory();
 

@@ -1,7 +1,7 @@
 type Department {
     id: ID!
     name: String!
-    employees(descending: Boolean!): [Employee!]!
+    employees(descending: Boolean): [Employee!]!
 }
 
 type Employee {

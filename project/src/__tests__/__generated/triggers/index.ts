@@ -1,2 +1,2 @@
-export { DepartmentChangeEvent } from './DepartmentChangeEvent';
-export { EmployeeChangeEvent } from './EmployeeChangeEvent';
+export type { DepartmentChangeEvent } from './DepartmentChangeEvent';
+export type { EmployeeChangeEvent } from './EmployeeChangeEvent';

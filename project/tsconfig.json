@@ -10,7 +10,7 @@
   },
   "include": [
     "src/**/*"  
-, "babel.config.js", "test.setup.js"  ],
+, "babel.config.js", "test.setup.js", "src/__tests__/WritableState.test.tsx"  ],
   "exclude": [
     "src/__tests__/**/*",
     "node_modules",

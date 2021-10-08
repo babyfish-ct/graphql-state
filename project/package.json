@@ -1,5 +1,5 @@
 {
-  "name": "graph-state",
+  "name": "graphql-state",
   "version": "0.0.0",
   "description": "New react state managment framework",
   "author": "ChenTao",
@@ -26,6 +26,6 @@
   "scripts": {
     "test": "jest",
     "coverage": "jest --coverage",
-    "codegen": "node scripts/GraphQLCodeGenerator.js"
+    "codegen": "node scripts/codegen.js"
   }
 }

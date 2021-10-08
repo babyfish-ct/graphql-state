@@ -1,4 +1,4 @@
-import type { AcceptableVariables, UnresolvedVariables, FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
+import type { FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
 import { ObjectFetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
 import type { WithTypeName, ImplementationType } from '../CommonTypes';
 
@@ -9,29 +9,29 @@ import type { WithTypeName, ImplementationType } from '../CommonTypes';
  * 
  * So any instance of this interface is reuseable.
  */
-export interface DepartmentFetcher<T extends object, TVariables extends object> extends ObjectFetcher<'Department', T, TVariables> {
+export interface BookFetcher<T extends object, TVariables extends object> extends ObjectFetcher<'Book', T, TVariables> {
 
-    on<XName extends ImplementationType<'Department'>, X extends object, XVariables extends object>(
+    on<XName extends ImplementationType<'Book'>, X extends object, XVariables extends object>(
         child: ObjectFetcher<XName, X, XVariables>, 
         fragmentName?: string // undefined: inline fragment; otherwise, otherwise, real fragment
-    ): DepartmentFetcher<
-        XName extends 'Department' ?
+    ): BookFetcher<
+        XName extends 'Book' ?
         T & X :
-        WithTypeName<T, ImplementationType<'Department'>> & (
+        WithTypeName<T, ImplementationType<'Book'>> & (
             WithTypeName<X, ImplementationType<XName>> | 
-            {__typename: Exclude<ImplementationType<'Department'>, ImplementationType<XName>>}
+            {__typename: Exclude<ImplementationType<'Book'>, ImplementationType<XName>>}
         ), 
         TVariables & XVariables
     >;
 
 
-    directive(name: string, args?: DirectiveArgs): DepartmentFetcher<T, TVariables>;
+    directive(name: string, args?: DirectiveArgs): BookFetcher<T, TVariables>;
 
 
-    readonly __typename: DepartmentFetcher<T & {__typename: ImplementationType<'Department'>}, TVariables>;
+    readonly __typename: BookFetcher<T & {__typename: ImplementationType<'Book'>}, TVariables>;
 
 
-    readonly id: DepartmentFetcher<T & {readonly "id": string}, TVariables>;
+    readonly id: BookFetcher<T & {readonly "id": string}, TVariables>;
 
     "id+"<
         XAlias extends string = "id", 
@@ -41,7 +41,7 @@ export interface DepartmentFetcher<T extends object, TVariables extends object> 
         optionsConfigurer?: (
             options: FieldOptions<"id", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
-    ): DepartmentFetcher<
+    ): BookFetcher<
         T & (
             XDirectives extends { readonly include: any } | { readonly skip: any } ? 
                 {readonly [key in XAlias]?: string} : 
@@ -50,10 +50,10 @@ export interface DepartmentFetcher<T extends object, TVariables extends object> 
         TVariables & XDirectiveVariables
     >;
 
-    readonly "~id": DepartmentFetcher<Omit<T, 'id'>, TVariables>;
+    readonly "~id": BookFetcher<Omit<T, 'id'>, TVariables>;
 
 
-    readonly name: DepartmentFetcher<T & {readonly "name": string}, TVariables>;
+    readonly name: BookFetcher<T & {readonly "name": string}, TVariables>;
 
     "name+"<
         XAlias extends string = "name", 
@@ -63,7 +63,7 @@ export interface DepartmentFetcher<T extends object, TVariables extends object> 
         optionsConfigurer?: (
             options: FieldOptions<"name", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
-    ): DepartmentFetcher<
+    ): BookFetcher<
         T & (
             XDirectives extends { readonly include: any } | { readonly skip: any } ? 
                 {readonly [key in XAlias]?: string} : 
@@ -72,56 +72,50 @@ export interface DepartmentFetcher<T extends object, TVariables extends object> 
         TVariables & XDirectiveVariables
     >;
 
-    readonly "~name": DepartmentFetcher<Omit<T, 'name'>, TVariables>;
+    readonly "~name": BookFetcher<Omit<T, 'name'>, TVariables>;
 
 
-    employees<
+    store<
         X extends object, 
         XVariables extends object, 
-        XAlias extends string = "employees", 
-        XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+        XAlias extends string = "store", 
         XDirectiveVariables extends object = {}
     >(
-        child: ObjectFetcher<'Employee', X, XVariables>, 
+        child: ObjectFetcher<'BookStore', X, XVariables>, 
         optionsConfigurer?: (
-            options: FieldOptions<"employees", {}, {}>
-        ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
-    ): DepartmentFetcher<
-        T & (
-            XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-                {readonly [key in XAlias]?: readonly X[]} : 
-                {readonly [key in XAlias]: readonly X[]}
-        ), 
-        TVariables & XVariables & DepartmentArgs["employees"] & XDirectiveVariables
+            options: FieldOptions<"store", {}, {}>
+        ) => FieldOptions<XAlias, {readonly [key: string]: DirectiveArgs}, XDirectiveVariables>
+    ): BookFetcher<
+        T & {readonly [key in XAlias]?: X}, 
+        TVariables & XVariables & XDirectiveVariables
     >;
 
-    employees<
-        XArgs extends AcceptableVariables<DepartmentArgs['employees']>, 
+
+    authors<
         X extends object, 
         XVariables extends object, 
-        XAlias extends string = "employees", 
+        XAlias extends string = "authors", 
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        args: XArgs, 
-        child: ObjectFetcher<'Employee', X, XVariables>, 
+        child: ObjectFetcher<'Author', X, XVariables>, 
         optionsConfigurer?: (
-            options: FieldOptions<"employees", {}, {}>
+            options: FieldOptions<"authors", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
-    ): DepartmentFetcher<
+    ): BookFetcher<
         T & (
             XDirectives extends { readonly include: any } | { readonly skip: any } ? 
                 {readonly [key in XAlias]?: readonly X[]} : 
                 {readonly [key in XAlias]: readonly X[]}
         ), 
-        TVariables & XVariables & UnresolvedVariables<XArgs, DepartmentArgs['employees']> & XDirectiveVariables
+        TVariables & XVariables & XDirectiveVariables
     >;
 }
 
-export const department$: DepartmentFetcher<{}, {}> = 
+export const book$: BookFetcher<{}, {}> = 
     createFetcher(
         createFetchableType(
-            "Department", 
+            "Book", 
             "OBJECT", 
             [], 
             [
@@ -131,10 +125,14 @@ export const department$: DepartmentFetcher<{}, {}> =
                 }, 
                 "name", 
                 {
+                    category: "REFERENCE", 
+                    name: "store", 
+                    targetTypeName: "BookStore"
+                }, 
+                {
                     category: "LIST", 
-                    name: "employees", 
-                    argGraphQLTypeMap: {descending: 'Boolean'}, 
-                    targetTypeName: "Employee"
+                    name: "authors", 
+                    targetTypeName: "Author"
                 }
             ]
         ), 
@@ -142,15 +140,8 @@ export const department$: DepartmentFetcher<{}, {}> =
     )
 ;
 
-export const department$$ = 
-    department$
+export const book$$ = 
+    book$
         .id
         .name
 ;
-
-export interface DepartmentArgs {
-
-    readonly employees: {
-        readonly descending?: boolean
-    }
-}
