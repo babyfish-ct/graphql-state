@@ -20,7 +20,10 @@
 
 4. Supports behaviors similar to database row-level triggers, facilitating linkage modifications that cannot be automated by the framework because the business is too complex. In addition, this solution can concentrate all the update logic originally scattered in different UI components into the data model, reducing the redundancy of customized update logic.
 
-### 3. Not only gobal state, scopes are supported
+### 3 Http request optimization
+
+
+### 4. Not only gobal state, scopes are supported
 
 Although global state can facilitate sharing of state across component boundaries, the cost is loss of isolation.
 
@@ -30,7 +33,7 @@ This framework introduces a scope similar to most programming languages. In addi
 
 This solution allows users to no longer be limited to global state and local state, and users can balance between these two extremes at will.
 
-### 4. Transaction, SavePoint and Undo/Redo
+### Next version. Transaction, SavePoint and Undo/Redo
 
 1. Transaction: Similar to database transactions, you can rollback all uncommitted changes.
 
