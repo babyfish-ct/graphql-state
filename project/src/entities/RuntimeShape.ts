@@ -1,6 +1,9 @@
 import { Fetcher, FetcherField, ParameterRef } from "graphql-ts-client-api";
 import { standardizedVariables } from "../state/impl/Variables";
 
+/*
+ * RuntimeShape = Fetcher + Variables
+ */
 export interface RuntimeShape {
     readonly typeName: string;
     readonly fields: RuntimeShapeField[];
@@ -15,12 +18,20 @@ export interface RuntimeShapeField {
 }
 
 export function toRuntimeShape<TVariables extends object>(
-    fetcher: Fetcher<string, any, TVariables>, 
+    fetcher: Fetcher<string, object, TVariables>, 
     variables?: TVariables
+): RuntimeShape {
+    return toRuntimeShape0("", fetcher, variables);
+}
+
+export function toRuntimeShape0(
+    parentPath: string,
+    fetcher: Fetcher<string, object, object>, 
+    variables?: object
 ): RuntimeShape {
     const runtimeShapeFieldMap = new Map<string, RuntimeShapeField>();
     for (const [fieldName, field] of fetcher.fieldMap) {
-        addField(fieldName, field, runtimeShapeFieldMap, variables);
+        addField(parentPath, fieldName, field, runtimeShapeFieldMap, variables);
     }
     const fields: RuntimeShapeField[] = [];
     for (const [, field] of runtimeShapeFieldMap) {
@@ -42,6 +53,7 @@ export function toRuntimeShape<TVariables extends object>(
 }
 
 function addField(
+    parentPath: string,
     fieldName: string,
     field: FetcherField,
     runtimeShapeFieldMap: Map<string, RuntimeShapeField>,
@@ -51,34 +63,30 @@ function addField(
         if (field.childFetchers !== undefined) {
             for (const childFetcher of field.childFetchers) {
                 for (const [subFieldName, subField] of childFetcher.fieldMap) {
-                    addField(subFieldName, subField, runtimeShapeFieldMap, fetcherVaribles);
+                    addField(parentPath, subFieldName, subField, runtimeShapeFieldMap, fetcherVaribles);
                 } 
             }
         }
         return;
     }
     const variables = standardizedVariables(resolveParameterRefs(field.args, fetcherVaribles));
+    if (field.argGraphQLTypes !== undefined) {
+        for (const [name, type] of field.argGraphQLTypes) {
+            if (type.endsWith("!") && (variables === undefined || variables[name] === undefined)) {
+                throw new Error(`Illegal fetch path ${parentPath}${fieldName}, its required arguments ${name} is not specified`);
+            }
+        }
+    }
+
     const alias = field.fieldOptionsValue?.alias;
     const directives = standardizedDirectives(field, fetcherVaribles);
     const childShape = 
         field.childFetchers !== undefined ?
-        toRuntimeShape(field.childFetchers[0], fetcherVaribles) :
+        toRuntimeShape0(`${parentPath}${fieldName}/`, field.childFetchers[0], fetcherVaribles) :
         undefined;
     
-    const key = 
-        variables !== undefined || alias !== undefined || directives !== undefined ?
-        `${fieldName}(${
-            variables !== undefined ? JSON.stringify(variables) : ""
-        }|${
-            alias !== undefined ? alias : ""
-        }|${
-            directives !== undefined ? JSON.stringify(directives) : ""
-        })` :
-        fieldName
-    ;
-    
     runtimeShapeFieldMap.set(
-        key,
+        fieldName,
         {
             name: fieldName,
             variables,
@@ -91,7 +99,7 @@ function addField(
 
 function standardizedDirectives(
     field: FetcherField,
-    fetcherVaribles: any
+    fetcherVaribles: object | undefined
 ): any {
     const map = {};
     const names: string[] = [];
@@ -124,13 +132,20 @@ function resolveParameterRefs(
     }
     const names: string[] = [];
     const resolved = {};
-    for (const name of variables) {
-        let value = variables[name];
-        if (value instanceof ParameterRef) {
-            value = fetcherVariables[value.name];
+    if (variables !== undefined && variables !== null) {
+        for (const name in variables) {
+            let value = variables[name];
+            if (value instanceof ParameterRef) {
+                if (fetcherVariables === undefined) {
+                    throw new Error(`Cannot resolve ParameterRef(${value.name}) becasue the variables of fetcher is not speicified`);
+                }
+                value = fetcherVariables[value.name];
+            }
+            if (value !== undefined && value !== null) {
+                names.push(name);
+                resolved[name] = value;
+            }
         }
-        names.push(name);
-        resolved[name] = value;
     }
     if (names.length === 0) {
         return undefined;

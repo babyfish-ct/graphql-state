@@ -1,14 +1,15 @@
 import { cleanup, render, waitForElementToBeRemoved, screen } from "@testing-library/react";
 import { ModelType } from "graphql-ts-client-api";
-import { memo, Suspense } from "react";
-import { newConfiguration } from "../meta/impl/ConfigurationImpl";
+import { FC, memo, Suspense } from "react";
+import { useStateValue } from "..";
 import { makeStateFactory } from "../state/State";
-import { useStateValue, useStateAsyncValue } from "../state/StateHook";
 import { StateManagerProvider } from "../state/StateManagerProvider";
 import { department$, department$$, employee$, employee$$ } from "./__generated/fetchers";
 import { newTypedConfiguration, Schema } from "./__generated/TypedConfiguration";
 
-const cfg = newTypedConfiguration();
+const cfg = 
+    newTypedConfiguration()
+    .bidirectionalAssociation("Department", "employees", "department");
 
 const { createParameterizedAsyncState } = makeStateFactory<Schema>();
 
@@ -24,7 +25,10 @@ stateManager.addListener(e => {
     console.log(`Database trigger> ChangedType: ${e.changedType}, type: ${e.typeName}, fields: ${fields}`);
 });
 
-const DEPARTMENT_MUTATION_INFO = department$.id.employees(employee$.id);
+const DEPARTMENT_MUTATION_INFO = department$.id.employees(
+    {descending: false},
+    employee$.id
+);
 const EMPLOYEE_MUTATION_INFO = employee$$.department(department$.id);
 
 stateManager.save(department$$, { id: "id-1", name: "Market" });
@@ -40,6 +44,7 @@ stateManager.save(DEPARTMENT_MUTATION_INFO, { id: "id-1", employees: [ { id: "id
 const DEPARTMENT_SHAPE = 
     department$$
     .employees(
+        { descending: false },
         employee$$
     );
 
@@ -63,46 +68,28 @@ const employeeState = createParameterizedAsyncState<
     return await ctx.object(EMPLOYEE_SHAPE, variables.id);
 });
 
+// Test----------------------------
+
+afterEach(cleanup);
+
 const Test = memo(() => {
 
-    const employee = useStateValue(employeeState, {
-        variables: { id: "id-1" }
-    });
-    const employee2 = useStateValue(employeeState, {
-        variables: { id: "id-2" }
-    });
-    const employee3 = useStateValue(employeeState, {
-        variables: { id: "id-3" }
-    });
-    const employee4 = useStateValue(employeeState, {
-        variables: { id: "id-4" }
-    });
-    const department1 = useStateValue(departmentState, {
-        variables: { id: "id-1" } 
-    });
-    // useStateAsyncValue(departmentState, {
-    //     variables: { id: "id-2" } 
-    // });
-    // useStateAsyncValue(departmentState, {
-    //     variables: { id: "id-3" } 
-    // });
-
-    console.log("result---------------------", employee);
-    console.log("result---------------------", employee2);
-    console.log("result---------------------", employee3);
-    console.log("result---------------------", employee4);
-    console.log("result---------------------", department1);
-
+    useStateValue(departmentState, { variables: { id: "id-1" }});
+    useStateValue(employeeState, { variables: { id: "id-1" }});
     return (
         <div>
-            {JSON.stringify(employee)}
+            
         </div>
     );
 });
 
-// Test----------------------------
-
-afterEach(cleanup);
+const DepartmentView: FC<{id: string}> = memo(({id}) => {
+    return (
+        <div>
+            <h1>Department</h1>
+        </div>
+    );
+});
 
 test("Test EntityManager", async () => {
     

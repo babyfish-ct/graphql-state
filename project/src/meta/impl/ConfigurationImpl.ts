@@ -23,22 +23,22 @@ class ConfigurationImpl<TSchema extends SchemaType> implements Configuration<TSc
 
     bidirectionalAssociation<
         TTypeName extends keyof TSchema & string, 
-        TFieldName extends keyof TSchema[TTypeName][" $associations"] & string, 
-        TMappedByFieldName extends keyof TSchema[TSchema[TTypeName][" $associations"][TFieldName]][" $associations"] & string
+        TMappedByFieldName extends keyof TSchema[TTypeName][" $associations"] & string, 
+        TOppositeFieldName extends keyof TSchema[TSchema[TTypeName][" $associations"][TMappedByFieldName]][" $associations"] & string
     >(
         typeName: TTypeName,
-        fieldName: TFieldName,
-        mappedByFieldName: TMappedByFieldName
+        mappedByFieldName: TMappedByFieldName,
+        oppositeFieldName: TOppositeFieldName
     ): this {
         const typeMetadata = this.schema.typeMap.get(typeName);
         if (typeMetadata === undefined) {
             throw new Error(`Illegal type name "${typeName}"`);
         }
-        const field = typeMetadata.fieldMap.get(fieldName);
+        const field = typeMetadata.fieldMap.get(mappedByFieldName);
         if (field === undefined) {
-            throw new Error(`There is no field "${fieldName}" in type "${typeName}"`);
+            throw new Error(`There is no field "${mappedByFieldName}" in type "${typeName}"`);
         }
-        field.setOppositeFieldName(mappedByFieldName);
+        field.setOppositeFieldName(oppositeFieldName);
         return this;
     }
 

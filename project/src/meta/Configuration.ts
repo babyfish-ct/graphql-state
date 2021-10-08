@@ -5,12 +5,12 @@ export interface Configuration<TSchema extends SchemaType> {
 
     bidirectionalAssociation<
         TTypeName extends keyof TSchema & string, 
-        TFieldName extends keyof TSchema[TTypeName][" $associations"] & string, 
-        TMappedByFieldName extends keyof TSchema[TSchema[TTypeName][" $associations"][TFieldName]][" $associations"] & string
+        TMappedByFieldName extends keyof TSchema[TTypeName][" $associations"] & string, 
+        TOppositeFieldName extends keyof TSchema[TSchema[TTypeName][" $associations"][TMappedByFieldName]][" $associations"] & string
     >(
         typeName: TTypeName,
-        fieldName: TFieldName,
-        mappedByFieldName: TMappedByFieldName
+        mappedByFieldName: TMappedByFieldName,
+        oppositeFieldName: TOppositeFieldName
     ): this;
 
     buildStateManager(): StateManager<TSchema>;

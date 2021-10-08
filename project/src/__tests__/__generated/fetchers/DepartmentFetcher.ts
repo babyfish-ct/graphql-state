@@ -1,4 +1,4 @@
-import type { FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
+import type { AcceptableVariables, UnresolvedVariables, FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
 import { ObjectFetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
 import type { WithTypeName, ImplementationType } from '../CommonTypes';
 
@@ -92,7 +92,29 @@ export interface DepartmentFetcher<T extends object, TVariables extends object> 
                 {readonly [key in XAlias]?: readonly X[]} : 
                 {readonly [key in XAlias]: readonly X[]}
         ), 
-        TVariables & XVariables & XDirectiveVariables
+        TVariables & XVariables & DepartmentArgs["employees"] & XDirectiveVariables
+    >;
+
+    employees<
+        XArgs extends AcceptableVariables<DepartmentArgs['employees']>, 
+        X extends object, 
+        XVariables extends object, 
+        XAlias extends string = "employees", 
+        XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+        XDirectiveVariables extends object = {}
+    >(
+        args: XArgs, 
+        child: ObjectFetcher<'Employee', X, XVariables>, 
+        optionsConfigurer?: (
+            options: FieldOptions<"employees", {}, {}>
+        ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
+    ): DepartmentFetcher<
+        T & (
+            XDirectives extends { readonly include: any } | { readonly skip: any } ? 
+                {readonly [key in XAlias]?: readonly X[]} : 
+                {readonly [key in XAlias]: readonly X[]}
+        ), 
+        TVariables & XVariables & UnresolvedVariables<XArgs, DepartmentArgs['employees']> & XDirectiveVariables
     >;
 }
 
@@ -111,6 +133,7 @@ export const department$: DepartmentFetcher<{}, {}> =
                 {
                     category: "LIST", 
                     name: "employees", 
+                    argGraphQLTypeMap: {descending: 'Boolean!'}, 
                     targetTypeName: "Employee"
                 }
             ]
@@ -124,3 +147,10 @@ export const department$$ =
         .id
         .name
 ;
+
+export interface DepartmentArgs {
+
+    readonly employees: {
+        readonly descending: boolean
+    }
+}
