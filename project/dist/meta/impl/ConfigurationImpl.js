@@ -14,16 +14,16 @@ class ConfigurationImpl {
             this.schema.addFetchableType(fetchableType);
         }
     }
-    bidirectionalAssociation(typeName, fieldName, mappedByFieldName) {
+    bidirectionalAssociation(typeName, mappedByFieldName, oppositeFieldName) {
         const typeMetadata = this.schema.typeMap.get(typeName);
         if (typeMetadata === undefined) {
             throw new Error(`Illegal type name "${typeName}"`);
         }
-        const field = typeMetadata.fieldMap.get(fieldName);
+        const field = typeMetadata.fieldMap.get(mappedByFieldName);
         if (field === undefined) {
-            throw new Error(`There is no field "${fieldName}" in type "${typeName}"`);
+            throw new Error(`There is no field "${mappedByFieldName}" in type "${typeName}"`);
         }
-        field.setOppositeFieldName(mappedByFieldName);
+        field.setOppositeFieldName(oppositeFieldName);
         return this;
     }
     buildStateManager() {

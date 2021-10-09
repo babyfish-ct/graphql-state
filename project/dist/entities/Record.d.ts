@@ -15,9 +15,11 @@ export declare class Record {
     getSalar(fieldName: string): any;
     hasAssociation(field: FieldMetadata, variables: any): boolean;
     getAssociation(field: FieldMetadata, variables: any): Record | ReadonlyArray<Record | undefined> | RecordConnection | undefined;
-    set(ctx: ModificationContext, entityManager: EntityManager, fieldName: string, field: FieldMetadata | undefined, variablesCode: string | undefined, variables: any, value: any): void;
+    set(ctx: ModificationContext, entityManager: EntityManager, field: FieldMetadata, variablesCode: string | undefined, variables: any, value: any): void;
     undeleted(): this;
     get isDeleted(): boolean;
+    link(ctx: ModificationContext, entityManager: EntityManager, associationField: FieldMetadata, target: Record): void;
+    unlink(ctx: ModificationContext, entityManager: EntityManager, associationField: FieldMetadata, target: Record): void;
 }
 export interface RecordConnection {
     readonly edges: ReadonlyArray<RecordEdge>;

@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RecordManager = void 0;
+const Variables_1 = require("../state/impl/Variables");
 const Record_1 = require("./Record");
 class RecordManager {
     constructor(entityManager, type) {
@@ -45,23 +46,52 @@ class RecordManager {
         return record;
     }
     save(ctx, shape, obj) {
-        var _a;
+        var _a, _b;
         if (typeof obj !== "object" || Array.isArray(obj)) {
             throw new Error("obj can only be plain object");
         }
         const idFieldName = this.type.idField.name;
         const id = obj[idFieldName];
         const fieldMap = this.type.fieldMap;
-        for (const field of shape.fields) {
-            if (field.name !== idFieldName) {
-                const manager = (_a = this.fieldManagerMap.get(field.name)) !== null && _a !== void 0 ? _a : this;
-                manager.set(ctx, id, field.name, fieldMap.get(field.name), undefined, undefined, obj[field.name]);
+        for (const shapeField of shape.fields) {
+            if (shapeField.name !== idFieldName) {
+                const field = fieldMap.get(shapeField.name);
+                if (field === undefined) {
+                    throw new Error(`Cannot set the non-existing field "${shapeField.name}" for type "${this.type.name}"`);
+                }
+                const manager = (_a = this.fieldManagerMap.get(shapeField.name)) !== null && _a !== void 0 ? _a : this;
+                const variables = Variables_1.standardizedVariables(shapeField.variables);
+                const variablesCode = variables !== undefined ? JSON.stringify(variables) : undefined;
+                const value = obj[(_b = shapeField.alias) !== null && _b !== void 0 ? _b : shapeField.name];
+                manager.set(ctx, id, field, variablesCode, variables, value);
+                if (value !== undefined && shapeField.childShape !== undefined) {
+                    switch (field.category) {
+                        case "REFERENCE":
+                            this.save(ctx, shapeField.childShape, value);
+                            break;
+                        case "LIST":
+                            if (Array.isArray(value)) {
+                                for (const element of value) {
+                                    this.save(ctx, shapeField.childShape, element);
+                                }
+                            }
+                            break;
+                        case "CONNECTION":
+                            const edges = value.edges;
+                            if (Array.isArray(edges)) {
+                                for (const edge of value) {
+                                    this.save(ctx, shapeField.childShape, edge.node);
+                                }
+                            }
+                            break;
+                    }
+                }
             }
         }
     }
-    set(ctx, id, fieldName, field, variablesCode, variables, value) {
+    set(ctx, id, field, variablesCode, variables, value) {
         const record = this.saveId(ctx, id);
-        record.set(ctx, this.entityManager, fieldName, field, variablesCode, variables, value);
+        record.set(ctx, this.entityManager, field, variablesCode, variables, value);
     }
 }
 exports.RecordManager = RecordManager;

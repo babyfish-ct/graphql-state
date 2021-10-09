@@ -116,7 +116,7 @@ export interface ComputedContext<TSchema extends SchemaType> {
 
     <X, XVariables>(
         state: ParameterizedWritableState<X, XVariables> | ParameterizedComputedState<X, XVariables>, 
-        options?: ParameterizedStateAccessingOptions<XVariables>
+        options: ParameterizedStateAccessingOptions<XVariables>
     ): X;
 
     <X>(

@@ -1,12 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.toRuntimeShape = void 0;
+exports.toRuntimeShape0 = exports.toRuntimeShape = void 0;
 const graphql_ts_client_api_1 = require("graphql-ts-client-api");
 const Variables_1 = require("../state/impl/Variables");
 function toRuntimeShape(fetcher, variables) {
+    return toRuntimeShape0("", fetcher, variables);
+}
+exports.toRuntimeShape = toRuntimeShape;
+function toRuntimeShape0(parentPath, fetcher, variables) {
     const runtimeShapeFieldMap = new Map();
     for (const [fieldName, field] of fetcher.fieldMap) {
-        addField(fieldName, field, runtimeShapeFieldMap, variables);
+        addField(parentPath, fieldName, field, runtimeShapeFieldMap, variables);
     }
     const fields = [];
     for (const [, field] of runtimeShapeFieldMap) {
@@ -26,29 +30,33 @@ function toRuntimeShape(fetcher, variables) {
         fields
     };
 }
-exports.toRuntimeShape = toRuntimeShape;
-function addField(fieldName, field, runtimeShapeFieldMap, fetcherVaribles) {
+exports.toRuntimeShape0 = toRuntimeShape0;
+function addField(parentPath, fieldName, field, runtimeShapeFieldMap, fetcherVaribles) {
     var _a;
     if (fieldName.startsWith("...")) {
         if (field.childFetchers !== undefined) {
             for (const childFetcher of field.childFetchers) {
                 for (const [subFieldName, subField] of childFetcher.fieldMap) {
-                    addField(subFieldName, subField, runtimeShapeFieldMap, fetcherVaribles);
+                    addField(parentPath, subFieldName, subField, runtimeShapeFieldMap, fetcherVaribles);
                 }
             }
         }
         return;
     }
     const variables = Variables_1.standardizedVariables(resolveParameterRefs(field.args, fetcherVaribles));
+    if (field.argGraphQLTypes !== undefined) {
+        for (const [name, type] of field.argGraphQLTypes) {
+            if (type.endsWith("!") && (variables === undefined || variables[name] === undefined)) {
+                throw new Error(`Illegal fetch path ${parentPath}${fieldName}, its required arguments ${name} is not specified`);
+            }
+        }
+    }
     const alias = (_a = field.fieldOptionsValue) === null || _a === void 0 ? void 0 : _a.alias;
     const directives = standardizedDirectives(field, fetcherVaribles);
     const childShape = field.childFetchers !== undefined ?
-        toRuntimeShape(field.childFetchers[0], fetcherVaribles) :
+        toRuntimeShape0(`${parentPath}${fieldName}/`, field.childFetchers[0], fetcherVaribles) :
         undefined;
-    const key = variables !== undefined || alias !== undefined || directives !== undefined ?
-        `${fieldName}(${variables !== undefined ? JSON.stringify(variables) : ""}|${alias !== undefined ? alias : ""}|${directives !== undefined ? JSON.stringify(directives) : ""})` :
-        fieldName;
-    runtimeShapeFieldMap.set(key, {
+    runtimeShapeFieldMap.set(fieldName, {
         name: fieldName,
         variables,
         alias,
@@ -84,13 +92,17 @@ function resolveParameterRefs(variables, fetcherVariables) {
     }
     const names = [];
     const resolved = {};
-    for (const name of variables) {
-        let value = variables[name];
-        if (value instanceof graphql_ts_client_api_1.ParameterRef) {
-            value = fetcherVariables[value.name];
+    if (variables !== undefined && variables !== null) {
+        for (const name in variables) {
+            let value = variables[name];
+            if (value instanceof graphql_ts_client_api_1.ParameterRef) {
+                value = fetcherVariables !== undefined ? fetcherVariables[value.name] : undefined;
+            }
+            if (value !== undefined && value !== null) {
+                names.push(name);
+                resolved[name] = value;
+            }
         }
-        names.push(name);
-        resolved[name] = value;
     }
     if (names.length === 0) {
         return undefined;

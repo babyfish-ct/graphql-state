@@ -56,7 +56,7 @@ export interface ParameterizedAsyncState<T, TVariables> {
 }
 export interface ComputedContext<TSchema extends SchemaType> {
     <X>(state: SingleWritableState<X> | SingleComputedState<X>, options?: StateAccessingOptions): X;
-    <X, XVariables>(state: ParameterizedWritableState<X, XVariables> | ParameterizedComputedState<X, XVariables>, options?: ParameterizedStateAccessingOptions<XVariables>): X;
+    <X, XVariables>(state: ParameterizedWritableState<X, XVariables> | ParameterizedComputedState<X, XVariables>, options: ParameterizedStateAccessingOptions<XVariables>): X;
     <X>(state: SingleAsyncState<X>, options: StateAccessingOptions): Promise<X>;
     <X, XVariables>(state: ParameterizedState<X, XVariables>, options: ParameterizedStateAccessingOptions<XVariables>): Promise<X>;
     object<TName extends Exclude<keyof TSchema & string, "Query" | "Mutation">, T extends object, TVaraibles extends object>(fetcher: Fetcher<TName, T, TVaraibles>, id: TSchema[TName][" $id"], variables?: TVaraibles): Promise<T | undefined>;

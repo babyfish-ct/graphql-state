@@ -1,5 +1,5 @@
 import { FetchableField, FetchableType } from "graphql-ts-client-api";
-import { FieldMetadata, FieldMetadataCategory, FieldMetadataOptions } from "./FieldMetadata";
+import { FieldMetadata } from "./FieldMetadata";
 import { SchemaMetadata } from "./SchemaMetadata";
 
 export class TypeMetadata {

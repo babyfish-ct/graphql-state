@@ -1,4 +1,4 @@
-import { Children, FC, memo, PropsWithChildren, useEffect, useState } from "react";
+import { FC, memo, PropsWithChildren, useEffect, useState } from "react";
 import { StateManagerImpl } from "./impl/StateManagerImpl";
 import { useStateManager } from "./StateHook";
 
