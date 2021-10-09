@@ -9,7 +9,7 @@ export const OutputView: FC = memo(() => {
 
     return (
         <ComponentDecorator name="OutputView">
-            Your input is {text}
+            Your input is: {text}
         </ComponentDecorator>
     );
 });

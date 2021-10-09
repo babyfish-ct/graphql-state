@@ -4,7 +4,6 @@ export declare abstract class StateValue {
     readonly variablesCode: string | undefined;
     readonly variables: any;
     private _refCount;
-    private _variables;
     constructor(stateInstance: StateInstance, variablesCode: string | undefined, variables: any);
     abstract get result(): any;
     abstract get loadable(): any;

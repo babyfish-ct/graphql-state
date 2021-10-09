@@ -19,10 +19,10 @@ export declare class StateManagerImpl<TSchema extends SchemaType> implements Sta
     addListener(listener: (e: EntityChangeEvent) => void): void;
     removeListener(listener: (e: EntityChangeEvent) => void): void;
     addListeners(listeners: {
-        readonly [TName in keyof TSchema & string]: (e: TSchema[TName][" $event"]) => void;
+        readonly [TName in keyof TSchema & string]?: (e: TSchema[TName][" $event"]) => void;
     }): void;
     removeListeners(listeners: {
-        readonly [TName in keyof TSchema & string]: (e: TSchema[TName][" $event"]) => void;
+        readonly [TName in keyof TSchema & string]?: (e: TSchema[TName][" $event"]) => void;
     }): void;
     registerScope(): ScopedStateManager;
     unregisterScope(scopedStateManager: ScopedStateManager): void;

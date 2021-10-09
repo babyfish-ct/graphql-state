@@ -51,6 +51,15 @@ const employeeState = createParameterizedAsyncState<
     return await ctx.object(EMPLOYEE_SHAPE, variables.id);
 });
 
+stateManager.addListeners({
+    "Department": e => {
+        console.log(`${e.changedType} ${e.typeName}`);
+    },
+    "Employee": e => {
+        console.log(`${e.changedType} ${e.typeName}`);
+    }
+});
+
 stateManager.save(
     department$$
     .employees(

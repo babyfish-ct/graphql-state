@@ -85,14 +85,15 @@ export class RecordManager {
                     value
                 );
                 if (value !== undefined && shapeField.childShape !== undefined) {
+                    const associationRecordManager = this.entityManager.recordManager(shapeField.childShape.typeName);
                     switch (field.category) {
                         case "REFERENCE":
-                            this.save(ctx, shapeField.childShape, value);
+                            associationRecordManager.save(ctx, shapeField.childShape, value);
                             break;
                         case "LIST":
                             if (Array.isArray(value)) {
                                 for (const element of value) {
-                                    this.save(ctx, shapeField.childShape!, element);
+                                    associationRecordManager.save(ctx, shapeField.childShape!, element);
                                 }
                             }
                             break;
@@ -100,7 +101,7 @@ export class RecordManager {
                             const edges = value.edges;
                             if (Array.isArray(edges)) {
                                 for (const edge of value) {
-                                    this.save(ctx, shapeField.childShape!, edge.node);
+                                    associationRecordManager.save(ctx, shapeField.childShape!, edge.node);
                                 }
                             }
                             break;

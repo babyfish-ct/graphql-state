@@ -1,7 +1,7 @@
 import { FC, memo } from "react";
 import { useStateValue } from "graphql-state";
 import { ComponentDecorator } from "../../common/ComponentDecorator";
-import { factorialXState, totalState } from "./State";
+import { totalState, factorialXState } from "./State";
 
 export const OutputView: FC = memo(() => {
 

@@ -25,14 +25,15 @@ export interface StateManager<TSchema extends SchemaType> {
 
     addListeners(
         listeners: { 
-            readonly [TName in keyof TSchema & string]: (e: TSchema[TName][" $event"]) => void 
+            readonly [TName in keyof TSchema & string]?: (e: TSchema[TName][" $event"]) => void 
         }
     ): void;
 
     removeListeners(
         listeners: { 
-            readonly [TName in keyof TSchema & string]: (e: TSchema[TName][" $event"]) => void 
-    }): void;
+            readonly [TName in keyof TSchema & string]?: (e: TSchema[TName][" $event"]) => void 
+        }
+    ): void;
 }
 
 export interface UndoManager {

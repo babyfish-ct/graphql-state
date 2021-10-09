@@ -9,10 +9,10 @@ export interface StateManager<TSchema extends SchemaType> {
     addListener(listener: (e: EntityChangeEvent) => void): void;
     removeListener(listener: (e: EntityChangeEvent) => void): void;
     addListeners(listeners: {
-        readonly [TName in keyof TSchema & string]: (e: TSchema[TName][" $event"]) => void;
+        readonly [TName in keyof TSchema & string]?: (e: TSchema[TName][" $event"]) => void;
     }): void;
     removeListeners(listeners: {
-        readonly [TName in keyof TSchema & string]: (e: TSchema[TName][" $event"]) => void;
+        readonly [TName in keyof TSchema & string]?: (e: TSchema[TName][" $event"]) => void;
     }): void;
 }
 export interface UndoManager {

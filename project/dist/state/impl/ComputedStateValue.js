@@ -16,8 +16,8 @@ class ComputedStateValue extends StateValue_1.StateValue {
         if (this.stateInstance.state[" $stateType"] !== "WRITABLE") {
             const mount = (_a = this.stateInstance.state[" $options"]) === null || _a === void 0 ? void 0 : _a.mount;
             if (mount !== undefined) {
-                const invalidate = this.invalidate.bind(this);
-                this._unmountHandler = mount(invalidate);
+                const ctx = { invalidate: this.invalidate.bind(this) };
+                this._unmountHandler = mount(ctx);
             }
         }
     }

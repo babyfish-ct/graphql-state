@@ -56,7 +56,7 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
 
     addListeners(
         listeners: { 
-            readonly [TName in keyof TSchema & string]: (e: TSchema[TName][" $event"]) => void 
+            readonly [TName in keyof TSchema & string]?: (e: TSchema[TName][" $event"]) => void 
         }
     ): void {
         for (const typeName in listeners) {
@@ -69,7 +69,7 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
 
     removeListeners(
         listeners: { 
-            readonly [TName in keyof TSchema & string]: (e: TSchema[TName][" $event"]) => void 
+            readonly [TName in keyof TSchema & string]?: (e: TSchema[TName][" $event"]) => void 
         }
     ): void {
         for (const typeName in listeners) {
