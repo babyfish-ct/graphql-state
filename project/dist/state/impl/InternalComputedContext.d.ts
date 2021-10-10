@@ -7,9 +7,11 @@ export declare class InternalComputedContext {
     private currentStateValue;
     private scope;
     private parent?;
-    private dependencies;
+    private stateValueDependencies;
+    private queryResultDependencies;
     private closed;
     private stateValueChangeListener;
+    private queryResultChangeListener;
     constructor(parent: InternalComputedContext | ScopedStateManager, currentStateValue: ComputedStateValue);
     close(): void;
     getSelf(options?: StateAccessingOptions): any;
@@ -17,4 +19,5 @@ export declare class InternalComputedContext {
     get0(stateValue: StateValue): any;
     object(fetcher: Fetcher<string, object, object>, id: any, variables?: any): Promise<any>;
     private onStateValueChange;
+    private onQueryResultChange;
 }

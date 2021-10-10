@@ -39,7 +39,7 @@ export class WritableStateValue extends StateValue {
                 ...this._lodable,
                 data 
             }
-            this.stateInstance.scopedStateManager.stateManager.publishStateChangeEvent({
+            this.stateInstance.scopedStateManager.stateManager.publishStateValueChangeEvent({
                 stateValue: this,
                 changedType: "RESULT_CHANGE"
             });

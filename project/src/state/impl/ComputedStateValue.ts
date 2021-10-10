@@ -16,6 +16,8 @@ export class ComputedStateValue extends StateValue {
 
     private _ctx?: InternalComputedContext;
 
+    private _asyncRequestId = 0;
+
     constructor(
         stateInstance: StateInstance,
         variablesCode: string | undefined,
@@ -52,7 +54,7 @@ export class ComputedStateValue extends StateValue {
     invalidate() {
         if (!this._invalid) {
             this._invalid = true;
-            this.stateInstance.scopedStateManager.stateManager.publishStateChangeEvent({
+            this.stateInstance.scopedStateManager.stateManager.publishStateValueChangeEvent({
                 stateValue: this,
                 changedType: "RESULT_CHANGE"
             });
@@ -122,7 +124,7 @@ export class ComputedStateValue extends StateValue {
                 data: this._loadable.data,
                 loading: true
             };
-            this.stateInstance.scopedStateManager.stateManager.publishStateChangeEvent({
+            this.stateInstance.scopedStateManager.stateManager.publishStateValueChangeEvent({
                 stateValue: this,
                 changedType: "ASYNC_STATE_CHANGE"
             });
@@ -131,25 +133,33 @@ export class ComputedStateValue extends StateValue {
 
     private afterCompute(result: any): any {
         if (this.isAsync) {
+            const asyncRequestId = ++this._asyncRequestId;
             return (result as Promise<any>)
                 .then(data => {
-                    this._loadable = {
-                        data,
-                        loading: false
+                    if (this._asyncRequestId === asyncRequestId) {
+                        this._loadable = {
+                            data,
+                            loading: false
+                        }
                     }
                     return data;
                 })
                 .catch(error => {
-                    this._loadable = {
-                        error,
-                        loading: false
+                    if (this._asyncRequestId === asyncRequestId) {
+                        this._loadable = {
+                            error,
+                            loading: false
+                        }
                     }
+                    return error;
                 })
                 .finally(() => {
-                    this.stateInstance.scopedStateManager.stateManager.publishStateChangeEvent({
-                        stateValue: this,
-                        changedType: "ASYNC_STATE_CHANGE"
-                    })
+                    if (this._asyncRequestId === asyncRequestId) {
+                        this.stateInstance.scopedStateManager.stateManager.publishStateValueChangeEvent({
+                            stateValue: this,
+                            changedType: "ASYNC_STATE_CHANGE"
+                        })
+                    }
                 });
         }
         this._loadable = {

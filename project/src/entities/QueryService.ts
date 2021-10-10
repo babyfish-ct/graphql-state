@@ -1,42 +1,51 @@
 import { Fetcher } from "graphql-ts-client-api";
 import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
-import { BatchEntityRequest } from "./BatchEntityRequest";
 import { EntityManager } from "./EntityManager";
+import { ModificationContext } from "./ModificationContext";
 import { Record, RecordConnection } from "./Record";
 import { RuntimeShape, toRuntimeShape } from "./RuntimeShape";
 
-export class QueryContext {
+export class QueryService {
 
     constructor(private entityMangager: EntityManager) {}
 
+    query(shape: RuntimeShape): Promise<any> {
+        throw new Error("Unsupported");
+    }
+
     queryObject(
-        fetcher: Fetcher<string, object, object>,
         id: any,
-        variables?: object
+        shape: RuntimeShape
     ): Promise<any> {
 
-        const type = this.entityMangager.schema.typeMap.get(fetcher.fetchableType.name);
-        if (type === undefined) {
-            throw Error(`Illegal type name ${fetcher.fetchableType.name}`);
+        if (shape.typeName === "Query") {
+            throw new Error(`The type "${shape.typeName}" does not support 'queryObject'`);
         }
-        const runtimeShape = toRuntimeShape(fetcher, variables);
+        
         try {
-            return Promise.resolve(this.findObject(id, runtimeShape));
+            return Promise.resolve(this.findObject(id, shape));
         } catch (ex) {
             if (!ex[" $canNotFoundFromCache"]) {
                 throw ex;
             }
         }
 
-        return this.entityMangager.batchEntityRequest.requestByShape(id, runtimeShape);
+        return this.entityMangager.batchEntityRequest.requestByShape(id, shape).then(obj => {
+            const ctx = new ModificationContext();
+            this.entityMangager.save(ctx, shape, obj);
+            ctx.fireEvents(e => {
+                this.entityMangager.stateManager.publishEntityChangeEvent(e);
+            });
+            return obj;
+        });
     }
 
     private findObject(
         id: any, 
         shape: RuntimeShape
     ): any {
-        const ref = this.entityMangager.findById(shape.typeName, id);
+        const ref = this.entityMangager.findRefById(shape.typeName, id);
         if (ref === undefined) {
             canNotFoundFromCache();
         }

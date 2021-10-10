@@ -24,7 +24,7 @@ class WritableStateValue extends StateValue_1.StateValue {
         const oldData = this._lodable.data;
         if (oldData !== data) {
             this._lodable = Object.assign(Object.assign({}, this._lodable), { data });
-            this.stateInstance.scopedStateManager.stateManager.publishStateChangeEvent({
+            this.stateInstance.scopedStateManager.stateManager.publishStateValueChangeEvent({
                 stateValue: this,
                 changedType: "RESULT_CHANGE"
             });

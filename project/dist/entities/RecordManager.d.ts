@@ -12,7 +12,7 @@ export declare class RecordManager {
     private recordMap;
     constructor(entityManager: EntityManager, type: TypeMetadata);
     initializeOtherManagers(): void;
-    findById(id: any): RecordRef | undefined;
+    findRefById(id: any): RecordRef | undefined;
     saveId(ctx: ModificationContext, id: any): Record;
     save(ctx: ModificationContext, shape: RuntimeShape, obj: any): void;
     private set;

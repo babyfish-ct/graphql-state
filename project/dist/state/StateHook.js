@@ -1,9 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.makeManagedObjectHooks = exports.useStateAsyncValue = exports.useStateAccessor = exports.useStateValue = exports.useStateManager = void 0;
+exports.makeManagedObjectHooks = exports.useStateAccessor = exports.useStateValue = exports.useStateManager = void 0;
 const react_1 = require("react");
 const StateManagerProvider_1 = require("./StateManagerProvider");
 const Variables_1 = require("./impl/Variables");
+const QueryResult_1 = require("../entities/QueryResult");
 function useStateManager() {
     const stateManager = react_1.useContext(StateManagerProvider_1.stateContext);
     if (stateManager === undefined) {
@@ -13,16 +14,24 @@ function useStateManager() {
 }
 exports.useStateManager = useStateManager;
 function useStateValue(state, options) {
+    var _a;
     const stateValue = useInternalStateValue(state, options);
     if (state[" $stateType"] !== "ASYNC") {
         return stateValue.result;
     }
     const loadable = stateValue.loadable;
+    const asyncStyle = (_a = options) === null || _a === void 0 ? void 0 : _a.asyncStyle;
+    if (asyncStyle === "ASYNC_OBJECT") {
+        return loadable;
+    }
     if (loadable.loading) {
         throw stateValue.result; // throws promise, <Suspense/> will catch it
     }
     if (loadable.error) {
         throw loadable.error;
+    }
+    if (asyncStyle === "REFRESHABLE_SUSPENSE") {
+        return [loadable.data];
     }
     return loadable.data;
 }
@@ -32,13 +41,8 @@ function useStateAccessor(state, options) {
     return stateValue.accessor;
 }
 exports.useStateAccessor = useStateAccessor;
-function useStateAsyncValue(state, options) {
-    const stateValue = useInternalStateValue(state, options);
-    return stateValue.loadable;
-}
-exports.useStateAsyncValue = useStateAsyncValue;
 function makeManagedObjectHooks() {
-    throw new Error();
+    return new ManagedObjectHooksImpl();
 }
 exports.makeManagedObjectHooks = makeManagedObjectHooks;
 function useInternalStateValue(state, options) {
@@ -65,10 +69,49 @@ function useInternalStateValue(state, options) {
                 setStateVerion(old => old + 1); // Change a local state to update react component
             }
         };
-        stateManager.addStateChangeListener(stateValueChange);
+        stateManager.addStateValueChangeListener(stateValueChange);
         return () => {
-            stateManager.removeStateChangeListener(stateValueChange);
+            stateManager.removeStateValueChangeListener(stateValueChange);
         };
     }, [stateManager, stateValue]);
     return stateValue;
+}
+class ManagedObjectHooksImpl {
+    useObject(fetcher, id, variables) {
+        return useInternalQueryResult(fetcher, id, variables).loadable;
+    }
+    useObjects(fetcher, ids, variables) {
+        throw new Error("Unsupported");
+    }
+    useQuery(fetcher, variables) {
+        throw new Error("Unsupported");
+    }
+}
+function useInternalQueryResult(fetcher, id, variables) {
+    const stateManager = useStateManager();
+    const entityManager = stateManager.entityManager;
+    const queryArgs = react_1.useMemo(() => {
+        return new QueryResult_1.QueryArgs(fetcher, id, variables);
+    }, [fetcher, id, variables]);
+    const [, setQueryVersion] = react_1.useState(0);
+    const queryResult = react_1.useMemo(() => {
+        return entityManager.retain(queryArgs);
+    }, [queryArgs.shape.toString()]);
+    react_1.useEffect(() => {
+        return () => {
+            entityManager.release(queryArgs);
+        };
+    }, [entityManager, queryArgs.shape.toString()]);
+    react_1.useEffect(() => {
+        const queryResultChange = (e) => {
+            if (e.queryResult === queryResult) {
+                setQueryVersion(old => old + 1); // Change a local state to update react component
+            }
+        };
+        stateManager.addQueryResultChangeListener(queryResultChange);
+        return () => {
+            stateManager.removeQueryResultChangeListener(queryResultChange);
+        };
+    }, [stateManager, queryResult]);
+    return queryResult;
 }

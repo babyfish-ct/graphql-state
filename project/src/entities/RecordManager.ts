@@ -34,7 +34,7 @@ export class RecordManager {
         }
     }
 
-    findById(id: any): RecordRef | undefined {
+    findRefById(id: any): RecordRef | undefined {
         const record = this.recordMap.get(id);
         if (record === undefined) {
             return undefined;

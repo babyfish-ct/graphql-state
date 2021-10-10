@@ -20,7 +20,7 @@ class RecordManager {
             }
         }
     }
-    findById(id) {
+    findRefById(id) {
         const record = this.recordMap.get(id);
         if (record === undefined) {
             return undefined;
@@ -65,14 +65,15 @@ class RecordManager {
                 const value = obj[(_b = shapeField.alias) !== null && _b !== void 0 ? _b : shapeField.name];
                 manager.set(ctx, id, field, variablesCode, variables, value);
                 if (value !== undefined && shapeField.childShape !== undefined) {
+                    const associationRecordManager = this.entityManager.recordManager(shapeField.childShape.typeName);
                     switch (field.category) {
                         case "REFERENCE":
-                            this.save(ctx, shapeField.childShape, value);
+                            associationRecordManager.save(ctx, shapeField.childShape, value);
                             break;
                         case "LIST":
                             if (Array.isArray(value)) {
                                 for (const element of value) {
-                                    this.save(ctx, shapeField.childShape, element);
+                                    associationRecordManager.save(ctx, shapeField.childShape, element);
                                 }
                             }
                             break;
@@ -80,7 +81,7 @@ class RecordManager {
                             const edges = value.edges;
                             if (Array.isArray(edges)) {
                                 for (const edge of value) {
-                                    this.save(ctx, shapeField.childShape, edge.node);
+                                    associationRecordManager.save(ctx, shapeField.childShape, edge.node);
                                 }
                             }
                             break;

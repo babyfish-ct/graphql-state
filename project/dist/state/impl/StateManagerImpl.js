@@ -3,20 +3,23 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.StateManagerImpl = void 0;
 const EntityManager_1 = require("../../entities/EntityManager");
 const ModificationContext_1 = require("../../entities/ModificationContext");
+const RuntimeShape_1 = require("../../entities/RuntimeShape");
 const SchemaMetadata_1 = require("../../meta/impl/SchemaMetadata");
 const ScopedStateManager_1 = require("./ScopedStateManager");
 class StateManagerImpl {
     constructor(schema) {
-        this._stateChangeListeners = new Set();
+        this._stateValueChangeListeners = new Set();
+        this._queryResultChangeListeners = new Set();
         this._entityChagneListenerMap = new Map();
-        this.entityManager = new EntityManager_1.EntityManager(schema !== null && schema !== void 0 ? schema : new SchemaMetadata_1.SchemaMetadata());
+        this.entityManager = new EntityManager_1.EntityManager(this, schema !== null && schema !== void 0 ? schema : new SchemaMetadata_1.SchemaMetadata());
     }
     get undoManager() {
         throw new Error();
     }
     save(fetcher, obj, variables) {
         const ctx = new ModificationContext_1.ModificationContext();
-        this.entityManager.save(ctx, fetcher, obj);
+        const shape = RuntimeShape_1.toRuntimeShape(fetcher, variables);
+        this.entityManager.save(ctx, shape, obj);
         ctx.fireEvents(e => {
             this.publishEntityChangeEvent(e);
         });
@@ -73,19 +76,35 @@ class StateManagerImpl {
     transaction(callback) {
         throw new Error();
     }
-    addStateChangeListener(listener) {
-        if (this._stateChangeListeners.has(listener)) {
+    addStateValueChangeListener(listener) {
+        if (this._stateValueChangeListeners.has(listener)) {
             throw new Error(`Cannot add existing listener`);
         }
         if (listener !== undefined && listener !== null) {
-            this._stateChangeListeners.add(listener);
+            this._stateValueChangeListeners.add(listener);
         }
     }
-    removeStateChangeListener(listener) {
-        this._stateChangeListeners.delete(listener);
+    removeStateValueChangeListener(listener) {
+        this._stateValueChangeListeners.delete(listener);
     }
-    publishStateChangeEvent(e) {
-        for (const listener of this._stateChangeListeners) {
+    publishStateValueChangeEvent(e) {
+        for (const listener of this._stateValueChangeListeners) {
+            listener(e);
+        }
+    }
+    addQueryResultChangeListener(listener) {
+        if (this._queryResultChangeListeners.has(listener)) {
+            throw new Error(`Cannot add existing listener`);
+        }
+        if (listener !== undefined && listener !== null) {
+            this._queryResultChangeListeners.add(listener);
+        }
+    }
+    removeQueryResultChangeListener(listener) {
+        this._queryResultChangeListeners.delete(listener);
+    }
+    publishQueryResultChangeEvent(e) {
+        for (const listener of this._queryResultChangeListeners) {
             listener(e);
         }
     }

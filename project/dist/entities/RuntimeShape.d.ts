@@ -2,6 +2,7 @@ import { Fetcher } from "graphql-ts-client-api";
 export interface RuntimeShape {
     readonly typeName: string;
     readonly fields: RuntimeShapeField[];
+    toString(): string;
 }
 export interface RuntimeShapeField {
     readonly name: string;

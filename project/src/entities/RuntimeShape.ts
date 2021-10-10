@@ -7,6 +7,7 @@ import { standardizedVariables } from "../state/impl/Variables";
 export interface RuntimeShape {
     readonly typeName: string;
     readonly fields: RuntimeShapeField[];
+    toString(): string;
 }
 
 export interface RuntimeShapeField {
@@ -46,10 +47,10 @@ export function toRuntimeShape0(
         }
         return 0;
     });
-    return {
-        typeName: fetcher.fetchableType.name,
+    return new RuntimeShapeImpl(
+        fetcher.fetchableType.name,
         fields
-    };
+    );
 }
 
 function addField(
@@ -156,4 +157,44 @@ function resolveParameterRefs(
         result[name] = resolved[name];
     }
     return result;
+}
+
+class RuntimeShapeImpl implements RuntimeShape {
+    
+    private _toString?: string;
+
+    constructor(
+        readonly typeName: string,
+        readonly fields: RuntimeShapeField[]
+    ) {}
+
+    toString(): string {
+        let value = this._toString;
+        if (value === undefined) {
+            this._toString = value = `(${this.typeName},[${this.fields.map(fieldString)}])`;
+        }
+        return value;
+    }
+}
+
+function fieldString(field: RuntimeShapeField): string {
+    return `(${
+        field.name
+    },${
+        field.variables !== undefined ? 
+        JSON.stringify(field.variables) :
+        ""
+    },${
+        field.alias !== undefined ?
+        field.alias :
+        ""
+    },${
+        field.directives !== undefined ?
+        JSON.stringify(field.directives) :
+        ""
+    },${
+        field.childShape !== undefined ?
+        field.childShape.toString() :
+        ""
+    })`;
 }

@@ -1,9 +1,10 @@
 import { Fetcher } from "graphql-ts-client-api";
-import { QueryContext } from "../../entities/QueryContext";
+import { QueryArgs, QueryResult } from "../../entities/QueryResult";
+import { toRuntimeShape } from "../../entities/RuntimeShape";
 import { ParameterizedStateAccessingOptions, State, StateAccessingOptions } from "../State";
 import { ComputedStateValue } from "./ComputedStateValue";
 import { ScopedStateManager } from "./ScopedStateManager";
-import { StateValueChangeEvent, StateValueChangeListener } from "./StateManagerImpl";
+import { QueryResultChangeEvent, QueryResultChangeListener, StateValueChangeEvent, StateValueChangeListener } from "./StateManagerImpl";
 import { StateValue } from "./StateValue";
 import { standardizedVariables } from "./Variables";
 
@@ -13,11 +14,15 @@ export class InternalComputedContext {
 
     private parent?: InternalComputedContext;
 
-    private dependencies = new Set<StateValue>();
+    private stateValueDependencies = new Set<StateValue>();
+
+    private queryResultDependencies = new Set<QueryResult>();
 
     private closed = false;
 
     private stateValueChangeListener: StateValueChangeListener;
+
+    private queryResultChangeListener: QueryResultChangeListener;
 
     constructor(
         parent: InternalComputedContext | ScopedStateManager,
@@ -30,17 +35,30 @@ export class InternalComputedContext {
             this.scope = parent;
         }
         this.stateValueChangeListener = this.onStateValueChange.bind(this);
-        this.scope.stateManager.addStateChangeListener(this.stateValueChangeListener);
+        this.queryResultChangeListener = this.onQueryResultChange.bind(this);
+        this.scope.stateManager.addStateValueChangeListener(this.stateValueChangeListener);
+        this.scope.stateManager.addQueryResultChangeListener(this.queryResultChangeListener);
     }
 
     close() {
         if (!this.closed) {
-            this.scope.stateManager.removeStateChangeListener(this.stateValueChangeListener);
+            this.scope.stateManager.removeQueryResultChangeListener(this.queryResultChangeListener);
+            this.scope.stateManager.removeStateValueChangeListener(this.stateValueChangeListener);
             this.closed = true;
             let exception = undefined;
-            for (const dep of this.dependencies) {
+            for (const dep of this.stateValueDependencies) {
                 try {
                     dep.stateInstance.release(dep.variables);
+                } catch (ex) {
+                    if (exception === undefined) {
+                        exception = ex;
+                    }
+                }
+            }
+            const entityManager = this.scope.stateManager.entityManager;
+            for (const dep of this.queryResultDependencies) {
+                try {
+                    entityManager.release(dep.queryArgs);
                 } catch (ex) {
                     if (exception === undefined) {
                         exception = ex;
@@ -80,7 +98,7 @@ export class InternalComputedContext {
             throw ex;
         }
         
-        this.dependencies.add(stateValue);
+        this.stateValueDependencies.add(stateValue);
         return result;
     }
 
@@ -103,12 +121,27 @@ export class InternalComputedContext {
             throw new Error("ComputedContext has been closed");
         }
 
-        const queryContext = new QueryContext(this.scope.stateManager.entityManager);
-        return queryContext.queryObject(fetcher, id, variables);
+        const entityManager = this.scope.stateManager.entityManager;
+        const queryResult = entityManager.retain(new QueryArgs(fetcher, id, variables));
+        let result: any;
+        try {
+            result = queryResult.promise;
+        } catch (ex) {
+            entityManager.release(queryResult.queryArgs);
+        }
+
+        this.queryResultDependencies.add(queryResult);
+        return result;
     }
 
     private onStateValueChange(e: StateValueChangeEvent) {
-        if (e.changedType === "RESULT_CHANGE" && this.dependencies.has(e.stateValue)) {
+        if (e.changedType === "RESULT_CHANGE" && this.stateValueDependencies.has(e.stateValue)) {
+            this.currentStateValue.invalidate();
+        }
+    }
+
+    private onQueryResultChange(e: QueryResultChangeEvent) {
+        if (e.changedType === "RESULT_CHANGE" && this.queryResultDependencies.has(e.queryResult)) {
             this.currentStateValue.invalidate();
         }
     }

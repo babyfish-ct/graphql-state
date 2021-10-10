@@ -1,13 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InternalComputedContext = void 0;
-const QueryContext_1 = require("../../entities/QueryContext");
+const QueryResult_1 = require("../../entities/QueryResult");
 const ComputedStateValue_1 = require("./ComputedStateValue");
 const Variables_1 = require("./Variables");
 class InternalComputedContext {
     constructor(parent, currentStateValue) {
         this.currentStateValue = currentStateValue;
-        this.dependencies = new Set();
+        this.stateValueDependencies = new Set();
+        this.queryResultDependencies = new Set();
         this.closed = false;
         if (parent instanceof InternalComputedContext) {
             this.parent = parent;
@@ -17,16 +18,30 @@ class InternalComputedContext {
             this.scope = parent;
         }
         this.stateValueChangeListener = this.onStateValueChange.bind(this);
-        this.scope.stateManager.addStateChangeListener(this.stateValueChangeListener);
+        this.queryResultChangeListener = this.onQueryResultChange.bind(this);
+        this.scope.stateManager.addStateValueChangeListener(this.stateValueChangeListener);
+        this.scope.stateManager.addQueryResultChangeListener(this.queryResultChangeListener);
     }
     close() {
         if (!this.closed) {
-            this.scope.stateManager.removeStateChangeListener(this.stateValueChangeListener);
+            this.scope.stateManager.removeQueryResultChangeListener(this.queryResultChangeListener);
+            this.scope.stateManager.removeStateValueChangeListener(this.stateValueChangeListener);
             this.closed = true;
             let exception = undefined;
-            for (const dep of this.dependencies) {
+            for (const dep of this.stateValueDependencies) {
                 try {
                     dep.stateInstance.release(dep.variables);
+                }
+                catch (ex) {
+                    if (exception === undefined) {
+                        exception = ex;
+                    }
+                }
+            }
+            const entityManager = this.scope.stateManager.entityManager;
+            for (const dep of this.queryResultDependencies) {
+                try {
+                    entityManager.release(dep.queryArgs);
                 }
                 catch (ex) {
                     if (exception === undefined) {
@@ -65,7 +80,7 @@ class InternalComputedContext {
             stateInstance.release(variablesCode);
             throw ex;
         }
-        this.dependencies.add(stateValue);
+        this.stateValueDependencies.add(stateValue);
         return result;
     }
     get0(stateValue) {
@@ -85,11 +100,25 @@ class InternalComputedContext {
         if (this.closed) {
             throw new Error("ComputedContext has been closed");
         }
-        const queryContext = new QueryContext_1.QueryContext(this.scope.stateManager.entityManager);
-        return queryContext.queryObject(fetcher, id, variables);
+        const entityManager = this.scope.stateManager.entityManager;
+        const queryResult = entityManager.retain(new QueryResult_1.QueryArgs(fetcher, id, variables));
+        let result;
+        try {
+            result = queryResult.promise;
+        }
+        catch (ex) {
+            entityManager.release(queryResult.queryArgs);
+        }
+        this.queryResultDependencies.add(queryResult);
+        return result;
     }
     onStateValueChange(e) {
-        if (e.changedType === "RESULT_CHANGE" && this.dependencies.has(e.stateValue)) {
+        if (e.changedType === "RESULT_CHANGE" && this.stateValueDependencies.has(e.stateValue)) {
+            this.currentStateValue.invalidate();
+        }
+    }
+    onQueryResultChange(e) {
+        if (e.changedType === "RESULT_CHANGE" && this.queryResultDependencies.has(e.queryResult)) {
             this.currentStateValue.invalidate();
         }
     }

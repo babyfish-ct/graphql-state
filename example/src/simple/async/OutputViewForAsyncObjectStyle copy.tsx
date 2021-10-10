@@ -1,5 +1,5 @@
 import { FC, memo } from "react";
-import { useStateAsyncValue } from "graphql-state";
+import { useStateAsyncValue, useStateValue } from "graphql-state";
 import { ComponentDecorator } from "../../common/ComponentDecorator";
 import { totalState } from "./State";
 import { Spin } from "antd";
@@ -8,9 +8,9 @@ import { Spin } from "antd";
  * This component must be wrapped by <Suspense/>
  * otherwise, error will be raised.
  */
-export const OutputViewForAsyncValueStyle: FC = memo(() => {
+export const OutputViewForAsyncObjectStyle: FC = memo(() => {
 
-    const {data, loading } = useStateAsyncValue(totalState);
+    const {data, loading } = useStateValue(totalState, { asyncStyle: "ASYNC_OBJECT"});
 
     return (
         <ComponentDecorator name="OutputViewForAsyncValueStyle">

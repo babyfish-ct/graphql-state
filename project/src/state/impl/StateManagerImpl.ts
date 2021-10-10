@@ -2,6 +2,8 @@ import { Fetcher } from "graphql-ts-client-api";
 import { EntityChangeEvent } from "../..";
 import { EntityManager } from "../../entities/EntityManager";
 import { ModificationContext } from "../../entities/ModificationContext";
+import { QueryResult } from "../../entities/QueryResult";
+import { RuntimeShape, toRuntimeShape } from "../../entities/RuntimeShape";
 import { SchemaMetadata } from "../../meta/impl/SchemaMetadata";
 import { SchemaType } from "../../meta/SchemaType";
 import { StateManager, TransactionStatus } from "../StateManager";
@@ -13,14 +15,16 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
 
     private _scopedStateManager?: ScopedStateManager;
 
-    private _stateChangeListeners = new Set<StateValueChangeListener>();
+    private _stateValueChangeListeners = new Set<StateValueChangeListener>();
+
+    private _queryResultChangeListeners = new Set<QueryResultChangeListener>();
 
     private _entityChagneListenerMap = new Map<string | undefined, Set<(e: EntityChangeEvent) => any>>();
 
     readonly entityManager: EntityManager;
 
     constructor(schema?: SchemaMetadata) {
-        this.entityManager = new EntityManager(schema ?? new SchemaMetadata());
+        this.entityManager = new EntityManager(this, schema ?? new SchemaMetadata());
     }
     
     get undoManager(): UndoManagerImpl {
@@ -33,7 +37,8 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
         variables?: TVariables
     ): void {
         const ctx = new ModificationContext();
-        this.entityManager.save(ctx, fetcher, obj);
+        const shape = toRuntimeShape(fetcher, variables);
+        this.entityManager.save(ctx, shape, obj);
         ctx.fireEvents(e => {
             this.publishEntityChangeEvent(e);
         });
@@ -111,21 +116,40 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
         throw new Error();
     }
 
-    addStateChangeListener(listener: StateValueChangeListener) {
-        if (this._stateChangeListeners.has(listener)) {
+    addStateValueChangeListener(listener: StateValueChangeListener) {
+        if (this._stateValueChangeListeners.has(listener)) {
             throw new Error(`Cannot add existing listener`);
         }
         if (listener !== undefined && listener !== null) {
-            this._stateChangeListeners.add(listener);
+            this._stateValueChangeListeners.add(listener);
         }
     }
 
-    removeStateChangeListener(listener: StateValueChangeListener) {
-        this._stateChangeListeners.delete(listener);
+    removeStateValueChangeListener(listener: StateValueChangeListener) {
+        this._stateValueChangeListeners.delete(listener);
     }
 
-    publishStateChangeEvent(e: StateValueChangeEvent) {
-        for (const listener of this._stateChangeListeners) {
+    publishStateValueChangeEvent(e: StateValueChangeEvent) {
+        for (const listener of this._stateValueChangeListeners) {
+            listener(e);
+        }
+    }
+
+    addQueryResultChangeListener(listener: QueryResultChangeListener) {
+        if (this._queryResultChangeListeners.has(listener)) {
+            throw new Error(`Cannot add existing listener`);
+        }
+        if (listener !== undefined && listener !== null) {
+            this._queryResultChangeListeners.add(listener);
+        }
+    }
+
+    removeQueryResultChangeListener(listener: QueryResultChangeListener) {
+        this._queryResultChangeListeners.delete(listener);
+    }
+
+    publishQueryResultChangeEvent(e: QueryResultChangeEvent) {
+        for (const listener of this._queryResultChangeListeners) {
             listener(e);
         }
     }
@@ -148,7 +172,7 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
         this._entityChagneListenerMap.get(typeName)?.delete(listener);
     }
 
-    private publishEntityChangeEvent(e: EntityChangeEvent) {
+    publishEntityChangeEvent(e: EntityChangeEvent) {
         for (const [, set] of this._entityChagneListenerMap) {
             for (const listener of set) {
                 listener(e);
@@ -161,6 +185,13 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
 export type StateValueChangeListener = (e: StateValueChangeEvent) => void;
 
 export interface StateValueChangeEvent {
-    stateValue: StateValue;
-    changedType: "RESULT_CHANGE" | "ASYNC_STATE_CHANGE";
+    readonly stateValue: StateValue;
+    readonly changedType: "RESULT_CHANGE" | "ASYNC_STATE_CHANGE";
+}
+
+export type QueryResultChangeListener = (e: QueryResultChangeEvent) => void;
+
+export interface QueryResultChangeEvent {
+    readonly queryResult: QueryResult;
+    readonly changedType: "RESULT_CHANGE" | "ASYNC_STATE_CHANGE";
 }

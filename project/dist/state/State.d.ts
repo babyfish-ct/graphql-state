@@ -60,7 +60,8 @@ export interface ComputedContext<TSchema extends SchemaType> {
     <X>(state: SingleAsyncState<X>, options: StateAccessingOptions): Promise<X>;
     <X, XVariables>(state: ParameterizedState<X, XVariables>, options: ParameterizedStateAccessingOptions<XVariables>): Promise<X>;
     object<TName extends Exclude<keyof TSchema & string, "Query" | "Mutation">, T extends object, TVaraibles extends object>(fetcher: Fetcher<TName, T, TVaraibles>, id: TSchema[TName][" $id"], variables?: TVaraibles): Promise<T | undefined>;
-    query<T extends object, TVaraibles extends object>(fetcher: Fetcher<"Query", T, TVaraibles>, variables?: TVaraibles): Promise<T | undefined>;
+    objects<TName extends Exclude<keyof TSchema & string, "Query" | "Mutation">, T extends object, TVaraibles extends object>(fetcher: Fetcher<TName, T, TVaraibles>, ids: ReadonlyArray<TSchema[TName][" $id"]>, variables?: TVaraibles): Promise<ReadonlyArray<T | undefined>>;
+    query<T extends object, TVaraibles extends object>(fetcher: Fetcher<"Query", T, TVaraibles>, variables?: TVaraibles): Promise<T>;
 }
 export interface ParameterizedComputedContext<TSchema extends SchemaType, T, TVariables> extends ComputedContext<TSchema> {
     self(options: ParameterizedStateAccessingOptions<TVariables>): T;

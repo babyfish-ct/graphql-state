@@ -3,7 +3,7 @@ import { StateManagerProvider } from "graphql-state";
 import { InputView } from "./InputView";
 import { OutputViewForSuspenseStyle } from "./OutputViewForSuspenseStyle";
 import { Spin } from "antd";
-import { OutputViewForAsyncValueStyle } from "./OutputViewForAsyncValueStyle copy";
+import { OutputViewForAsyncObjectStyle } from "./OutputViewForAsyncObjectStyle copy";
 import { css } from "@emotion/css";
 
 export const App: FC = memo(() => {
@@ -21,7 +21,7 @@ export const App: FC = memo(() => {
                 <OutputViewForSuspenseStyle/>
             </Suspense>
             
-            <OutputViewForAsyncValueStyle/>
+            <OutputViewForAsyncObjectStyle/>
 
         </StateManagerProvider>
     );

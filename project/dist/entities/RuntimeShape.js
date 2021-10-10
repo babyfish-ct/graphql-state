@@ -25,10 +25,7 @@ function toRuntimeShape0(parentPath, fetcher, variables) {
         }
         return 0;
     });
-    return {
-        typeName: fetcher.fetchableType.name,
-        fields
-    };
+    return new RuntimeShapeImpl(fetcher.fetchableType.name, fields);
 }
 exports.toRuntimeShape0 = toRuntimeShape0;
 function addField(parentPath, fieldName, field, runtimeShapeFieldMap, fetcherVaribles) {
@@ -116,4 +113,28 @@ function resolveParameterRefs(variables, fetcherVariables) {
         result[name] = resolved[name];
     }
     return result;
+}
+class RuntimeShapeImpl {
+    constructor(typeName, fields) {
+        this.typeName = typeName;
+        this.fields = fields;
+    }
+    toString() {
+        let value = this._toString;
+        if (value === undefined) {
+            this._toString = value = `(${this.typeName},[${this.fields.map(fieldString)}])`;
+        }
+        return value;
+    }
+}
+function fieldString(field) {
+    return `(${field.name},${field.variables !== undefined ?
+        JSON.stringify(field.variables) :
+        ""},${field.alias !== undefined ?
+        field.alias :
+        ""},${field.directives !== undefined ?
+        JSON.stringify(field.directives) :
+        ""},${field.childShape !== undefined ?
+        field.childShape.toString() :
+        ""})`;
 }

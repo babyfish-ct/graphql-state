@@ -1,7 +1,7 @@
-import { FC, memo, Suspense, useCallback } from "react";
+import { FC, memo, useCallback } from "react";
 import { screen, cleanup, fireEvent, render, waitFor, waitForElementToBeRemoved } from '@testing-library/react';
 import { StateManagerProvider, makeStateFactory, useStateAccessor } from '..';
-import { useStateAsyncValue } from "../state/StateHook";
+import { useStateValue } from "../state/StateHook";
 
 const { createState, createAsyncState, createParameterizedAsyncState } = makeStateFactory();
 
@@ -44,7 +44,7 @@ const InputView: FC = memo(() => {
 });
 
 const OutputView: FC = memo(() => {
-    const { data, loading, error } = useStateAsyncValue(sumState);
+    const { data, loading, error } = useStateValue(sumState, { asyncStyle: "ASYNC_OBJECT" });
     return (
         <>
             { loading && <div data-testid="loading">Loading...</div> }

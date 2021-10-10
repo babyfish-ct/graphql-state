@@ -2,12 +2,14 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntityManager = void 0;
 const BatchEntityRequest_1 = require("./BatchEntityRequest");
+const QueryResult_1 = require("./QueryResult");
 const RecordManager_1 = require("./RecordManager");
-const RuntimeShape_1 = require("./RuntimeShape");
 class EntityManager {
-    constructor(schema) {
+    constructor(stateManager, schema) {
+        this.stateManager = stateManager;
         this.schema = schema;
         this.recordManagerMap = new Map();
+        this.queryResultMap = new Map();
         this.batchEntityRequest = new BatchEntityRequest_1.BatchEntityRequest(this);
     }
     recordManager(typeName) {
@@ -23,19 +25,36 @@ class EntityManager {
         }
         return recordManager;
     }
-    findById(typeName, id) {
-        return this.recordManager(typeName).findById(id);
+    findRefById(typeName, id) {
+        return this.recordManager(typeName).findRefById(id);
     }
     saveId(ctx, typeName, id) {
         return this.recordManager(typeName).saveId(ctx, id);
     }
-    save(ctx, fetcher, obj, variables) {
-        const shape = RuntimeShape_1.toRuntimeShape(fetcher, variables);
-        return this.recordManager(fetcher.fetchableType.name).save(ctx, shape, obj);
+    save(ctx, shape, obj) {
+        return this.recordManager(shape.typeName).save(ctx, shape, obj);
     }
     loadByIds(ids, shape) {
         console.log(ids, JSON.stringify(shape));
         throw new Error("bathcLoad is not implemented");
+    }
+    retain(queryArgs) {
+        const key = this.queryKeyOf(queryArgs.shape, queryArgs.id);
+        let result = this.queryResultMap.get(key);
+        if (result === undefined) {
+            result = new QueryResult_1.QueryResult(this, queryArgs);
+        }
+        return result.retain();
+    }
+    release(queryArgs) {
+        const key = this.queryKeyOf(queryArgs.shape, queryArgs.id);
+        const result = this.queryResultMap.get(key);
+        if ((result === null || result === void 0 ? void 0 : result.release()) === true) {
+            this.queryResultMap.delete(key);
+        }
+    }
+    queryKeyOf(shape, id) {
+        return id === undefined ? shape.toString() : `${shape.toString}(${id})`;
     }
 }
 exports.EntityManager = EntityManager;
