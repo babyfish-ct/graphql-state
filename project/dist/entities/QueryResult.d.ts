@@ -10,17 +10,20 @@ export declare class QueryResult {
     private _loadable;
     private _invalid;
     private _asyncRequestId;
+    private _listener?;
     constructor(entityManager: EntityManager, queryArgs: QueryArgs);
     retain(): this;
     release(): boolean;
     get promise(): Promise<any>;
     get loadable(): Loadable;
+    private acceptData;
+    private invalidate;
 }
 export declare class QueryArgs {
     readonly fetcher: Fetcher<string, object, object>;
-    readonly id?: any;
+    readonly ids?: readonly any[] | undefined;
     readonly variables?: any;
     private _shape;
-    constructor(fetcher: Fetcher<string, object, object>, id?: any, variables?: any);
+    constructor(fetcher: Fetcher<string, object, object>, ids?: readonly any[] | undefined, variables?: any);
     get shape(): RuntimeShape;
 }

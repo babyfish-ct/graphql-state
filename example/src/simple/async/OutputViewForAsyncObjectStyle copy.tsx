@@ -1,5 +1,5 @@
 import { FC, memo } from "react";
-import { useStateAsyncValue, useStateValue } from "graphql-state";
+import { useStateValue } from "graphql-state";
 import { ComponentDecorator } from "../../common/ComponentDecorator";
 import { totalState } from "./State";
 import { Spin } from "antd";

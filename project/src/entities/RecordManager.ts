@@ -93,7 +93,7 @@ export class RecordManager {
                         case "LIST":
                             if (Array.isArray(value)) {
                                 for (const element of value) {
-                                    associationRecordManager.save(ctx, shapeField.childShape!, element);
+                                    associationRecordManager.save(ctx, shapeField.childShape, element);
                                 }
                             }
                             break;
@@ -101,7 +101,7 @@ export class RecordManager {
                             const edges = value.edges;
                             if (Array.isArray(edges)) {
                                 for (const edge of value) {
-                                    associationRecordManager.save(ctx, shapeField.childShape!, edge.node);
+                                    associationRecordManager.save(ctx, shapeField.childShape, edge.node);
                                 }
                             }
                             break;

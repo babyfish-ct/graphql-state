@@ -28,7 +28,16 @@ export interface UseStateAsyncValueHookResult<T> {
 }
 export declare function makeManagedObjectHooks<TSchema extends SchemaType>(): ManagedObjectHooks<TSchema>;
 export interface ManagedObjectHooks<TSchema extends SchemaType> {
-    useObject<TName extends keyof TSchema & string, T extends object, TVariables extends object>(fetcher: Fetcher<string, T, TVariables>, id: TSchema[TName][" $id"], variables?: TVariables): UseStateAsyncValueHookResult<T | undefined>;
-    useObjects<TName extends keyof TSchema & string, T extends object, TVariables extends object>(fetcher: Fetcher<string, T, TVariables>, ids: ReadonlyArray<TSchema[TName][" $id"]>, variables?: TVariables): UseStateAsyncValueHookResult<ReadonlyArray<T | undefined>>;
-    useQuery<T extends object, TVaraibles extends object>(fetcher: Fetcher<"Query", T, TVaraibles>, variables?: TVaraibles): UseStateAsyncValueHookResult<T>;
+    useObject<TName extends keyof TSchema & string, T extends object, TVariables extends object, TAsyncStyle extends AsyncStyles = "SUSPENSE", TObjectStyle extends ObjectStyles = "REQUIRED">(fetcher: Fetcher<string, T, TVariables>, id: TSchema[TName][" $id"], options?: ObjectQueryOptions<TVariables, TAsyncStyle, TObjectStyle>): AsyncReturnType<ObjectReference<T, TObjectStyle>, TAsyncStyle>;
+    useObjects<TName extends keyof TSchema & string, T extends object, TVariables extends object, TAsyncStyle extends AsyncStyles = "SUSPENSE", TObjectStyle extends ObjectStyles = "REQUIRED">(fetcher: Fetcher<string, T, TVariables>, ids: ReadonlyArray<TSchema[TName][" $id"]>, options?: ObjectQueryOptions<TVariables, TAsyncStyle, TObjectStyle>): AsyncReturnType<ReadonlyArray<ObjectReference<T, TObjectStyle>>, TAsyncStyle>;
+    useQuery<T extends object, TVaraibles extends object, TAsyncStyle extends AsyncStyles = "SUSPENSE">(fetcher: Fetcher<"Query", T, TVaraibles>, options?: QueryOptions<TVaraibles, TAsyncStyle>): AsyncReturnType<T, TAsyncStyle>;
 }
+export interface QueryOptions<TVariables extends object, TAsyncStyle extends AsyncStyles> extends AsyncOptions<TAsyncStyle> {
+    readonly variables?: TVariables;
+}
+export declare type ObjectStyles = "REQUIRED" | "OPTIONAL";
+export interface ObjectQueryOptions<TVariables extends object, TAsyncStyle extends AsyncStyles, TObjectStyle extends ObjectStyles> extends QueryOptions<TVariables, TAsyncStyle> {
+    readonly objectStyle: TObjectStyle;
+}
+declare type ObjectReference<T, TObjectStyle extends ObjectStyles> = TObjectStyle extends "REQUIRED" ? T : T | undefined;
+export {};

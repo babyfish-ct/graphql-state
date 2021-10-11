@@ -47,7 +47,7 @@ class Record {
                 const oldValue = this.scalarMap.get(field.name);
                 if (oldValue !== value) {
                     this.scalarMap.set(field.name, value);
-                    ctx.change(this, field.name, oldValue, value);
+                    ctx.change(this, field.name, variablesCode, oldValue, value);
                 }
             }
         }
@@ -152,7 +152,7 @@ class AssociationReferenceValue extends AssociationValue {
             this.releaseOldReference(ctx, entityManager, self, associationField, variablesCode, oldReference);
             this.referfence = reference;
             this.retainNewReference(ctx, entityManager, self, associationField, variablesCode, variables, reference);
-            ctx.change(self, associationField.name, objectWithOnlyId(oldReference), objectWithOnlyId(reference));
+            ctx.change(self, associationField.name, variablesCode, objectWithOnlyId(oldReference), objectWithOnlyId(reference));
         }
     }
     link(ctx, entityManager, self, associationField, variablesCode, target) {
@@ -171,7 +171,8 @@ class AssociationReferenceValue extends AssociationValue {
 }
 class AssociationListValue extends AssociationValue {
     get() {
-        return this.elements;
+        var _a;
+        return (_a = this.elements) !== null && _a !== void 0 ? _a : [];
     }
     set(ctx, entityManager, self, associationField, variablesCode, variables, value) {
         var _a, _b, _c, _d, _e, _f, _g, _h;
@@ -226,7 +227,7 @@ class AssociationListValue extends AssociationValue {
             }
         }
         if (listChanged) {
-            ctx.change(self, associationField.name, oldValueForTriggger, (_h = this.elements) === null || _h === void 0 ? void 0 : _h.map(objectWithOnlyId));
+            ctx.change(self, associationField.name, variablesCode, oldValueForTriggger, (_h = this.elements) === null || _h === void 0 ? void 0 : _h.map(objectWithOnlyId));
         }
     }
     link(ctx, entityManager, self, associationField, variablesCode, target) {

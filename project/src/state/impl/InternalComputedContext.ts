@@ -116,13 +116,17 @@ export class InternalComputedContext {
     }
 
     object(fetcher: Fetcher<string, object, object>, id: any, variables?: any): Promise<any> {
+        return this.objects(fetcher, [id], variables)[0];
+    }
+
+    objects(fetcher: Fetcher<string, object, object>, ids: ReadonlyArray<any>, variables?: any): Promise<ReadonlyArray<any>> {
         
         if (this.closed) {
             throw new Error("ComputedContext has been closed");
         }
 
         const entityManager = this.scope.stateManager.entityManager;
-        const queryResult = entityManager.retain(new QueryArgs(fetcher, id, variables));
+        const queryResult = entityManager.retain(new QueryArgs(fetcher, ids, variables));
         let result: any;
         try {
             result = queryResult.promise;

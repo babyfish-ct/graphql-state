@@ -111,6 +111,7 @@ export class ComputedStateValue extends StateValue {
         let publicContext = getFormContext.bind(ctx);
         publicContext.self = getSelfFormContext.bind(ctx);
         publicContext.object = objectFormContext.bind(ctx);
+        publicContext.objects = objectsFormContext.bind(ctx);
         return publicContext;
     }
 
@@ -183,4 +184,9 @@ function getSelfFormContext(options: any): any {
 function objectFormContext(fetcher: Fetcher<string, object, object>, id: any, variables?: any): any {
     const ctx = this as InternalComputedContext;
     return ctx.object(fetcher, id, variables);
+}
+
+function objectsFormContext(fetcher: Fetcher<string, object, object>, ids: ReadonlyArray<any>, variables?: any): any {
+    const ctx = this as InternalComputedContext;
+    return ctx.objects(fetcher, ids, variables);
 }

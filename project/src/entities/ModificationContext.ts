@@ -10,41 +10,41 @@ export class ModificationContext {
     fireEvents(trigger: (event: EntityChangeEvent) => void) {
         for (const [type, subMap] of this.objPairMap) {
             for (const [id, objectPair] of subMap) {
-                const fieldNames = new Set<string>();
+                const fieldKeys = new Set<string>();
                 const oldValueMap = new Map<string, any>();
                 const newValueMap = new Map<string, any>();
                 if (objectPair.newObj !== undefined) {
-                    for (const [fieldName, newValue] of objectPair.newObj) {
-                        const oldValue = objectPair.oldObj?.get(fieldName);
-                        fieldNames.add(fieldName);
+                    for (const [fieldKey, newValue] of objectPair.newObj) {
+                        const oldValue = objectPair.oldObj?.get(fieldKey);
+                        fieldKeys.add(fieldKey);
                         if (oldValue !== undefined) {
-                            oldValueMap.set(fieldName, oldValue);
+                            oldValueMap.set(fieldKey, oldValue);
                         }
                         if (newValue !== undefined) {
-                            newValueMap.set(fieldName, newValue);
+                            newValueMap.set(fieldKey, newValue);
                         }
                     }
                 } else if (objectPair.oldObj !== undefined) {
-                    for (const [fieldName, oldValue] of objectPair.oldObj) {
-                        fieldNames.add(fieldName);
+                    for (const [fieldKey, oldValue] of objectPair.oldObj) {
+                        fieldKeys.add(fieldKey);
                         if (oldValue !== undefined) {
-                            oldValueMap.set(fieldName, oldValue);
+                            oldValueMap.set(fieldKey, oldValue);
                         }
                     }
                 }
                 if (oldValueMap.size !== 0 || newValueMap.size !== 0) {
-                    // const event = new EntityChangeEventImpl(
-                    //     type.name,
-                    //     id,
-                    //     objectPair.oldObj !== undefined && objectPair.newObj !== undefined ? 
-                    //     "UPDATE" : (
-                    //         objectPair.newObj !== undefined ? "INSERT" : "DELETE"
-                    //     ),
-                    //     fieldNames,
-                    //     oldValueMap.size === 0 ? undefined : oldValueMap,
-                    //     newValueMap.size === 0 ? undefined : newValueMap
-                    // );
-                    // trigger(event);
+                    const event = new EntityChangeEventImpl(
+                        type.name,
+                        id,
+                        objectPair.oldObj !== undefined && objectPair.newObj !== undefined ? 
+                        "UPDATE" : (
+                            objectPair.newObj !== undefined ? "INSERT" : "DELETE"
+                        ),
+                        Array.from(fieldKeys).map(parseFieldKey),
+                        oldValueMap.size === 0 ? undefined : oldValueMap,
+                        newValueMap.size === 0 ? undefined : newValueMap
+                    );
+                    trigger(event);
                 }
             }
         }
@@ -77,26 +77,24 @@ export class ModificationContext {
         }
     }
 
-    change(record: Record, fieldName: string, oldValue: any, newValue: any) {
+    change(record: Record, fieldName: string, variablesCode: string | undefined, oldValue: any, newValue: any) {
         if (fieldName === record.type.idField.name) {
             throw new Error("Internal bug: the changed name cannot be id");
         }
         if (oldValue !== newValue) {
-            const pair = this.objPairMap.get(record.type.rootType)?.get(record.id);
+            const pair = this.objPairMap.get(record.type)?.get(record.id);
             if (pair === undefined) {
                 throw new Error("Internal bug: the changed record is not cached in ModiciationContext");
             }
             if (pair.oldObj !== undefined && !pair.oldObj.has(fieldName)) {
-                pair.oldObj.set(fieldName, oldValue);
+                pair.oldObj.set(changedKeyString(fieldName, variablesCode), oldValue);
             }
-            pair.newObj?.set(fieldName, newValue);
+            pair.newObj?.set(changedKeyString(fieldName, variablesCode), newValue);
         }
     }
 
     private pair(record: Record, initializeOldObj: boolean) {
-        
-        const key = record.type.rootType;
-        
+        const key = record.type;
         let subMap = this.objPairMap.get(key);
         if (subMap === undefined) {
             subMap = new Map<any, ObjectPair>();
@@ -110,6 +108,26 @@ export class ModificationContext {
         }
         return pair;
     }
+}
+
+function changedKeyString(fieldName: string, variables?: any): string {
+    const vsCode = typeof variables === 'object' ? 
+        JSON.stringify(variables) :
+        typeof variables === 'string' ?
+        variables :
+        undefined;
+    if (vsCode === undefined || vsCode === '{}') {
+        return fieldName;
+    }
+    return `${fieldName}:${vsCode}`;
+}
+
+function parseFieldKey(key: string): EntityChangedKey {
+    const commaIndex = key.indexOf(':');
+    return commaIndex === -1 ? key : {
+        name: key.substring(0, commaIndex),
+        variables: JSON.parse(key.substring(commaIndex + 1))
+    };
 }
 
 interface ObjectPair {
@@ -129,16 +147,34 @@ class EntityChangeEventImpl implements EntityChangeEvent {
                 readonly variables: any
             }
         >,
-        oldValueMap: ReadonlyMap<string, any>,
-        newValueMap: ReadonlyMap<string, any>
+        private oldValueMap?: ReadonlyMap<string, any>,
+        private newValueMap?: ReadonlyMap<string, any>
     ) {
     }
   
     oldValue(changedKey: EntityChangedKey): any {
-
+        const key = typeof changedKey === 'string' ? 
+            changedKey : 
+            changedKeyString(changedKey.name, changedKey.variables);
+        const oldValue = this.oldValueMap?.get(key);
+        if (oldValue === undefined) {
+            if (this.oldValueMap === undefined || !this.oldValueMap.has(key)) {
+                throw new Error(`Cannot access old value for '${key}'`);
+            }
+        }
+        return oldValue;
     }
 
-    newValue(kchangedKey: EntityChangedKey): any {
-
+    newValue(changedKey: EntityChangedKey): any {
+        const key = typeof changedKey === 'string' ? 
+            changedKey : 
+            changedKeyString(changedKey.name, changedKey.variables);
+        const oldValue = this.newValueMap?.get(key);
+        if (oldValue === undefined) {
+            if (this.newValueMap === undefined || !this.newValueMap.has(key)) {
+                throw new Error(`Cannot access new value for '${key}'`);
+            }
+        }
+        return oldValue;
     }
 }

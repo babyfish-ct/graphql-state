@@ -14,31 +14,64 @@ export class QueryService {
         throw new Error("Unsupported");
     }
 
-    queryObject(
-        id: any,
+    async queryObjects(
+        ids: ReadonlyArray<any>,
         shape: RuntimeShape
-    ): Promise<any> {
+    ): Promise<ReadonlyArray<any>> {
 
         if (shape.typeName === "Query") {
             throw new Error(`The type "${shape.typeName}" does not support 'queryObject'`);
         }
+
+        if (ids.length === 0) {
+            return [];
+        }
         
-        try {
-            return Promise.resolve(this.findObject(id, shape));
-        } catch (ex) {
-            if (!ex[" $canNotFoundFromCache"]) {
-                throw ex;
+        const map = this.findObjects(ids, shape);
+        const missedIds: any[] = [];
+        for (const [id, obj] of map) {
+            if (obj === undefined) {
+                missedIds.push(id);
             }
         }
-
-        return this.entityMangager.batchEntityRequest.requestByShape(id, shape).then(obj => {
+        if (missedIds.length === 0) {
+            return Array.from(map.values());
+        }
+        const missedObjects = await this.entityMangager.batchEntityRequest.requestObjectByShape(missedIds, shape).then(arr => {
             const ctx = new ModificationContext();
-            this.entityMangager.save(ctx, shape, obj);
-            ctx.fireEvents(e => {
-                this.entityMangager.stateManager.publishEntityChangeEvent(e);
-            });
-            return obj;
+            for (const obj of arr) {
+                this.entityMangager.save(ctx, shape, obj);
+                ctx.fireEvents(e => {
+                    this.entityMangager.stateManager.publishEntityChangeEvent(e);
+                });
+            }
+            return arr;
         });
+
+        const idFieldName = this.entityMangager.schema.typeMap.get(shape.typeName)!.idField.name;
+        for (const missedObject of missedObjects) {
+            map.set(missedObject[idFieldName], missedObject);
+        }
+
+        return Array.from(map.values());
+    }
+
+    private findObjects(
+        ids: any,
+        shape: RuntimeShape
+    ): Map<any, any> {
+        const map = new Map<any, any>();
+        for (const id of ids) {
+            try {
+                map.set(id, this.findObject(id, shape));
+            } catch (ex) {
+                if (!ex[" $canNotFoundFromCache"]) {
+                    throw ex;
+                }
+                map.set(id, undefined);
+            }
+        }
+        return map;
     }
 
     private findObject(

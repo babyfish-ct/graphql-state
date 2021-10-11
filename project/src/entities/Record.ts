@@ -67,7 +67,7 @@ export class Record {
                 const oldValue = this.scalarMap.get(field.name);
                 if (oldValue !== value) {
                     this.scalarMap.set(field.name, value);
-                    ctx.change(this, field.name, oldValue, value);
+                    ctx.change(this, field.name, variablesCode, oldValue, value);
                 }
             }
         }
@@ -288,6 +288,7 @@ class AssociationReferenceValue extends AssociationValue {
             ctx.change(
                 self, 
                 associationField.name, 
+                variablesCode,
                 objectWithOnlyId(oldReference),
                 objectWithOnlyId(reference),
             );
@@ -344,7 +345,7 @@ class AssociationListValue extends AssociationValue {
     private elements?: Array<Record | undefined>;
 
     get(): ReadonlyArray<Record | undefined> {
-        return this.elements!;
+        return this.elements ?? [];
     }
 
     set(
@@ -415,7 +416,13 @@ class AssociationListValue extends AssociationValue {
         }
 
         if (listChanged) {
-            ctx.change(self, associationField.name, oldValueForTriggger, this.elements?.map(objectWithOnlyId));
+            ctx.change(
+                self, 
+                associationField.name, 
+                variablesCode, 
+                oldValueForTriggger, 
+                this.elements?.map(objectWithOnlyId)
+            );
         }
     }
 

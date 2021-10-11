@@ -5,7 +5,7 @@ import { stateManager } from "./App";
 
 const { createState } = makeStateFactory<Schema>();
 
-export const bookIdStoreListState = createState<string[]>([], {
+export const bookStoreIdListState = createState<string[]>([], {
     mount: ctx => {
         const onBookStoreDelete = (e: BookStoreChangeEvent) => {
             if (e.changedType === "DELETE") {

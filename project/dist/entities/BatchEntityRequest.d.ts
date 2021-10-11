@@ -5,7 +5,7 @@ export declare class BatchEntityRequest {
     constructor(entityManager: EntityManager);
     private batchByShapeMap;
     private timeout;
-    requestByShape(id: any, shape: RuntimeShape): Promise<any>;
+    requestObjectByShape(ids: ReadonlyArray<any>, shape: RuntimeShape): Promise<ReadonlyArray<any>>;
     private onTimeout;
     private batchLoadByShape;
 }

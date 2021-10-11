@@ -77,31 +77,57 @@ function useInternalStateValue(state, options) {
     return stateValue;
 }
 class ManagedObjectHooksImpl {
-    useObject(fetcher, id, variables) {
-        return useInternalQueryResult(fetcher, id, variables).loadable;
+    useObject(fetcher, id, options) {
+        const queryResult = useInternalQueryResult(fetcher, [id], options === null || options === void 0 ? void 0 : options.variables);
+        if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "ASYNC_OBJECT") {
+            return queryResult.loadable;
+        }
+        if (queryResult.loadable.loading) {
+            throw queryResult.promise; // throws promise, <Suspense/> will catch it
+        }
+        if (queryResult.loadable.error) {
+            throw queryResult.loadable.error;
+        }
+        if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "REFRESHABLE_SUSPENSE") {
+            return [queryResult.loadable.data];
+        }
+        return queryResult.loadable.data;
     }
-    useObjects(fetcher, ids, variables) {
-        throw new Error("Unsupported");
+    useObjects(fetcher, ids, options) {
+        const queryResult = useInternalQueryResult(fetcher, ids, options === null || options === void 0 ? void 0 : options.variables);
+        if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "ASYNC_OBJECT") {
+            return queryResult.loadable;
+        }
+        if (queryResult.loadable.loading) {
+            throw queryResult.promise; // throws promise, <Suspense/> will catch it
+        }
+        if (queryResult.loadable.error) {
+            throw queryResult.loadable.error;
+        }
+        if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "REFRESHABLE_SUSPENSE") {
+            return [queryResult.loadable.data];
+        }
+        return queryResult.loadable.data;
     }
-    useQuery(fetcher, variables) {
-        throw new Error("Unsupported");
+    useQuery(fetcher, options) {
+        throw new Error();
     }
 }
-function useInternalQueryResult(fetcher, id, variables) {
+function useInternalQueryResult(fetcher, ids, variables) {
     const stateManager = useStateManager();
     const entityManager = stateManager.entityManager;
     const queryArgs = react_1.useMemo(() => {
-        return new QueryResult_1.QueryArgs(fetcher, id, variables);
-    }, [fetcher, id, variables]);
+        return new QueryResult_1.QueryArgs(fetcher, ids, variables);
+    }, [fetcher, JSON.stringify(ids), JSON.stringify(variables)]);
     const [, setQueryVersion] = react_1.useState(0);
     const queryResult = react_1.useMemo(() => {
         return entityManager.retain(queryArgs);
-    }, [queryArgs.shape.toString()]);
+    }, [queryArgs.shape.toString(), JSON.stringify(ids)]);
     react_1.useEffect(() => {
         return () => {
             entityManager.release(queryArgs);
         };
-    }, [entityManager, queryArgs.shape.toString()]);
+    }, [entityManager, queryArgs.shape.toString(), JSON.stringify(ids)]);
     react_1.useEffect(() => {
         const queryResultChange = (e) => {
             if (e.queryResult === queryResult) {

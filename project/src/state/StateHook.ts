@@ -121,31 +121,55 @@ export interface ManagedObjectHooks<TSchema extends SchemaType> {
     useObject<
         TName extends keyof TSchema & string,
         T extends object,
-        TVariables extends object
+        TVariables extends object,
+        TAsyncStyle extends AsyncStyles = "SUSPENSE",
+        TObjectStyle extends ObjectStyles = "REQUIRED",
     >(
         fetcher: Fetcher<string, T, TVariables>,
         id: TSchema[TName][" $id"],
-        variables?: TVariables
-    ): UseStateAsyncValueHookResult<T | undefined>;
+        options?: ObjectQueryOptions<TVariables, TAsyncStyle, TObjectStyle>
+    ): AsyncReturnType<
+        ObjectReference<T, TObjectStyle>,
+        TAsyncStyle
+    >;
 
     useObjects<
         TName extends keyof TSchema & string,
         T extends object,
-        TVariables extends object
+        TVariables extends object,
+        TAsyncStyle extends AsyncStyles = "SUSPENSE",
+        TObjectStyle extends ObjectStyles = "REQUIRED"
     >(
         fetcher: Fetcher<string, T, TVariables>,
         ids: ReadonlyArray<TSchema[TName][" $id"]>,
-        variables?: TVariables
-    ): UseStateAsyncValueHookResult<ReadonlyArray<T | undefined>>;
+        options?: ObjectQueryOptions<TVariables, TAsyncStyle, TObjectStyle>
+    ): AsyncReturnType<
+        ReadonlyArray<ObjectReference<T, TObjectStyle>>,
+        TAsyncStyle
+    >;
 
     useQuery<
         T extends object,
-        TVaraibles extends object
+        TVaraibles extends object,
+        TAsyncStyle extends AsyncStyles = "SUSPENSE"
     >(
         fetcher: Fetcher<"Query", T, TVaraibles>,
-        variables?: TVaraibles
-    ): UseStateAsyncValueHookResult<T>;
+        options?: QueryOptions<TVaraibles, TAsyncStyle>
+    ): AsyncReturnType<T, TAsyncStyle>;
 }
+
+export interface QueryOptions<TVariables extends object, TAsyncStyle extends AsyncStyles> extends AsyncOptions<TAsyncStyle> {
+    readonly variables?: TVariables;
+}
+
+export type ObjectStyles = "REQUIRED" | "OPTIONAL";
+
+export interface ObjectQueryOptions<TVariables extends object, TAsyncStyle extends AsyncStyles, TObjectStyle extends ObjectStyles> 
+extends QueryOptions<TVariables, TAsyncStyle> {
+    readonly objectStyle: TObjectStyle;
+}
+
+type ObjectReference<T, TObjectStyle extends ObjectStyles> = TObjectStyle extends "REQUIRED" ? T : T | undefined;
 
 function useInternalStateValue(
     state: State<any>,
@@ -191,41 +215,96 @@ class ManagedObjectHooksImpl<TSchema extends SchemaType> implements ManagedObjec
     useObject<
         TName extends keyof TSchema & string,
         T extends object,
-        TVariables extends object
+        TVariables extends object,
+        TAsyncStyle extends AsyncStyles = "SUSPENSE",
+        TObjectStyle extends ObjectStyles = "REQUIRED"
     >(
         fetcher: Fetcher<string, T, TVariables>,
         id: TSchema[TName][" $id"],
-        variables?: TVariables
-    ): UseStateAsyncValueHookResult<T | undefined> {
-        return useInternalQueryResult(fetcher, id, variables).loadable as UseStateAsyncValueHookResult<T | undefined>;
+        options?: ObjectQueryOptions<TVariables, TAsyncStyle, TObjectStyle>
+    ): AsyncReturnType<
+        ObjectReference<T, TObjectStyle>,
+        TAsyncStyle
+    > {
+        const queryResult = useInternalQueryResult(fetcher, [id], options?.variables);
+        if (options?.asyncStyle === "ASYNC_OBJECT") {
+            return queryResult.loadable as AsyncReturnType<
+                ObjectReference<T, TObjectStyle>,
+                TAsyncStyle
+            >;
+        }
+        if (queryResult.loadable.loading) {
+            throw queryResult.promise; // throws promise, <Suspense/> will catch it
+        }
+        if (queryResult.loadable.error) {
+            throw queryResult.loadable.error;
+        }
+        if (options?.asyncStyle === "REFRESHABLE_SUSPENSE") {
+            return [queryResult.loadable.data] as AsyncReturnType<
+                ObjectReference<T, TObjectStyle>,
+                TAsyncStyle
+            >;
+        }
+        return queryResult.loadable.data as AsyncReturnType<
+            ObjectReference<T, TObjectStyle>,
+            TAsyncStyle
+        >;
     }
 
     useObjects<
         TName extends keyof TSchema & string,
         T extends object,
-        TVariables extends object
+        TVariables extends object,
+        TAsyncStyle extends AsyncStyles = "SUSPENSE",
+        TObjectStyle extends ObjectStyles = "REQUIRED"
     >(
         fetcher: Fetcher<string, T, TVariables>,
         ids: ReadonlyArray<TSchema[TName][" $id"]>,
-        variables?: TVariables
-    ): UseStateAsyncValueHookResult<ReadonlyArray<T | undefined>> {
-        throw new Error("Unsupported");
+        options?: ObjectQueryOptions<TVariables, TAsyncStyle, TObjectStyle>
+    ): AsyncReturnType<
+        ReadonlyArray<ObjectReference<T, TObjectStyle>>,
+        TAsyncStyle
+    > {
+        const queryResult = useInternalQueryResult(fetcher, ids, options?.variables);
+        if (options?.asyncStyle === "ASYNC_OBJECT") {
+            return queryResult.loadable as AsyncReturnType<
+                ReadonlyArray<ObjectReference<T, TObjectStyle>>,
+                TAsyncStyle
+            >;
+        }
+        if (queryResult.loadable.loading) {
+            throw queryResult.promise; // throws promise, <Suspense/> will catch it
+        }
+        if (queryResult.loadable.error) {
+            throw queryResult.loadable.error;
+        }
+        if (options?.asyncStyle === "REFRESHABLE_SUSPENSE") {
+            return [queryResult.loadable.data] as AsyncReturnType<
+            ReadonlyArray<ObjectReference<T, TObjectStyle>>,
+                TAsyncStyle
+            >;
+        }
+        return queryResult.loadable.data as AsyncReturnType<
+        ReadonlyArray<ObjectReference<T, TObjectStyle>>,
+            TAsyncStyle
+        >;
     }
 
     useQuery<
         T extends object,
-        TVaraibles extends object
+        TVaraibles extends object,
+        TAsyncStyle extends AsyncStyles = "SUSPENSE"
     >(
         fetcher: Fetcher<"Query", T, TVaraibles>,
-        variables?: TVaraibles
-    ): UseStateAsyncValueHookResult<T> {
-        throw new Error("Unsupported");
+        options?: QueryOptions<TVaraibles, TAsyncStyle>
+    ): AsyncReturnType<T, TAsyncStyle> {
+        throw new Error();
     }
 }
 
 function useInternalQueryResult(
     fetcher: Fetcher<string, object, object>,
-    id?: any,
+    ids?: ReadonlyArray<any>,
     variables?: any
 ): QueryResult {
 
@@ -233,20 +312,20 @@ function useInternalQueryResult(
     const entityManager = stateManager.entityManager;
 
     const queryArgs = useMemo<QueryArgs>(() => {
-        return new QueryArgs(fetcher, id, variables);
-    }, [fetcher, id, variables]);
+        return new QueryArgs(fetcher, ids, variables);
+    }, [fetcher, JSON.stringify(ids), JSON.stringify(variables)]);
 
     const [, setQueryVersion] = useState(0);
 
     const queryResult = useMemo<QueryResult>(() => {
         return entityManager.retain(queryArgs);
-    }, [queryArgs.shape.toString()]);
+    }, [queryArgs.shape.toString(), JSON.stringify(ids)]);
 
     useEffect(() => {
         return () => {
             entityManager.release(queryArgs);
         };
-    }, [entityManager, queryArgs.shape.toString()]);
+    }, [entityManager, queryArgs.shape.toString(), JSON.stringify(ids)]);
 
     useEffect(() => {
         const queryResultChange = (e: QueryResultChangeEvent) => {

@@ -5,11 +5,11 @@ export class BatchEntityRequest {
 
     constructor(private entityManager: EntityManager) {}
 
-    private batchByShapeMap = new Map<string, BatchByShape>();
+    private batchByShapeMap = new Map<any, BatchByShape>();
 
     private timeout: NodeJS.Timeout | undefined = undefined;
 
-    requestByShape(id: any, shape: RuntimeShape): Promise<any> {
+    requestObjectByShape(ids: ReadonlyArray<any>, shape: RuntimeShape): Promise<ReadonlyArray<any>> {
         const key = JSON.stringify(shape);
         let batchByShape = this.batchByShapeMap.get(key);
         if (batchByShape === undefined) {
@@ -22,8 +22,14 @@ export class BatchEntityRequest {
                 this.onTimeout();
             }, 0);
         }
+        const resolverKey = JSON.stringify(ids);
         return new Promise((resolve, reject) => {
-            batchByShape!.resolvers.set(id, { resolve, reject });
+            const oldResolver = batchByShape?.resolvers.get(resolverKey);
+            if (oldResolver === undefined) {
+                batchByShape!.resolvers.set(JSON.stringify(ids), { resolve, reject });
+            } else {
+                batchByShape!.resolvers.set(JSON.stringify(ids), mergeResolver(oldResolver, { resolve, reject }));
+            }
         });
     }
 
@@ -44,7 +50,13 @@ export class BatchEntityRequest {
         const rawIdFieldName = this.entityManager.schema.typeMap.get(batchByShape.shape.typeName)!.idField.name;
         const idFieldName = batchByShape.shape.fields.find(field => field.name === rawIdFieldName)!.alias ?? rawIdFieldName;
         
-        const ids = Array.from(batchByShape.resolvers.keys());
+        const ids = Array.from(
+            new Set<any>(
+                Array
+                .from(batchByShape.resolvers.keys())
+                .flatMap(key => JSON.parse(key) as ReadonlyArray<any>)
+            )
+        );
 
         this
         .entityManager
@@ -58,8 +70,10 @@ export class BatchEntityRequest {
                 }
                 objMap.set(id, obj);
             }
-            for (const [id, {resolve}] of batchByShape.resolvers) {
-                resolve(objMap.get(id));
+            for (const [key, {resolve}] of batchByShape.resolvers) {
+                for (const id of JSON.parse(key) as ReadonlyArray<any>) {
+                    resolve(objMap.get(id));
+                }
             }
         })
         .catch(error => {
@@ -78,4 +92,17 @@ interface BatchByShape {
 interface PromiseRsolver {
     resolve: (data: any) => void;
     reject: (error: any) => void;
+}
+
+function mergeResolver(a: PromiseRsolver, b: PromiseRsolver): PromiseRsolver {
+    return {
+        resolve: data => {
+            a.resolve(data);
+            b.resolve(data);
+        },
+        reject: error => {
+            a.reject(error);
+            b.reject(error);
+        }
+    }
 }

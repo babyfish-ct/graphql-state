@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QueryService = void 0;
 const ModificationContext_1 = require("./ModificationContext");
@@ -9,26 +18,55 @@ class QueryService {
     query(shape) {
         throw new Error("Unsupported");
     }
-    queryObject(id, shape) {
-        if (shape.typeName === "Query") {
-            throw new Error(`The type "${shape.typeName}" does not support 'queryObject'`);
-        }
-        try {
-            return Promise.resolve(this.findObject(id, shape));
-        }
-        catch (ex) {
-            if (!ex[" $canNotFoundFromCache"]) {
-                throw ex;
+    queryObjects(ids, shape) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (shape.typeName === "Query") {
+                throw new Error(`The type "${shape.typeName}" does not support 'queryObject'`);
+            }
+            if (ids.length === 0) {
+                return [];
+            }
+            const map = this.findObjects(ids, shape);
+            const missedIds = [];
+            for (const [id, obj] of map) {
+                if (obj === undefined) {
+                    missedIds.push(id);
+                }
+            }
+            if (missedIds.length === 0) {
+                return Array.from(map.values());
+            }
+            const missedObjects = yield this.entityMangager.batchEntityRequest.requestObjectByShape(missedIds, shape).then(arr => {
+                const ctx = new ModificationContext_1.ModificationContext();
+                for (const obj of arr) {
+                    this.entityMangager.save(ctx, shape, obj);
+                    ctx.fireEvents(e => {
+                        this.entityMangager.stateManager.publishEntityChangeEvent(e);
+                    });
+                }
+                return arr;
+            });
+            const idFieldName = this.entityMangager.schema.typeMap.get(shape.typeName).idField.name;
+            for (const missedObject of missedObjects) {
+                map.set(missedObject[idFieldName], missedObject);
+            }
+            return Array.from(map.values());
+        });
+    }
+    findObjects(ids, shape) {
+        const map = new Map();
+        for (const id of ids) {
+            try {
+                map.set(id, this.findObject(id, shape));
+            }
+            catch (ex) {
+                if (!ex[" $canNotFoundFromCache"]) {
+                    throw ex;
+                }
+                map.set(id, undefined);
             }
         }
-        return this.entityMangager.batchEntityRequest.requestByShape(id, shape).then(obj => {
-            const ctx = new ModificationContext_1.ModificationContext();
-            this.entityMangager.save(ctx, shape, obj);
-            ctx.fireEvents(e => {
-                this.entityMangager.stateManager.publishEntityChangeEvent(e);
-            });
-            return obj;
-        });
+        return map;
     }
     findObject(id, shape) {
         const ref = this.entityMangager.findRefById(shape.typeName, id);

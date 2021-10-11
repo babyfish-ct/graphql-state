@@ -1,7 +1,9 @@
-import { FC, memo } from "react";
+import { FC, memo, Suspense } from "react";
 import { StateManagerProvider } from "graphql-state";
 import { newTypedConfiguration } from "../../__generated";
-import { BookList } from "./BookList";
+import { BookList } from "./book/BookList";
+import { BookStoreList } from "./store/BookStoreList";
+import { AuthorList } from "./author/AuthorList";
 
 export const stateManager = 
     newTypedConfiguration()
@@ -12,7 +14,10 @@ export const stateManager =
 export const App: FC = memo(() => {
     return (
         <StateManagerProvider stateManager={stateManager}>
-            <BookList/>
+            <Suspense fallback={<div>Loading...</div>}>
+                <BookStoreList/>
+                
+            </Suspense>
         </StateManagerProvider>
     );
 });

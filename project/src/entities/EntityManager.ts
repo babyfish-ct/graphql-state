@@ -58,23 +58,24 @@ export class EntityManager {
 
     retain(queryArgs: QueryArgs): QueryResult {
         
-        const key = this.queryKeyOf(queryArgs.shape, queryArgs.id);
+        const key = this.queryKeyOf(queryArgs.shape, queryArgs.ids);
         let result = this.queryResultMap.get(key);
         if (result === undefined) {
             result = new QueryResult(this, queryArgs);
+            this.queryResultMap.set(key, result);
         }
         return result.retain();
     }
 
     release(queryArgs: QueryArgs) {
-        const key = this.queryKeyOf(queryArgs.shape, queryArgs.id);
+        const key = this.queryKeyOf(queryArgs.shape, queryArgs.ids);
         const result = this.queryResultMap.get(key);
         if (result?.release() === true) {
             this.queryResultMap.delete(key);
         }
     }
 
-    private queryKeyOf(shape: RuntimeShape, id?:any): string {
-        return id === undefined ? shape.toString() : `${shape.toString}(${id})`;
+    private queryKeyOf(shape: RuntimeShape, ids?: ReadonlyArray<any>): string {
+        return ids === undefined ? shape.toString() : `${shape.toString()}${JSON.stringify(ids)}`;
     }
 }

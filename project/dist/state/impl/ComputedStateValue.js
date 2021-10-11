@@ -89,6 +89,7 @@ class ComputedStateValue extends StateValue_1.StateValue {
         let publicContext = getFormContext.bind(ctx);
         publicContext.self = getSelfFormContext.bind(ctx);
         publicContext.object = objectFormContext.bind(ctx);
+        publicContext.objects = objectsFormContext.bind(ctx);
         return publicContext;
     }
     get isAsync() {
@@ -156,4 +157,8 @@ function getSelfFormContext(options) {
 function objectFormContext(fetcher, id, variables) {
     const ctx = this;
     return ctx.object(fetcher, id, variables);
+}
+function objectsFormContext(fetcher, ids, variables) {
+    const ctx = this;
+    return ctx.objects(fetcher, ids, variables);
 }

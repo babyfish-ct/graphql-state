@@ -39,22 +39,23 @@ class EntityManager {
         throw new Error("bathcLoad is not implemented");
     }
     retain(queryArgs) {
-        const key = this.queryKeyOf(queryArgs.shape, queryArgs.id);
+        const key = this.queryKeyOf(queryArgs.shape, queryArgs.ids);
         let result = this.queryResultMap.get(key);
         if (result === undefined) {
             result = new QueryResult_1.QueryResult(this, queryArgs);
+            this.queryResultMap.set(key, result);
         }
         return result.retain();
     }
     release(queryArgs) {
-        const key = this.queryKeyOf(queryArgs.shape, queryArgs.id);
+        const key = this.queryKeyOf(queryArgs.shape, queryArgs.ids);
         const result = this.queryResultMap.get(key);
         if ((result === null || result === void 0 ? void 0 : result.release()) === true) {
             this.queryResultMap.delete(key);
         }
     }
-    queryKeyOf(shape, id) {
-        return id === undefined ? shape.toString() : `${shape.toString}(${id})`;
+    queryKeyOf(shape, ids) {
+        return ids === undefined ? shape.toString() : `${shape.toString()}${JSON.stringify(ids)}`;
     }
 }
 exports.EntityManager = EntityManager;
