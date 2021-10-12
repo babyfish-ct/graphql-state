@@ -9,7 +9,7 @@ import { css } from "@emotion/css";
 export const App: FC = memo(() => {
     return (
         <StateManagerProvider>
-            
+
             <InputView/>
 
             <Suspense fallback={

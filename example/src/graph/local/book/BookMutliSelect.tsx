@@ -1,4 +1,4 @@
-import { FC, memo, useCallback } from "react";
+import { FC, memo } from "react";
 import { Select } from "antd";
 import { useStateValue } from "graphql-state";
 import { bookIdListState } from "../State";
@@ -12,15 +12,9 @@ export const BookMultiSelect: FC<{
 
     const bookIds = useStateValue(bookIdListState);
     const books = useObjects(book$$, bookIds);
-    
-    const onSelectChange = useCallback((value: string[]) => {
-        if (onChange !== undefined) {
-            onChange(value);
-        }
-    }, [onChange]);
 
     return (
-        <Select mode="multiple" value={value ?? []} onChange={onSelectChange}>
+        <Select mode="multiple" value={value ?? []} onChange={onChange}>
             {
                 books.map(book =>
                     <Select.Option key={book.id} value={book.id}>{book.name}</Select.Option>

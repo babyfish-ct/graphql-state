@@ -1,4 +1,4 @@
-import { Fetcher } from "graphql-ts-client-api";
+import { ObjectFetcher } from "graphql-ts-client-api";
 import { EntityChangeEvent } from "../..";
 import { EntityManager } from "../../entities/EntityManager";
 import { QueryResult } from "../../entities/QueryResult";
@@ -16,7 +16,7 @@ export declare class StateManagerImpl<TSchema extends SchemaType> implements Sta
     readonly entityManager: EntityManager;
     constructor(schema?: SchemaMetadata);
     get undoManager(): UndoManagerImpl;
-    save<TName extends keyof TSchema & string, T extends object, TVariables extends object = {}>(fetcher: Fetcher<TName, T, any>, obj: T, variables?: TVariables): void;
+    save<TName extends keyof TSchema & string, T extends object, TVariables extends object = {}>(fetcher: ObjectFetcher<TName, T, any>, objOrArray: T | readonly T[], variables?: TVariables): void;
     delete<TName extends keyof TSchema & string>(typeName: TName, id: TSchema[TName][" $id"]): boolean;
     addListener(listener: (e: EntityChangeEvent) => void): void;
     removeListener(listener: (e: EntityChangeEvent) => void): void;

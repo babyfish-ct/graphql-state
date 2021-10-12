@@ -16,6 +16,8 @@ export class Record {
 
     private deleted = false;
 
+    private linkFrozen = false;
+
     constructor(readonly type: TypeMetadata, readonly id: any) {}
 
     hasScalar(fieldName: string): boolean {
@@ -88,9 +90,19 @@ export class Record {
         associationField: FieldMetadata,
         target: Record
     ) {
-        this.associationMap.forEachValue(association => {
-            association.link(ctx, entityManager, this, associationField, target);
-        });
+        if (!this.linkFrozen) {
+            this.linkFrozen = true;
+            try {
+                this.associationMap.forEachValue(association => {
+                    if (association.field === associationField) {
+                        ctx.update(this);
+                        association.link(ctx, entityManager, this, target);
+                    }
+                });
+            } finally {
+                this.linkFrozen = false;
+            }
+        }
     }
 
     unlink(
@@ -99,9 +111,19 @@ export class Record {
         associationField: FieldMetadata,
         target: Record
     ) {
-        this.associationMap.forEachValue(association => {
-            association.unlink(ctx, entityManager, this, associationField, target);
-        });
+        if (!this.linkFrozen) {
+            this.linkFrozen = true;
+            try {
+                this.associationMap.forEachValue(association => {
+                    if (association.field === associationField) {
+                        ctx.update(this);
+                        association.unlink(ctx, entityManager, this, target);
+                    }
+                });
+            } finally {
+                this.linkFrozen = false;
+            }
+        }
     }
 }
 
@@ -139,11 +161,10 @@ class Association {
         ctx: ModificationContext, 
         entityManager: EntityManager, 
         self: Record,
-        assoicationField: FieldMetadata,
         target: Record
     ) {
         this.valueMap.forEach((vsCode, value) => {
-            value.link(ctx, entityManager, self, assoicationField, vsCode, target);
+            value.link(ctx, entityManager, self, this.field, vsCode, target);
         });
     }
 
@@ -151,11 +172,10 @@ class Association {
         ctx: ModificationContext, 
         entityManager: EntityManager, 
         self: Record,
-        assoicationField: FieldMetadata,
         target: Record
     ) {
         this.valueMap.forEach((vsCode, value) => {
-            value.unlink(ctx, entityManager, self, assoicationField, vsCode, target);
+            value.unlink(ctx, entityManager, self, this.field, vsCode, target);
         });
     }
 
@@ -202,7 +222,7 @@ abstract class AssociationValue {
         associationField: FieldMetadata, 
         variablesCode: string | undefined,
         target: Record
-    );
+    ): void;
 
     abstract unlink(
         ctx: ModificationContext, 
@@ -211,7 +231,7 @@ abstract class AssociationValue {
         associationField: FieldMetadata, 
         variablesCode: string | undefined,
         target: Record
-    );
+    ): void;
 
     protected releaseOldReference(
         ctx: ModificationContext,
@@ -229,6 +249,7 @@ abstract class AssociationValue {
             );
             const oppositeField = associationField.oppositeField;
             if (oppositeField !== undefined) {
+                if (oldRefernce)
                 oldRefernce.unlink(ctx, entityManager, oppositeField, self);
             }
         }
@@ -479,6 +500,9 @@ class AssociationListValue extends AssociationValue {
                     break;
                 }
             }
+        }
+        if (index === -1) {
+            return;
         }
 
         const variables = variablesCode !== undefined ? JSON.parse(variablesCode) : undefined;

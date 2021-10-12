@@ -12,6 +12,7 @@ class Record {
         this.associationMap = new SpaceSavingMap_1.SpaceSavingMap();
         this.backReferences = new BackReferences_1.BackReferences();
         this.deleted = false;
+        this.linkFrozen = false;
     }
     hasScalar(fieldName) {
         return this.scalarMap.has(fieldName);
@@ -60,14 +61,36 @@ class Record {
         return this.deleted;
     }
     link(ctx, entityManager, associationField, target) {
-        this.associationMap.forEachValue(association => {
-            association.link(ctx, entityManager, this, associationField, target);
-        });
+        if (!this.linkFrozen) {
+            this.linkFrozen = true;
+            try {
+                this.associationMap.forEachValue(association => {
+                    if (association.field === associationField) {
+                        ctx.update(this);
+                        association.link(ctx, entityManager, this, target);
+                    }
+                });
+            }
+            finally {
+                this.linkFrozen = false;
+            }
+        }
     }
     unlink(ctx, entityManager, associationField, target) {
-        this.associationMap.forEachValue(association => {
-            association.unlink(ctx, entityManager, this, associationField, target);
-        });
+        if (!this.linkFrozen) {
+            this.linkFrozen = true;
+            try {
+                this.associationMap.forEachValue(association => {
+                    if (association.field === associationField) {
+                        ctx.update(this);
+                        association.unlink(ctx, entityManager, this, target);
+                    }
+                });
+            }
+            finally {
+                this.linkFrozen = false;
+            }
+        }
     }
 }
 exports.Record = Record;
@@ -89,14 +112,14 @@ class Association {
     set(ctx, entityManager, record, associationField, variablesCode, variables, value) {
         this.value(variables).set(ctx, entityManager, record, associationField, variablesCode, variables, value);
     }
-    link(ctx, entityManager, self, assoicationField, target) {
+    link(ctx, entityManager, self, target) {
         this.valueMap.forEach((vsCode, value) => {
-            value.link(ctx, entityManager, self, assoicationField, vsCode, target);
+            value.link(ctx, entityManager, self, this.field, vsCode, target);
         });
     }
-    unlink(ctx, entityManager, self, assoicationField, target) {
+    unlink(ctx, entityManager, self, target) {
         this.valueMap.forEach((vsCode, value) => {
-            value.unlink(ctx, entityManager, self, assoicationField, vsCode, target);
+            value.unlink(ctx, entityManager, self, this.field, vsCode, target);
         });
     }
     valueOrUndefined(variables) {
@@ -125,7 +148,8 @@ class AssociationValue {
             oldRefernce.backReferences.remove(associationField, variablesCode, self);
             const oppositeField = associationField.oppositeField;
             if (oppositeField !== undefined) {
-                oldRefernce.unlink(ctx, entityManager, oppositeField, self);
+                if (oldRefernce)
+                    oldRefernce.unlink(ctx, entityManager, oppositeField, self);
             }
         }
     }
@@ -260,6 +284,9 @@ class AssociationListValue extends AssociationValue {
                     break;
                 }
             }
+        }
+        if (index === -1) {
+            return;
         }
         const variables = variablesCode !== undefined ? JSON.parse(variablesCode) : undefined;
         const idFieldName = associationField.targetType.idField.name;

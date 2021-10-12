@@ -4,41 +4,40 @@ import { useStateAccessor } from "graphql-state";
 import { ModelType } from "graphql-ts-client-api";
 import { FC, memo, useCallback, useEffect } from "react";
 import UUIDClass from "uuidjs";
-import { book$, bookStore$$ } from "../../../__generated/fetchers";
+import { author$$, book$ } from "../../../__generated/fetchers";
 import { stateManager } from "../App";
 import { BookMultiSelect } from "../book/BookMutliSelect";
-import { bookStoreIdListState } from "../State";
+import { authorIdListState } from "../State";
 
-const BOOK_STORE_EDIT_INFO =
-    bookStore$$
-    .books(
-        book$.id
-    );
+const AUTHOR_EDIT_INFO =
+    author$$
+    .books(book$.id)
+;
 
-type BookStoreInput = ModelType<typeof bookStore$$> & {
-    readonly bookIds: readonly string[];
-}
+type AuthorInput = ModelType<typeof author$$> & {
+    readonly bookIds: string[]
+};
 
-export const BookStoreDialog: FC<{
-    value?: ModelType<typeof BOOK_STORE_EDIT_INFO>,
-    onClose: (value?: ModelType<typeof BOOK_STORE_EDIT_INFO>) => void
+export const AuthorDialog: FC<{
+    value?: ModelType<typeof AUTHOR_EDIT_INFO>,
+    onClose: (value?: ModelType<typeof AUTHOR_EDIT_INFO>) => void
 }> = memo(({value, onClose}) => {
 
-    const [form] = useForm<BookStoreInput>();
+    const authorIds = useStateAccessor(authorIdListState);
 
-    const bookStoreIds = useStateAccessor(bookStoreIdListState);
+    const [form] = useForm<AuthorInput>();
 
     useEffect(() => {
         form.setFieldsValue({
             id: value?.id ?? UUIDClass.generate(),
             name: value?.name ?? "",
-            bookIds: value?.books.map(book => book.id) ?? []
+            bookIds: value?.books?.map(book => book.id) ?? []
         })
     }, [form, value]);
 
     const onOk = useCallback(() => {
         const input = form.getFieldsValue();
-        const info: ModelType<typeof BOOK_STORE_EDIT_INFO> = {
+        const info: ModelType<typeof AUTHOR_EDIT_INFO> = {
             id: input.id,
             name: input.name,
             books: input.bookIds.map(bookId => ({id: bookId}))
@@ -46,24 +45,24 @@ export const BookStoreDialog: FC<{
         if (info.id === undefined) {
             throw new Error();
         }
-        stateManager.save(BOOK_STORE_EDIT_INFO, info);
+        stateManager.save(AUTHOR_EDIT_INFO, info);
         if (value === undefined) {
-            bookStoreIds([...bookStoreIds(), info.id]);
+            authorIds([...authorIds(), info.id]);
         }
         onClose(info);
-    }, [value, form, bookStoreIds, onClose]);
+    }, [value, form, authorIds, onClose]);
 
     const onCancel = useCallback(() => {
         onClose();
     }, [onClose]);
 
     return (
-        <Modal 
+        <Modal
         visible={true}
-        title={`${value === undefined ? 'Create' : 'Edit'} BookStore`}
+        title={`${value === undefined ? 'Create' : 'Edit'} Author`}
         onOk={onOk}
         onCancel={onCancel}>
-            <Form form={form} labelCol={{span: 8}} wrapperCol={{span: 16}}>
+            <Form form={form}  labelCol={{span: 8}} wrapperCol={{span: 16}}>
                 <Form.Item name="id" hidden={true}/>
                 <Form.Item label="Name" name="name">
                     <Input autoComplete="off"/>

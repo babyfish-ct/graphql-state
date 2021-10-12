@@ -13,12 +13,13 @@ const BOOK_STORE_ROW =
     bookStore$$
     .books(
         book$$
-    );
+    )
+;
 
 export const BookStoreList: FC = memo(() => {
 
-    const bookStoreIds = useStateValue(bookStoreIdListState);
-    const bookStores = useObjects(BOOK_STORE_ROW, bookStoreIds);
+    const storeIds = useStateValue(bookStoreIdListState);
+    const stores = useObjects(BOOK_STORE_ROW, storeIds);
     const [dialog, setDialog] = useState<"NEW" | "EDIT">();
     const [editing, setEditing] = useState<ModelType<typeof BOOK_STORE_ROW>>();
 
@@ -53,10 +54,9 @@ export const BookStoreList: FC = memo(() => {
     }, []);
 
     return (
-        <ComponentDecorator name="BookStroeList">
-            {JSON.stringify(bookStoreIds)}
+        <ComponentDecorator name="BookStoreList">
             <Space direction="vertical" style={{width: "100%"}}>
-                <Table rowKey="id" dataSource={bookStores}>
+                <Table rowKey="id" dataSource={stores} pagination={false}>
                     <Table.Column title="Name" dataIndex="name"/>
                     <Table.Column title="Books" render={renderBooks}/>
                     <Table.Column title="Operations" render={renderOperations}/>

@@ -1,4 +1,4 @@
-import { FetchableType, Fetcher } from "graphql-ts-client-api";
+import { FetchableType, Fetcher, ObjectFetcher } from "graphql-ts-client-api";
 import { EntityChangeEvent } from "..";
 import { SchemaType } from "../meta/SchemaType";
 
@@ -9,8 +9,14 @@ export interface StateManager<TSchema extends SchemaType> {
     transaction<TResult>(callback: (ts: TransactionStatus) => TResult): TResult;
 
     save<TName extends keyof TSchema & string, T extends object, TVariables extends object = {}>(
-        fetcher: Fetcher<TName, T, any>,
+        fetcher: ObjectFetcher<TName, T, any>,
         obj: T,
+        variables?: TVariables
+    ): void;
+
+    save<TName extends keyof TSchema & string, T extends object, TVariables extends object = {}>(
+        fetcher: ObjectFetcher<TName, T, any>,
+        objs: readonly T[],
         variables?: TVariables
     ): void;
 

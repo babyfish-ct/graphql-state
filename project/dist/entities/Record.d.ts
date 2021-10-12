@@ -10,6 +10,7 @@ export declare class Record {
     private associationMap;
     readonly backReferences: BackReferences;
     private deleted;
+    private linkFrozen;
     constructor(type: TypeMetadata, id: any);
     hasScalar(fieldName: string): boolean;
     getSalar(fieldName: string): any;

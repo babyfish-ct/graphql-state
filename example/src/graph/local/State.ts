@@ -2,10 +2,11 @@ import { makeStateFactory } from "graphql-state"
 import { AuthorChangeEvent, BookChangeEvent, BookStoreChangeEvent } from "../../__generated/triggers";
 import { Schema } from "../../__generated/TypedConfiguration";
 import { stateManager } from "./App";
+import { defaultData } from "./InitializeDefaultData";
 
 const { createState } = makeStateFactory<Schema>();
 
-export const bookStoreIdListState = createState<string[]>([], {
+export const bookStoreIdListState = createState(defaultData.storeIds, {
     mount: ctx => {
         const onBookStoreDelete = (e: BookStoreChangeEvent) => {
             if (e.changedType === "DELETE") {
@@ -19,7 +20,7 @@ export const bookStoreIdListState = createState<string[]>([], {
     }
 });
 
-export const bookIdListState = createState<string[]>([], {
+export const bookIdListState = createState(defaultData.bookIds, {
     mount: ctx => {
         const onBookDelete = (e: BookChangeEvent) => {
             if (e.changedType === "DELETE") {
@@ -33,7 +34,7 @@ export const bookIdListState = createState<string[]>([], {
     }
 });
 
-export const authorIdListState = createState<string[]>([], {
+export const authorIdListState = createState(defaultData.authorIds, {
     mount: ctx => {
         const onAuthorDelete = (e: AuthorChangeEvent) => {
             if (e.changedType === "DELETE") {

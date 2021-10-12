@@ -1,4 +1,4 @@
-import { Fetcher } from "graphql-ts-client-api";
+import { Fetcher, ObjectFetcher } from "graphql-ts-client-api";
 import { EntityChangeEvent } from "../..";
 import { EntityManager } from "../../entities/EntityManager";
 import { ModificationContext } from "../../entities/ModificationContext";
@@ -32,13 +32,19 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
     }
 
     save<TName extends keyof TSchema & string, T extends object, TVariables extends object = {}>(
-        fetcher: Fetcher<TName, T, any>,
-        obj: T,
+        fetcher: ObjectFetcher<TName, T, any>,
+        objOrArray: T | readonly T[],
         variables?: TVariables
     ): void {
         const ctx = new ModificationContext();
         const shape = toRuntimeShape(fetcher, variables);
-        this.entityManager.save(ctx, shape, obj);
+        if (Array.isArray(objOrArray)) {
+            for (const element of objOrArray) {
+                this.entityManager.save(ctx, shape, element);
+            }
+        } else if (objOrArray !== undefined && objOrArray !== null) {
+            this.entityManager.save(ctx, shape, objOrArray);
+        }
         ctx.fireEvents(e => {
             this.publishEntityChangeEvent(e);
         });

@@ -16,10 +16,17 @@ class StateManagerImpl {
     get undoManager() {
         throw new Error();
     }
-    save(fetcher, obj, variables) {
+    save(fetcher, objOrArray, variables) {
         const ctx = new ModificationContext_1.ModificationContext();
         const shape = RuntimeShape_1.toRuntimeShape(fetcher, variables);
-        this.entityManager.save(ctx, shape, obj);
+        if (Array.isArray(objOrArray)) {
+            for (const element of objOrArray) {
+                this.entityManager.save(ctx, shape, element);
+            }
+        }
+        else if (objOrArray !== undefined && objOrArray !== null) {
+            this.entityManager.save(ctx, shape, objOrArray);
+        }
         ctx.fireEvents(e => {
             this.publishEntityChangeEvent(e);
         });
