@@ -1,30 +1,32 @@
-import { Fetcher } from "graphql-ts-client-api";
 import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { EntityManager } from "./EntityManager";
 import { ModificationContext } from "./ModificationContext";
 import { Record, RecordConnection } from "./Record";
-import { RuntimeShape, toRuntimeShape } from "./RuntimeShape";
+import { RuntimeShape } from "./RuntimeShape";
 
 export class QueryService {
 
     constructor(private entityMangager: EntityManager) {}
 
-    query(shape: RuntimeShape): Promise<any> {
+    query(shape: RuntimeShape): RawQueryResult<any> {
         throw new Error("Unsupported");
     }
 
-    async queryObjects(
+    queryObjects(
         ids: ReadonlyArray<any>,
         shape: RuntimeShape
-    ): Promise<ReadonlyArray<any>> {
+    ): RawQueryResult<ReadonlyArray<any>> {
 
         if (shape.typeName === "Query") {
             throw new Error(`The type "${shape.typeName}" does not support 'queryObject'`);
         }
 
         if (ids.length === 0) {
-            return [];
+            return {
+                type: "cached",
+                data: []
+            }
         }
         
         const map = this.findObjects(ids, shape);
@@ -35,29 +37,20 @@ export class QueryService {
             }
         }
         if (missedIds.length === 0) {
-            return Array.from(map.values());
-        }
-        const missedObjects = await this.entityMangager.batchEntityRequest.requestObjectByShape(missedIds, shape).then(arr => {
-            const ctx = new ModificationContext();
-            for (const obj of arr) {
-                this.entityMangager.save(ctx, shape, obj);
-                ctx.fireEvents(e => {
-                    this.entityMangager.stateManager.publishEntityChangeEvent(e);
-                });
+            return {
+                type: "cached",
+                data: Array.from(map.values())
             }
-            return arr;
-        });
-
-        const idFieldName = this.entityMangager.schema.typeMap.get(shape.typeName)!.idField.name;
-        for (const missedObject of missedObjects) {
-            map.set(missedObject[idFieldName], missedObject);
         }
 
-        return Array.from(map.values());
+        return {
+            type: "deferred",
+            promise: this.loadMissedObjects(map, missedIds, shape)
+        };
     }
 
     private findObjects(
-        ids: any,
+        ids: ReadonlyArray<any>,
         shape: RuntimeShape
     ): Map<any, any> {
         const map = new Map<any, any>();
@@ -91,6 +84,46 @@ export class QueryService {
             shape
         );
     }
+
+    private async loadMissedObjects(
+        cachedMap: Map<any, any>,
+        missedIds: ReadonlyArray<any>, 
+        shape: RuntimeShape
+    ): Promise<ReadonlyArray<any>> {
+
+        const missedObjects = await this.entityMangager.batchEntityRequest.requestObjectByShape(missedIds, shape);
+        const idFieldName = this.entityMangager.schema.typeMap.get(shape.typeName)!.idField.name;
+        for (const missedObject of missedObjects) {
+            cachedMap.set(missedObject[idFieldName], missedObject);
+        }
+
+        const ctx = new ModificationContext();
+        for (const missedId of missedIds) {
+            const obj = cachedMap.get(missedId);
+            if (obj !== undefined) {
+                this.entityMangager.save(ctx, shape, obj);
+            } else {
+                this.entityMangager.delete(ctx, shape.typeName, missedId);
+            }
+            ctx.fireEvents(e => {
+                this.entityMangager.stateManager.publishEntityChangeEvent(e);
+            });
+        }
+
+        return Array.from(cachedMap.values());;
+    }
+}
+
+export type RawQueryResult<T> = CachedResult<T> | DeferredResult<T>;
+
+interface CachedResult<T> {
+    readonly type: "cached";
+    readonly data: T;
+}
+
+interface DeferredResult<T> {
+    readonly type: "deferred";
+    readonly promise: Promise<T>;
 }
 
 function mapRecord(

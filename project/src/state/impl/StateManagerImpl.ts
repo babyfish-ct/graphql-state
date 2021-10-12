@@ -19,7 +19,7 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
 
     private _queryResultChangeListeners = new Set<QueryResultChangeListener>();
 
-    private _entityChagneListenerMap = new Map<string | undefined, Set<(e: EntityChangeEvent) => any>>();
+    private _entityChangeListenerMap = new Map<string | undefined, Set<(e: EntityChangeEvent) => any>>();
 
     readonly entityManager: EntityManager;
 
@@ -162,10 +162,10 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
 
     private addEntityStateListener(typeName: string | undefined, listener: (e: EntityChangeEvent) => void): void {
         if (listener !== undefined && listener !== null) {
-            let set = this._entityChagneListenerMap.get(typeName);
+            let set = this._entityChangeListenerMap.get(typeName);
             if (set === undefined) {
                 set = new Set<(e: EntityChangeEvent) => void>();
-                this._entityChagneListenerMap.set(typeName, set);
+                this._entityChangeListenerMap.set(typeName, set);
             } 
             if (set.has(listener)) {
                 throw new Error(`Cannot add exists listener`);
@@ -175,11 +175,11 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
     }
 
     private removeEntityStateListener(typeName: string | undefined, listener: (e: EntityChangeEvent) => void): void {
-        this._entityChagneListenerMap.get(typeName)?.delete(listener);
+        this._entityChangeListenerMap.get(typeName)?.delete(listener);
     }
 
     publishEntityChangeEvent(e: EntityChangeEvent) {
-        for (const [, set] of this._entityChagneListenerMap) {
+        for (const [, set] of this._entityChangeListenerMap) {
             for (const listener of set) {
                 listener(e);
             }

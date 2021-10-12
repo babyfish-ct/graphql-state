@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QueryArgs = exports.QueryResult = void 0;
 const QueryService_1 = require("./QueryService");
@@ -10,7 +19,9 @@ class QueryResult {
         this._refCount = 0;
         this._loadable = { loading: true };
         this._invalid = true;
-        this._asyncRequestId = 0;
+        this._currentAsyncRequestId = 0;
+        this._listener = this.onEntityChange.bind(this);
+        entityManager.stateManager.addListener(this._listener);
     }
     retain() {
         this._refCount++;
@@ -18,54 +29,14 @@ class QueryResult {
     }
     release() {
         if (--this._refCount === 0) {
-            this.acceptData(undefined);
+            this.entityManager.stateManager.removeListener(this._listener);
             return true;
         }
         return false;
     }
     get promise() {
         if (this._invalid) {
-            let promise;
-            const queryService = new QueryService_1.QueryService(this.entityManager);
-            if (this.queryArgs.ids !== undefined) {
-                promise = queryService.queryObjects(this.queryArgs.ids, this.queryArgs.shape);
-            }
-            else {
-                promise = queryService.query(this.queryArgs.shape);
-            }
-            const asyncRequestId = this._asyncRequestId;
-            if (!this._loadable.loading) {
-                this._loadable = Object.assign(Object.assign({}, this._loadable), { loading: true });
-            }
-            this._promise =
-                promise
-                    .then(data => {
-                    if (this._asyncRequestId === asyncRequestId) {
-                        this._loadable = {
-                            data,
-                            loading: false
-                        };
-                    }
-                    this.acceptData(data);
-                    return data;
-                })
-                    .catch(error => {
-                    if (this._asyncRequestId === asyncRequestId) {
-                        this._loadable = {
-                            error,
-                            loading: false
-                        };
-                    }
-                    return error;
-                })
-                    .finally(() => {
-                    if (this._asyncRequestId === asyncRequestId) {
-                        this.entityManager.stateManager.publishQueryResultChangeEvent({
-                            queryResult: this,
-                            changedType: "ASYNC_STATE_CHANGE"
-                        });
-                    }
-                });
+            this._promise = this.query();
             this._invalid = false;
         }
         return this._promise;
@@ -74,22 +45,79 @@ class QueryResult {
         this.promise;
         return this._loadable;
     }
-    acceptData(data) {
-        const l = this._listener;
-        if (l !== undefined) {
-            this._listener = undefined;
-            this.entityManager.stateManager.removeListener(l);
-        }
-        if (data !== undefined) {
-            const dependencies = new Dependencies();
-            dependencies.accept(this.entityManager.schema, this.queryArgs.shape, data);
-            const listener = (e) => {
-                if (dependencies.has(e)) {
-                    this.invalidate();
+    query() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const rawResult = this.queryArgs.ids !== undefined ?
+                new QueryService_1.QueryService(this.entityManager).queryObjects(this.queryArgs.ids, this.queryArgs.shape) :
+                new QueryService_1.QueryService(this.entityManager).query(this.queryArgs.shape);
+            if (rawResult.type === 'cached') {
+                this.refreshDependencies(rawResult.data);
+                this._loadable = { loading: false, data: rawResult.data };
+                this.entityManager.stateManager.publishQueryResultChangeEvent({
+                    queryResult: this,
+                    changedType: "ASYNC_STATE_CHANGE"
+                });
+                return rawResult.data;
+            }
+            if (!this._loadable.loading) {
+                this._loadable = Object.assign(Object.assign({}, this._loadable), { loading: true });
+                this.entityManager.stateManager.publishQueryResultChangeEvent({
+                    queryResult: this,
+                    changedType: "ASYNC_STATE_CHANGE"
+                });
+            }
+            const asyncRequestId = ++this._currentAsyncRequestId;
+            this.retain(); // Self holding during Async computing
+            try {
+                let data;
+                const queryService = new QueryService_1.QueryService(this.entityManager);
+                if (this.queryArgs.ids !== undefined) {
+                    data = yield queryService.queryObjects(this.queryArgs.ids, this.queryArgs.shape);
                 }
-            };
-            this._listener = listener;
-            this.entityManager.stateManager.addListener(listener);
+                else {
+                    data = yield queryService.query(this.queryArgs.shape);
+                }
+                if (this._currentAsyncRequestId === asyncRequestId) {
+                    this.refreshDependencies(data);
+                    this._loadable = {
+                        data,
+                        loading: false
+                    };
+                }
+            }
+            catch (ex) {
+                if (this._currentAsyncRequestId === asyncRequestId) {
+                    this._loadable = {
+                        loading: false,
+                        error: ex
+                    };
+                }
+                throw ex;
+            }
+            finally {
+                try {
+                    if (this._currentAsyncRequestId === asyncRequestId) {
+                        this.entityManager.stateManager.publishQueryResultChangeEvent({
+                            queryResult: this,
+                            changedType: "ASYNC_STATE_CHANGE"
+                        });
+                    }
+                }
+                finally {
+                    this.entityManager.release(this.queryArgs); // Self holding during Async computing
+                }
+            }
+        });
+    }
+    refreshDependencies(data) {
+        const dependencies = new Dependencies();
+        dependencies.accept(this.entityManager.schema, this.queryArgs.shape, data);
+        this._dependencies = dependencies;
+    }
+    onEntityChange(e) {
+        var _a;
+        if (((_a = this._dependencies) === null || _a === void 0 ? void 0 : _a.has(e)) === true) {
+            this.invalidate();
         }
     }
     invalidate() {
@@ -126,7 +154,7 @@ class Dependencies {
         this.map = new Map();
     }
     accept(schema, shape, obj) {
-        this.handleInsertion(schema, shape);
+        this.handleInsertion(schema, shape, false);
         this.handleObjectChange(schema, shape, obj);
     }
     has(e) {
@@ -153,24 +181,26 @@ class Dependencies {
         }
         return false;
     }
-    handleInsertion(schema, shape) {
+    handleInsertion(schema, shape, isLeaf) {
+        var _a;
         const type = schema.typeMap.get(shape.typeName);
-        if (type.name === 'Query' || type.category === 'CONNECTION' || type.category === 'EDGE') {
-            for (const field of shape.fields) {
-                const childShape = field.childShape;
-                if (childShape !== undefined) {
-                    let dependency = this.map.get(childShape.typeName);
-                    if (dependency === undefined) {
-                        dependency = {
-                            handleInsertion: true,
-                            idChangedKeyMap: new Map()
-                        };
-                        this.map.set(childShape.typeName, dependency);
-                    }
-                    else {
-                        dependency.handleInsertion || (dependency.handleInsertion = true);
-                    }
-                }
+        if (isLeaf && ((_a = schema.typeMap.get(shape.typeName)) === null || _a === void 0 ? void 0 : _a.category) === 'OBJECT') {
+            let dependency = this.map.get(shape.typeName);
+            if (dependency === undefined) {
+                dependency = {
+                    handleInsertion: true,
+                    idChangedKeyMap: new Map()
+                };
+                this.map.set(shape.typeName, dependency);
+            }
+            else {
+                dependency.handleInsertion || (dependency.handleInsertion = true);
+            }
+        }
+        for (const field of shape.fields) {
+            const childShape = field.childShape;
+            if (childShape !== undefined) {
+                this.handleInsertion(schema, childShape, true);
             }
         }
     }

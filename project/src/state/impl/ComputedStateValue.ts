@@ -1,5 +1,5 @@
 import { Fetcher } from "graphql-ts-client-api";
-import { ParameterizedComputedState, SingleComputedState, StateUnmoutHandler } from "../State";
+import { StateUnmoutHandler } from "../State";
 import { InternalComputedContext } from "./InternalComputedContext";
 import { StateInstance } from "./StateInstance";
 import { Loadable, StateValue } from "./StateValue";
@@ -16,7 +16,7 @@ export class ComputedStateValue extends StateValue {
 
     private _ctx?: InternalComputedContext;
 
-    private _asyncRequestId = 0;
+    private currentAsyncRequestId = 0;
 
     constructor(
         stateInstance: StateInstance,
@@ -134,10 +134,11 @@ export class ComputedStateValue extends StateValue {
 
     private afterCompute(result: any): any {
         if (this.isAsync) {
-            const asyncRequestId = ++this._asyncRequestId;
+            const asyncRequestId = ++this.currentAsyncRequestId;
+            this.retain(); // Self holding during Async computing
             return (result as Promise<any>)
                 .then(data => {
-                    if (this._asyncRequestId === asyncRequestId) {
+                    if (this.currentAsyncRequestId === asyncRequestId) {
                         this._loadable = {
                             data,
                             loading: false
@@ -146,7 +147,7 @@ export class ComputedStateValue extends StateValue {
                     return data;
                 })
                 .catch(error => {
-                    if (this._asyncRequestId === asyncRequestId) {
+                    if (this.currentAsyncRequestId === asyncRequestId) {
                         this._loadable = {
                             error,
                             loading: false
@@ -155,11 +156,15 @@ export class ComputedStateValue extends StateValue {
                     return error;
                 })
                 .finally(() => {
-                    if (this._asyncRequestId === asyncRequestId) {
-                        this.stateInstance.scopedStateManager.stateManager.publishStateValueChangeEvent({
-                            stateValue: this,
-                            changedType: "ASYNC_STATE_CHANGE"
-                        })
+                    try {
+                        if (this.currentAsyncRequestId === asyncRequestId) {
+                            this.stateInstance.scopedStateManager.stateManager.publishStateValueChangeEvent({
+                                stateValue: this,
+                                changedType: "ASYNC_STATE_CHANGE"
+                            })
+                        }
+                    } finally {
+                        this.stateInstance.release(this.variablesCode); // Self holding during Async computing
                     }
                 });
         }

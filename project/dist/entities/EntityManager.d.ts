@@ -18,6 +18,7 @@ export declare class EntityManager {
     findRefById(typeName: string, id: any): RecordRef | undefined;
     saveId(ctx: ModificationContext, typeName: string, id: any): Record;
     save<T extends object, TVariable extends object>(ctx: ModificationContext, shape: RuntimeShape, obj: T): void;
+    delete(ctx: ModificationContext, typeName: string, id: any): void;
     loadByIds(ids: any[], shape: RuntimeShape): Promise<any[]>;
     retain(queryArgs: QueryArgs): QueryResult;
     release(queryArgs: QueryArgs): void;

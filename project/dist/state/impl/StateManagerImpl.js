@@ -10,7 +10,7 @@ class StateManagerImpl {
     constructor(schema) {
         this._stateValueChangeListeners = new Set();
         this._queryResultChangeListeners = new Set();
-        this._entityChagneListenerMap = new Map();
+        this._entityChangeListenerMap = new Map();
         this.entityManager = new EntityManager_1.EntityManager(this, schema !== null && schema !== void 0 ? schema : new SchemaMetadata_1.SchemaMetadata());
     }
     get undoManager() {
@@ -117,10 +117,10 @@ class StateManagerImpl {
     }
     addEntityStateListener(typeName, listener) {
         if (listener !== undefined && listener !== null) {
-            let set = this._entityChagneListenerMap.get(typeName);
+            let set = this._entityChangeListenerMap.get(typeName);
             if (set === undefined) {
                 set = new Set();
-                this._entityChagneListenerMap.set(typeName, set);
+                this._entityChangeListenerMap.set(typeName, set);
             }
             if (set.has(listener)) {
                 throw new Error(`Cannot add exists listener`);
@@ -130,10 +130,10 @@ class StateManagerImpl {
     }
     removeEntityStateListener(typeName, listener) {
         var _a;
-        (_a = this._entityChagneListenerMap.get(typeName)) === null || _a === void 0 ? void 0 : _a.delete(listener);
+        (_a = this._entityChangeListenerMap.get(typeName)) === null || _a === void 0 ? void 0 : _a.delete(listener);
     }
     publishEntityChangeEvent(e) {
-        for (const [, set] of this._entityChagneListenerMap) {
+        for (const [, set] of this._entityChangeListenerMap) {
             for (const listener of set) {
                 listener(e);
             }

@@ -19,39 +19,32 @@ class QueryService {
         throw new Error("Unsupported");
     }
     queryObjects(ids, shape) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (shape.typeName === "Query") {
-                throw new Error(`The type "${shape.typeName}" does not support 'queryObject'`);
+        if (shape.typeName === "Query") {
+            throw new Error(`The type "${shape.typeName}" does not support 'queryObject'`);
+        }
+        if (ids.length === 0) {
+            return {
+                type: "cached",
+                data: []
+            };
+        }
+        const map = this.findObjects(ids, shape);
+        const missedIds = [];
+        for (const [id, obj] of map) {
+            if (obj === undefined) {
+                missedIds.push(id);
             }
-            if (ids.length === 0) {
-                return [];
-            }
-            const map = this.findObjects(ids, shape);
-            const missedIds = [];
-            for (const [id, obj] of map) {
-                if (obj === undefined) {
-                    missedIds.push(id);
-                }
-            }
-            if (missedIds.length === 0) {
-                return Array.from(map.values());
-            }
-            const missedObjects = yield this.entityMangager.batchEntityRequest.requestObjectByShape(missedIds, shape).then(arr => {
-                const ctx = new ModificationContext_1.ModificationContext();
-                for (const obj of arr) {
-                    this.entityMangager.save(ctx, shape, obj);
-                    ctx.fireEvents(e => {
-                        this.entityMangager.stateManager.publishEntityChangeEvent(e);
-                    });
-                }
-                return arr;
-            });
-            const idFieldName = this.entityMangager.schema.typeMap.get(shape.typeName).idField.name;
-            for (const missedObject of missedObjects) {
-                map.set(missedObject[idFieldName], missedObject);
-            }
-            return Array.from(map.values());
-        });
+        }
+        if (missedIds.length === 0) {
+            return {
+                type: "cached",
+                data: Array.from(map.values())
+            };
+        }
+        return {
+            type: "deferred",
+            promise: this.loadMissedObjects(map, missedIds, shape)
+        };
     }
     findObjects(ids, shape) {
         const map = new Map();
@@ -77,6 +70,30 @@ class QueryService {
             return undefined;
         }
         return mapRecord(this.entityMangager.schema.typeMap.get(shape.typeName), ref.value, shape);
+    }
+    loadMissedObjects(cachedMap, missedIds, shape) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const missedObjects = yield this.entityMangager.batchEntityRequest.requestObjectByShape(missedIds, shape);
+            const idFieldName = this.entityMangager.schema.typeMap.get(shape.typeName).idField.name;
+            for (const missedObject of missedObjects) {
+                cachedMap.set(missedObject[idFieldName], missedObject);
+            }
+            const ctx = new ModificationContext_1.ModificationContext();
+            for (const missedId of missedIds) {
+                const obj = cachedMap.get(missedId);
+                if (obj !== undefined) {
+                    this.entityMangager.save(ctx, shape, obj);
+                }
+                else {
+                    this.entityMangager.delete(ctx, shape.typeName, missedId);
+                }
+                ctx.fireEvents(e => {
+                    this.entityMangager.stateManager.publishEntityChangeEvent(e);
+                });
+            }
+            return Array.from(cachedMap.values());
+            ;
+        });
     }
 }
 exports.QueryService = QueryService;

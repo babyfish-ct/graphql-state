@@ -7,7 +7,7 @@ export declare class ComputedStateValue extends StateValue {
     private _loadable;
     private _invalid;
     private _ctx?;
-    private _asyncRequestId;
+    private currentAsyncRequestId;
     constructor(stateInstance: StateInstance, variablesCode: string | undefined, variables: any);
     mount(): void;
     umount(): void;

@@ -75,13 +75,12 @@ export class Record {
         }
     }
 
-    undeleted(): this {
-        this.deleted = false;
-        return this;
-    }
-
     get isDeleted(): boolean {
         return this.deleted;
+    }
+
+    undelete() {
+        this.deleted = false;
     }
 
     link(

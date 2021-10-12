@@ -34,8 +34,8 @@ class RecordManager {
         }
         let record = this.recordMap.get(id);
         if (record !== undefined) {
-            record.undeleted();
             ctx.update(record);
+            record.undelete();
         }
         else {
             record = new Record_1.Record(this.type, id);

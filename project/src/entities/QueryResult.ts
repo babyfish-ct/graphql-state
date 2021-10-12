@@ -1,12 +1,10 @@
 import { Fetcher } from "graphql-ts-client-api";
 import { EntityChangeEvent } from "..";
-import { FieldMetadataCategory } from "../meta/impl/FieldMetadata";
 import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
-import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { Loadable } from "../state/impl/StateValue";
 import { EntityManager } from "./EntityManager";
-import { QueryService } from "./QueryService";
-import { RuntimeShape, RuntimeShapeField, toRuntimeShape } from "./RuntimeShape";
+import { QueryService, RawQueryResult } from "./QueryService";
+import { RuntimeShape, toRuntimeShape } from "./RuntimeShape";
 
 export class QueryResult {
     
@@ -18,14 +16,19 @@ export class QueryResult {
 
     private _invalid = true;
 
-    private _asyncRequestId = 0;
+    private _listener: (e: EntityChangeEvent) => void;
 
-    private _listener?: (e: EntityChangeEvent) => void;
+    private _currentAsyncRequestId = 0;
+
+    private _dependencies?: Dependencies;
 
     constructor(
         readonly entityManager: EntityManager,
         readonly queryArgs: QueryArgs
-    ) {}
+    ) {
+        this._listener = this.onEntityChange.bind(this);
+        entityManager.stateManager.addListener(this._listener);
+    }
 
     retain(): this {
         this._refCount++;
@@ -34,7 +37,7 @@ export class QueryResult {
 
     release(): boolean {
         if (--this._refCount === 0) {
-            this.acceptData(undefined);
+            this.entityManager.stateManager.removeListener(this._listener);
             return true;
         }
         return false;
@@ -42,46 +45,7 @@ export class QueryResult {
 
     get promise(): Promise<any> {
         if (this._invalid) {
-            let promise: Promise<any>;
-            const queryService = new QueryService(this.entityManager);
-            if (this.queryArgs.ids !== undefined) {
-                promise = queryService.queryObjects(this.queryArgs.ids, this.queryArgs.shape);
-            } else {
-                promise = queryService.query(this.queryArgs.shape);
-            }
-            const asyncRequestId = this._asyncRequestId;
-            if (!this._loadable.loading) {
-                this._loadable = { ...this._loadable, loading: true };
-            }
-            this._promise = 
-                promise
-                .then(data => {
-                    if (this._asyncRequestId === asyncRequestId) {
-                        this._loadable = {
-                            data,
-                            loading: false
-                        }
-                    }
-                    this.acceptData(data);
-                    return data;
-                })
-                .catch(error => {
-                    if (this._asyncRequestId === asyncRequestId) {
-                        this._loadable = {
-                            error,
-                            loading: false
-                        }
-                    }
-                    return error;
-                })
-                .finally(() => {
-                    if (this._asyncRequestId === asyncRequestId) {
-                        this.entityManager.stateManager.publishQueryResultChangeEvent({
-                            queryResult: this,
-                            changedType: "ASYNC_STATE_CHANGE"
-                        });
-                    }
-                });
+            this._promise = this.query();
             this._invalid = false;
         }
         return this._promise!;
@@ -92,22 +56,79 @@ export class QueryResult {
         return this._loadable;
     }
 
-    private acceptData(data: any) {
-        const l = this._listener;
-        if (l !== undefined) {
-            this._listener = undefined;
-            this.entityManager.stateManager.removeListener(l);
+    private async query(): Promise<any> {
+        
+        const rawResult = this.queryArgs.ids !== undefined ?
+            new QueryService(this.entityManager).queryObjects(this.queryArgs.ids, this.queryArgs.shape) :
+            new QueryService(this.entityManager).query(this.queryArgs.shape);
+        
+        if (rawResult.type === 'cached') {
+            this.refreshDependencies(rawResult.data);
+            this._loadable = { loading: false, data: rawResult.data };
+            this.entityManager.stateManager.publishQueryResultChangeEvent({
+                queryResult: this,
+                changedType: "ASYNC_STATE_CHANGE"
+            });
+            return rawResult.data;
         }
-        if (data !== undefined) {
-            const dependencies = new Dependencies();
-            dependencies.accept(this.entityManager.schema, this.queryArgs.shape, data);
-            const listener = (e: EntityChangeEvent) => {
-                if (dependencies.has(e)) {
-                    this.invalidate();
+
+        if (!this._loadable.loading) {
+            this._loadable = { ...this._loadable, loading: true };
+            this.entityManager.stateManager.publishQueryResultChangeEvent({
+                queryResult: this,
+                changedType: "ASYNC_STATE_CHANGE"
+            });
+        }
+
+        const asyncRequestId = ++this._currentAsyncRequestId;
+        this.retain(); // Self holding during Async computing
+
+        try {
+            let data: any;
+            const queryService = new QueryService(this.entityManager);
+            if (this.queryArgs.ids !== undefined) {
+                data = await queryService.queryObjects(this.queryArgs.ids, this.queryArgs.shape);
+            } else {
+                data = await queryService.query(this.queryArgs.shape);
+            }
+            if (this._currentAsyncRequestId === asyncRequestId) {
+                this.refreshDependencies(data);
+                this._loadable = {
+                    data,
+                    loading: false
                 }
-            };
-            this._listener = listener;
-            this.entityManager.stateManager.addListener(listener);
+            }
+        } catch (ex) {
+            if (this._currentAsyncRequestId === asyncRequestId) {
+                this._loadable = {
+                    loading: false,
+                    error: ex
+                }
+            }
+            throw ex;
+        } finally {
+            try {
+                if (this._currentAsyncRequestId === asyncRequestId) {
+                    this.entityManager.stateManager.publishQueryResultChangeEvent({
+                        queryResult: this,
+                        changedType: "ASYNC_STATE_CHANGE"
+                    });
+                }
+            } finally {
+                this.entityManager.release(this.queryArgs); // Self holding during Async computing
+            }
+        }
+    }
+
+    private refreshDependencies(data: any) {
+        const dependencies = new Dependencies();
+        dependencies.accept(this.entityManager.schema, this.queryArgs.shape, data);
+        this._dependencies = dependencies;
+    }
+
+    private onEntityChange(e: EntityChangeEvent) {
+        if (this._dependencies?.has(e) === true) {
+            this.invalidate();
         }
     }
 
@@ -149,7 +170,7 @@ class Dependencies {
     private map = new Map<string, Dependency>();
 
     accept(schema: SchemaMetadata, shape: RuntimeShape, obj: any) {
-        this.handleInsertion(schema, shape);
+        this.handleInsertion(schema, shape, false);
         this.handleObjectChange(schema, shape, obj);
     }
 
@@ -177,23 +198,24 @@ class Dependencies {
         return false;
     }
 
-    private handleInsertion(schema: SchemaMetadata, shape: RuntimeShape) {
+    private handleInsertion(schema: SchemaMetadata, shape: RuntimeShape, isLeaf: boolean) {
         const type = schema.typeMap.get(shape.typeName)!;
-        if (type.name === 'Query' || type.category === 'CONNECTION' || type.category === 'EDGE') {
-            for (const field of shape.fields) {
-                const childShape = field.childShape;
-                if (childShape !== undefined) {
-                    let dependency = this.map.get(childShape.typeName);
-                    if (dependency === undefined) {
-                        dependency = { 
-                            handleInsertion: true, 
-                            idChangedKeyMap: new Map<String, Set<string>>() 
-                        };
-                        this.map.set(childShape.typeName, dependency);
-                    } else {
-                        dependency.handleInsertion ||= true;
-                    }
-                }
+        if (isLeaf && schema.typeMap.get(shape.typeName)?.category === 'OBJECT') {
+            let dependency = this.map.get(shape.typeName);
+            if (dependency === undefined) {
+                dependency = { 
+                    handleInsertion: true, 
+                    idChangedKeyMap: new Map<String, Set<string>>() 
+                };
+                this.map.set(shape.typeName, dependency);
+            } else {
+                dependency.handleInsertion ||= true;
+            }
+        }
+        for (const field of shape.fields) {
+            const childShape = field.childShape;
+            if (childShape !== undefined) {
+                this.handleInsertion(schema, childShape, true);
             }
         }
     }

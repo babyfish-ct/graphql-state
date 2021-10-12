@@ -12,7 +12,7 @@ export declare class StateManagerImpl<TSchema extends SchemaType> implements Sta
     private _scopedStateManager?;
     private _stateValueChangeListeners;
     private _queryResultChangeListeners;
-    private _entityChagneListenerMap;
+    private _entityChangeListenerMap;
     readonly entityManager: EntityManager;
     constructor(schema?: SchemaMetadata);
     get undoManager(): UndoManagerImpl;

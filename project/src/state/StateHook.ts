@@ -8,8 +8,9 @@ import { StateValue } from "./impl/StateValue";
 import { WritableStateValue } from "./impl/WritableStateValue";
 import { ComputedStateValue } from "./impl/ComputedStateValue";
 import { SchemaType } from "../meta/SchemaType";
-import { Fetcher } from "graphql-ts-client-api";
+import { Fetcher, ObjectFetcher } from "graphql-ts-client-api";
 import { QueryArgs, QueryResult } from "../entities/QueryResult";
+import { QueryResultHolder, StateValueHolder } from "./impl/Holder";
 
 export function useStateManager<TSchema extends SchemaType>(): StateManager<TSchema> {
     const stateManager = useContext(stateContext);
@@ -48,25 +49,31 @@ export function useStateValue<T>(
     state: State<T>,
     options?: StateAccessingOptions
 ): any {
-    const stateValue = useInternalStateValue(state, options);
-    if (state[" $stateType"] !== "ASYNC") {
-        return stateValue.result;
+    const stateValueHolder = useInternalStateValueHolder(state, options);
+    try {
+        const stateValue = stateValueHolder.get();
+        if (state[" $stateType"] !== "ASYNC") {
+            return stateValue.result;
+        }
+        const loadable = (stateValue as ComputedStateValue).loadable as UseStateAsyncValueHookResult<T>;
+        const asyncStyle = (options as AsyncOptions<any> | undefined)?.asyncStyle;
+        if (asyncStyle === "ASYNC_OBJECT") {
+            return loadable;
+        }
+        if (loadable.loading) {
+            throw stateValue.result; // throws promise, <Suspense/> will catch it
+        }
+        if (loadable.error) {
+            throw loadable.error;
+        }
+        if (asyncStyle === "REFRESHABLE_SUSPENSE") {
+            return [loadable.data];
+        }
+        return loadable.data;
+    } catch (ex) {
+        stateValueHolder.release();
+        throw ex;
     }
-    const loadable = (stateValue as ComputedStateValue).loadable as UseStateAsyncValueHookResult<T>;
-    const asyncStyle = (options as AsyncOptions<any> | undefined)?.asyncStyle;
-    if (asyncStyle === "ASYNC_OBJECT") {
-        return loadable;
-    }
-    if (loadable.loading) {
-        throw stateValue.result; // throws promise, <Suspense/> will catch it
-    }
-    if (loadable.error) {
-        throw loadable.error;
-    }
-    if (asyncStyle === "REFRESHABLE_SUSPENSE") {
-        return [loadable.data];
-    }
-    return loadable.data;
 }
 
 export function useStateAccessor<T>(
@@ -83,8 +90,14 @@ export function useStateAccessor<T>(
     state: SingleWritableState<T> | ParameterizedWritableState<T, any>,
     options?: StateAccessingOptions
 ): StateAccessor<T> {
-    const stateValue = useInternalStateValue(state, options);
-    return (stateValue as WritableStateValue).accessor;
+    const stateValueHolder = useInternalStateValueHolder(state, options);
+    try {
+        const stateValue = stateValueHolder.get();
+        return (stateValue as WritableStateValue).accessor;
+    } catch (ex) {
+        stateValueHolder.release();
+        throw ex;
+    }
 }
 
 export interface StateAccessor<T> {
@@ -171,45 +184,6 @@ extends QueryOptions<TVariables, TAsyncStyle> {
 
 type ObjectReference<T, TObjectStyle extends ObjectStyles> = TObjectStyle extends "REQUIRED" ? T : T | undefined;
 
-function useInternalStateValue(
-    state: State<any>,
-    options?: StateAccessingOptions
-): StateValue {
-
-    const stateManager = useStateManager() as StateManagerImpl<any>;
-    const stateInstance = stateManager.scope.instance(state, options?.propagation ?? "REQUIRED");
-
-    const [vs, vsKey] = useMemo<[any, string | undefined]>(() => { 
-        const svs = standardizedVariables((options as Partial<ParameterizedStateAccessingOptions<any>>)?.variables);
-        return [svs, svs !== undefined ? JSON.stringify(svs) : undefined]
-    }, [(options as Partial<ParameterizedStateAccessingOptions<any>>)?.variables]);
-
-    const [, setStateVerion] = useState(0);
-
-    const stateValue = useMemo<StateValue>(() => {
-        return stateInstance.retain(vsKey, vs); 
-    }, [vsKey, vs]);
-    useEffect(() => {
-        return () => {
-            stateInstance.release(vsKey);
-        }
-    }, [stateInstance, vsKey]);
-
-    useEffect(() => {
-        const stateValueChange = (e: StateValueChangeEvent) => {
-            if (e.stateValue === stateValue) {
-                setStateVerion(old => old + 1); // Change a local state to update react component
-            }
-        };
-        stateManager.addStateValueChangeListener(stateValueChange);
-        return () => {
-            stateManager.removeStateValueChangeListener(stateValueChange);
-        }
-    }, [stateManager, stateValue]);
-
-    return stateValue;
-}
-
 class ManagedObjectHooksImpl<TSchema extends SchemaType> implements ManagedObjectHooks<TSchema> {
 
     useObject<
@@ -219,36 +193,42 @@ class ManagedObjectHooksImpl<TSchema extends SchemaType> implements ManagedObjec
         TAsyncStyle extends AsyncStyles = "SUSPENSE",
         TObjectStyle extends ObjectStyles = "REQUIRED"
     >(
-        fetcher: Fetcher<string, T, TVariables>,
+        fetcher: ObjectFetcher<string, T, TVariables>,
         id: TSchema[TName][" $id"],
         options?: ObjectQueryOptions<TVariables, TAsyncStyle, TObjectStyle>
     ): AsyncReturnType<
         ObjectReference<T, TObjectStyle>,
         TAsyncStyle
     > {
-        const queryResult = useInternalQueryResult(fetcher, [id], options?.variables);
-        if (options?.asyncStyle === "ASYNC_OBJECT") {
-            return queryResult.loadable as AsyncReturnType<
+        const queryResultHolder = useInternalQueryResultHolder(fetcher, [id], options?.variables);
+        try {
+            const queryResult = queryResultHolder.get();
+            if (options?.asyncStyle === "ASYNC_OBJECT") {
+                return queryResult.loadable as AsyncReturnType<
+                    ObjectReference<T, TObjectStyle>,
+                    TAsyncStyle
+                >;
+            }
+            if (queryResult.loadable.loading) {
+                throw queryResult.promise; // throws promise, <Suspense/> will catch it
+            }
+            if (queryResult.loadable.error) {
+                throw queryResult.loadable.error;
+            }
+            if (options?.asyncStyle === "REFRESHABLE_SUSPENSE") {
+                return [queryResult.loadable.data] as AsyncReturnType<
+                    ObjectReference<T, TObjectStyle>,
+                    TAsyncStyle
+                >;
+            }
+            return queryResult.loadable.data as AsyncReturnType<
                 ObjectReference<T, TObjectStyle>,
                 TAsyncStyle
             >;
+        } catch (ex) {
+            queryResultHolder.release();
+            throw ex;
         }
-        if (queryResult.loadable.loading) {
-            throw queryResult.promise; // throws promise, <Suspense/> will catch it
-        }
-        if (queryResult.loadable.error) {
-            throw queryResult.loadable.error;
-        }
-        if (options?.asyncStyle === "REFRESHABLE_SUSPENSE") {
-            return [queryResult.loadable.data] as AsyncReturnType<
-                ObjectReference<T, TObjectStyle>,
-                TAsyncStyle
-            >;
-        }
-        return queryResult.loadable.data as AsyncReturnType<
-            ObjectReference<T, TObjectStyle>,
-            TAsyncStyle
-        >;
     }
 
     useObjects<
@@ -258,36 +238,42 @@ class ManagedObjectHooksImpl<TSchema extends SchemaType> implements ManagedObjec
         TAsyncStyle extends AsyncStyles = "SUSPENSE",
         TObjectStyle extends ObjectStyles = "REQUIRED"
     >(
-        fetcher: Fetcher<string, T, TVariables>,
+        fetcher: ObjectFetcher<string, T, TVariables>,
         ids: ReadonlyArray<TSchema[TName][" $id"]>,
         options?: ObjectQueryOptions<TVariables, TAsyncStyle, TObjectStyle>
     ): AsyncReturnType<
         ReadonlyArray<ObjectReference<T, TObjectStyle>>,
         TAsyncStyle
     > {
-        const queryResult = useInternalQueryResult(fetcher, ids, options?.variables);
-        if (options?.asyncStyle === "ASYNC_OBJECT") {
-            return queryResult.loadable as AsyncReturnType<
+        const queryResultHolder = useInternalQueryResultHolder(fetcher, ids, options?.variables);
+        try {
+            const queryResult = queryResultHolder.get();
+            if (options?.asyncStyle === "ASYNC_OBJECT") {
+                return queryResult.loadable as AsyncReturnType<
+                    ReadonlyArray<ObjectReference<T, TObjectStyle>>,
+                    TAsyncStyle
+                >;
+            }
+            if (queryResult.loadable.loading) {
+                throw queryResult.promise; // throws promise, <Suspense/> will catch it
+            }
+            if (queryResult.loadable.error) {
+                throw queryResult.loadable.error;
+            }
+            if (options?.asyncStyle === "REFRESHABLE_SUSPENSE") {
+                return [queryResult.loadable.data] as AsyncReturnType<
                 ReadonlyArray<ObjectReference<T, TObjectStyle>>,
-                TAsyncStyle
-            >;
-        }
-        if (queryResult.loadable.loading) {
-            throw queryResult.promise; // throws promise, <Suspense/> will catch it
-        }
-        if (queryResult.loadable.error) {
-            throw queryResult.loadable.error;
-        }
-        if (options?.asyncStyle === "REFRESHABLE_SUSPENSE") {
-            return [queryResult.loadable.data] as AsyncReturnType<
+                    TAsyncStyle
+                >;
+            }
+            return queryResult.loadable.data as AsyncReturnType<
             ReadonlyArray<ObjectReference<T, TObjectStyle>>,
                 TAsyncStyle
             >;
+        } catch (ex) {
+            queryResultHolder.release();
+            throw ex;
         }
-        return queryResult.loadable.data as AsyncReturnType<
-        ReadonlyArray<ObjectReference<T, TObjectStyle>>,
-            TAsyncStyle
-        >;
     }
 
     useQuery<
@@ -302,42 +288,37 @@ class ManagedObjectHooksImpl<TSchema extends SchemaType> implements ManagedObjec
     }
 }
 
-function useInternalQueryResult(
-    fetcher: Fetcher<string, object, object>,
-    ids?: ReadonlyArray<any>,
-    variables?: any
-): QueryResult {
+function useInternalStateValueHolder(
+    state: State<any>,
+    options?: StateAccessingOptions
+): StateValueHolder {
 
     const stateManager = useStateManager() as StateManagerImpl<any>;
-    const entityManager = stateManager.entityManager;
-
-    const queryArgs = useMemo<QueryArgs>(() => {
-        return new QueryArgs(fetcher, ids, variables);
-    }, [fetcher, JSON.stringify(ids), JSON.stringify(variables)]);
-
-    const [, setQueryVersion] = useState(0);
-
-    const queryResult = useMemo<QueryResult>(() => {
-        return entityManager.retain(queryArgs);
-    }, [queryArgs.shape.toString(), JSON.stringify(ids)]);
-
+    const [, setStateValueVersion] = useState(0);
+    const [stateValueHolder] = useState(() => new StateValueHolder(stateManager, setStateValueVersion));
+    stateValueHolder.set(state, options);
     useEffect(() => {
         return () => {
-            entityManager.release(queryArgs);
-        };
-    }, [entityManager, queryArgs.shape.toString(), JSON.stringify(ids)]);
-
-    useEffect(() => {
-        const queryResultChange = (e: QueryResultChangeEvent) => {
-            if (e.queryResult === queryResult) {
-                setQueryVersion(old => old + 1); // Change a local state to update react component
-            }
-        };
-        stateManager.addQueryResultChangeListener(queryResultChange);
-        return () => {
-            stateManager.removeQueryResultChangeListener(queryResultChange);
+            stateValueHolder.release();
         }
-    }, [stateManager, queryResult]);
+    }, [stateValueHolder]);
+    return stateValueHolder;
+}
 
-    return queryResult;
+function useInternalQueryResultHolder(
+    fetcher: ObjectFetcher<string, object, object>,
+    ids?: ReadonlyArray<any>,
+    variables?: any
+): QueryResultHolder {
+
+    const stateManager = useStateManager() as StateManagerImpl<any>;
+    const [, setQueryResultVersion] = useState(0);
+    const [queryResultHolder] = useState(() => new QueryResultHolder(stateManager, setQueryResultVersion));
+    queryResultHolder.set(fetcher, ids, variables);
+    useEffect(() => {
+        return () => {
+            queryResultHolder.release();
+        }
+    }, [queryResultHolder]);
+    return queryResultHolder;
 }

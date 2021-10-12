@@ -7,7 +7,7 @@ class ComputedStateValue extends StateValue_1.StateValue {
     constructor(stateInstance, variablesCode, variables) {
         super(stateInstance, variablesCode, variables);
         this._invalid = true;
-        this._asyncRequestId = 0;
+        this.currentAsyncRequestId = 0;
         this._loadable = {
             loading: this.isAsync
         };
@@ -109,10 +109,11 @@ class ComputedStateValue extends StateValue_1.StateValue {
     }
     afterCompute(result) {
         if (this.isAsync) {
-            const asyncRequestId = ++this._asyncRequestId;
+            const asyncRequestId = ++this.currentAsyncRequestId;
+            this.retain(); // Self holding during Async computing
             return result
                 .then(data => {
-                if (this._asyncRequestId === asyncRequestId) {
+                if (this.currentAsyncRequestId === asyncRequestId) {
                     this._loadable = {
                         data,
                         loading: false
@@ -121,7 +122,7 @@ class ComputedStateValue extends StateValue_1.StateValue {
                 return data;
             })
                 .catch(error => {
-                if (this._asyncRequestId === asyncRequestId) {
+                if (this.currentAsyncRequestId === asyncRequestId) {
                     this._loadable = {
                         error,
                         loading: false
@@ -130,11 +131,16 @@ class ComputedStateValue extends StateValue_1.StateValue {
                 return error;
             })
                 .finally(() => {
-                if (this._asyncRequestId === asyncRequestId) {
-                    this.stateInstance.scopedStateManager.stateManager.publishStateValueChangeEvent({
-                        stateValue: this,
-                        changedType: "ASYNC_STATE_CHANGE"
-                    });
+                try {
+                    if (this.currentAsyncRequestId === asyncRequestId) {
+                        this.stateInstance.scopedStateManager.stateManager.publishStateValueChangeEvent({
+                            stateValue: this,
+                            changedType: "ASYNC_STATE_CHANGE"
+                        });
+                    }
+                }
+                finally {
+                    this.stateInstance.release(this.variablesCode); // Self holding during Async computing
                 }
             });
         }

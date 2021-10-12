@@ -34,8 +34,10 @@ class EntityManager {
     save(ctx, shape, obj) {
         return this.recordManager(shape.typeName).save(ctx, shape, obj);
     }
+    delete(ctx, typeName, id) {
+        // TODO
+    }
     loadByIds(ids, shape) {
-        console.log(ids, JSON.stringify(shape));
         throw new Error("bathcLoad is not implemented");
     }
     retain(queryArgs) {

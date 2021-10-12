@@ -53,12 +53,11 @@ class Record {
             }
         }
     }
-    undeleted() {
-        this.deleted = false;
-        return this;
-    }
     get isDeleted() {
         return this.deleted;
+    }
+    undelete() {
+        this.deleted = false;
     }
     link(ctx, entityManager, associationField, target) {
         if (!this.linkFrozen) {

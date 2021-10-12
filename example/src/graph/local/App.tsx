@@ -15,14 +15,14 @@ export const stateManager =
 
 initializeDefaultData(stateManager);
 
+(window as any).stateManager = stateManager;
+
 export const App: FC = memo(() => {
     return (
         <StateManagerProvider stateManager={stateManager}>
-            <Suspense fallback={<div>Loading...</div>}>
-                <BookStoreList/>
-                <BookList/>
-                <AuthorList/>
-            </Suspense>
+            <BookStoreList/>
+            <BookList/>
+            <AuthorList/>
         </StateManagerProvider>
     );
 });

@@ -1,4 +1,4 @@
-export function standardizedVariables(variables: any): any {
+export function standardizedVariables(variables: object): object | undefined {
     const subKeys = standardizedVariablesKeys(variables);
     if (subKeys === undefined) {
         return undefined;

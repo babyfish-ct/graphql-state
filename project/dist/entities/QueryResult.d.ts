@@ -9,14 +9,17 @@ export declare class QueryResult {
     private _promise?;
     private _loadable;
     private _invalid;
-    private _asyncRequestId;
-    private _listener?;
+    private _listener;
+    private _currentAsyncRequestId;
+    private _dependencies?;
     constructor(entityManager: EntityManager, queryArgs: QueryArgs);
     retain(): this;
     release(): boolean;
     get promise(): Promise<any>;
     get loadable(): Loadable;
-    private acceptData;
+    private query;
+    private refreshDependencies;
+    private onEntityChange;
     private invalidate;
 }
 export declare class QueryArgs {

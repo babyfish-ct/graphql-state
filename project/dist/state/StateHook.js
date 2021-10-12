@@ -3,8 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.makeManagedObjectHooks = exports.useStateAccessor = exports.useStateValue = exports.useStateManager = void 0;
 const react_1 = require("react");
 const StateManagerProvider_1 = require("./StateManagerProvider");
-const Variables_1 = require("./impl/Variables");
-const QueryResult_1 = require("../entities/QueryResult");
+const Holder_1 = require("./impl/Holder");
 function useStateManager() {
     const stateManager = react_1.useContext(StateManagerProvider_1.stateContext);
     if (stateManager === undefined) {
@@ -15,129 +14,122 @@ function useStateManager() {
 exports.useStateManager = useStateManager;
 function useStateValue(state, options) {
     var _a;
-    const stateValue = useInternalStateValue(state, options);
-    if (state[" $stateType"] !== "ASYNC") {
-        return stateValue.result;
+    const stateValueHolder = useInternalStateValueHolder(state, options);
+    try {
+        const stateValue = stateValueHolder.get();
+        if (state[" $stateType"] !== "ASYNC") {
+            return stateValue.result;
+        }
+        const loadable = stateValue.loadable;
+        const asyncStyle = (_a = options) === null || _a === void 0 ? void 0 : _a.asyncStyle;
+        if (asyncStyle === "ASYNC_OBJECT") {
+            return loadable;
+        }
+        if (loadable.loading) {
+            throw stateValue.result; // throws promise, <Suspense/> will catch it
+        }
+        if (loadable.error) {
+            throw loadable.error;
+        }
+        if (asyncStyle === "REFRESHABLE_SUSPENSE") {
+            return [loadable.data];
+        }
+        return loadable.data;
     }
-    const loadable = stateValue.loadable;
-    const asyncStyle = (_a = options) === null || _a === void 0 ? void 0 : _a.asyncStyle;
-    if (asyncStyle === "ASYNC_OBJECT") {
-        return loadable;
+    catch (ex) {
+        stateValueHolder.release();
+        throw ex;
     }
-    if (loadable.loading) {
-        throw stateValue.result; // throws promise, <Suspense/> will catch it
-    }
-    if (loadable.error) {
-        throw loadable.error;
-    }
-    if (asyncStyle === "REFRESHABLE_SUSPENSE") {
-        return [loadable.data];
-    }
-    return loadable.data;
 }
 exports.useStateValue = useStateValue;
 function useStateAccessor(state, options) {
-    const stateValue = useInternalStateValue(state, options);
-    return stateValue.accessor;
+    const stateValueHolder = useInternalStateValueHolder(state, options);
+    try {
+        const stateValue = stateValueHolder.get();
+        return stateValue.accessor;
+    }
+    catch (ex) {
+        stateValueHolder.release();
+        throw ex;
+    }
 }
 exports.useStateAccessor = useStateAccessor;
 function makeManagedObjectHooks() {
     return new ManagedObjectHooksImpl();
 }
 exports.makeManagedObjectHooks = makeManagedObjectHooks;
-function useInternalStateValue(state, options) {
-    var _a, _b;
-    const stateManager = useStateManager();
-    const stateInstance = stateManager.scope.instance(state, (_a = options === null || options === void 0 ? void 0 : options.propagation) !== null && _a !== void 0 ? _a : "REQUIRED");
-    const [vs, vsKey] = react_1.useMemo(() => {
-        var _a;
-        const svs = Variables_1.standardizedVariables((_a = options) === null || _a === void 0 ? void 0 : _a.variables);
-        return [svs, svs !== undefined ? JSON.stringify(svs) : undefined];
-    }, [(_b = options) === null || _b === void 0 ? void 0 : _b.variables]);
-    const [, setStateVerion] = react_1.useState(0);
-    const stateValue = react_1.useMemo(() => {
-        return stateInstance.retain(vsKey, vs);
-    }, [vsKey, vs]);
-    react_1.useEffect(() => {
-        return () => {
-            stateInstance.release(vsKey);
-        };
-    }, [stateInstance, vsKey]);
-    react_1.useEffect(() => {
-        const stateValueChange = (e) => {
-            if (e.stateValue === stateValue) {
-                setStateVerion(old => old + 1); // Change a local state to update react component
-            }
-        };
-        stateManager.addStateValueChangeListener(stateValueChange);
-        return () => {
-            stateManager.removeStateValueChangeListener(stateValueChange);
-        };
-    }, [stateManager, stateValue]);
-    return stateValue;
-}
 class ManagedObjectHooksImpl {
     useObject(fetcher, id, options) {
-        const queryResult = useInternalQueryResult(fetcher, [id], options === null || options === void 0 ? void 0 : options.variables);
-        if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "ASYNC_OBJECT") {
-            return queryResult.loadable;
+        const queryResultHolder = useInternalQueryResultHolder(fetcher, [id], options === null || options === void 0 ? void 0 : options.variables);
+        try {
+            const queryResult = queryResultHolder.get();
+            if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "ASYNC_OBJECT") {
+                return queryResult.loadable;
+            }
+            if (queryResult.loadable.loading) {
+                throw queryResult.promise; // throws promise, <Suspense/> will catch it
+            }
+            if (queryResult.loadable.error) {
+                throw queryResult.loadable.error;
+            }
+            if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "REFRESHABLE_SUSPENSE") {
+                return [queryResult.loadable.data];
+            }
+            return queryResult.loadable.data;
         }
-        if (queryResult.loadable.loading) {
-            throw queryResult.promise; // throws promise, <Suspense/> will catch it
+        catch (ex) {
+            queryResultHolder.release();
+            throw ex;
         }
-        if (queryResult.loadable.error) {
-            throw queryResult.loadable.error;
-        }
-        if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "REFRESHABLE_SUSPENSE") {
-            return [queryResult.loadable.data];
-        }
-        return queryResult.loadable.data;
     }
     useObjects(fetcher, ids, options) {
-        const queryResult = useInternalQueryResult(fetcher, ids, options === null || options === void 0 ? void 0 : options.variables);
-        if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "ASYNC_OBJECT") {
-            return queryResult.loadable;
+        const queryResultHolder = useInternalQueryResultHolder(fetcher, ids, options === null || options === void 0 ? void 0 : options.variables);
+        try {
+            const queryResult = queryResultHolder.get();
+            if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "ASYNC_OBJECT") {
+                return queryResult.loadable;
+            }
+            if (queryResult.loadable.loading) {
+                throw queryResult.promise; // throws promise, <Suspense/> will catch it
+            }
+            if (queryResult.loadable.error) {
+                throw queryResult.loadable.error;
+            }
+            if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "REFRESHABLE_SUSPENSE") {
+                return [queryResult.loadable.data];
+            }
+            return queryResult.loadable.data;
         }
-        if (queryResult.loadable.loading) {
-            throw queryResult.promise; // throws promise, <Suspense/> will catch it
+        catch (ex) {
+            queryResultHolder.release();
+            throw ex;
         }
-        if (queryResult.loadable.error) {
-            throw queryResult.loadable.error;
-        }
-        if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "REFRESHABLE_SUSPENSE") {
-            return [queryResult.loadable.data];
-        }
-        return queryResult.loadable.data;
     }
     useQuery(fetcher, options) {
         throw new Error();
     }
 }
-function useInternalQueryResult(fetcher, ids, variables) {
+function useInternalStateValueHolder(state, options) {
     const stateManager = useStateManager();
-    const entityManager = stateManager.entityManager;
-    const queryArgs = react_1.useMemo(() => {
-        return new QueryResult_1.QueryArgs(fetcher, ids, variables);
-    }, [fetcher, JSON.stringify(ids), JSON.stringify(variables)]);
-    const [, setQueryVersion] = react_1.useState(0);
-    const queryResult = react_1.useMemo(() => {
-        return entityManager.retain(queryArgs);
-    }, [queryArgs.shape.toString(), JSON.stringify(ids)]);
+    const [, setStateValueVersion] = react_1.useState(0);
+    const [stateValueHolder] = react_1.useState(() => new Holder_1.StateValueHolder(stateManager, setStateValueVersion));
+    stateValueHolder.set(state, options);
     react_1.useEffect(() => {
         return () => {
-            entityManager.release(queryArgs);
+            stateValueHolder.release();
         };
-    }, [entityManager, queryArgs.shape.toString(), JSON.stringify(ids)]);
+    }, [stateValueHolder]);
+    return stateValueHolder;
+}
+function useInternalQueryResultHolder(fetcher, ids, variables) {
+    const stateManager = useStateManager();
+    const [, setQueryResultVersion] = react_1.useState(0);
+    const [queryResultHolder] = react_1.useState(() => new Holder_1.QueryResultHolder(stateManager, setQueryResultVersion));
+    queryResultHolder.set(fetcher, ids, variables);
     react_1.useEffect(() => {
-        const queryResultChange = (e) => {
-            if (e.queryResult === queryResult) {
-                setQueryVersion(old => old + 1); // Change a local state to update react component
-            }
-        };
-        stateManager.addQueryResultChangeListener(queryResultChange);
         return () => {
-            stateManager.removeQueryResultChangeListener(queryResultChange);
+            queryResultHolder.release();
         };
-    }, [stateManager, queryResult]);
-    return queryResult;
+    }, [queryResultHolder]);
+    return queryResultHolder;
 }

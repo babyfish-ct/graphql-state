@@ -51,8 +51,15 @@ export class EntityManager {
         return this.recordManager(shape.typeName).save(ctx, shape, obj);
     }
 
+    delete(
+        ctx: ModificationContext, 
+        typeName: string, 
+        id: any
+    ) {
+        // TODO
+    }
+
     loadByIds(ids: any[], shape: RuntimeShape): Promise<any[]> {
-        console.log(ids, JSON.stringify(shape));
         throw new Error("bathcLoad is not implemented");
     }
 
