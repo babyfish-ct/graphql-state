@@ -1,10 +1,8 @@
 import { css } from "@emotion/css";
-import { useStateValue } from "graphql-state";
 import { Select } from "antd";
 import { FC, memo } from "react";
-import { bookStore$$ } from "../../../__generated/fetchers";
-import { bookStoreIdListState } from "../State";
-import { useObjects } from "../TypedHook";
+import { bookStore$$, query$ } from "../../../__generated/fetchers";
+import { useQuery } from "graphql-state/dist/state/StateHook";
 
 export const BookStoreSelect: FC<{
     value?: string,
@@ -12,8 +10,12 @@ export const BookStoreSelect: FC<{
     optional?: boolean
 }> = memo(({value, onChange, optional}) => {
 
-    const storeIds = useStateValue(bookStoreIdListState);
-    const stores = useObjects(bookStore$$, storeIds);
+    const { stores } = useQuery(
+        query$.bookStores(
+            bookStore$$,
+            options => options.alias("stores")
+        )
+    );
 
     return (
         <Select value={value} onChange={onChange}>

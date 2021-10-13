@@ -15,7 +15,7 @@ export declare class StateManagerImpl<TSchema extends SchemaType> implements Sta
     readonly entityManager: EntityManager;
     constructor(schema?: SchemaMetadata);
     get undoManager(): UndoManagerImpl;
-    save<TName extends keyof TSchema & string, T extends object, TVariables extends object = {}>(fetcher: ObjectFetcher<TName, T, any>, objOrArray: T | readonly T[], variables?: TVariables): void;
+    save<T extends object, TVariables extends object = {}>(fetcher: ObjectFetcher<string, T, any>, obj: T, variables?: TVariables): void;
     delete<TName extends keyof TSchema & string>(typeName: TName, idOrArray: TSchema[TName][" $id"] | ReadonlyArray<TSchema[TName][" $id"]>): void;
     addListener(listener: (e: EntityChangeEvent) => void): void;
     removeListener(listener: (e: EntityChangeEvent) => void): void;

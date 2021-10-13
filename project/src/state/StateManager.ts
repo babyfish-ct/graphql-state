@@ -1,5 +1,6 @@
 import { FetchableType, Fetcher, ObjectFetcher } from "graphql-ts-client-api";
 import { EntityChangeEvent } from "..";
+import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { SchemaType } from "../meta/SchemaType";
 
 export interface StateManager<TSchema extends SchemaType> {
@@ -7,14 +8,20 @@ export interface StateManager<TSchema extends SchemaType> {
     readonly undoManager: UndoManager;
 
     transaction<TResult>(callback: (ts: TransactionStatus) => TResult): TResult;
+    
+    save<T extends object, TVariables extends object = {}>(
+        fetcher: ObjectFetcher<"Query", T, TVariables>, 
+        obj: T,
+        variables?: TVariables
+    ): void;
 
-    save<TName extends keyof TSchema & string, T extends object, TVariables extends object = {}>(
+    save<TName extends Exclude<keyof TSchema, "Query"> & string, T extends object, TVariables extends object = {}>(
         fetcher: ObjectFetcher<TName, T, any>,
         obj: T,
         variables?: TVariables
     ): void;
 
-    save<TName extends keyof TSchema & string, T extends object, TVariables extends object = {}>(
+    save<TName extends Exclude<keyof TSchema, "Query"> & string, T extends object, TVariables extends object = {}>(
         fetcher: ObjectFetcher<TName, T, any>,
         objs: readonly T[],
         variables?: TVariables

@@ -4,8 +4,9 @@ import { SchemaType } from "../meta/SchemaType";
 export interface StateManager<TSchema extends SchemaType> {
     readonly undoManager: UndoManager;
     transaction<TResult>(callback: (ts: TransactionStatus) => TResult): TResult;
-    save<TName extends keyof TSchema & string, T extends object, TVariables extends object = {}>(fetcher: ObjectFetcher<TName, T, any>, obj: T, variables?: TVariables): void;
-    save<TName extends keyof TSchema & string, T extends object, TVariables extends object = {}>(fetcher: ObjectFetcher<TName, T, any>, objs: readonly T[], variables?: TVariables): void;
+    save<T extends object, TVariables extends object = {}>(fetcher: ObjectFetcher<"Query", T, TVariables>, obj: T, variables?: TVariables): void;
+    save<TName extends Exclude<keyof TSchema, "Query"> & string, T extends object, TVariables extends object = {}>(fetcher: ObjectFetcher<TName, T, any>, obj: T, variables?: TVariables): void;
+    save<TName extends Exclude<keyof TSchema, "Query"> & string, T extends object, TVariables extends object = {}>(fetcher: ObjectFetcher<TName, T, any>, objs: readonly T[], variables?: TVariables): void;
     delete<TName extends keyof TSchema & string>(typeName: TName, id: TSchema[TName][" $id"]): void;
     delete<TName extends keyof TSchema & string>(typeName: TName, ids: ReadonlyArray<TSchema[TName][" $id"]>): void;
     addListener(listener: (e: EntityChangeEvent) => void): void;

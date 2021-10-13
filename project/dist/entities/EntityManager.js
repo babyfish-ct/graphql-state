@@ -4,25 +4,30 @@ exports.EntityManager = void 0;
 const BatchEntityRequest_1 = require("./BatchEntityRequest");
 const ModificationContext_1 = require("./ModificationContext");
 const QueryResult_1 = require("./QueryResult");
+const Record_1 = require("./Record");
 const RecordManager_1 = require("./RecordManager");
 class EntityManager {
     constructor(stateManager, schema) {
         this.stateManager = stateManager;
         this.schema = schema;
-        this.recordManagerMap = new Map();
-        this.queryResultMap = new Map();
-        this.batchEntityRequest = new BatchEntityRequest_1.BatchEntityRequest(this);
-        this._entityChangeListenerMap = new Map();
+        this._recordManagerMap = new Map();
+        this._queryResultMap = new Map();
+        this._batchEntityRequest = new BatchEntityRequest_1.BatchEntityRequest(this);
+        this._listenerMap = new Map();
+        const queryType = schema.typeMap.get("Query");
+        if (queryType !== undefined) {
+            this._queryRecord = this.saveId("Query", Record_1.QUERY_OBJECT_ID);
+        }
     }
     recordManager(typeName) {
         const type = this.schema.typeMap.get(typeName);
         if (type === undefined) {
             throw new Error(`Illegal type "${typeName}" that is not exists in schema`);
         }
-        let recordManager = this.recordManagerMap.get(typeName);
+        let recordManager = this._recordManagerMap.get(typeName);
         if (recordManager === undefined) {
             recordManager = new RecordManager_1.RecordManager(this, type);
-            this.recordManagerMap.set(typeName, recordManager);
+            this._recordManagerMap.set(typeName, recordManager);
             recordManager.initializeOtherManagers();
         }
         return recordManager;
@@ -47,46 +52,48 @@ class EntityManager {
                 return action();
             }
             finally {
-                const ctx = this._ctx;
-                this._ctx = undefined;
-                ctx.close();
+                try {
+                    this._ctx.close();
+                }
+                finally {
+                    this._ctx = undefined;
+                }
             }
         }
     }
     save(shape, objOrArray) {
-        if (shape.typeName === 'Query') {
-            throw new Error(`The typeof saved object cannot be the special type 'Query'`);
-        }
-        const recordManager = this.recordManager(shape.typeName);
-        if (Array.isArray(objOrArray)) {
-            for (const obj of objOrArray) {
-                recordManager.save(shape, obj);
+        this.modify(() => {
+            const recordManager = this.recordManager(shape.typeName);
+            if (Array.isArray(objOrArray)) {
+                for (const obj of objOrArray) {
+                    recordManager.save(shape, obj);
+                }
             }
-        }
-        else if (objOrArray !== undefined && objOrArray !== null) {
-            recordManager.save(shape, objOrArray);
-        }
+            else if (objOrArray !== undefined && objOrArray !== null) {
+                recordManager.save(shape, objOrArray);
+            }
+        });
     }
     delete(typeName, idOrArray) {
         if (typeName === 'Query') {
             throw new Error(`The typeof deleted object cannot be the special type 'Query'`);
         }
-        const ctx = new ModificationContext_1.ModificationContext(this.linkToQuery.bind(this), this.publishEntityChangeEvent.bind(this));
-        if (Array.isArray(idOrArray)) {
-            for (const id of idOrArray) {
-                this.recordManager(typeName).delete(id);
+        this.modify(() => {
+            const recordManager = this.recordManager(typeName);
+            if (Array.isArray(idOrArray)) {
+                for (const id of idOrArray) {
+                    recordManager.delete(id);
+                }
             }
-        }
-        else {
-            this.recordManager(typeName).delete(idOrArray);
-        }
-        ctx.close();
+            else {
+                recordManager.delete(idOrArray);
+            }
+        });
     }
     saveId(typeName, id) {
-        if (typeName === 'Query') {
-            throw new Error(`typeName cannot be 'Query'`);
-        }
-        return this.recordManager(typeName).saveId(id);
+        return this.modify(() => {
+            return this.recordManager(typeName).saveId(id);
+        });
     }
     loadByIds(ids, shape) {
         if (shape.typeName === 'Query') {
@@ -96,26 +103,26 @@ class EntityManager {
     }
     retain(queryArgs) {
         const key = this.queryKeyOf(queryArgs.shape, queryArgs.ids);
-        let result = this.queryResultMap.get(key);
+        let result = this._queryResultMap.get(key);
         if (result === undefined) {
             result = new QueryResult_1.QueryResult(this, queryArgs);
-            this.queryResultMap.set(key, result);
+            this._queryResultMap.set(key, result);
         }
         return result.retain();
     }
     release(queryArgs) {
         const key = this.queryKeyOf(queryArgs.shape, queryArgs.ids);
-        const result = this.queryResultMap.get(key);
+        const result = this._queryResultMap.get(key);
         if ((result === null || result === void 0 ? void 0 : result.release()) === true) {
-            this.queryResultMap.delete(key);
+            this._queryResultMap.delete(key);
         }
     }
     addListener(typeName, listener) {
         if (listener !== undefined && listener !== null) {
-            let set = this._entityChangeListenerMap.get(typeName);
+            let set = this._listenerMap.get(typeName);
             if (set === undefined) {
                 set = new Set();
-                this._entityChangeListenerMap.set(typeName, set);
+                this._listenerMap.set(typeName, set);
             }
             if (set.has(listener)) {
                 throw new Error(`Cannot add exists listener`);
@@ -125,12 +132,21 @@ class EntityManager {
     }
     removeListener(typeName, listener) {
         var _a;
-        (_a = this._entityChangeListenerMap.get(typeName)) === null || _a === void 0 ? void 0 : _a.delete(listener);
+        (_a = this._listenerMap.get(typeName)) === null || _a === void 0 ? void 0 : _a.delete(listener);
     }
     linkToQuery(type, id) {
+        const qr = this._queryRecord;
+        if (qr !== undefined) {
+            const record = this.saveId(type.name, id);
+            for (const [, field] of qr.type.fieldMap) {
+                if (field.targetType !== undefined && field.targetType.isAssignableFrom(type)) {
+                    qr.link(this, field, record);
+                }
+            }
+        }
     }
     publishEntityChangeEvent(e) {
-        for (const [, set] of this._entityChangeListenerMap) {
+        for (const [, set] of this._listenerMap) {
             for (const listener of set) {
                 listener(e);
             }

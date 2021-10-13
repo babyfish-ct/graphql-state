@@ -131,6 +131,24 @@ export class TypeMetadata {
         return field;
     }
 
+    isAssignableFrom(type: TypeMetadata): boolean {
+        for (let t: TypeMetadata | undefined = type; t !== undefined; t = t.superType) {
+            if (this === t) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    setFieldMappedBy(name: string, oppositeFieldName: string) {
+        this.schema.preChange();
+        const field = this.fieldMap.get(name);
+        if (field === undefined) {
+            throw new Error(`Cannot set the "mappedBy" of field "${name}" because that field is not exists in type "${this.name}"`);
+        }
+        field.setOppositeFieldName(oppositeFieldName);
+    }
+
     private addField(field: FetchableField) {
         this.schema.preChange();
         if (this._fieldMap !== undefined) {
@@ -152,15 +170,6 @@ export class TypeMetadata {
         if (field.category === "ID") {
             this._idField = fieldMetadata;
         }
-    }
-
-    setFieldMappedBy(name: string, oppositeFieldName: string) {
-        this.schema.preChange();
-        const field = this.fieldMap.get(name);
-        if (field === undefined) {
-            throw new Error(`Cannot set the "mappedBy" of field "${name}" because that field is not exists in type "${this.name}"`);
-        }
-        field.setOppositeFieldName(oppositeFieldName);
     }
 }
 

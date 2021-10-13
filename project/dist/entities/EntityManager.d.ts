@@ -11,11 +11,12 @@ import { RuntimeShape } from "./RuntimeShape";
 export declare class EntityManager {
     readonly stateManager: StateManagerImpl<any>;
     readonly schema: SchemaMetadata;
-    private recordManagerMap;
-    private queryResultMap;
-    readonly batchEntityRequest: BatchEntityRequest;
-    private _entityChangeListenerMap;
+    private _recordManagerMap;
+    private _queryResultMap;
+    readonly _batchEntityRequest: BatchEntityRequest;
+    private _listenerMap;
     private _ctx?;
+    private _queryRecord?;
     constructor(stateManager: StateManagerImpl<any>, schema: SchemaMetadata);
     recordManager(typeName: string): RecordManager;
     findRefById(typeName: string, id: any): RecordRef | undefined;

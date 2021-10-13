@@ -1,13 +1,11 @@
 import { Button, Modal, Space, Table, Tag } from "antd";
-import { useStateValue } from "graphql-state";
+import { useQuery } from "graphql-state/dist/state/StateHook";
 import { ModelType } from "graphql-ts-client-api";
 import { FC, memo, useCallback, useState } from "react";
 import { ComponentDecorator } from "../../../common/ComponentDecorator";
-import { author$$, book$$, bookStore$$ } from "../../../__generated/fetchers";
+import { author$$, book$$, bookStore$$, query$ } from "../../../__generated/fetchers";
 import { stateManager } from "../App";
 import { DELETE_CONFIRM_CLASS, INFORMATION_CLASS } from "../Css";
-import { bookIdListState } from "../State";
-import { useObjects } from "../TypedHook";
 import { BookDialog } from "./BookDialog";
 
 const BOOK_ROW = 
@@ -18,8 +16,7 @@ const BOOK_ROW =
 
 export const BookList: FC = memo(() => {
 
-    const bookIds = useStateValue(bookIdListState);
-    const books = useObjects(BOOK_ROW, bookIds);
+    const { books } = useQuery(query$.books(BOOK_ROW));
     const [dialog, setDialog] = useState<"NEW" | "EDIT">();
     const [editing, setEditing] = useState<ModelType<typeof BOOK_ROW>>();
 

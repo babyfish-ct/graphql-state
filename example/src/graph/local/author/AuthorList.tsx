@@ -1,13 +1,11 @@
 import { Button, Space, Tag, Table, Modal } from "antd";
-import { useStateValue } from "graphql-state";
+import { useQuery } from "graphql-state/dist/state/StateHook";
 import { ModelType } from "graphql-ts-client-api";
 import { FC, memo, useCallback, useState } from "react";
 import { ComponentDecorator } from "../../../common/ComponentDecorator";
-import { author$$, book$$ } from "../../../__generated/fetchers";
+import { author$$, book$$, query$ } from "../../../__generated/fetchers";
 import { stateManager } from "../App";
 import { DELETE_CONFIRM_CLASS, INFORMATION_CLASS } from "../Css";
-import { authorIdListState } from "../State";
-import { useObjects } from "../TypedHook";
 import { AuthorDialog } from "./AuthorDialog";
 
 const AUTHOR_ROW =
@@ -19,8 +17,7 @@ const AUTHOR_ROW =
 
 export const AuthorList: FC = memo(() => {
 
-    const authorIds = useStateValue(authorIdListState);
-    const authors = useObjects(AUTHOR_ROW, authorIds);
+    const { authors } = useQuery(query$.authors(AUTHOR_ROW));
     const [dialog, setDialog] = useState<"NEW" | "EDIT">();
     const [editing, setEditing] = useState<ModelType<typeof AUTHOR_ROW>>();
 

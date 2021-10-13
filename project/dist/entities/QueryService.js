@@ -10,16 +10,34 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QueryService = void 0;
+const Record_1 = require("./Record");
 class QueryService {
     constructor(entityMangager) {
         this.entityMangager = entityMangager;
     }
     query(shape) {
-        throw new Error("Unsupported");
+        if (shape.typeName !== "Query") {
+            throw new Error(`The type of 'shape' arugment of 'query' must be 'Query'`);
+        }
+        try {
+            return {
+                type: "cached",
+                data: this.findObject(Record_1.QUERY_OBJECT_ID, shape)
+            };
+        }
+        catch (ex) {
+            if (!ex[" $canNotFoundFromCache"]) {
+                throw ex;
+            }
+        }
+        return {
+            type: "deferred",
+            promise: this.loadMissedQuery(shape)
+        };
     }
     queryObjects(ids, shape) {
         if (shape.typeName === "Query") {
-            throw new Error(`The type "${shape.typeName}" does not support 'queryObject'`);
+            throw new Error(`The type of 'shape' arugment of 'query' cannot be 'Query'`);
         }
         if (ids.length === 0) {
             return {
@@ -72,7 +90,7 @@ class QueryService {
     }
     loadMissedObjects(cachedMap, missedIds, shape) {
         return __awaiter(this, void 0, void 0, function* () {
-            const missedObjects = yield this.entityMangager.batchEntityRequest.requestObjectByShape(missedIds, shape);
+            const missedObjects = yield this.entityMangager._batchEntityRequest.requestObjectByShape(missedIds, shape);
             const idFieldName = this.entityMangager.schema.typeMap.get(shape.typeName).idField.name;
             for (const missedObject of missedObjects) {
                 cachedMap.set(missedObject[idFieldName], missedObject);
@@ -90,6 +108,11 @@ class QueryService {
             });
             return Array.from(cachedMap.values());
             ;
+        });
+    }
+    loadMissedQuery(shape) {
+        return __awaiter(this, void 0, void 0, function* () {
+            throw new Error(`Unsupported operation`);
         });
     }
 }

@@ -111,6 +111,22 @@ class TypeMetadata {
         }
         return field;
     }
+    isAssignableFrom(type) {
+        for (let t = type; t !== undefined; t = t.superType) {
+            if (this === t) {
+                return true;
+            }
+        }
+        return false;
+    }
+    setFieldMappedBy(name, oppositeFieldName) {
+        this.schema.preChange();
+        const field = this.fieldMap.get(name);
+        if (field === undefined) {
+            throw new Error(`Cannot set the "mappedBy" of field "${name}" because that field is not exists in type "${this.name}"`);
+        }
+        field.setOppositeFieldName(oppositeFieldName);
+    }
     addField(field) {
         this.schema.preChange();
         if (this._fieldMap !== undefined) {
@@ -132,14 +148,6 @@ class TypeMetadata {
         if (field.category === "ID") {
             this._idField = fieldMetadata;
         }
-    }
-    setFieldMappedBy(name, oppositeFieldName) {
-        this.schema.preChange();
-        const field = this.fieldMap.get(name);
-        if (field === undefined) {
-            throw new Error(`Cannot set the "mappedBy" of field "${name}" because that field is not exists in type "${this.name}"`);
-        }
-        field.setOppositeFieldName(oppositeFieldName);
     }
 }
 exports.TypeMetadata = TypeMetadata;

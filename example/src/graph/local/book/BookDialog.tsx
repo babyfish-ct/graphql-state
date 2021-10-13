@@ -1,13 +1,11 @@
 import { Modal, Form, Input } from "antd";
 import { useForm } from "antd/lib/form/Form";
-import { useStateAccessor } from "graphql-state";
 import { ModelType } from "graphql-ts-client-api";
 import { FC, memo, useCallback, useEffect } from "react";
 import UUIDClass from "uuidjs";
 import { author$, book$$, bookStore$ } from "../../../__generated/fetchers";
 import { stateManager } from "../App";
 import { AuthorMultiSelect } from "../author/AuthorMultiSelect";
-import { bookIdListState } from "../State";
 import { BookStoreSelect } from "../store/BookStoreSelect";
 
 const BOOK_EDIT_INFO =
@@ -27,8 +25,6 @@ export const BookDialog: FC<{
 }> = memo(({value, onClose}) => {
 
     const [form] = useForm<BookInput>();
-
-    const bookIds = useStateAccessor(bookIdListState);
 
     useEffect(() => {
         form.setFieldsValue({
@@ -51,11 +47,8 @@ export const BookDialog: FC<{
             throw new Error();
         }
         stateManager.save(BOOK_EDIT_INFO, info);
-        if (value === undefined) {
-            bookIds([...bookIds(), info.id]);
-        }
         onClose(info);
-    }, [value, form, bookIds, onClose]);
+    }, [form, onClose]);
 
     const onCancel = useCallback(() => {
         onClose();

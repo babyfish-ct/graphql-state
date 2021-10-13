@@ -8,6 +8,7 @@ export declare class QueryService {
     private findObjects;
     private findObject;
     private loadMissedObjects;
+    private loadMissedQuery;
 }
 export declare type RawQueryResult<T> = CachedResult<T> | DeferredResult<T>;
 interface CachedResult<T> {

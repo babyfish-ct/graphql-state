@@ -25,20 +25,14 @@ class ModificationContext {
                     for (const [fieldKey, newValue] of objectPair.newObj) {
                         const oldValue = (_a = objectPair.oldObj) === null || _a === void 0 ? void 0 : _a.get(fieldKey);
                         fieldKeys.add(fieldKey);
-                        if (oldValue !== undefined) {
-                            oldValueMap.set(fieldKey, oldValue);
-                        }
-                        if (newValue !== undefined) {
-                            newValueMap.set(fieldKey, newValue);
-                        }
+                        oldValueMap.set(fieldKey, oldValue);
+                        newValueMap.set(fieldKey, newValue);
                     }
                 }
                 else if (objectPair.oldObj !== undefined) {
                     for (const [fieldKey, oldValue] of objectPair.oldObj) {
                         fieldKeys.add(fieldKey);
-                        if (oldValue !== undefined) {
-                            oldValueMap.set(fieldKey, oldValue);
-                        }
+                        oldValueMap.set(fieldKey, oldValue);
                     }
                 }
                 if (objectPair.newObj === undefined || newValueMap.size !== 0) {

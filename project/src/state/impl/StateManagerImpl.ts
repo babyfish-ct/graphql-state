@@ -28,23 +28,19 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
         throw new Error();
     }
 
-    save<TName extends keyof TSchema & string, T extends object, TVariables extends object = {}>(
-        fetcher: ObjectFetcher<TName, T, any>,
-        objOrArray: T | readonly T[],
+    save<T extends object, TVariables extends object = {}>(
+        fetcher: ObjectFetcher<string, T, any>,
+        obj: T,
         variables?: TVariables
     ): void {
-        this.entityManager.modify(() => {
-            this.entityManager.save(toRuntimeShape(fetcher, variables), objOrArray);
-        });
+        this.entityManager.save(toRuntimeShape(fetcher, variables), obj);
     }
 
     delete<TName extends keyof TSchema & string>(
         typeName: TName, 
         idOrArray: TSchema[TName][" $id"] | ReadonlyArray<TSchema[TName][" $id"]>
     ) {
-        this.entityManager.modify(() => {
-            this.entityManager.delete(typeName, idOrArray);
-        });
+        this.entityManager.delete(typeName, idOrArray);
     }
 
     addListener(listener: (e: EntityChangeEvent) => void): void {

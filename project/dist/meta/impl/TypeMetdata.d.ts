@@ -18,7 +18,8 @@ export declare class TypeMetadata {
     get declaredFieldMap(): ReadonlyMap<string, FieldMetadata>;
     get fieldMap(): ReadonlyMap<string, FieldMetadata>;
     get idField(): FieldMetadata;
-    private addField;
+    isAssignableFrom(type: TypeMetadata): boolean;
     setFieldMappedBy(name: string, oppositeFieldName: string): void;
+    private addField;
 }
 export declare type TypeMetadataCategory = "OBJECT" | "CONNECTION" | "EDGE";

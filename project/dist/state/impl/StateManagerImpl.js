@@ -14,15 +14,11 @@ class StateManagerImpl {
     get undoManager() {
         throw new Error();
     }
-    save(fetcher, objOrArray, variables) {
-        this.entityManager.modify(() => {
-            this.entityManager.save(RuntimeShape_1.toRuntimeShape(fetcher, variables), objOrArray);
-        });
+    save(fetcher, obj, variables) {
+        this.entityManager.save(RuntimeShape_1.toRuntimeShape(fetcher, variables), obj);
     }
     delete(typeName, idOrArray) {
-        this.entityManager.modify(() => {
-            this.entityManager.delete(typeName, idOrArray);
-        });
+        this.entityManager.delete(typeName, idOrArray);
     }
     addListener(listener) {
         this.entityManager.addListener(undefined, listener);

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.makeManagedObjectHooks = exports.useStateAccessor = exports.useStateValue = exports.useStateManager = void 0;
+exports.makeManagedObjectHooks = exports.useQuery = exports.useStateAccessor = exports.useStateValue = exports.useStateManager = void 0;
 const react_1 = require("react");
 const StateManagerProvider_1 = require("./StateManagerProvider");
 const Holder_1 = require("./impl/Holder");
@@ -54,6 +54,30 @@ function useStateAccessor(state, options) {
     }
 }
 exports.useStateAccessor = useStateAccessor;
+function useQuery(fetcher, options) {
+    const queryResultHolder = useInternalQueryResultHolder(fetcher, undefined, options === null || options === void 0 ? void 0 : options.variables);
+    try {
+        const queryResult = queryResultHolder.get();
+        if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "ASYNC_OBJECT") {
+            return queryResult.loadable;
+        }
+        if (queryResult.loadable.loading) {
+            throw queryResult.promise; // throws promise, <Suspense/> will catch it
+        }
+        if (queryResult.loadable.error) {
+            throw queryResult.loadable.error;
+        }
+        if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "REFRESHABLE_SUSPENSE") {
+            return [queryResult.loadable.data];
+        }
+        return queryResult.loadable.data;
+    }
+    catch (ex) {
+        queryResultHolder.release();
+        throw ex;
+    }
+}
+exports.useQuery = useQuery;
 function makeManagedObjectHooks() {
     return new ManagedObjectHooksImpl();
 }
@@ -104,9 +128,6 @@ class ManagedObjectHooksImpl {
             queryResultHolder.release();
             throw ex;
         }
-    }
-    useQuery(fetcher, options) {
-        throw new Error();
     }
 }
 function useInternalStateValueHolder(state, options) {

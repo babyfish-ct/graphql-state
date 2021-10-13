@@ -1,8 +1,7 @@
 import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { EntityManager } from "./EntityManager";
-import { ModificationContext } from "./ModificationContext";
-import { Record, RecordConnection } from "./Record";
+import { QUERY_OBJECT_ID, Record, RecordConnection } from "./Record";
 import { RuntimeShape } from "./RuntimeShape";
 
 export class QueryService {
@@ -10,7 +9,26 @@ export class QueryService {
     constructor(private entityMangager: EntityManager) {}
 
     query(shape: RuntimeShape): RawQueryResult<any> {
-        throw new Error("Unsupported");
+        
+        if (shape.typeName !== "Query") {
+            throw new Error(`The type of 'shape' arugment of 'query' must be 'Query'`);
+        }
+
+        try {
+            return {
+                type: "cached",
+                data: this.findObject(QUERY_OBJECT_ID, shape)
+            }
+        } catch (ex) {
+            if (!ex[" $canNotFoundFromCache"]) {
+                throw ex;
+            }
+        }
+
+        return {
+            type: "deferred",
+            promise: this.loadMissedQuery(shape)
+        };
     }
 
     queryObjects(
@@ -19,7 +37,7 @@ export class QueryService {
     ): RawQueryResult<ReadonlyArray<any>> {
 
         if (shape.typeName === "Query") {
-            throw new Error(`The type "${shape.typeName}" does not support 'queryObject'`);
+            throw new Error(`The type of 'shape' arugment of 'query' cannot be 'Query'`);
         }
 
         if (ids.length === 0) {
@@ -91,7 +109,7 @@ export class QueryService {
         shape: RuntimeShape
     ): Promise<ReadonlyArray<any>> {
 
-        const missedObjects = await this.entityMangager.batchEntityRequest.requestObjectByShape(missedIds, shape);
+        const missedObjects = await this.entityMangager._batchEntityRequest.requestObjectByShape(missedIds, shape);
         const idFieldName = this.entityMangager.schema.typeMap.get(shape.typeName)!.idField.name;
         for (const missedObject of missedObjects) {
             cachedMap.set(missedObject[idFieldName], missedObject);
@@ -109,6 +127,12 @@ export class QueryService {
         });
 
         return Array.from(cachedMap.values());;
+    }
+
+    private async loadMissedQuery(
+        shape: RuntimeShape
+    ): Promise<any> {
+        throw new Error(`Unsupported operation`);
     }
 }
 

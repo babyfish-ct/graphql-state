@@ -1,13 +1,11 @@
 import { Modal, Form, Input } from "antd";
 import { useForm } from "antd/lib/form/Form";
-import { useStateAccessor } from "graphql-state";
 import { ModelType } from "graphql-ts-client-api";
 import { FC, memo, useCallback, useEffect } from "react";
 import UUIDClass from "uuidjs";
 import { author$$, book$ } from "../../../__generated/fetchers";
 import { stateManager } from "../App";
 import { BookMultiSelect } from "../book/BookMutliSelect";
-import { authorIdListState } from "../State";
 
 const AUTHOR_EDIT_INFO =
     author$$
@@ -22,8 +20,6 @@ export const AuthorDialog: FC<{
     value?: ModelType<typeof AUTHOR_EDIT_INFO>,
     onClose: (value?: ModelType<typeof AUTHOR_EDIT_INFO>) => void
 }> = memo(({value, onClose}) => {
-
-    const authorIds = useStateAccessor(authorIdListState);
 
     const [form] = useForm<AuthorInput>();
 
@@ -46,11 +42,8 @@ export const AuthorDialog: FC<{
             throw new Error();
         }
         stateManager.save(AUTHOR_EDIT_INFO, info);
-        if (value === undefined) {
-            authorIds([...authorIds(), info.id]);
-        }
         onClose(info);
-    }, [value, form, authorIds, onClose]);
+    }, [form, onClose]);
 
     const onCancel = useCallback(() => {
         onClose();

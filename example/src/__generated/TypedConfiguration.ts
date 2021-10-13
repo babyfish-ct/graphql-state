@@ -5,12 +5,14 @@ import { book$ } from './fetchers';
 import { BookChangeEvent } from './triggers';
 import { author$ } from './fetchers';
 import { AuthorChangeEvent } from './triggers';
+import { query$ } from './fetchers';
 
 export function newTypedConfiguration(): Configuration<Schema> {
     return newConfiguration<Schema>(
         bookStore$, 
         book$, 
-        author$
+        author$, 
+        query$
     );
 }
 

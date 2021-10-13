@@ -1,17 +1,14 @@
-import { useStateValue } from "graphql-state";
 import { FC, memo } from "react";
 import { Select } from "antd";
-import { author$$ } from "../../../__generated/fetchers";
-import { authorIdListState } from "../State";
-import { useObjects } from "../TypedHook";
+import { useQuery } from "graphql-state/dist/state/StateHook";
+import { author$$, query$ } from "../../../__generated/fetchers";
 
 export const AuthorMultiSelect: FC<{
     value?: string[],
     onChange?: (value: string[]) => void
 }> = memo(({value, onChange}) => {
 
-    const authorIds = useStateValue(authorIdListState);
-    const authors = useObjects(author$$, authorIds);
+    const { authors } = useQuery(query$.authors(author$$));
 
     return (
         <Select mode="multiple" value={value === undefined ? [] : value} onChange={onChange}>

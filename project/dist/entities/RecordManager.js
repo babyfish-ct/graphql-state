@@ -48,8 +48,16 @@ class RecordManager {
         if (typeof obj !== "object" || Array.isArray(obj)) {
             throw new Error("obj can only be plain object");
         }
-        const idFieldName = this.type.idField.name;
-        const id = obj[idFieldName];
+        let idFieldName;
+        let id;
+        if (shape.typeName === 'Query') {
+            idFieldName = undefined;
+            id = Record_1.QUERY_OBJECT_ID;
+        }
+        else {
+            idFieldName = this.type.idField.name;
+            id = obj[idFieldName];
+        }
         const fieldMap = this.type.fieldMap;
         for (const shapeField of shape.fields) {
             if (shapeField.name !== idFieldName) {

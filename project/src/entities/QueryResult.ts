@@ -199,7 +199,6 @@ class Dependencies {
     }
 
     private handleInsertion(schema: SchemaMetadata, shape: RuntimeShape, isLeaf: boolean) {
-        const type = schema.typeMap.get(shape.typeName)!;
         if (isLeaf && schema.typeMap.get(shape.typeName)?.category === 'OBJECT') {
             let dependency = this.map.get(shape.typeName);
             if (dependency === undefined) {
@@ -253,7 +252,7 @@ class Dependencies {
                 for (const field of shape.fields) {
                     const childShape = field.childShape;
                     if (childShape !== undefined) {
-                        this.handleObjectChange(schema, childShape, obj[field.name]);
+                        this.handleObjectChange(schema, childShape, obj[field.alias ?? field.name]);
                     }
                 }
             }

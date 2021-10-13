@@ -16,3 +16,9 @@ type Author {
     name: String!
     books: [Book!]!
 }
+
+type Query {
+    bookStores: [BookStore!]!
+    books: [Book!]!
+    authors: [Author!]!
+}

@@ -183,7 +183,6 @@ class Dependencies {
     }
     handleInsertion(schema, shape, isLeaf) {
         var _a;
-        const type = schema.typeMap.get(shape.typeName);
         if (isLeaf && ((_a = schema.typeMap.get(shape.typeName)) === null || _a === void 0 ? void 0 : _a.category) === 'OBJECT') {
             let dependency = this.map.get(shape.typeName);
             if (dependency === undefined) {
@@ -205,6 +204,7 @@ class Dependencies {
         }
     }
     handleObjectChange(schema, shape, obj) {
+        var _a;
         if (Array.isArray(obj)) {
             for (const element of obj) {
                 this.handleObjectChange(schema, shape, element);
@@ -238,7 +238,7 @@ class Dependencies {
                 for (const field of shape.fields) {
                     const childShape = field.childShape;
                     if (childShape !== undefined) {
-                        this.handleObjectChange(schema, childShape, obj[field.name]);
+                        this.handleObjectChange(schema, childShape, obj[(_a = field.alias) !== null && _a !== void 0 ? _a : field.name]);
                     }
                 }
             }

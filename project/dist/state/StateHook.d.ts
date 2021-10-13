@@ -1,7 +1,7 @@
 import { StateAccessingOptions, ParameterizedStateAccessingOptions, SingleWritableState, ParameterizedWritableState, SingleAsyncState, ParameterizedAsyncState, SingleComputedState, ParameterizedComputedState } from "./State";
 import { StateManager } from "./StateManager";
 import { SchemaType } from "../meta/SchemaType";
-import { Fetcher } from "graphql-ts-client-api";
+import { Fetcher, ObjectFetcher } from "graphql-ts-client-api";
 export declare function useStateManager<TSchema extends SchemaType>(): StateManager<TSchema>;
 export declare function useStateValue<T>(state: SingleWritableState<T> | SingleComputedState<T>, options?: StateAccessingOptions): T;
 export declare function useStateValue<T, TVariables>(state: ParameterizedWritableState<T, TVariables> | ParameterizedComputedState<T, TVariables>, options: ParameterizedStateAccessingOptions<TVariables>): T;
@@ -26,11 +26,11 @@ export interface UseStateAsyncValueHookResult<T> {
     readonly loading: boolean;
     readonly error?: Error;
 }
+export declare function useQuery<T extends object, TVaraibles extends object, TAsyncStyle extends AsyncStyles = "SUSPENSE">(fetcher: ObjectFetcher<"Query", T, TVaraibles>, options?: QueryOptions<TVaraibles, TAsyncStyle>): AsyncReturnType<T, TAsyncStyle>;
 export declare function makeManagedObjectHooks<TSchema extends SchemaType>(): ManagedObjectHooks<TSchema>;
 export interface ManagedObjectHooks<TSchema extends SchemaType> {
     useObject<TName extends keyof TSchema & string, T extends object, TVariables extends object, TAsyncStyle extends AsyncStyles = "SUSPENSE", TObjectStyle extends ObjectStyles = "REQUIRED">(fetcher: Fetcher<string, T, TVariables>, id: TSchema[TName][" $id"], options?: ObjectQueryOptions<TVariables, TAsyncStyle, TObjectStyle>): AsyncReturnType<ObjectReference<T, TObjectStyle>, TAsyncStyle>;
     useObjects<TName extends keyof TSchema & string, T extends object, TVariables extends object, TAsyncStyle extends AsyncStyles = "SUSPENSE", TObjectStyle extends ObjectStyles = "REQUIRED">(fetcher: Fetcher<string, T, TVariables>, ids: ReadonlyArray<TSchema[TName][" $id"]>, options?: ObjectQueryOptions<TVariables, TAsyncStyle, TObjectStyle>): AsyncReturnType<ReadonlyArray<ObjectReference<T, TObjectStyle>>, TAsyncStyle>;
-    useQuery<T extends object, TVaraibles extends object, TAsyncStyle extends AsyncStyles = "SUSPENSE">(fetcher: Fetcher<"Query", T, TVaraibles>, options?: QueryOptions<TVaraibles, TAsyncStyle>): AsyncReturnType<T, TAsyncStyle>;
 }
 export interface QueryOptions<TVariables extends object, TAsyncStyle extends AsyncStyles> extends AsyncOptions<TAsyncStyle> {
     readonly variables?: TVariables;

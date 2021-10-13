@@ -3,7 +3,7 @@ import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { standardizedVariables } from "../state/impl/Variables";
 import { EntityManager } from "./EntityManager";
 import { ModificationContext } from "./ModificationContext";
-import { Record } from "./Record";
+import { QUERY_OBJECT_ID, Record } from "./Record";
 import { RecordRef } from "./RecordRef";
 import { RuntimeShape } from "./RuntimeShape";
 
@@ -61,8 +61,15 @@ export class RecordManager {
         if (typeof obj !== "object" || Array.isArray(obj)) {
             throw new Error("obj can only be plain object");
         }
-        const idFieldName = this.type.idField.name;
-        const id = obj[idFieldName];
+        let idFieldName: string | undefined;
+        let id: any;
+        if (shape.typeName === 'Query') {
+            idFieldName = undefined;
+            id = QUERY_OBJECT_ID;
+        } else {
+            idFieldName = this.type.idField.name;
+            id = obj[idFieldName];
+        }
         const fieldMap = this.type.fieldMap;
         for (const shapeField of shape.fields) { 
             if (shapeField.name !== idFieldName) {

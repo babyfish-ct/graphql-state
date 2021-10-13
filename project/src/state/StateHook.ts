@@ -1,15 +1,22 @@
-import { useContext, useEffect, useMemo, useState } from "react";
-import { StateAccessingOptions, State, ParameterizedStateAccessingOptions, SingleWritableState, ParameterizedWritableState, SingleAsyncState, ParameterizedAsyncState, SingleState, ParameterizedState, SingleComputedState, ParameterizedComputedState } from "./State";
+import { useContext, useEffect, useState } from "react";
+import { 
+    StateAccessingOptions, 
+    State, 
+    ParameterizedStateAccessingOptions, 
+    SingleWritableState, 
+    ParameterizedWritableState, 
+    SingleAsyncState, 
+    ParameterizedAsyncState, 
+    SingleComputedState, 
+    ParameterizedComputedState 
+} from "./State";
 import { StateManager } from "./StateManager";
 import { stateContext } from "./StateManagerProvider";
-import { QueryResultChangeEvent, StateManagerImpl, StateValueChangeEvent } from "./impl/StateManagerImpl";
-import { standardizedVariables } from "./impl/Variables";
-import { StateValue } from "./impl/StateValue";
+import { StateManagerImpl } from "./impl/StateManagerImpl";
 import { WritableStateValue } from "./impl/WritableStateValue";
 import { ComputedStateValue } from "./impl/ComputedStateValue";
 import { SchemaType } from "../meta/SchemaType";
 import { Fetcher, ObjectFetcher } from "graphql-ts-client-api";
-import { QueryArgs, QueryResult } from "../entities/QueryResult";
 import { QueryResultHolder, StateValueHolder } from "./impl/Holder";
 
 export function useStateManager<TSchema extends SchemaType>(): StateManager<TSchema> {
@@ -125,6 +132,36 @@ export interface UseStateAsyncValueHookResult<T> {
     readonly error?: Error;
 }
 
+export function useQuery<
+    T extends object,
+    TVaraibles extends object,
+    TAsyncStyle extends AsyncStyles = "SUSPENSE"
+>(
+    fetcher: ObjectFetcher<"Query", T, TVaraibles>,
+    options?: QueryOptions<TVaraibles, TAsyncStyle>
+): AsyncReturnType<T, TAsyncStyle> {
+    const queryResultHolder = useInternalQueryResultHolder(fetcher, undefined, options?.variables);
+    try {
+        const queryResult = queryResultHolder.get();
+        if (options?.asyncStyle === "ASYNC_OBJECT") {
+            return queryResult.loadable as AsyncReturnType<T, TAsyncStyle>;
+        }
+        if (queryResult.loadable.loading) {
+            throw queryResult.promise; // throws promise, <Suspense/> will catch it
+        }
+        if (queryResult.loadable.error) {
+            throw queryResult.loadable.error;
+        }
+        if (options?.asyncStyle === "REFRESHABLE_SUSPENSE") {
+            return [queryResult.loadable.data] as AsyncReturnType<T, TAsyncStyle>;
+        }
+        return queryResult.loadable.data as AsyncReturnType<T, TAsyncStyle>;
+    } catch (ex) {
+        queryResultHolder.release();
+        throw ex;
+    }
+}
+
 export function makeManagedObjectHooks<TSchema extends SchemaType>(): ManagedObjectHooks<TSchema> {
     return new ManagedObjectHooksImpl<TSchema>();
 }
@@ -160,15 +197,6 @@ export interface ManagedObjectHooks<TSchema extends SchemaType> {
         ReadonlyArray<ObjectReference<T, TObjectStyle>>,
         TAsyncStyle
     >;
-
-    useQuery<
-        T extends object,
-        TVaraibles extends object,
-        TAsyncStyle extends AsyncStyles = "SUSPENSE"
-    >(
-        fetcher: Fetcher<"Query", T, TVaraibles>,
-        options?: QueryOptions<TVaraibles, TAsyncStyle>
-    ): AsyncReturnType<T, TAsyncStyle>;
 }
 
 export interface QueryOptions<TVariables extends object, TAsyncStyle extends AsyncStyles> extends AsyncOptions<TAsyncStyle> {
@@ -274,17 +302,6 @@ class ManagedObjectHooksImpl<TSchema extends SchemaType> implements ManagedObjec
             queryResultHolder.release();
             throw ex;
         }
-    }
-
-    useQuery<
-        T extends object,
-        TVaraibles extends object,
-        TAsyncStyle extends AsyncStyles = "SUSPENSE"
-    >(
-        fetcher: Fetcher<"Query", T, TVaraibles>,
-        options?: QueryOptions<TVaraibles, TAsyncStyle>
-    ): AsyncReturnType<T, TAsyncStyle> {
-        throw new Error();
     }
 }
 

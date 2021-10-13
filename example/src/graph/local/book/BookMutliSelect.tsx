@@ -1,17 +1,14 @@
 import { FC, memo } from "react";
 import { Select } from "antd";
-import { useStateValue } from "graphql-state";
-import { bookIdListState } from "../State";
-import { useObjects } from "../TypedHook";
-import { book$$ } from "../../../__generated/fetchers";
+import { book$$, query$ } from "../../../__generated/fetchers";
+import { useQuery } from "graphql-state/dist/state/StateHook";
 
 export const BookMultiSelect: FC<{
     value?: string[],
     onChange?: (value: string[]) => void
 }> = memo(({value, onChange}) => {
 
-    const bookIds = useStateValue(bookIdListState);
-    const books = useObjects(book$$, bookIds);
+    const { books } = useQuery(query$.books(book$$));
 
     return (
         <Select mode="multiple" value={value ?? []} onChange={onChange}>
