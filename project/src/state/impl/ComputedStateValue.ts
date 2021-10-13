@@ -1,12 +1,9 @@
 import { Fetcher } from "graphql-ts-client-api";
-import { StateUnmoutHandler } from "../State";
 import { InternalComputedContext } from "./InternalComputedContext";
 import { StateInstance } from "./StateInstance";
 import { Loadable, StateValue } from "./StateValue";
 
 export class ComputedStateValue extends StateValue {
-
-    private _unmountHandler?: StateUnmoutHandler;
 
     private _result: any;
 
@@ -29,25 +26,11 @@ export class ComputedStateValue extends StateValue {
         };
     }
 
-    mount() {
-        if (this.stateInstance.state[" $stateType"] !== "WRITABLE") {
-            const mount = this.stateInstance.state[" $options"]?.mount;
-            if (mount !== undefined) {
-                const ctx = { invalidate: this.invalidate.bind(this) };
-                this._unmountHandler = mount(ctx) as StateUnmoutHandler | undefined;
-            }
-        }
-    }
-
     umount() {
         try {
             this.freeContext();
         } finally {
-            const h = this._unmountHandler;
-            if (h !== undefined) {
-                this._unmountHandler = undefined;
-                h();
-            }
+            super.umount();
         }
     }
 
@@ -78,6 +61,12 @@ export class ComputedStateValue extends StateValue {
             this._invalid = false;
         }
         return this._result;
+    }
+
+    protected createMountContext(): any {
+        return {
+            invalidate: this.invalidate.bind(this)
+        };
     }
 
     private compute0(parentContext?: InternalComputedContext): any {

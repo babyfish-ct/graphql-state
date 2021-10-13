@@ -268,18 +268,20 @@ export interface StateCreationOptions {
 }
 
 export interface WritableStateCreationOptions<T> extends StateCreationOptions {
-    readonly mount?: (ctx: WritableStateCreationgContext<T>) => StateUnmoutHandler | undefined | void;
+    readonly mount?: (ctx: WritableStateCreatingContext<T>) => StateUnmoutHandler | undefined | void;
 }
 
 export interface ComputedStateCreationOptions extends StateCreationOptions {
-    readonly mount?: (ctx: {
-        invalidate: () => void
-    }) => StateUnmoutHandler | undefined | void;
+    readonly mount?: (ctx: ComputedStateCreatingContext) => StateUnmoutHandler | undefined | void;
 }
 
-export interface WritableStateCreationgContext<T> {
+export interface WritableStateCreatingContext<T> {
     (): T;
     (value: T): void;
+}
+
+export interface ComputedStateCreatingContext extends StateCreationOptions {
+    invalidate(): void;
 }
 
 export type StateUnmoutHandler = () => void;

@@ -23,7 +23,12 @@ export interface StateManager<TSchema extends SchemaType> {
     delete<TName extends keyof TSchema & string>(
         typeName: TName, 
         id: TSchema[TName][" $id"]
-    ): boolean;
+    ): void;
+
+    delete<TName extends keyof TSchema & string>(
+        typeName: TName, 
+        ids: ReadonlyArray<TSchema[TName][" $id"]>
+    ): void;
 
     addListener(listener: (e: EntityChangeEvent) => void): void;
 

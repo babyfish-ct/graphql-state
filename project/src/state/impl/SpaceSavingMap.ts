@@ -75,6 +75,11 @@ export class SpaceSavingMap<K, V> {
         }
     }
 
+    clear() {
+        this.value = undefined;
+        this.valueMap = undefined;
+    }
+
     forEach(callback: (key: K, value: V) => boolean | void) {
         if (this.value !== undefined && callback(undefined as any, this.value) === false) {
             return;

@@ -72,6 +72,10 @@ class SpaceSavingMap {
             return oldValue;
         }
     }
+    clear() {
+        this.value = undefined;
+        this.valueMap = undefined;
+    }
     forEach(callback) {
         if (this.value !== undefined && callback(undefined, this.value) === false) {
             return;

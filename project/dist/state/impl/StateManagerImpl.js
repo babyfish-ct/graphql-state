@@ -20,8 +20,8 @@ class StateManagerImpl {
         const ctx = new ModificationContext_1.ModificationContext();
         const shape = RuntimeShape_1.toRuntimeShape(fetcher, variables);
         if (Array.isArray(objOrArray)) {
-            for (const element of objOrArray) {
-                this.entityManager.save(ctx, shape, element);
+            for (const obj of objOrArray) {
+                this.entityManager.save(ctx, shape, obj);
             }
         }
         else if (objOrArray !== undefined && objOrArray !== null) {
@@ -31,8 +31,19 @@ class StateManagerImpl {
             this.publishEntityChangeEvent(e);
         });
     }
-    delete(typeName, id) {
-        throw new Error("Unsupported operation exception");
+    delete(typeName, idOrArray) {
+        const ctx = new ModificationContext_1.ModificationContext();
+        if (Array.isArray(idOrArray)) {
+            for (const id of idOrArray) {
+                this.entityManager.delete(ctx, typeName, id);
+            }
+        }
+        else {
+            this.entityManager.delete(ctx, typeName, idOrArray);
+        }
+        ctx.fireEvents(e => {
+            this.publishEntityChangeEvent(e);
+        });
     }
     addListener(listener) {
         this.addEntityStateListener(undefined, listener);

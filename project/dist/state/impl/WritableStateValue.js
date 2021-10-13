@@ -30,6 +30,9 @@ class WritableStateValue extends StateValue_1.StateValue {
             });
         }
     }
+    createMountContext() {
+        return this.accessor;
+    }
 }
 exports.WritableStateValue = WritableStateValue;
 function access(...args) {

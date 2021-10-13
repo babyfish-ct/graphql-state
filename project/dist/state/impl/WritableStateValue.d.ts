@@ -7,4 +7,5 @@ export declare class WritableStateValue extends StateValue {
     get result(): any;
     get loadable(): Loadable;
     data(data: any): void;
+    protected createMountContext(): any;
 }

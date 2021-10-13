@@ -6,6 +6,7 @@ export declare class ModificationContext {
     insert(record: Record): void;
     update(record: Record): void;
     delete(record: Record): void;
-    change(record: Record, fieldName: string, variablesCode: string | undefined, oldValue: any, newValue: any): void;
+    set(record: Record, fieldName: string, variablesCode: string | undefined, oldValue: any, newValue: any): void;
     private pair;
 }
+export declare function changedKeyString(fieldName: string, variables?: any): string;

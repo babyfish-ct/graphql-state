@@ -23,8 +23,22 @@ class StateValue {
         return rc === 0;
     }
     mount() {
+        var _a, _b;
+        const state = this.stateInstance.state;
+        const mount = state[" $stateType"] === "WRITABLE" ?
+            (_a = state[" $options"]) === null || _a === void 0 ? void 0 : _a.mount :
+            (_b = state[" $options"]) === null || _b === void 0 ? void 0 : _b.mount;
+        if (mount !== undefined) {
+            const ctx = this.createMountContext();
+            this._unmountHandler = mount(ctx);
+        }
     }
     umount() {
+        const h = this._unmountHandler;
+        if (h !== undefined) {
+            this._unmountHandler = undefined;
+            h();
+        }
     }
 }
 exports.StateValue = StateValue;

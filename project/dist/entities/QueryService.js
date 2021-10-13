@@ -30,8 +30,8 @@ class QueryService {
         }
         const map = this.findObjects(ids, shape);
         const missedIds = [];
-        for (const [id, obj] of map) {
-            if (obj === undefined) {
+        for (const id of ids) {
+            if (!map.has(id)) {
                 missedIds.push(id);
             }
         }

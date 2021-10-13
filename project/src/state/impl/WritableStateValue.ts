@@ -45,6 +45,10 @@ export class WritableStateValue extends StateValue {
             });
         }
     }
+
+    protected createMountContext(): any {
+        return this.accessor;
+    }
 }
 
 function access(...args: any[]): any {

@@ -32,7 +32,7 @@ export class ModificationContext {
                         }
                     }
                 }
-                if (oldValueMap.size !== 0 || newValueMap.size !== 0) {
+                if (objectPair.newObj === undefined || newValueMap.size !== 0) {
                     const event = new EntityChangeEventImpl(
                         type.name,
                         id,
@@ -70,14 +70,11 @@ export class ModificationContext {
 
     delete(record: Record) {
         if (record.type.superType === undefined) {
-            const pair = this.pair(record, true);
-            if (pair.oldObj === undefined) {
-                pair.oldObj = new Map<string, any>();
-            }
+            this.pair(record, true);
         }
     }
 
-    change(record: Record, fieldName: string, variablesCode: string | undefined, oldValue: any, newValue: any) {
+    set(record: Record, fieldName: string, variablesCode: string | undefined, oldValue: any, newValue: any) {
         if (fieldName === record.type.idField.name) {
             throw new Error("Internal bug: the changed name cannot be id");
         }
@@ -110,7 +107,7 @@ export class ModificationContext {
     }
 }
 
-function changedKeyString(fieldName: string, variables?: any): string {
+export function changedKeyString(fieldName: string, variables?: any): string {
     const vsCode = typeof variables === 'object' ? 
         JSON.stringify(variables) :
         typeof variables === 'string' ?

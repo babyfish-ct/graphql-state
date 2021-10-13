@@ -4,6 +4,7 @@ export declare abstract class StateValue {
     readonly variablesCode: string | undefined;
     readonly variables: any;
     private _refCount;
+    private _unmountHandler?;
     constructor(stateInstance: StateInstance, variablesCode: string | undefined, variables: any);
     abstract get result(): any;
     abstract get loadable(): any;
@@ -11,6 +12,7 @@ export declare abstract class StateValue {
     release(): boolean;
     mount(): void;
     umount(): void;
+    protected abstract createMountContext(): any;
 }
 export interface Loadable {
     readonly data?: any;

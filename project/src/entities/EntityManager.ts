@@ -56,7 +56,7 @@ export class EntityManager {
         typeName: string, 
         id: any
     ) {
-        // TODO
+        return this.recordManager(typeName).delete(ctx, id);
     }
 
     loadByIds(ids: any[], shape: RuntimeShape): Promise<any[]> {

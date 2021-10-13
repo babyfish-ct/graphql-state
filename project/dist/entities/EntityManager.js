@@ -35,7 +35,7 @@ class EntityManager {
         return this.recordManager(shape.typeName).save(ctx, shape, obj);
     }
     delete(ctx, typeName, id) {
-        // TODO
+        return this.recordManager(typeName).delete(ctx, id);
     }
     loadByIds(ids, shape) {
         throw new Error("bathcLoad is not implemented");

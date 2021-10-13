@@ -39,8 +39,8 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
         const ctx = new ModificationContext();
         const shape = toRuntimeShape(fetcher, variables);
         if (Array.isArray(objOrArray)) {
-            for (const element of objOrArray) {
-                this.entityManager.save(ctx, shape, element);
+            for (const obj of objOrArray) {
+                this.entityManager.save(ctx, shape, obj);
             }
         } else if (objOrArray !== undefined && objOrArray !== null) {
             this.entityManager.save(ctx, shape, objOrArray);
@@ -52,9 +52,19 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
 
     delete<TName extends keyof TSchema & string>(
         typeName: TName, 
-        id: TSchema[TName][" $id"]
-    ): boolean {
-        throw new Error("Unsupported operation exception");
+        idOrArray: TSchema[TName][" $id"] | ReadonlyArray<TSchema[TName][" $id"]>
+    ) {
+        const ctx = new ModificationContext();
+        if (Array.isArray(idOrArray)) {
+            for (const id of idOrArray) {
+                this.entityManager.delete(ctx, typeName, id);
+            }
+        } else {
+            this.entityManager.delete(ctx, typeName, idOrArray);
+        }
+        ctx.fireEvents(e => {
+            this.publishEntityChangeEvent(e);
+        });
     }
 
     addListener(listener: (e: EntityChangeEvent) => void): void {

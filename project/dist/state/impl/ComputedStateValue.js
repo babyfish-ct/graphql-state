@@ -12,26 +12,12 @@ class ComputedStateValue extends StateValue_1.StateValue {
             loading: this.isAsync
         };
     }
-    mount() {
-        var _a;
-        if (this.stateInstance.state[" $stateType"] !== "WRITABLE") {
-            const mount = (_a = this.stateInstance.state[" $options"]) === null || _a === void 0 ? void 0 : _a.mount;
-            if (mount !== undefined) {
-                const ctx = { invalidate: this.invalidate.bind(this) };
-                this._unmountHandler = mount(ctx);
-            }
-        }
-    }
     umount() {
         try {
             this.freeContext();
         }
         finally {
-            const h = this._unmountHandler;
-            if (h !== undefined) {
-                this._unmountHandler = undefined;
-                h();
-            }
+            super.umount();
         }
     }
     invalidate() {
@@ -58,6 +44,11 @@ class ComputedStateValue extends StateValue_1.StateValue {
             this._invalid = false;
         }
         return this._result;
+    }
+    createMountContext() {
+        return {
+            invalidate: this.invalidate.bind(this)
+        };
     }
     compute0(parentContext) {
         const newCtx = new InternalComputedContext_1.InternalComputedContext(parentContext !== null && parentContext !== void 0 ? parentContext : this.stateInstance.scopedStateManager, this);

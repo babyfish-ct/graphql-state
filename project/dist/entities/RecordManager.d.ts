@@ -15,5 +15,6 @@ export declare class RecordManager {
     findRefById(id: any): RecordRef | undefined;
     saveId(ctx: ModificationContext, id: any): Record;
     save(ctx: ModificationContext, shape: RuntimeShape, obj: any): void;
+    delete(ctx: ModificationContext, id: any): void;
     private set;
 }

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ModificationContext = void 0;
+exports.changedKeyString = exports.ModificationContext = void 0;
 class ModificationContext {
     constructor() {
         this.objPairMap = new Map();
@@ -32,7 +32,7 @@ class ModificationContext {
                         }
                     }
                 }
-                if (oldValueMap.size !== 0 || newValueMap.size !== 0) {
+                if (objectPair.newObj === undefined || newValueMap.size !== 0) {
                     const event = new EntityChangeEventImpl(type.name, id, objectPair.oldObj !== undefined && objectPair.newObj !== undefined ?
                         "UPDATE" : (objectPair.newObj !== undefined ? "INSERT" : "DELETE"), Array.from(fieldKeys).map(parseFieldKey), oldValueMap.size === 0 ? undefined : oldValueMap, newValueMap.size === 0 ? undefined : newValueMap);
                     trigger(event);
@@ -58,13 +58,10 @@ class ModificationContext {
     }
     delete(record) {
         if (record.type.superType === undefined) {
-            const pair = this.pair(record, true);
-            if (pair.oldObj === undefined) {
-                pair.oldObj = new Map();
-            }
+            this.pair(record, true);
         }
     }
-    change(record, fieldName, variablesCode, oldValue, newValue) {
+    set(record, fieldName, variablesCode, oldValue, newValue) {
         var _a, _b;
         if (fieldName === record.type.idField.name) {
             throw new Error("Internal bug: the changed name cannot be id");
@@ -107,6 +104,7 @@ function changedKeyString(fieldName, variables) {
     }
     return `${fieldName}:${vsCode}`;
 }
+exports.changedKeyString = changedKeyString;
 function parseFieldKey(key) {
     const commaIndex = key.indexOf(':');
     return commaIndex === -1 ? key : {

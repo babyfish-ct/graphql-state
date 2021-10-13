@@ -1,4 +1,4 @@
-import { FC, memo, Suspense } from "react";
+import { FC, memo } from "react";
 import { StateManagerProvider } from "graphql-state";
 import { newTypedConfiguration } from "../../__generated";
 import { BookList } from "./book/BookList";

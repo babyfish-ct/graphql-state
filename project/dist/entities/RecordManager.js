@@ -29,9 +29,6 @@ class RecordManager {
     }
     saveId(ctx, id) {
         var _a;
-        if (typeof id !== "number" && typeof id !== "string") {
-            throw new Error(`Illegal id '${id}', id can only be number or string`);
-        }
         let record = this.recordMap.get(id);
         if (record !== undefined) {
             ctx.update(record);
@@ -89,6 +86,19 @@ class RecordManager {
                 }
             }
         }
+    }
+    delete(ctx, id) {
+        var _a;
+        let record = this.recordMap.get(id);
+        if (record !== undefined) {
+            ctx.delete(record);
+            record.delete(ctx, this.entityManager);
+        }
+        else {
+            record = new Record_1.Record(this.type, id, true);
+            this.recordMap.set(id, record);
+        }
+        (_a = this.superManager) === null || _a === void 0 ? void 0 : _a.delete(ctx, id);
     }
     set(ctx, id, field, variablesCode, variables, value) {
         const record = this.saveId(ctx, id);
