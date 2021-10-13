@@ -27,8 +27,9 @@ class RecordManager {
         }
         return record.isDeleted ? {} : { value: record };
     }
-    saveId(ctx, id) {
+    saveId(id) {
         var _a;
+        const ctx = this.entityManager.modificationContext;
         let record = this.recordMap.get(id);
         if (record !== undefined) {
             ctx.update(record);
@@ -39,10 +40,10 @@ class RecordManager {
             this.recordMap.set(id, record);
             ctx.insert(record);
         }
-        (_a = this.superManager) === null || _a === void 0 ? void 0 : _a.saveId(ctx, id);
+        (_a = this.superManager) === null || _a === void 0 ? void 0 : _a.saveId(id);
         return record;
     }
-    save(ctx, shape, obj) {
+    save(shape, obj) {
         var _a, _b;
         if (typeof obj !== "object" || Array.isArray(obj)) {
             throw new Error("obj can only be plain object");
@@ -60,17 +61,17 @@ class RecordManager {
                 const variables = Variables_1.standardizedVariables(shapeField.variables);
                 const variablesCode = variables !== undefined ? JSON.stringify(variables) : undefined;
                 const value = obj[(_b = shapeField.alias) !== null && _b !== void 0 ? _b : shapeField.name];
-                manager.set(ctx, id, field, variablesCode, variables, value);
+                manager.set(id, field, variablesCode, variables, value);
                 if (value !== undefined && shapeField.childShape !== undefined) {
                     const associationRecordManager = this.entityManager.recordManager(shapeField.childShape.typeName);
                     switch (field.category) {
                         case "REFERENCE":
-                            associationRecordManager.save(ctx, shapeField.childShape, value);
+                            associationRecordManager.save(shapeField.childShape, value);
                             break;
                         case "LIST":
                             if (Array.isArray(value)) {
                                 for (const element of value) {
-                                    associationRecordManager.save(ctx, shapeField.childShape, element);
+                                    associationRecordManager.save(shapeField.childShape, element);
                                 }
                             }
                             break;
@@ -78,7 +79,7 @@ class RecordManager {
                             const edges = value.edges;
                             if (Array.isArray(edges)) {
                                 for (const edge of value) {
-                                    associationRecordManager.save(ctx, shapeField.childShape, edge.node);
+                                    associationRecordManager.save(shapeField.childShape, edge.node);
                                 }
                             }
                             break;
@@ -87,22 +88,22 @@ class RecordManager {
             }
         }
     }
-    delete(ctx, id) {
+    delete(id) {
         var _a;
         let record = this.recordMap.get(id);
         if (record !== undefined) {
-            ctx.delete(record);
-            record.delete(ctx, this.entityManager);
+            this.entityManager.modificationContext.delete(record);
+            record.delete(this.entityManager);
         }
         else {
             record = new Record_1.Record(this.type, id, true);
             this.recordMap.set(id, record);
         }
-        (_a = this.superManager) === null || _a === void 0 ? void 0 : _a.delete(ctx, id);
+        (_a = this.superManager) === null || _a === void 0 ? void 0 : _a.delete(id);
     }
-    set(ctx, id, field, variablesCode, variables, value) {
-        const record = this.saveId(ctx, id);
-        record.set(ctx, this.entityManager, field, variablesCode, variables, value);
+    set(id, field, variablesCode, variables, value) {
+        const record = this.saveId(id);
+        record.set(this.entityManager, field, variablesCode, variables, value);
     }
 }
 exports.RecordManager = RecordManager;

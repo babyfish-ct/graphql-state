@@ -7,7 +7,21 @@ export class ModificationContext {
 
     private objPairMap = new Map<TypeMetadata, Map<any, ObjectPair>>();
 
-    fireEvents(trigger: (event: EntityChangeEvent) => void) {
+    constructor(
+        private linkToQuery: (type: TypeMetadata, id: any) => void,
+        private trigger: (event: EntityChangeEvent) => void
+    ) {
+
+    }
+
+    close() {
+        for (const [type, subMap] of this.objPairMap) {
+            for (const [id, objectPair] of subMap) {
+                if (objectPair.oldObj === undefined) {
+                    this.linkToQuery(type, id);
+                }
+            }
+        }
         for (const [type, subMap] of this.objPairMap) {
             for (const [id, objectPair] of subMap) {
                 const fieldKeys = new Set<string>();
@@ -44,7 +58,7 @@ export class ModificationContext {
                         oldValueMap.size === 0 ? undefined : oldValueMap,
                         newValueMap.size === 0 ? undefined : newValueMap
                     );
-                    trigger(event);
+                    this.trigger(event);
                 }
             }
         }

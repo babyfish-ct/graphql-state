@@ -42,7 +42,8 @@ export class RecordManager {
         return record.isDeleted ? {} : { value: record };
     }
 
-    saveId(ctx: ModificationContext, id: any): Record {
+    saveId(id: any): Record {
+        const ctx = this.entityManager.modificationContext;
         let record = this.recordMap.get(id);
         if (record !== undefined) {
             ctx.update(record);
@@ -52,11 +53,11 @@ export class RecordManager {
             this.recordMap.set(id, record);
             ctx.insert(record);
         }
-        this.superManager?.saveId(ctx, id);
+        this.superManager?.saveId(id);
         return record;
     }
 
-    save(ctx: ModificationContext, shape: RuntimeShape, obj: any) {
+    save(shape: RuntimeShape, obj: any) {
         if (typeof obj !== "object" || Array.isArray(obj)) {
             throw new Error("obj can only be plain object");
         }
@@ -74,7 +75,6 @@ export class RecordManager {
                 const variablesCode = variables !== undefined ? JSON.stringify(variables) : undefined
                 const value = obj[shapeField.alias ?? shapeField.name];
                 manager.set(
-                    ctx, 
                     id, 
                     field, 
                     variablesCode, 
@@ -85,12 +85,12 @@ export class RecordManager {
                     const associationRecordManager = this.entityManager.recordManager(shapeField.childShape.typeName);
                     switch (field.category) {
                         case "REFERENCE":
-                            associationRecordManager.save(ctx, shapeField.childShape, value);
+                            associationRecordManager.save(shapeField.childShape, value);
                             break;
                         case "LIST":
                             if (Array.isArray(value)) {
                                 for (const element of value) {
-                                    associationRecordManager.save(ctx, shapeField.childShape, element);
+                                    associationRecordManager.save(shapeField.childShape, element);
                                 }
                             }
                             break;
@@ -98,7 +98,7 @@ export class RecordManager {
                             const edges = value.edges;
                             if (Array.isArray(edges)) {
                                 for (const edge of value) {
-                                    associationRecordManager.save(ctx, shapeField.childShape, edge.node);
+                                    associationRecordManager.save(shapeField.childShape, edge.node);
                                 }
                             }
                             break;
@@ -108,28 +108,27 @@ export class RecordManager {
         }
     }
 
-    delete(ctx: ModificationContext, id: any) {
+    delete(id: any) {
         let record = this.recordMap.get(id);
         if (record !== undefined) {
-            ctx.delete(record);
-            record.delete(ctx, this.entityManager);
+            this.entityManager.modificationContext.delete(record);
+            record.delete(this.entityManager);
         } else {
             record = new Record(this.type, id, true);
             this.recordMap.set(id, record);
         }
-        this.superManager?.delete(ctx, id);
+        this.superManager?.delete(id);
     }
 
     private set(
-        ctx: ModificationContext, 
         id: any, 
         field: FieldMetadata,
         variablesCode: string | undefined,
         variables: any, 
         value: any
     ) {
-        const record = this.saveId(ctx, id);
-        record.set(ctx, this.entityManager, field, variablesCode, variables, value);
+        const record = this.saveId(id);
+        record.set(this.entityManager, field, variablesCode, variables, value);
     }
 }
 

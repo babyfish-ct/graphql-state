@@ -12,7 +12,6 @@ export declare class StateManagerImpl<TSchema extends SchemaType> implements Sta
     private _scopedStateManager?;
     private _stateValueChangeListeners;
     private _queryResultChangeListeners;
-    private _entityChangeListenerMap;
     readonly entityManager: EntityManager;
     constructor(schema?: SchemaMetadata);
     get undoManager(): UndoManagerImpl;
@@ -36,9 +35,6 @@ export declare class StateManagerImpl<TSchema extends SchemaType> implements Sta
     addQueryResultChangeListener(listener: QueryResultChangeListener): void;
     removeQueryResultChangeListener(listener: QueryResultChangeListener): void;
     publishQueryResultChangeEvent(e: QueryResultChangeEvent): void;
-    private addEntityStateListener;
-    private removeEntityStateListener;
-    publishEntityChangeEvent(e: EntityChangeEvent): void;
 }
 export declare type StateValueChangeListener = (e: StateValueChangeEvent) => void;
 export interface StateValueChangeEvent {

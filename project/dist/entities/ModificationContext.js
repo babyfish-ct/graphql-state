@@ -2,11 +2,20 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.changedKeyString = exports.ModificationContext = void 0;
 class ModificationContext {
-    constructor() {
+    constructor(linkToQuery, trigger) {
+        this.linkToQuery = linkToQuery;
+        this.trigger = trigger;
         this.objPairMap = new Map();
     }
-    fireEvents(trigger) {
+    close() {
         var _a;
+        for (const [type, subMap] of this.objPairMap) {
+            for (const [id, objectPair] of subMap) {
+                if (objectPair.oldObj === undefined) {
+                    this.linkToQuery(type, id);
+                }
+            }
+        }
         for (const [type, subMap] of this.objPairMap) {
             for (const [id, objectPair] of subMap) {
                 const fieldKeys = new Set();
@@ -35,7 +44,7 @@ class ModificationContext {
                 if (objectPair.newObj === undefined || newValueMap.size !== 0) {
                     const event = new EntityChangeEventImpl(type.name, id, objectPair.oldObj !== undefined && objectPair.newObj !== undefined ?
                         "UPDATE" : (objectPair.newObj !== undefined ? "INSERT" : "DELETE"), Array.from(fieldKeys).map(parseFieldKey), oldValueMap.size === 0 ? undefined : oldValueMap, newValueMap.size === 0 ? undefined : newValueMap);
-                    trigger(event);
+                    this.trigger(event);
                 }
             }
         }

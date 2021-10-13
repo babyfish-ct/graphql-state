@@ -10,7 +10,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QueryService = void 0;
-const ModificationContext_1 = require("./ModificationContext");
 class QueryService {
     constructor(entityMangager) {
         this.entityMangager = entityMangager;
@@ -78,19 +77,17 @@ class QueryService {
             for (const missedObject of missedObjects) {
                 cachedMap.set(missedObject[idFieldName], missedObject);
             }
-            const ctx = new ModificationContext_1.ModificationContext();
-            for (const missedId of missedIds) {
-                const obj = cachedMap.get(missedId);
-                if (obj !== undefined) {
-                    this.entityMangager.save(ctx, shape, obj);
+            this.entityMangager.modify(() => {
+                for (const missedId of missedIds) {
+                    const obj = cachedMap.get(missedId);
+                    if (obj !== undefined) {
+                        this.entityMangager.save(shape, obj);
+                    }
+                    else {
+                        this.entityMangager.delete(shape.typeName, missedId);
+                    }
                 }
-                else {
-                    this.entityMangager.delete(ctx, shape.typeName, missedId);
-                }
-                ctx.fireEvents(e => {
-                    this.entityMangager.stateManager.publishEntityChangeEvent(e);
-                });
-            }
+            });
             return Array.from(cachedMap.values());
             ;
         });

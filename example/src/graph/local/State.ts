@@ -9,7 +9,6 @@ const { createState } = makeStateFactory<Schema>();
 export const bookStoreIdListState = createState(defaultData.storeIds, {
     mount: ctx => {
         const onBookStoreDelete = (e: BookStoreChangeEvent) => {
-            console.log(e);
             if (e.changedType === "DELETE") {
                 ctx(ctx().filter(id => id !== e.id));
             }

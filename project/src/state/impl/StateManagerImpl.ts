@@ -1,9 +1,8 @@
-import { Fetcher, ObjectFetcher } from "graphql-ts-client-api";
+import { ObjectFetcher } from "graphql-ts-client-api";
 import { EntityChangeEvent } from "../..";
 import { EntityManager } from "../../entities/EntityManager";
-import { ModificationContext } from "../../entities/ModificationContext";
 import { QueryResult } from "../../entities/QueryResult";
-import { RuntimeShape, toRuntimeShape } from "../../entities/RuntimeShape";
+import { toRuntimeShape } from "../../entities/RuntimeShape";
 import { SchemaMetadata } from "../../meta/impl/SchemaMetadata";
 import { SchemaType } from "../../meta/SchemaType";
 import { StateManager, TransactionStatus } from "../StateManager";
@@ -18,8 +17,6 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
     private _stateValueChangeListeners = new Set<StateValueChangeListener>();
 
     private _queryResultChangeListeners = new Set<QueryResultChangeListener>();
-
-    private _entityChangeListenerMap = new Map<string | undefined, Set<(e: EntityChangeEvent) => any>>();
 
     readonly entityManager: EntityManager;
 
@@ -36,17 +33,8 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
         objOrArray: T | readonly T[],
         variables?: TVariables
     ): void {
-        const ctx = new ModificationContext();
-        const shape = toRuntimeShape(fetcher, variables);
-        if (Array.isArray(objOrArray)) {
-            for (const obj of objOrArray) {
-                this.entityManager.save(ctx, shape, obj);
-            }
-        } else if (objOrArray !== undefined && objOrArray !== null) {
-            this.entityManager.save(ctx, shape, objOrArray);
-        }
-        ctx.fireEvents(e => {
-            this.publishEntityChangeEvent(e);
+        this.entityManager.modify(() => {
+            this.entityManager.save(toRuntimeShape(fetcher, variables), objOrArray);
         });
     }
 
@@ -54,25 +42,17 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
         typeName: TName, 
         idOrArray: TSchema[TName][" $id"] | ReadonlyArray<TSchema[TName][" $id"]>
     ) {
-        const ctx = new ModificationContext();
-        if (Array.isArray(idOrArray)) {
-            for (const id of idOrArray) {
-                this.entityManager.delete(ctx, typeName, id);
-            }
-        } else {
-            this.entityManager.delete(ctx, typeName, idOrArray);
-        }
-        ctx.fireEvents(e => {
-            this.publishEntityChangeEvent(e);
+        this.entityManager.modify(() => {
+            this.entityManager.delete(typeName, idOrArray);
         });
     }
 
     addListener(listener: (e: EntityChangeEvent) => void): void {
-        this.addEntityStateListener(undefined, listener);
+        this.entityManager.addListener(undefined, listener);
     }
 
     removeListener(listener: (e: EntityChangeEvent) => void): void {
-        this.removeEntityStateListener(undefined, listener);
+        this.entityManager.removeListener(undefined, listener);
     }
 
     addListeners(
@@ -83,7 +63,7 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
         for (const typeName in listeners) {
             const listener = listeners[typeName];
             if (listener !== undefined && listener !== null) {
-                this.addEntityStateListener(typeName, listener);
+                this.entityManager.addListener(typeName, listener);
             }
         }
     }
@@ -96,7 +76,7 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
         for (const typeName in listeners) {
             const listener = listeners[typeName];
             if (listener !== undefined && listener !== null) {
-                this.removeEntityStateListener(typeName, listener);
+                this.entityManager.removeListener(typeName, listener);
             }
         }
     }
@@ -167,32 +147,6 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
     publishQueryResultChangeEvent(e: QueryResultChangeEvent) {
         for (const listener of this._queryResultChangeListeners) {
             listener(e);
-        }
-    }
-
-    private addEntityStateListener(typeName: string | undefined, listener: (e: EntityChangeEvent) => void): void {
-        if (listener !== undefined && listener !== null) {
-            let set = this._entityChangeListenerMap.get(typeName);
-            if (set === undefined) {
-                set = new Set<(e: EntityChangeEvent) => void>();
-                this._entityChangeListenerMap.set(typeName, set);
-            } 
-            if (set.has(listener)) {
-                throw new Error(`Cannot add exists listener`);
-            }
-            set.add(listener);
-        }
-    }
-
-    private removeEntityStateListener(typeName: string | undefined, listener: (e: EntityChangeEvent) => void): void {
-        this._entityChangeListenerMap.get(typeName)?.delete(listener);
-    }
-
-    publishEntityChangeEvent(e: EntityChangeEvent) {
-        for (const [, set] of this._entityChangeListenerMap) {
-            for (const listener of set) {
-                listener(e);
-            }
         }
     }
 }

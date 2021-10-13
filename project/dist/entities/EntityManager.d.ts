@@ -1,3 +1,4 @@
+import { EntityChangeEvent } from "..";
 import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 import { StateManagerImpl } from "../state/impl/StateManagerImpl";
 import { BatchEntityRequest } from "./BatchEntityRequest";
@@ -13,14 +14,22 @@ export declare class EntityManager {
     private recordManagerMap;
     private queryResultMap;
     readonly batchEntityRequest: BatchEntityRequest;
+    private _entityChangeListenerMap;
+    private _ctx?;
     constructor(stateManager: StateManagerImpl<any>, schema: SchemaMetadata);
     recordManager(typeName: string): RecordManager;
     findRefById(typeName: string, id: any): RecordRef | undefined;
-    saveId(ctx: ModificationContext, typeName: string, id: any): Record;
-    save<T extends object, TVariable extends object>(ctx: ModificationContext, shape: RuntimeShape, obj: T): void;
-    delete(ctx: ModificationContext, typeName: string, id: any): void;
+    get modificationContext(): ModificationContext;
+    modify<T>(action: () => T): T;
+    save(shape: RuntimeShape, objOrArray: object | readonly object[]): void;
+    delete(typeName: string, idOrArray: any): void;
+    saveId(typeName: string, id: any): Record;
     loadByIds(ids: any[], shape: RuntimeShape): Promise<any[]>;
     retain(queryArgs: QueryArgs): QueryResult;
     release(queryArgs: QueryArgs): void;
+    addListener(typeName: string | undefined, listener: (e: EntityChangeEvent) => void): void;
+    removeListener(typeName: string | undefined, listener: (e: EntityChangeEvent) => void): void;
+    private linkToQuery;
+    private publishEntityChangeEvent;
     private queryKeyOf;
 }

@@ -14,7 +14,16 @@ export class Record {
 
     readonly backReferences = new BackReferences();
 
-    constructor(readonly type: TypeMetadata, readonly id: any, private deleted: boolean = false) {}
+    constructor(readonly type: TypeMetadata, readonly id: any, private deleted: boolean = false) {
+        if (type.name === 'Query') {
+            if (id !== QUERY_OBJECT_ID) {
+                throw new Error(`The id of query object must be '${QUERY_OBJECT_ID}'`);
+            }
+            if (deleted) {
+                throw new Error(`The object of special type 'Query' cannot be deleted`);
+            }
+        }
+    }
 
     hasScalar(fieldName: string): boolean {
         return this.scalarMap.has(fieldName);
@@ -33,7 +42,6 @@ export class Record {
     }
 
     set(
-        ctx: ModificationContext, 
         entityManager: EntityManager, 
         field: FieldMetadata,
         variablesCode: string | undefined,
@@ -45,7 +53,6 @@ export class Record {
             .associationMap
             .computeIfAbsent(field, f => new Association(f))
             .set(
-                ctx,
                 entityManager,
                 this,
                 field,
@@ -65,7 +72,7 @@ export class Record {
                 const oldValue = this.scalarMap.get(field.name);
                 if (oldValue !== value) {
                     this.scalarMap.set(field.name, value);
-                    ctx.set(this, field.name, variablesCode, oldValue, value);
+                    entityManager.modificationContext.set(this, field.name, variablesCode, oldValue, value);
                 }
             }
         }
@@ -75,14 +82,17 @@ export class Record {
         return this.deleted;
     }
 
-    delete(ctx: ModificationContext, entityManager: EntityManager) {
+    delete(entityManager: EntityManager) {
         if (this.deleted) {
             return;
+        }
+        if (this.type.name === 'Query') {
+            throw new Error(`The object of special type 'Query' cannot be deleted`);
         }
         this.scalarMap.clear();
         this.associationMap.clear();
         this.backReferences.forEach((field, _, record) => {
-            record.unlink(ctx, entityManager, field, this);
+            record.unlink(entityManager, field, this);
         });
         this.deleted = true;
     }
@@ -92,29 +102,27 @@ export class Record {
     }
 
     link(
-        ctx: ModificationContext, 
         entityManager: EntityManager, 
         associationField: FieldMetadata,
         target: Record
     ) {
         this.associationMap.forEachValue(association => {
             if (association.field === associationField) {
-                ctx.update(this);
-                association.link(ctx, entityManager, this, target);
+                entityManager.modificationContext.update(this);
+                association.link(entityManager, this, target);
             }
         });
     }
 
     unlink(
-        ctx: ModificationContext, 
         entityManager: EntityManager, 
         associationField: FieldMetadata,
         target: Record
     ) {
         this.associationMap.forEachValue(association => {
             if (association.field === associationField) {
-                ctx.update(this);
-                association.unlink(ctx, entityManager, this, target);
+                entityManager.modificationContext.update(this);
+                association.unlink(entityManager, this, target);
             }
         });
     }
@@ -139,7 +147,6 @@ class Association {
     }
 
     set(
-        ctx: ModificationContext, 
         entityManager: EntityManager, 
         record: Record, 
         associationField: FieldMetadata, 
@@ -147,28 +154,26 @@ class Association {
         variables: any, 
         value: any
     ) {
-        this.value(variables).set(ctx, entityManager, record, associationField, variablesCode, variables, value);
+        this.value(variables).set(entityManager, record, associationField, variablesCode, variables, value);
     }
 
     link(
-        ctx: ModificationContext, 
         entityManager: EntityManager, 
         self: Record,
         target: Record
     ) {
         this.valueMap.forEach((vsCode, value) => {
-            value.link(ctx, entityManager, self, this.field, vsCode, target);
+            value.link(entityManager, self, this.field, vsCode, target);
         });
     }
 
     unlink(
-        ctx: ModificationContext, 
         entityManager: EntityManager, 
         self: Record,
         target: Record
     ) {
         this.valueMap.forEach((vsCode, value) => {
-            value.unlink(ctx, entityManager, self, this.field, vsCode, target);
+            value.unlink(entityManager, self, this.field, vsCode, target);
         });
     }
 
@@ -201,7 +206,6 @@ abstract class AssociationValue {
     abstract get(): Record | ReadonlyArray<Record | undefined> | RecordConnection | undefined;
 
     abstract set(
-        ctx: ModificationContext, 
         entityManager: EntityManager, 
         record: Record, 
         associationField: FieldMetadata, 
@@ -211,7 +215,6 @@ abstract class AssociationValue {
     ): void;
 
     link(
-        ctx: ModificationContext, 
         entityManager: EntityManager, 
         self: Record, 
         associationField: FieldMetadata, 
@@ -221,7 +224,7 @@ abstract class AssociationValue {
         if (!this.linkFrozen) {
             this.linkFrozen = true;
             try {
-                this.onLink(ctx, entityManager, self, associationField, variablesCode, target);
+                this.onLink(entityManager, self, associationField, variablesCode, target);
             } finally {
                 this.linkFrozen = false;
             }
@@ -229,7 +232,6 @@ abstract class AssociationValue {
     }
 
     unlink(
-        ctx: ModificationContext, 
         entityManager: EntityManager, 
         self: Record, 
         associationField: FieldMetadata, 
@@ -239,7 +241,7 @@ abstract class AssociationValue {
         if (!this.linkFrozen) {
             this.linkFrozen = true;
             try {
-                this.onUnlink(ctx, entityManager, self, associationField, variablesCode, target);
+                this.onUnlink(entityManager, self, associationField, variablesCode, target);
             } finally {
                 this.linkFrozen = false;
             }
@@ -247,7 +249,6 @@ abstract class AssociationValue {
     }
 
     protected abstract onLink(
-        ctx: ModificationContext, 
         entityManager: EntityManager, 
         self: Record, 
         associationField: FieldMetadata, 
@@ -256,7 +257,6 @@ abstract class AssociationValue {
     ): void;
 
     protected abstract onUnlink(
-        ctx: ModificationContext, 
         entityManager: EntityManager, 
         self: Record, 
         associationField: FieldMetadata, 
@@ -265,7 +265,6 @@ abstract class AssociationValue {
     ): void;
 
     protected releaseOldReference(
-        ctx: ModificationContext,
         entityManager: EntityManager,
         self: Record,
         associationField: FieldMetadata, 
@@ -281,13 +280,12 @@ abstract class AssociationValue {
             const oppositeField = associationField.oppositeField;
             if (oppositeField !== undefined) {
                 if (oldRefernce)
-                oldRefernce.unlink(ctx, entityManager, oppositeField, self);
+                oldRefernce.unlink(entityManager, oppositeField, self);
             }
         }
     }
 
     protected retainNewReference(
-        ctx: ModificationContext,
         entityManager: EntityManager,
         self: Record,
         associationField: FieldMetadata, 
@@ -304,7 +302,7 @@ abstract class AssociationValue {
             );
             const oppositeField = associationField.oppositeField;
             if (oppositeField !== undefined) {
-                newReference.link(ctx, entityManager, oppositeField, self);
+                newReference.link(entityManager, oppositeField, self);
             }
         }
     }
@@ -319,7 +317,6 @@ class AssociationReferenceValue extends AssociationValue {
     }
 
     set(
-        ctx: ModificationContext, 
         entityManager: EntityManager, 
         self: Record, 
         associationField: FieldMetadata, 
@@ -329,15 +326,15 @@ class AssociationReferenceValue extends AssociationValue {
     ) {
         const reference = 
             value !== undefined ? 
-            entityManager.saveId(ctx, associationField.targetType!.name, value.id) : 
+            entityManager.saveId(associationField.targetType!.name, value.id) : 
             undefined;
 
         const oldReference = this.referfence;
         if (oldReference !== reference) {
-            this.releaseOldReference(ctx, entityManager, self, associationField, variablesCode, oldReference);
+            this.releaseOldReference(entityManager, self, associationField, variablesCode, oldReference);
             this.referfence = reference;
-            this.retainNewReference(ctx, entityManager, self, associationField, variablesCode, variables, reference);
-            ctx.set(
+            this.retainNewReference(entityManager, self, associationField, variablesCode, variables, reference);
+            entityManager.modificationContext.set(
                 self, 
                 associationField.name, 
                 variablesCode,
@@ -348,7 +345,6 @@ class AssociationReferenceValue extends AssociationValue {
     }
 
     protected onLink(
-        ctx: ModificationContext, 
         entityManager: EntityManager, 
         self: Record, 
         associationField: FieldMetadata, 
@@ -358,7 +354,6 @@ class AssociationReferenceValue extends AssociationValue {
         if (this.referfence?.id !== target.id) {
             const variables = variablesCode !== undefined ? JSON.parse(variablesCode) : undefined;
             this.set(
-                ctx,
                 entityManager,
                 self,
                 associationField,
@@ -370,7 +365,6 @@ class AssociationReferenceValue extends AssociationValue {
     }
 
     protected onUnlink(
-        ctx: ModificationContext, 
         entityManager: EntityManager, 
         self: Record, 
         associationField: FieldMetadata, 
@@ -380,7 +374,6 @@ class AssociationReferenceValue extends AssociationValue {
         if (this.referfence?.id === target.id) {
             const variables = variablesCode !== undefined ? JSON.parse(variablesCode) : undefined;
             this.set(
-                ctx,
                 entityManager,
                 self,
                 associationField,
@@ -401,7 +394,6 @@ class AssociationListValue extends AssociationValue {
     }
 
     set(
-        ctx: ModificationContext, 
         entityManager: EntityManager, 
         self: Record, 
         associationField: FieldMetadata, 
@@ -442,7 +434,7 @@ class AssociationListValue extends AssociationValue {
         if (Array.isArray(value)) {
             for (const item of value) {
                 if (item !== undefined && item !== null) {
-                    const newElement = entityManager.saveId(ctx, associationField.targetType!.name, item.id);
+                    const newElement = entityManager.saveId(associationField.targetType!.name, item.id);
                     newIds.add(newElement.id);
                     newElements.push(newElement);
                 } else {
@@ -453,7 +445,7 @@ class AssociationListValue extends AssociationValue {
 
         for (const [id, element] of oldMap) {
             if (!newIds.has(id)) {
-                this.releaseOldReference(ctx, entityManager, self, associationField, variablesCode, element);
+                this.releaseOldReference(entityManager, self, associationField, variablesCode, element);
             }
         }
 
@@ -462,13 +454,13 @@ class AssociationListValue extends AssociationValue {
         for (const newElement of newElements) {
             if (newElement !== undefined) {
                 if (!oldMap.has(newElement.id)) {
-                    this.retainNewReference(ctx, entityManager, self, associationField, variablesCode, variables, newElement);
+                    this.retainNewReference(entityManager, self, associationField, variablesCode, variables, newElement);
                 }
             }
         }
 
         if (listChanged) {
-            ctx.set(
+            entityManager.modificationContext.set(
                 self, 
                 associationField.name, 
                 variablesCode, 
@@ -479,7 +471,6 @@ class AssociationListValue extends AssociationValue {
     }
 
     protected onLink(
-        ctx: ModificationContext, 
         entityManager: EntityManager, 
         self: Record, 
         associationField: FieldMetadata, 
@@ -505,7 +496,6 @@ class AssociationListValue extends AssociationValue {
         }) ?? [];
         list.push({[idFieldName]: target.id});
         this.set(
-            ctx,
             entityManager,
             self,
             associationField,
@@ -516,7 +506,6 @@ class AssociationListValue extends AssociationValue {
     }
 
     protected onUnlink(
-        ctx: ModificationContext, 
         entityManager: EntityManager, 
         self: Record, 
         associationField: FieldMetadata, 
@@ -546,7 +535,6 @@ class AssociationListValue extends AssociationValue {
         }) ?? [];
         list.splice(index, 1);
         this.set(
-            ctx,
             entityManager,
             self,
             associationField,
@@ -566,7 +554,6 @@ class AssociationConnectionValue extends AssociationValue {
     }
 
     set(
-        ctx: ModificationContext, 
         entityManager: EntityManager, 
         record: Record, 
         associationField: FieldMetadata, 
@@ -595,7 +582,7 @@ class AssociationConnectionValue extends AssociationValue {
             if (typeof edge.cursor !== "string") {
                 throw Error(`Each edge of the connection object of ${associationField.fullName} must have an string field named "cursor"`);
             }
-            const newNode = entityManager.saveId(ctx, associationField.targetType!.name, edge.node.id);
+            const newNode = entityManager.saveId(associationField.targetType!.name, edge.node.id);
             newEdges.push({
                 node: newNode, 
                 cursor: edge.cursor
@@ -604,7 +591,7 @@ class AssociationConnectionValue extends AssociationValue {
 
         for (const [id, element] of oldMap) {
             if (!newIds.has(id)) {
-                this.releaseOldReference(ctx, entityManager, record, associationField, variablesCode, element);
+                this.releaseOldReference(entityManager, record, associationField, variablesCode, element);
             }
         }
         
@@ -615,7 +602,7 @@ class AssociationConnectionValue extends AssociationValue {
         
         for (const newEdge of newEdges) {
             if (!oldMap.has(newEdge.node.id)) {
-                this.retainNewReference(ctx, entityManager, record, associationField, variablesCode, variables, newEdge.node);
+                this.retainNewReference(entityManager, record, associationField, variablesCode, variables, newEdge.node);
             }
         }
 
@@ -623,7 +610,6 @@ class AssociationConnectionValue extends AssociationValue {
     }
 
     protected onLink(
-        ctx: ModificationContext, 
         entityManager: EntityManager, 
         self: Record, 
         associationField: FieldMetadata, 
@@ -634,7 +620,6 @@ class AssociationConnectionValue extends AssociationValue {
     }
 
     protected onUnlink(
-        ctx: ModificationContext, 
         entityManager: EntityManager, 
         self: Record, 
         associationField: FieldMetadata, 
@@ -663,3 +648,5 @@ function objectWithOnlyId(record: Record | undefined): any {
     }
     return { [record.type.idField.name]: record.id };
 }
+
+export const QUERY_OBJECT_ID = "unique-id-of-qury-object";

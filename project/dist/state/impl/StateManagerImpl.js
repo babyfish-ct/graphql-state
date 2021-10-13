@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.StateManagerImpl = void 0;
 const EntityManager_1 = require("../../entities/EntityManager");
-const ModificationContext_1 = require("../../entities/ModificationContext");
 const RuntimeShape_1 = require("../../entities/RuntimeShape");
 const SchemaMetadata_1 = require("../../meta/impl/SchemaMetadata");
 const ScopedStateManager_1 = require("./ScopedStateManager");
@@ -10,52 +9,32 @@ class StateManagerImpl {
     constructor(schema) {
         this._stateValueChangeListeners = new Set();
         this._queryResultChangeListeners = new Set();
-        this._entityChangeListenerMap = new Map();
         this.entityManager = new EntityManager_1.EntityManager(this, schema !== null && schema !== void 0 ? schema : new SchemaMetadata_1.SchemaMetadata());
     }
     get undoManager() {
         throw new Error();
     }
     save(fetcher, objOrArray, variables) {
-        const ctx = new ModificationContext_1.ModificationContext();
-        const shape = RuntimeShape_1.toRuntimeShape(fetcher, variables);
-        if (Array.isArray(objOrArray)) {
-            for (const obj of objOrArray) {
-                this.entityManager.save(ctx, shape, obj);
-            }
-        }
-        else if (objOrArray !== undefined && objOrArray !== null) {
-            this.entityManager.save(ctx, shape, objOrArray);
-        }
-        ctx.fireEvents(e => {
-            this.publishEntityChangeEvent(e);
+        this.entityManager.modify(() => {
+            this.entityManager.save(RuntimeShape_1.toRuntimeShape(fetcher, variables), objOrArray);
         });
     }
     delete(typeName, idOrArray) {
-        const ctx = new ModificationContext_1.ModificationContext();
-        if (Array.isArray(idOrArray)) {
-            for (const id of idOrArray) {
-                this.entityManager.delete(ctx, typeName, id);
-            }
-        }
-        else {
-            this.entityManager.delete(ctx, typeName, idOrArray);
-        }
-        ctx.fireEvents(e => {
-            this.publishEntityChangeEvent(e);
+        this.entityManager.modify(() => {
+            this.entityManager.delete(typeName, idOrArray);
         });
     }
     addListener(listener) {
-        this.addEntityStateListener(undefined, listener);
+        this.entityManager.addListener(undefined, listener);
     }
     removeListener(listener) {
-        this.removeEntityStateListener(undefined, listener);
+        this.entityManager.removeListener(undefined, listener);
     }
     addListeners(listeners) {
         for (const typeName in listeners) {
             const listener = listeners[typeName];
             if (listener !== undefined && listener !== null) {
-                this.addEntityStateListener(typeName, listener);
+                this.entityManager.addListener(typeName, listener);
             }
         }
     }
@@ -63,7 +42,7 @@ class StateManagerImpl {
         for (const typeName in listeners) {
             const listener = listeners[typeName];
             if (listener !== undefined && listener !== null) {
-                this.removeEntityStateListener(typeName, listener);
+                this.entityManager.removeListener(typeName, listener);
             }
         }
     }
@@ -124,30 +103,6 @@ class StateManagerImpl {
     publishQueryResultChangeEvent(e) {
         for (const listener of this._queryResultChangeListeners) {
             listener(e);
-        }
-    }
-    addEntityStateListener(typeName, listener) {
-        if (listener !== undefined && listener !== null) {
-            let set = this._entityChangeListenerMap.get(typeName);
-            if (set === undefined) {
-                set = new Set();
-                this._entityChangeListenerMap.set(typeName, set);
-            }
-            if (set.has(listener)) {
-                throw new Error(`Cannot add exists listener`);
-            }
-            set.add(listener);
-        }
-    }
-    removeEntityStateListener(typeName, listener) {
-        var _a;
-        (_a = this._entityChangeListenerMap.get(typeName)) === null || _a === void 0 ? void 0 : _a.delete(listener);
-    }
-    publishEntityChangeEvent(e) {
-        for (const [, set] of this._entityChangeListenerMap) {
-            for (const listener of set) {
-                listener(e);
-            }
         }
     }
 }

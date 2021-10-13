@@ -1,8 +1,12 @@
 import { EntityChangeEvent } from "..";
+import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { Record } from "./Record";
 export declare class ModificationContext {
+    private linkToQuery;
+    private trigger;
     private objPairMap;
-    fireEvents(trigger: (event: EntityChangeEvent) => void): void;
+    constructor(linkToQuery: (type: TypeMetadata, id: any) => void, trigger: (event: EntityChangeEvent) => void);
+    close(): void;
     insert(record: Record): void;
     update(record: Record): void;
     delete(record: Record): void;

@@ -97,18 +97,16 @@ export class QueryService {
             cachedMap.set(missedObject[idFieldName], missedObject);
         }
 
-        const ctx = new ModificationContext();
-        for (const missedId of missedIds) {
-            const obj = cachedMap.get(missedId);
-            if (obj !== undefined) {
-                this.entityMangager.save(ctx, shape, obj);
-            } else {
-                this.entityMangager.delete(ctx, shape.typeName, missedId);
+        this.entityMangager.modify(() => {
+            for (const missedId of missedIds) {
+                const obj = cachedMap.get(missedId);
+                if (obj !== undefined) {
+                    this.entityMangager.save(shape, obj);
+                } else {
+                    this.entityMangager.delete(shape.typeName, missedId);
+                }
             }
-            ctx.fireEvents(e => {
-                this.entityMangager.stateManager.publishEntityChangeEvent(e);
-            });
-        }
+        });
 
         return Array.from(cachedMap.values());;
     }
