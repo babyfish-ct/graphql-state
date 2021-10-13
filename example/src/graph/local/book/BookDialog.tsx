@@ -6,6 +6,7 @@ import UUIDClass from "uuidjs";
 import { author$, book$$, bookStore$ } from "../../../__generated/fetchers";
 import { stateManager } from "../App";
 import { AuthorMultiSelect } from "../author/AuthorMultiSelect";
+import { INFORMATION_CLASS, PSEUDO_CODE_CLASS } from "../Css";
 import { BookStoreSelect } from "../store/BookStoreSelect";
 
 const BOOK_EDIT_INFO =
@@ -59,7 +60,8 @@ export const BookDialog: FC<{
         visible={true}
         title={`${value === undefined ? 'Create' : 'Edit'} Book`}
         onOk={onOk}
-        onCancel={onCancel}>
+        onCancel={onCancel}
+        width={1000}>
             <Form form={form} labelCol={{span: 8}} wrapperCol={{span: 16}}>
                 <Form.Item name="id" hidden={true}/>
                 <Form.Item label="Name" name="name">
@@ -68,10 +70,68 @@ export const BookDialog: FC<{
                 <Form.Item label="Store" name="storeId">
                     <BookStoreSelect optional={true}/>
                 </Form.Item>
+                {STORE_DESCRITPION_ITEM}
                 <Form.Item label="Authors" name="authorIds">
                     <AuthorMultiSelect/>
                 </Form.Item>
+                {AUTHORS_DESCRIPTION_ITEM}
             </Form>
         </Modal>
     );
 });
+
+const FOR_OLD_STORE = `
+if (oldStore !== undefined && cached(oldStore.books)) {
+    oldStore.books.remove(this);
+}`;
+
+const FOR_NEW_STORE = `
+if (newStore !== undefined && cached(newStore.books)) {
+    newStore.books.add(this);
+}`;
+
+const STORE_DESCRITPION_ITEM = (
+    <Form.Item label=" " colon={false}>
+        <div className={INFORMATION_CLASS}>
+            If you change this association "Book.store"
+            <ul>
+                <li>
+                    For old store, this behavior will be executed automatically
+                    <pre className={PSEUDO_CODE_CLASS}>{FOR_OLD_STORE}</pre>
+                </li>
+                <li>
+                    For new store, this behavior will be executed automatically
+                    <pre className={PSEUDO_CODE_CLASS}>{FOR_NEW_STORE}</pre>
+                </li>
+            </ul>
+        </div>
+    </Form.Item>
+);
+
+const FOR_REMOVED_AUTHOR = `
+if (cached(removeAuthor.books)) {
+    removeAuthor.books.remove(this);
+}`;
+
+const FOR_ADDED_AUTHOR = `
+if (cached(addedAuthor.books)) {
+    addedAuthor.books.add(this);
+}`;
+
+const AUTHORS_DESCRIPTION_ITEM = (
+    <Form.Item label=" " colon={false}>
+        <div className={INFORMATION_CLASS}>
+            If you change this association "Book.authors"
+            <ul>
+                <li>
+                    For old store, this behavior will be executed automatically
+                    <pre className={PSEUDO_CODE_CLASS}>{FOR_REMOVED_AUTHOR}</pre>
+                </li>
+                <li>
+                    For new store, this behavior will be executed automatically
+                    <pre className={PSEUDO_CODE_CLASS}>{FOR_ADDED_AUTHOR}</pre>
+                </li>
+            </ul>
+        </div>
+    </Form.Item>
+);

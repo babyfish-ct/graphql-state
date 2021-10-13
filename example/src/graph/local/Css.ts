@@ -6,11 +6,13 @@ export const DELETE_CONFIRM_CLASS = css({
 
 export const INFORMATION_CLASS = css({
     border: "dotted 1px drakgreen",
-    fontStyle: "italic",
     borderRadius: 4,
-    color: "darkgreen"
+    color: "gray",
+    fontSize: "12px",
+    backgroundColor: "#ffe"
 });
 
-export const INRMATION_HIGHLIGHT_CLASS = css({
-    color: "orange"
+export const PSEUDO_CODE_CLASS = css({
+    borderLeft: "solid 3px gray",
+    paddingLeft: "1rem"
 });

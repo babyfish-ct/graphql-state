@@ -6,6 +6,7 @@ import UUIDClass from "uuidjs";
 import { author$$, book$ } from "../../../__generated/fetchers";
 import { stateManager } from "../App";
 import { BookMultiSelect } from "../book/BookMutliSelect";
+import { INFORMATION_CLASS, PSEUDO_CODE_CLASS } from "../Css";
 
 const AUTHOR_EDIT_INFO =
     author$$
@@ -54,7 +55,8 @@ export const AuthorDialog: FC<{
         visible={true}
         title={`${value === undefined ? 'Create' : 'Edit'} Author`}
         onOk={onOk}
-        onCancel={onCancel}>
+        onCancel={onCancel}
+        width={1000}>
             <Form form={form}  labelCol={{span: 8}} wrapperCol={{span: 16}}>
                 <Form.Item name="id" hidden={true}/>
                 <Form.Item label="Name" name="name">
@@ -63,7 +65,36 @@ export const AuthorDialog: FC<{
                 <Form.Item label="Books" name="bookIds">
                     <BookMultiSelect/>
                 </Form.Item>
+                {BOOKS_DESCRIPTION_ITEM}
             </Form>
         </Modal>
     );
 });
+
+const FOR_REMOVED_BOOK = `
+if (cached(removeBook.authors)) {
+    removeBook.authors.add(this);
+}`;
+
+const FOR_ADDED_BOOK = `
+if (cached(addedBook.authors)) {
+    addedBook.authors.add(this);
+}`;
+
+const BOOKS_DESCRIPTION_ITEM = (
+    <Form.Item label=" " colon={false}>
+        <div className={INFORMATION_CLASS}>
+            If you change this association "Author.books"
+            <ul>
+                <li>
+                    For old store, this behavior will be executed automatically
+                    <pre className={PSEUDO_CODE_CLASS}>{FOR_REMOVED_BOOK}</pre>
+                </li>
+                <li>
+                    For new store, this behavior will be executed automatically
+                    <pre className={PSEUDO_CODE_CLASS}>{FOR_ADDED_BOOK}</pre>
+                </li>
+            </ul>
+        </div>
+    </Form.Item>
+);

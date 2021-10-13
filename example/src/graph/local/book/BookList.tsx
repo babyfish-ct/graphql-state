@@ -28,7 +28,7 @@ export const BookList: FC = memo(() => {
                 <div className={INFORMATION_CLASS}>
                     If you choose to delete this object
                     <ul>
-                        <li>The current object will be automatically removed from any associations of other objects</li>
+                        <li>The current object will be automatically removed from any associations of other objects(Of course, include the root query object)</li>
                     </ul>
                 </div>
             </>,
