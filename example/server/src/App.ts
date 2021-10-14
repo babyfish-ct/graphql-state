@@ -1,0 +1,35 @@
+/**
+ * @author ChenTao
+ * 
+ * Server-side of example of 'graphql-ts-client'
+ */
+
+import { buildSchemaSync, registerEnumType } from "type-graphql";
+import express from 'express';
+import cors from "cors";
+import { graphqlHTTP } from 'express-graphql';
+import { BookStoreSerice } from "./graphql/bll/BookStoreService";
+ 
+const schema = buildSchemaSync({
+    resolvers: [
+        BookStoreSerice
+    ]
+});
+ 
+express()
+    .use(cors())
+    .use(
+        '/graphql', 
+        graphqlHTTP({
+            schema,
+            graphiql: true,
+            customFormatErrorFn: err => {
+                console.log("Exception raised!", err);
+                return err;
+            }
+        })
+    )
+    .listen(8080, () => {
+        console.log("\n\n\nGraphQL server is started, please access http://localhost:8080/graphql");
+    });
+ 
