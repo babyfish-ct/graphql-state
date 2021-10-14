@@ -3,7 +3,7 @@ import { useQuery } from "graphql-state";
 import { ModelType } from "graphql-ts-client-api";
 import { FC, memo, useCallback, useState } from "react";
 import { ComponentDecorator } from "../../../common/ComponentDecorator";
-import { book$$, bookStore$$, query$ } from "../../../__generated/fetchers";
+import { book$$, bookStore$$, query$ } from "../__generated/fetchers";
 import { stateManager } from "../App";
 import { DELETE_CONFIRM_CLASS, INFORMATION_CLASS } from "../Css";
 import { BookStoreDialog } from "./BookStoreDialog";

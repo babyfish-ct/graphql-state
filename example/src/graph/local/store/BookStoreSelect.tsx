@@ -1,7 +1,7 @@
 import { css } from "@emotion/css";
 import { Select } from "antd";
 import { FC, memo, useCallback } from "react";
-import { bookStore$$, query$ } from "../../../__generated/fetchers";
+import { bookStore$$, query$ } from "../__generated/fetchers";
 import { useQuery } from "graphql-state";
 
 export const BookStoreSelect: FC<{

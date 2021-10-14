@@ -1,6 +1,6 @@
 import { FC, memo } from "react";
 import { StateManagerProvider } from "graphql-state";
-import { newTypedConfiguration } from "../../__generated";
+import { newTypedConfiguration } from "./__generated";
 import { BookList } from "./book/BookList";
 import { BookStoreList } from "./store/BookStoreList";
 import { AuthorList } from "./author/AuthorList";

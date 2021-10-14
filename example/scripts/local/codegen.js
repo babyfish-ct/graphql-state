@@ -3,8 +3,8 @@ const path = require("path");
 
 const generator = new GraphQLStateGenerator({
     schemaLoader: async() => {
-      return loadLocalSchema("scripts/schema.sdl");
+      return loadLocalSchema("scripts/local/schema.sdl");
     },
-    targetDir: path.join(__dirname, "../src/__generated")
+    targetDir: path.join(__dirname, "../../src/graph/local/__generated")
 });
 generator.generate();
