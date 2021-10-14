@@ -1,4 +1,4 @@
-import { Fetcher } from "graphql-ts-client-api";
+import { ObjectFetcher } from "graphql-ts-client-api";
 import { InternalComputedContext } from "./InternalComputedContext";
 import { StateInstance } from "./StateInstance";
 import { Loadable, StateValue } from "./StateValue";
@@ -175,12 +175,12 @@ function getSelfFormContext(options: any): any {
     return ctx.getSelf(options);
 }
 
-function objectFormContext(fetcher: Fetcher<string, object, object>, id: any, variables?: any): any {
+function objectFormContext(fetcher: ObjectFetcher<string, object, object>, id: any, variables?: any): any {
     const ctx = this as InternalComputedContext;
     return ctx.object(fetcher, id, variables);
 }
 
-function objectsFormContext(fetcher: Fetcher<string, object, object>, ids: ReadonlyArray<any>, variables?: any): any {
+function objectsFormContext(fetcher: ObjectFetcher<string, object, object>, ids: ReadonlyArray<any>, variables?: any): any {
     const ctx = this as InternalComputedContext;
     return ctx.objects(fetcher, ids, variables);
 }

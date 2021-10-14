@@ -12,17 +12,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.QueryService = void 0;
 const Record_1 = require("./Record");
 class QueryService {
-    constructor(entityMangager) {
-        this.entityMangager = entityMangager;
+    constructor(entityManager) {
+        this.entityManager = entityManager;
     }
-    query(shape) {
-        if (shape.typeName !== "Query") {
-            throw new Error(`The type of 'shape' arugment of 'query' must be 'Query'`);
+    query(args) {
+        if (args.ids === undefined) {
+            return this.graph(args);
         }
+        return this.objects(args);
+    }
+    graph(args) {
         try {
             return {
                 type: "cached",
-                data: this.findObject(Record_1.QUERY_OBJECT_ID, shape)
+                data: this.findObject(Record_1.QUERY_OBJECT_ID, args.shape)
             };
         }
         catch (ex) {
@@ -33,20 +36,18 @@ class QueryService {
         }
         return {
             type: "deferred",
-            promise: this.loadMissedQuery(shape)
+            promise: this.entityManager.dataService.query(args)
         };
     }
-    queryObjects(ids, shape) {
-        if (shape.typeName === "Query") {
-            throw new Error(`The type of 'shape' arugment of 'query' cannot be 'Query'`);
-        }
+    objects(args) {
+        const ids = args.ids;
         if (ids.length === 0) {
             return {
                 type: "cached",
                 data: []
             };
         }
-        const map = this.findObjects(ids, shape);
+        const map = this.findObjects(ids, args.shape);
         const missedIds = [];
         for (const id of ids) {
             if (!map.has(id)) {
@@ -61,7 +62,7 @@ class QueryService {
         }
         return {
             type: "deferred",
-            promise: this.loadMissedObjects(map, missedIds, shape)
+            promise: this.loadAndMerge(map, args, missedIds)
         };
     }
     findObjects(ids, shape) {
@@ -79,40 +80,26 @@ class QueryService {
         return map;
     }
     findObject(id, shape) {
-        const ref = this.entityMangager.findRefById(shape.typeName, id);
+        const ref = this.entityManager.findRefById(shape.typeName, id);
         if (ref === undefined) {
             canNotFoundFromCache(`Cannot find the '${shape.typeName}' object whose id is '${id}'`);
         }
         if (ref.value === undefined) {
             return undefined;
         }
-        return mapRecord(this.entityMangager.schema.typeMap.get(shape.typeName), ref.value, shape);
+        return mapRecord(this.entityManager.schema.typeMap.get(shape.typeName), ref.value, shape);
     }
-    loadMissedObjects(cachedMap, missedIds, shape) {
+    loadAndMerge(objMap, args, missedIds) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
-            const missedObjects = yield this.entityMangager._batchEntityRequest.requestObjectByShape(missedIds, shape);
-            const idFieldName = this.entityMangager.schema.typeMap.get(shape.typeName).idField.name;
+            const shape = args.shape;
+            const idFieldName = this.entityManager.schema.typeMap.get(shape.typeName).idField.name;
+            const idFieldAlias = (_b = (_a = shape.fieldMap.get(idFieldName)) === null || _a === void 0 ? void 0 : _a.alias) !== null && _b !== void 0 ? _b : idFieldName;
+            const missedObjects = yield this.entityManager.dataService.query(args.newArgs(missedIds));
             for (const missedObject of missedObjects) {
-                cachedMap.set(missedObject[idFieldName], missedObject);
+                objMap.set(missedObject[idFieldAlias], missedObject);
             }
-            this.entityMangager.modify(() => {
-                for (const missedId of missedIds) {
-                    const obj = cachedMap.get(missedId);
-                    if (obj !== undefined) {
-                        this.entityMangager.save(shape, obj);
-                    }
-                    else {
-                        this.entityMangager.delete(shape.typeName, missedId);
-                    }
-                }
-            });
-            return Array.from(cachedMap.values());
-            ;
-        });
-    }
-    loadMissedQuery(shape) {
-        return __awaiter(this, void 0, void 0, function* () {
-            throw new Error(`Unsupported operation`);
+            return args.ids.map(id => objMap.get(id));
         });
     }
 }
@@ -124,7 +111,7 @@ function mapRecord(type, record, runtimeSchape) {
     }
     const idFieldName = type.idField.name;
     const entity = { [idFieldName]: record.id };
-    for (const field of runtimeSchape.fields) {
+    for (const [, field] of runtimeSchape.fieldMap) {
         if (field.childShape !== undefined) {
             const fieldMetadata = type.fieldMap.get(field.name);
             const association = record.getAssociation(fieldMetadata, field.variables);

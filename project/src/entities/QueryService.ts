@@ -1,23 +1,28 @@
+import { AbstractDataService } from "../data/AbstractDataService";
 import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { EntityManager } from "./EntityManager";
+import { QueryArgs } from "./QueryArgs";
 import { QUERY_OBJECT_ID, Record, RecordConnection } from "./Record";
 import { RuntimeShape } from "./RuntimeShape";
 
 export class QueryService {
 
-    constructor(private entityMangager: EntityManager) {}
+    constructor(private entityManager: EntityManager) {}
 
-    query(shape: RuntimeShape): RawQueryResult<any> {
-        
-        if (shape.typeName !== "Query") {
-            throw new Error(`The type of 'shape' arugment of 'query' must be 'Query'`);
+    query(args: QueryArgs): RawQueryResult<any> {
+        if (args.ids === undefined) {
+            return this.graph(args);
         }
+        return this.objects(args);
+    }
+
+    private graph(args: QueryArgs): RawQueryResult<any> {
 
         try {
             return {
                 type: "cached",
-                data: this.findObject(QUERY_OBJECT_ID, shape)
+                data: this.findObject(QUERY_OBJECT_ID, args.shape)
             }
         } catch (ex) {
             if (!ex[" $canNotFoundFromCache"]) {
@@ -28,19 +33,12 @@ export class QueryService {
 
         return {
             type: "deferred",
-            promise: this.loadMissedQuery(shape)
+            promise: this.entityManager.dataService.query(args)
         };
     }
 
-    queryObjects(
-        ids: ReadonlyArray<any>,
-        shape: RuntimeShape
-    ): RawQueryResult<ReadonlyArray<any>> {
-
-        if (shape.typeName === "Query") {
-            throw new Error(`The type of 'shape' arugment of 'query' cannot be 'Query'`);
-        }
-
+    private objects(args: QueryArgs): RawQueryResult<ReadonlyArray<any>> {
+        const ids = args.ids!;
         if (ids.length === 0) {
             return {
                 type: "cached",
@@ -48,7 +46,7 @@ export class QueryService {
             }
         }
         
-        const map = this.findObjects(ids, shape);
+        const map = this.findObjects(ids, args.shape);
         const missedIds: any[] = [];
         for (const id of ids) {
             if (!map.has(id)) {
@@ -64,7 +62,7 @@ export class QueryService {
 
         return {
             type: "deferred",
-            promise: this.loadMissedObjects(map, missedIds, shape)
+            promise: this.loadAndMerge(map, args, missedIds)
         };
     }
 
@@ -89,7 +87,7 @@ export class QueryService {
         id: any, 
         shape: RuntimeShape
     ): any {
-        const ref = this.entityMangager.findRefById(shape.typeName, id);
+        const ref = this.entityManager.findRefById(shape.typeName, id);
         if (ref === undefined) {
             canNotFoundFromCache(`Cannot find the '${shape.typeName}' object whose id is '${id}'`);
         }
@@ -97,42 +95,28 @@ export class QueryService {
             return undefined;
         }
         return mapRecord(
-            this.entityMangager.schema.typeMap.get(shape.typeName)!,
+            this.entityManager.schema.typeMap.get(shape.typeName)!,
             ref.value,
             shape
         );
     }
 
-    private async loadMissedObjects(
-        cachedMap: Map<any, any>,
-        missedIds: ReadonlyArray<any>, 
-        shape: RuntimeShape
+    protected async loadAndMerge(
+        objMap: Map<string, string>,
+        args: QueryArgs,
+        missedIds: ReadonlyArray<any>
     ): Promise<ReadonlyArray<any>> {
 
-        const missedObjects = await this.entityMangager._batchEntityRequest.requestObjectByShape(missedIds, shape);
-        const idFieldName = this.entityMangager.schema.typeMap.get(shape.typeName)!.idField.name;
+        const shape = args.shape;
+        const idFieldName = this.entityManager.schema.typeMap.get(shape.typeName)!.idField.name;
+        const idFieldAlias = shape.fieldMap.get(idFieldName)?.alias ?? idFieldName;
+
+        const missedObjects = await this.entityManager.dataService.query(args.newArgs(missedIds));
         for (const missedObject of missedObjects) {
-            cachedMap.set(missedObject[idFieldName], missedObject);
+            objMap.set(missedObject[idFieldAlias], missedObject);
         }
 
-        this.entityMangager.modify(() => {
-            for (const missedId of missedIds) {
-                const obj = cachedMap.get(missedId);
-                if (obj !== undefined) {
-                    this.entityMangager.save(shape, obj);
-                } else {
-                    this.entityMangager.delete(shape.typeName, missedId);
-                }
-            }
-        });
-
-        return Array.from(cachedMap.values());;
-    }
-
-    private async loadMissedQuery(
-        shape: RuntimeShape
-    ): Promise<any> {
-        throw new Error(`Unsupported operation`);
+        return args.ids!.map(id => objMap.get(id));
     }
 }
 
@@ -158,7 +142,7 @@ function mapRecord(
     }
     const idFieldName = type.idField.name;
     const entity = { [idFieldName]: record.id };
-    for (const field of runtimeSchape.fields) {
+    for (const [, field] of runtimeSchape.fieldMap) {
         if (field.childShape !== undefined) {
             const fieldMetadata = type.fieldMap.get(field.name)!
             const association = record.getAssociation(fieldMetadata, field.variables);

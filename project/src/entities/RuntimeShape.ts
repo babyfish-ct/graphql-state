@@ -6,7 +6,7 @@ import { standardizedVariables } from "../state/impl/Variables";
  */
 export interface RuntimeShape {
     readonly typeName: string;
-    readonly fields: RuntimeShapeField[];
+    readonly fieldMap: ReadonlyMap<string, RuntimeShapeField>;
     toString(): string;
 }
 
@@ -30,26 +30,18 @@ export function toRuntimeShape0(
     fetcher: Fetcher<string, object, object>, 
     variables?: object
 ): RuntimeShape {
+    
+    const fieldNames = Array.from(fetcher.fieldMap.keys());
+    fieldNames.sort();
+
     const runtimeShapeFieldMap = new Map<string, RuntimeShapeField>();
-    for (const [fieldName, field] of fetcher.fieldMap) {
-        addField(parentPath, fieldName, field, runtimeShapeFieldMap, variables);
+
+    for (const fieldName of fieldNames) {
+        addField(parentPath, fieldName, fetcher.fieldMap.get(fieldName)!, runtimeShapeFieldMap, variables);
     }
-    const fields: RuntimeShapeField[] = [];
-    for (const [, field] of runtimeShapeFieldMap) {
-        fields.push(field);
-    }
-    fields.sort((a, b) => {
-        if (a.name < b.name) {
-            return -1;
-        }
-        if (a.name > b.name) {
-            return +1;
-        }
-        return 0;
-    });
     return new RuntimeShapeImpl(
         fetcher.fetchableType.name,
-        fields
+        runtimeShapeFieldMap
     );
 }
 
@@ -165,13 +157,14 @@ class RuntimeShapeImpl implements RuntimeShape {
 
     constructor(
         readonly typeName: string,
-        readonly fields: RuntimeShapeField[]
+        readonly fieldMap: ReadonlyMap<string, RuntimeShapeField>
     ) {}
 
     toString(): string {
         let value = this._toString;
+        const fields = Array.from(this.fieldMap.values());
         if (value === undefined) {
-            this._toString = value = `(${this.typeName},[${this.fields.map(fieldString)}])`;
+            this._toString = value = `(${this.typeName},[${fields.map(fieldString)}])`;
         }
         return value;
     }

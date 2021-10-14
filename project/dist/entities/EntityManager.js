@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntityManager = void 0;
-const BatchEntityRequest_1 = require("./BatchEntityRequest");
+const BatchDataService_1 = require("../data/BatchDataService");
+const RemoteDataService_1 = require("../data/RemoteDataService");
 const ModificationContext_1 = require("./ModificationContext");
 const QueryResult_1 = require("./QueryResult");
 const Record_1 = require("./Record");
@@ -12,8 +13,8 @@ class EntityManager {
         this.schema = schema;
         this._recordManagerMap = new Map();
         this._queryResultMap = new Map();
-        this._batchEntityRequest = new BatchEntityRequest_1.BatchEntityRequest(this);
         this._listenerMap = new Map();
+        this.dataService = new BatchDataService_1.BatchDataService(new RemoteDataService_1.RemoteDataService(this));
         const queryType = schema.typeMap.get("Query");
         if (queryType !== undefined) {
             this._queryRecord = this.saveId("Query", Record_1.QUERY_OBJECT_ID);
@@ -95,26 +96,18 @@ class EntityManager {
             return this.recordManager(typeName).saveId(id);
         });
     }
-    loadByIds(ids, shape) {
-        if (shape.typeName === 'Query') {
-            throw new Error(`typeName cannot be 'Query'`);
-        }
-        throw new Error("bathcLoad is not implemented");
-    }
-    retain(queryArgs) {
-        const key = this.queryKeyOf(queryArgs.shape, queryArgs.ids);
-        let result = this._queryResultMap.get(key);
+    retain(args) {
+        let result = this._queryResultMap.get(args.key);
         if (result === undefined) {
-            result = new QueryResult_1.QueryResult(this, queryArgs);
-            this._queryResultMap.set(key, result);
+            result = new QueryResult_1.QueryResult(this, args);
+            this._queryResultMap.set(args.key, result);
         }
         return result.retain();
     }
-    release(queryArgs) {
-        const key = this.queryKeyOf(queryArgs.shape, queryArgs.ids);
-        const result = this._queryResultMap.get(key);
+    release(args) {
+        const result = this._queryResultMap.get(args.key);
         if ((result === null || result === void 0 ? void 0 : result.release()) === true) {
-            this._queryResultMap.delete(key);
+            this._queryResultMap.delete(args.key);
         }
     }
     addListener(typeName, listener) {
@@ -134,6 +127,9 @@ class EntityManager {
         var _a;
         (_a = this._listenerMap.get(typeName)) === null || _a === void 0 ? void 0 : _a.delete(listener);
     }
+    loadRemoteData(args) {
+        throw new Error();
+    }
     linkToQuery(type, id) {
         const qr = this._queryRecord;
         if (qr !== undefined) {
@@ -151,9 +147,6 @@ class EntityManager {
                 listener(e);
             }
         }
-    }
-    queryKeyOf(shape, ids) {
-        return ids === undefined ? shape.toString() : `${shape.toString()}${JSON.stringify(ids)}`;
     }
 }
 exports.EntityManager = EntityManager;

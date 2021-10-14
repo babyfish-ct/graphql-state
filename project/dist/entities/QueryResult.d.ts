@@ -1,7 +1,6 @@
-import { Fetcher } from "graphql-ts-client-api";
 import { Loadable } from "../state/impl/StateValue";
 import { EntityManager } from "./EntityManager";
-import { RuntimeShape } from "./RuntimeShape";
+import { QueryArgs } from "./QueryArgs";
 export declare class QueryResult {
     readonly entityManager: EntityManager;
     readonly queryArgs: QueryArgs;
@@ -21,12 +20,4 @@ export declare class QueryResult {
     private refreshDependencies;
     private onEntityChange;
     private invalidate;
-}
-export declare class QueryArgs {
-    readonly fetcher: Fetcher<string, object, object>;
-    readonly ids?: readonly any[] | undefined;
-    readonly variables?: any;
-    private _shape;
-    constructor(fetcher: Fetcher<string, object, object>, ids?: readonly any[] | undefined, variables?: any);
-    get shape(): RuntimeShape;
 }

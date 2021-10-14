@@ -71,7 +71,7 @@ export class RecordManager {
             id = obj[idFieldName];
         }
         const fieldMap = this.type.fieldMap;
-        for (const shapeField of shape.fields) { 
+        for (const [, shapeField] of shape.fieldMap) { 
             if (shapeField.name !== idFieldName) {
                 const field = fieldMap.get(shapeField.name);
                 if (field === undefined) {

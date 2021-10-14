@@ -9,9 +9,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.QueryArgs = exports.QueryResult = void 0;
+exports.QueryResult = void 0;
 const QueryService_1 = require("./QueryService");
-const RuntimeShape_1 = require("./RuntimeShape");
 class QueryResult {
     constructor(entityManager, queryArgs) {
         this.entityManager = entityManager;
@@ -47,9 +46,7 @@ class QueryResult {
     }
     query() {
         return __awaiter(this, void 0, void 0, function* () {
-            const rawResult = this.queryArgs.ids !== undefined ?
-                new QueryService_1.QueryService(this.entityManager).queryObjects(this.queryArgs.ids, this.queryArgs.shape) :
-                new QueryService_1.QueryService(this.entityManager).query(this.queryArgs.shape);
+            const rawResult = new QueryService_1.QueryService(this.entityManager).query(this.queryArgs);
             if (rawResult.type === 'cached') {
                 this.refreshDependencies(rawResult.data);
                 this._loadable = { loading: false, data: rawResult.data };
@@ -69,14 +66,7 @@ class QueryResult {
             const asyncRequestId = ++this._currentAsyncRequestId;
             this.retain(); // Self holding during Async computing
             try {
-                let data;
-                const queryService = new QueryService_1.QueryService(this.entityManager);
-                if (this.queryArgs.ids !== undefined) {
-                    data = yield queryService.queryObjects(this.queryArgs.ids, this.queryArgs.shape);
-                }
-                else {
-                    data = yield queryService.query(this.queryArgs.shape);
-                }
+                const data = yield rawResult.promise;
                 if (this._currentAsyncRequestId === asyncRequestId) {
                     this.refreshDependencies(data);
                     this._loadable = {
@@ -131,24 +121,6 @@ class QueryResult {
     }
 }
 exports.QueryResult = QueryResult;
-class QueryArgs {
-    constructor(fetcher, ids, variables) {
-        this.fetcher = fetcher;
-        this.ids = ids;
-        this.variables = variables;
-        if (fetcher.fetchableType.name === 'Query' && ids !== undefined) {
-            throw new Error("Generic query does not support id");
-        }
-        else if (fetcher.fetchableType.name !== 'Query' && ids === undefined) {
-            throw new Error("Id is required for object query");
-        }
-        this._shape = RuntimeShape_1.toRuntimeShape(fetcher, variables);
-    }
-    get shape() {
-        return this._shape;
-    }
-}
-exports.QueryArgs = QueryArgs;
 class Dependencies {
     constructor() {
         this.map = new Map();
@@ -196,7 +168,7 @@ class Dependencies {
                 dependency.handleInsertion || (dependency.handleInsertion = true);
             }
         }
-        for (const field of shape.fields) {
+        for (const [, field] of shape.fieldMap) {
             const childShape = field.childShape;
             if (childShape !== undefined) {
                 this.handleInsertion(schema, childShape, true);
@@ -224,7 +196,7 @@ class Dependencies {
                     }
                     const idFieldName = schema.typeMap.get(shape.typeName).idField.name;
                     const id = obj[idFieldName];
-                    for (const field of shape.fields) {
+                    for (const [, field] of shape.fieldMap) {
                         if (field.name !== idFieldName) {
                             let changedKeySet = dependency.idChangedKeyMap.get(id);
                             if (changedKeySet === undefined) {
@@ -235,7 +207,7 @@ class Dependencies {
                         }
                     }
                 }
-                for (const field of shape.fields) {
+                for (const [, field] of shape.fieldMap) {
                     const childShape = field.childShape;
                     if (childShape !== undefined) {
                         this.handleObjectChange(schema, childShape, obj[(_a = field.alias) !== null && _a !== void 0 ? _a : field.name]);

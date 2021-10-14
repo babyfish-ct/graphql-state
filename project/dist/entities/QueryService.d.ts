@@ -1,14 +1,14 @@
 import { EntityManager } from "./EntityManager";
-import { RuntimeShape } from "./RuntimeShape";
+import { QueryArgs } from "./QueryArgs";
 export declare class QueryService {
-    private entityMangager;
-    constructor(entityMangager: EntityManager);
-    query(shape: RuntimeShape): RawQueryResult<any>;
-    queryObjects(ids: ReadonlyArray<any>, shape: RuntimeShape): RawQueryResult<ReadonlyArray<any>>;
+    private entityManager;
+    constructor(entityManager: EntityManager);
+    query(args: QueryArgs): RawQueryResult<any>;
+    private graph;
+    private objects;
     private findObjects;
     private findObject;
-    private loadMissedObjects;
-    private loadMissedQuery;
+    protected loadAndMerge(objMap: Map<string, string>, args: QueryArgs, missedIds: ReadonlyArray<any>): Promise<ReadonlyArray<any>>;
 }
 export declare type RawQueryResult<T> = CachedResult<T> | DeferredResult<T>;
 interface CachedResult<T> {

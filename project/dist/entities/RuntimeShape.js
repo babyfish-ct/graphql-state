@@ -8,24 +8,13 @@ function toRuntimeShape(fetcher, variables) {
 }
 exports.toRuntimeShape = toRuntimeShape;
 function toRuntimeShape0(parentPath, fetcher, variables) {
+    const fieldNames = Array.from(fetcher.fieldMap.keys());
+    fieldNames.sort();
     const runtimeShapeFieldMap = new Map();
-    for (const [fieldName, field] of fetcher.fieldMap) {
-        addField(parentPath, fieldName, field, runtimeShapeFieldMap, variables);
+    for (const fieldName of fieldNames) {
+        addField(parentPath, fieldName, fetcher.fieldMap.get(fieldName), runtimeShapeFieldMap, variables);
     }
-    const fields = [];
-    for (const [, field] of runtimeShapeFieldMap) {
-        fields.push(field);
-    }
-    fields.sort((a, b) => {
-        if (a.name < b.name) {
-            return -1;
-        }
-        if (a.name > b.name) {
-            return +1;
-        }
-        return 0;
-    });
-    return new RuntimeShapeImpl(fetcher.fetchableType.name, fields);
+    return new RuntimeShapeImpl(fetcher.fetchableType.name, runtimeShapeFieldMap);
 }
 exports.toRuntimeShape0 = toRuntimeShape0;
 function addField(parentPath, fieldName, field, runtimeShapeFieldMap, fetcherVaribles) {
@@ -115,14 +104,15 @@ function resolveParameterRefs(variables, fetcherVariables) {
     return result;
 }
 class RuntimeShapeImpl {
-    constructor(typeName, fields) {
+    constructor(typeName, fieldMap) {
         this.typeName = typeName;
-        this.fields = fields;
+        this.fieldMap = fieldMap;
     }
     toString() {
         let value = this._toString;
+        const fields = Array.from(this.fieldMap.values());
         if (value === undefined) {
-            this._toString = value = `(${this.typeName},[${this.fields.map(fieldString)}])`;
+            this._toString = value = `(${this.typeName},[${fields.map(fieldString)}])`;
         }
         return value;
     }

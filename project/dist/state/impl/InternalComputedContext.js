@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InternalComputedContext = void 0;
-const QueryResult_1 = require("../../entities/QueryResult");
+const QueryArgs_1 = require("../../entities/QueryArgs");
 const ComputedStateValue_1 = require("./ComputedStateValue");
 const Variables_1 = require("./Variables");
 class InternalComputedContext {
@@ -104,7 +104,7 @@ class InternalComputedContext {
             throw new Error("ComputedContext has been closed");
         }
         const entityManager = this.scope.stateManager.entityManager;
-        const queryResult = entityManager.retain(new QueryResult_1.QueryArgs(fetcher, ids, variables));
+        const queryResult = entityManager.retain(QueryArgs_1.QueryArgs.create(fetcher, ids, variables));
         let result;
         try {
             result = queryResult.promise;

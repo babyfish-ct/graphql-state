@@ -1,10 +1,13 @@
 import { EntityChangeEvent } from "..";
+import { AbstractDataService } from "../data/AbstractDataService";
+import { BatchDataService } from "../data/BatchDataService";
+import { RemoteDataService } from "../data/RemoteDataService";
 import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { StateManagerImpl } from "../state/impl/StateManagerImpl";
-import { BatchEntityRequest } from "./BatchEntityRequest";
 import { ModificationContext } from "./ModificationContext";
-import { QueryArgs, QueryResult } from "./QueryResult";
+import { QueryArgs } from "./QueryArgs";
+import { QueryResult } from "./QueryResult";
 import { QUERY_OBJECT_ID, Record } from "./Record";
 import { RecordManager } from "./RecordManager";
 import { RecordRef } from "./RecordRef";
@@ -12,11 +15,11 @@ import { RuntimeShape } from "./RuntimeShape";
 
 export class EntityManager {
 
+    readonly dataService: AbstractDataService;
+
     private _recordManagerMap = new Map<string, RecordManager>();
 
     private _queryResultMap = new Map<string, QueryResult>();
-
-    readonly _batchEntityRequest: BatchEntityRequest = new BatchEntityRequest(this);
 
     private _listenerMap = new Map<string | undefined, Set<(e: EntityChangeEvent) => any>>();
 
@@ -28,6 +31,7 @@ export class EntityManager {
         readonly stateManager: StateManagerImpl<any>,
         readonly schema: SchemaMetadata
     ) {
+        this.dataService = new BatchDataService(new RemoteDataService(this));
         const queryType = schema.typeMap.get("Query");
         if (queryType !== undefined) {
             this._queryRecord = this.saveId("Query", QUERY_OBJECT_ID);
@@ -121,29 +125,20 @@ export class EntityManager {
         });
     }
 
-    loadByIds(ids: any[], shape: RuntimeShape): Promise<any[]> {
-        if (shape.typeName === 'Query') {
-            throw new Error(`typeName cannot be 'Query'`);
-        }
-        throw new Error("bathcLoad is not implemented");
-    }
-
-    retain(queryArgs: QueryArgs): QueryResult {
+    retain(args: QueryArgs): QueryResult {
         
-        const key = this.queryKeyOf(queryArgs.shape, queryArgs.ids);
-        let result = this._queryResultMap.get(key);
+        let result = this._queryResultMap.get(args.key);
         if (result === undefined) {
-            result = new QueryResult(this, queryArgs);
-            this._queryResultMap.set(key, result);
+            result = new QueryResult(this, args);
+            this._queryResultMap.set(args.key, result);
         }
         return result.retain();
     }
 
-    release(queryArgs: QueryArgs) {
-        const key = this.queryKeyOf(queryArgs.shape, queryArgs.ids);
-        const result = this._queryResultMap.get(key);
+    release(args: QueryArgs) {
+        const result = this._queryResultMap.get(args.key);
         if (result?.release() === true) {
-            this._queryResultMap.delete(key);
+            this._queryResultMap.delete(args.key);
         }
     }
 
@@ -165,6 +160,10 @@ export class EntityManager {
         this._listenerMap.get(typeName)?.delete(listener);
     }
 
+    loadRemoteData(args: QueryArgs): Promise<any> {
+        throw new Error();
+    }
+
     private linkToQuery(type: TypeMetadata, id: any) {
         const qr = this._queryRecord;
         if (qr !== undefined) {
@@ -183,9 +182,5 @@ export class EntityManager {
                 listener(e);
             }
         }
-    }
-
-    private queryKeyOf(shape: RuntimeShape, ids?: ReadonlyArray<any>): string {
-        return ids === undefined ? shape.toString() : `${shape.toString()}${JSON.stringify(ids)}`;
     }
 }

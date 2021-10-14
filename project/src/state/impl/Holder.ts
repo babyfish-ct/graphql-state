@@ -1,6 +1,7 @@
 import { ObjectFetcher } from "graphql-ts-client-api";
 import { Dispatch, SetStateAction } from "react";
-import { QueryArgs, QueryResult } from "../../entities/QueryResult";
+import { QueryArgs } from "../../entities/QueryArgs";
+import { QueryResult } from "../../entities/QueryResult";
 import { ParameterizedStateAccessingOptions, State, StateAccessingOptions } from "../State";
 import { QueryResultChangeEvent, StateManagerImpl, StateValueChangeEvent, StateValueChangeListener } from "./StateManagerImpl";
 import { StateValue } from "./StateValue";
@@ -100,19 +101,11 @@ export class QueryResultHolder {
         variables?: any    
     ) {
         const oldQueryArgs = this.queryResult?.queryArgs;
-        if (oldQueryArgs?.fetcher === fetcher &&
-            objectEquals(oldQueryArgs?.ids, ids) &&
-            objectEquals(oldQueryArgs?.variables, variables)
-        ) {
+        const newQueryArgs = QueryArgs.create(fetcher, ids, variables);
+        if (oldQueryArgs?.key === newQueryArgs.key) {
             return;
         }
-        const newQueryArgs = new QueryArgs(fetcher, ids, variables);
-        if (objectEquals(oldQueryArgs?.ids, ids) &&
-            oldQueryArgs?.shape?.toString() === newQueryArgs.shape.toString()
-        ) {
-            return;
-        }
-
+        
         this.release();
         
         this.queryResult = this.stateManager.entityManager.retain(newQueryArgs);
@@ -121,6 +114,7 @@ export class QueryResultHolder {
                 this.localUpdater(old => old + 1); // Change a local state to update react component
             }
         };
+        
         this.stateManager.addQueryResultChangeListener(this.queryResultChangeListener);
     }
 
@@ -139,16 +133,6 @@ export class QueryResultHolder {
             }
         }
     }
-}
-
-function objectEquals(a: any, b: any): boolean {
-    if (a === undefined) {
-        return b === undefined;
-    }
-    if (b === undefined) {
-        return a === undefined;
-    }
-    return a === b || standardizedJsonText(a) === standardizedJsonText(b);
 }
 
 function standardizedJsonText(obj: any): string | undefined {

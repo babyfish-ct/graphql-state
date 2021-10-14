@@ -3,8 +3,9 @@ import { EntityChangeEvent } from "..";
 import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 import { Loadable } from "../state/impl/StateValue";
 import { EntityManager } from "./EntityManager";
-import { QueryService, RawQueryResult } from "./QueryService";
-import { RuntimeShape, toRuntimeShape } from "./RuntimeShape";
+import { QueryArgs } from "./QueryArgs";
+import { QueryService } from "./QueryService";
+import { RuntimeShape } from "./RuntimeShape";
 
 export class QueryResult {
     
@@ -58,9 +59,7 @@ export class QueryResult {
 
     private async query(): Promise<any> {
         
-        const rawResult = this.queryArgs.ids !== undefined ?
-            new QueryService(this.entityManager).queryObjects(this.queryArgs.ids, this.queryArgs.shape) :
-            new QueryService(this.entityManager).query(this.queryArgs.shape);
+        const rawResult = new QueryService(this.entityManager).query(this.queryArgs);
         
         if (rawResult.type === 'cached') {
             this.refreshDependencies(rawResult.data);
@@ -84,13 +83,7 @@ export class QueryResult {
         this.retain(); // Self holding during Async computing
 
         try {
-            let data: any;
-            const queryService = new QueryService(this.entityManager);
-            if (this.queryArgs.ids !== undefined) {
-                data = await queryService.queryObjects(this.queryArgs.ids, this.queryArgs.shape);
-            } else {
-                data = await queryService.query(this.queryArgs.shape);
-            }
+            const data = await rawResult.promise;
             if (this._currentAsyncRequestId === asyncRequestId) {
                 this.refreshDependencies(data);
                 this._loadable = {
@@ -143,28 +136,6 @@ export class QueryResult {
     }
 }
 
-export class QueryArgs {
-
-    private _shape: RuntimeShape;
-
-    constructor(
-        readonly fetcher: Fetcher<string, object, object>,
-        readonly ids?: ReadonlyArray<any>,
-        readonly variables?: any
-    ) {
-        if (fetcher.fetchableType.name === 'Query' && ids !== undefined) {
-            throw new Error("Generic query does not support id");
-        } else if (fetcher.fetchableType.name !== 'Query' && ids === undefined) {
-            throw new Error("Id is required for object query");
-        }
-        this._shape = toRuntimeShape(fetcher, variables);
-    }
-
-    get shape(): RuntimeShape {
-        return this._shape;
-    }
-}
-
 class Dependencies {
     
     private map = new Map<string, Dependency>();
@@ -211,7 +182,7 @@ class Dependencies {
                 dependency.handleInsertion ||= true;
             }
         }
-        for (const field of shape.fields) {
+        for (const [, field] of shape.fieldMap) {
             const childShape = field.childShape;
             if (childShape !== undefined) {
                 this.handleInsertion(schema, childShape, true);
@@ -238,7 +209,7 @@ class Dependencies {
                     }
                     const idFieldName = schema.typeMap.get(shape.typeName)!.idField.name;
                     const id = obj[idFieldName];
-                    for (const field of shape.fields) {
+                    for (const [, field] of shape.fieldMap) {
                         if (field.name !== idFieldName) {
                             let changedKeySet = dependency.idChangedKeyMap.get(id); 
                             if (changedKeySet === undefined) {
@@ -249,7 +220,7 @@ class Dependencies {
                         }
                     }
                 }
-                for (const field of shape.fields) {
+                for (const [, field] of shape.fieldMap) {
                     const childShape = field.childShape;
                     if (childShape !== undefined) {
                         this.handleObjectChange(schema, childShape, obj[field.alias ?? field.name]);

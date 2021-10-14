@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QueryResultHolder = exports.StateValueHolder = void 0;
-const QueryResult_1 = require("../../entities/QueryResult");
+const QueryArgs_1 = require("../../entities/QueryArgs");
 const Variables_1 = require("./Variables");
 class StateValueHolder {
     constructor(stateManager, localUpdater) {
@@ -70,16 +70,10 @@ class QueryResultHolder {
         return result;
     }
     set(fetcher, ids, variables) {
-        var _a, _b;
+        var _a;
         const oldQueryArgs = (_a = this.queryResult) === null || _a === void 0 ? void 0 : _a.queryArgs;
-        if ((oldQueryArgs === null || oldQueryArgs === void 0 ? void 0 : oldQueryArgs.fetcher) === fetcher &&
-            objectEquals(oldQueryArgs === null || oldQueryArgs === void 0 ? void 0 : oldQueryArgs.ids, ids) &&
-            objectEquals(oldQueryArgs === null || oldQueryArgs === void 0 ? void 0 : oldQueryArgs.variables, variables)) {
-            return;
-        }
-        const newQueryArgs = new QueryResult_1.QueryArgs(fetcher, ids, variables);
-        if (objectEquals(oldQueryArgs === null || oldQueryArgs === void 0 ? void 0 : oldQueryArgs.ids, ids) &&
-            ((_b = oldQueryArgs === null || oldQueryArgs === void 0 ? void 0 : oldQueryArgs.shape) === null || _b === void 0 ? void 0 : _b.toString()) === newQueryArgs.shape.toString()) {
+        const newQueryArgs = QueryArgs_1.QueryArgs.create(fetcher, ids, variables);
+        if ((oldQueryArgs === null || oldQueryArgs === void 0 ? void 0 : oldQueryArgs.key) === newQueryArgs.key) {
             return;
         }
         this.release();
@@ -109,15 +103,6 @@ class QueryResultHolder {
     }
 }
 exports.QueryResultHolder = QueryResultHolder;
-function objectEquals(a, b) {
-    if (a === undefined) {
-        return b === undefined;
-    }
-    if (b === undefined) {
-        return a === undefined;
-    }
-    return a === b || standardizedJsonText(a) === standardizedJsonText(b);
-}
 function standardizedJsonText(obj) {
     if (obj === undefined || obj === null) {
         return undefined;

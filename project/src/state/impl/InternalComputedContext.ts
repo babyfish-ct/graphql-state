@@ -1,6 +1,6 @@
-import { Fetcher } from "graphql-ts-client-api";
-import { QueryArgs, QueryResult } from "../../entities/QueryResult";
-import { toRuntimeShape } from "../../entities/RuntimeShape";
+import { ObjectFetcher } from "graphql-ts-client-api";
+import { QueryArgs } from "../../entities/QueryArgs";
+import { QueryResult } from "../../entities/QueryResult";
 import { ParameterizedStateAccessingOptions, State, StateAccessingOptions } from "../State";
 import { ComputedStateValue } from "./ComputedStateValue";
 import { ScopedStateManager } from "./ScopedStateManager";
@@ -115,18 +115,18 @@ export class InternalComputedContext {
         }
     }
 
-    object(fetcher: Fetcher<string, object, object>, id: any, variables?: any): Promise<any> {
+    object(fetcher: ObjectFetcher<string, object, object>, id: any, variables?: any): Promise<any> {
         return this.objects(fetcher, [id], variables)[0];
     }
 
-    objects(fetcher: Fetcher<string, object, object>, ids: ReadonlyArray<any>, variables?: any): Promise<ReadonlyArray<any>> {
+    objects(fetcher: ObjectFetcher<string, object, object>, ids: ReadonlyArray<any>, variables?: any): Promise<ReadonlyArray<any>> {
         
         if (this.closed) {
             throw new Error("ComputedContext has been closed");
         }
 
         const entityManager = this.scope.stateManager.entityManager;
-        const queryResult = entityManager.retain(new QueryArgs(fetcher, ids, variables));
+        const queryResult = entityManager.retain(QueryArgs.create(fetcher, ids, variables));
         let result: any;
         try {
             result = queryResult.promise;
