@@ -23,6 +23,7 @@ export class QueryService {
             if (!ex[" $canNotFoundFromCache"]) {
                 throw ex;
             }
+            console.log(ex["reason"]);
         }
 
         return {
@@ -79,7 +80,6 @@ export class QueryService {
                 if (!ex[" $canNotFoundFromCache"]) {
                     throw ex;
                 }
-                map.set(id, undefined);
             }
         }
         return map;
@@ -91,7 +91,7 @@ export class QueryService {
     ): any {
         const ref = this.entityMangager.findRefById(shape.typeName, id);
         if (ref === undefined) {
-            canNotFoundFromCache();
+            canNotFoundFromCache(`Cannot find the '${shape.typeName}' object whose id is '${id}'`);
         }
         if (ref.value === undefined) {
             return undefined;
@@ -150,23 +150,31 @@ interface DeferredResult<T> {
 
 function mapRecord(
     type: TypeMetadata,
-    record: Record, 
+    record: Record | undefined, 
     runtimeSchape: RuntimeShape
 ): any {
+    if (record === undefined) {
+        return undefined;
+    }
     const idFieldName = type.idField.name;
-    const entity = { [idFieldName]: record?.id };
+    const entity = { [idFieldName]: record.id };
     for (const field of runtimeSchape.fields) {
         if (field.childShape !== undefined) {
             const fieldMetadata = type.fieldMap.get(field.name)!
             const association = record.getAssociation(fieldMetadata, field.variables);
             if (association === undefined && !record.hasAssociation(fieldMetadata, field.variables)) {
-                canNotFoundFromCache();
+                canNotFoundFromCache(
+                    `Cannot find the associaton field '${
+                        fieldMetadata.fullName
+                    }${
+                        field.variables !== undefined ? `:${JSON.stringify(field.variables)}` : ''
+                    }' for object whose id is '${record.id}'`);
             }
             entity[field.alias ?? field.name] = mapAssociation(fieldMetadata, association, field.childShape);
         } else if (field.name !== idFieldName) {
             const scalar = record.getSalar(field.name);
             if (scalar === undefined && !record.hasScalar(field.name)) {
-                canNotFoundFromCache();
+                canNotFoundFromCache(`Cannot find the scalar field '${field.name}' for object whose id is '${record.id}'`);
             }
             entity[field.alias ?? field.name] = scalar;
         }
@@ -210,6 +218,6 @@ function mapAssociation(
     return mapRecord(targetType, association as Record, shape);
 }
 
-function canNotFoundFromCache(): never {
-    throw { " $canNotFoundFromCache": true };
+function canNotFoundFromCache(reason: string): never {
+    throw { " $canNotFoundFromCache": true, reason };
 }

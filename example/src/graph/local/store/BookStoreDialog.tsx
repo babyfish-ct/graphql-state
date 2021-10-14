@@ -91,11 +91,11 @@ const BOOKS_DESCRIPTION_ITEM = (
             If you change this association "Store.books"
             <ul>
                 <li>
-                    For each removed book, this behavior will be executed automatically
+                    For each removed book, this action will be executed automatically
                     <pre className={PSEUDO_CODE_CLASS}>{FOR_REMOVED_BOOK}</pre>
                 </li>
                 <li>
-                    For each added book, this behavior will be executed automatically
+                    For each added book, this action will be executed automatically
                     <pre  className={PSEUDO_CODE_CLASS}>{FOR_ADDED_BOOK}</pre>
                 </li>
             </ul>

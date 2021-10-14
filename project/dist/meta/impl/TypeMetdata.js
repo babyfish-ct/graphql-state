@@ -31,12 +31,13 @@ class TypeMetadata {
         }
         if (fetchableType.name === "Query") {
             this._idField = new FieldMetadata_1.FieldMetadata(this, {
-                name: "id",
+                name: "__idOfQueryObject",
                 category: "ID",
                 argGraphQLTypeMap: new Map(),
                 isPlural: false,
                 isAssociation: false,
-                isFunction: false
+                isFunction: false,
+                isUndefinable: false
             });
         }
     }

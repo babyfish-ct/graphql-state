@@ -160,8 +160,6 @@ function resolveParameterRefs(
 }
 
 class RuntimeShapeImpl implements RuntimeShape {
-    
-    private _idField?: RuntimeShapeField | "";
 
     private _toString?: string;
 

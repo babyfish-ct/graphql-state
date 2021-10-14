@@ -198,7 +198,7 @@ class AssociationReferenceValue extends AssociationValue {
     }
     set(entityManager, self, associationField, variablesCode, variables, value) {
         const reference = value !== undefined ?
-            entityManager.saveId(associationField.targetType.name, value.id) :
+            entityManager.saveId(associationField.targetType.name, value[associationField.targetType.idField.name]) :
             undefined;
         const oldReference = this.referfence;
         if (oldReference !== reference) {

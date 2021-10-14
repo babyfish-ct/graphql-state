@@ -1,8 +1,8 @@
 import { css } from "@emotion/css";
 import { Select } from "antd";
-import { FC, memo } from "react";
+import { FC, memo, useCallback } from "react";
 import { bookStore$$, query$ } from "../../../__generated/fetchers";
-import { useQuery } from "graphql-state/dist/state/StateHook";
+import { useQuery } from "graphql-state";
 
 export const BookStoreSelect: FC<{
     value?: string,
@@ -17,8 +17,14 @@ export const BookStoreSelect: FC<{
         )
     );
 
+    const onSelectChange = useCallback((value: string) => {
+        if (onChange !== undefined) {
+            onChange(value === "" ? undefined : value);
+        }
+    }, [onChange]);
+
     return (
-        <Select value={value} onChange={onChange}>
+        <Select value={value ?? ""} onChange={onSelectChange}>
             { 
                 optional && <Select.Option value="">
                     <span className={css({fontStyle: "italic", fontWeight: "bold"})}>--Unspecified--</span>

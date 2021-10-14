@@ -1,5 +1,5 @@
 import { Button, Space, Tag, Table, Modal } from "antd";
-import { useQuery } from "graphql-state/dist/state/StateHook";
+import { useQuery } from "graphql-state";
 import { ModelType } from "graphql-ts-client-api";
 import { FC, memo, useCallback, useState } from "react";
 import { ComponentDecorator } from "../../../common/ComponentDecorator";

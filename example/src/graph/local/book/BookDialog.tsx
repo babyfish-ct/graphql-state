@@ -96,11 +96,11 @@ const STORE_DESCRITPION_ITEM = (
             If you change this association "Book.store"
             <ul>
                 <li>
-                    For old store, this behavior will be executed automatically
+                    For the old store, this action will be executed automatically
                     <pre className={PSEUDO_CODE_CLASS}>{FOR_OLD_STORE}</pre>
                 </li>
                 <li>
-                    For new store, this behavior will be executed automatically
+                    For the new store, this action will be executed automatically
                     <pre className={PSEUDO_CODE_CLASS}>{FOR_NEW_STORE}</pre>
                 </li>
             </ul>
@@ -124,11 +124,11 @@ const AUTHORS_DESCRIPTION_ITEM = (
             If you change this association "Book.authors"
             <ul>
                 <li>
-                    For old store, this behavior will be executed automatically
+                    For each removed author, this action will be executed automatically
                     <pre className={PSEUDO_CODE_CLASS}>{FOR_REMOVED_AUTHOR}</pre>
                 </li>
                 <li>
-                    For new store, this behavior will be executed automatically
+                    For each added author, this action will be executed automatically
                     <pre className={PSEUDO_CODE_CLASS}>{FOR_ADDED_AUTHOR}</pre>
                 </li>
             </ul>

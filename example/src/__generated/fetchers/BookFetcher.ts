@@ -127,7 +127,8 @@ export const book$: BookFetcher<{}, {}> =
                 {
                     category: "REFERENCE", 
                     name: "store", 
-                    targetTypeName: "BookStore"
+                    targetTypeName: "BookStore", 
+                    undefinable: true
                 }, 
                 {
                     category: "LIST", 

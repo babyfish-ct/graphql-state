@@ -1,7 +1,7 @@
 import { FC, memo } from "react";
 import { Select } from "antd";
 import { book$$, query$ } from "../../../__generated/fetchers";
-import { useQuery } from "graphql-state/dist/state/StateHook";
+import { useQuery } from "graphql-state";
 
 export const BookMultiSelect: FC<{
     value?: string[],
