@@ -1,4 +1,4 @@
-import { bookStoreTable } from "./BookStoreRepository";
+import { bookStoreTable } from "./BookStoreTable";
 import { ForeignKeys, Table } from "./Table";
 
 export const bookTable =

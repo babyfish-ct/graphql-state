@@ -3,7 +3,7 @@ import { Arg, Query } from 'type-graphql';
 import { Predicate } from '../../dal/Table';
 import { BookStore } from '../model/BookStore';
 import { delay } from '../../Delay';
-import { bookStoreTable, TBookStore } from '../../dal/BookStoreRepository';
+import { bookStoreTable, TBookStore } from '../../dal/BookStoreTable';
 
 export class BookStoreSerice {
 

@@ -9,29 +9,29 @@ import type { WithTypeName, ImplementationType } from '../CommonTypes';
  * 
  * So any instance of this interface is reuseable.
  */
-export interface BookFetcher<T extends object, TVariables extends object> extends ObjectFetcher<'Book', T, TVariables> {
+export interface AuthorFetcher<T extends object, TVariables extends object> extends ObjectFetcher<'Author', T, TVariables> {
 
-    on<XName extends ImplementationType<'Book'>, X extends object, XVariables extends object>(
+    on<XName extends ImplementationType<'Author'>, X extends object, XVariables extends object>(
         child: ObjectFetcher<XName, X, XVariables>, 
         fragmentName?: string // undefined: inline fragment; otherwise, otherwise, real fragment
-    ): BookFetcher<
-        XName extends 'Book' ?
+    ): AuthorFetcher<
+        XName extends 'Author' ?
         T & X :
-        WithTypeName<T, ImplementationType<'Book'>> & (
+        WithTypeName<T, ImplementationType<'Author'>> & (
             WithTypeName<X, ImplementationType<XName>> | 
-            {__typename: Exclude<ImplementationType<'Book'>, ImplementationType<XName>>}
+            {__typename: Exclude<ImplementationType<'Author'>, ImplementationType<XName>>}
         ), 
         TVariables & XVariables
     >;
 
 
-    directive(name: string, args?: DirectiveArgs): BookFetcher<T, TVariables>;
+    directive(name: string, args?: DirectiveArgs): AuthorFetcher<T, TVariables>;
 
 
-    readonly __typename: BookFetcher<T & {__typename: ImplementationType<'Book'>}, TVariables>;
+    readonly __typename: AuthorFetcher<T & {__typename: ImplementationType<'Author'>}, TVariables>;
 
 
-    readonly id: BookFetcher<T & {readonly "id": string}, TVariables>;
+    readonly id: AuthorFetcher<T & {readonly "id": string}, TVariables>;
 
     "id+"<
         XAlias extends string = "id", 
@@ -41,7 +41,7 @@ export interface BookFetcher<T extends object, TVariables extends object> extend
         optionsConfigurer?: (
             options: FieldOptions<"id", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
-    ): BookFetcher<
+    ): AuthorFetcher<
         T & (
             XDirectives extends { readonly include: any } | { readonly skip: any } ? 
                 {readonly [key in XAlias]?: string} : 
@@ -50,10 +50,10 @@ export interface BookFetcher<T extends object, TVariables extends object> extend
         TVariables & XDirectiveVariables
     >;
 
-    readonly "~id": BookFetcher<Omit<T, 'id'>, TVariables>;
+    readonly "~id": AuthorFetcher<Omit<T, 'id'>, TVariables>;
 
 
-    readonly name: BookFetcher<T & {readonly "name": string}, TVariables>;
+    readonly name: AuthorFetcher<T & {readonly "name": string}, TVariables>;
 
     "name+"<
         XAlias extends string = "name", 
@@ -63,7 +63,7 @@ export interface BookFetcher<T extends object, TVariables extends object> extend
         optionsConfigurer?: (
             options: FieldOptions<"name", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
-    ): BookFetcher<
+    ): AuthorFetcher<
         T & (
             XDirectives extends { readonly include: any } | { readonly skip: any } ? 
                 {readonly [key in XAlias]?: string} : 
@@ -72,37 +72,21 @@ export interface BookFetcher<T extends object, TVariables extends object> extend
         TVariables & XDirectiveVariables
     >;
 
-    readonly "~name": BookFetcher<Omit<T, 'name'>, TVariables>;
+    readonly "~name": AuthorFetcher<Omit<T, 'name'>, TVariables>;
 
 
-    store<
+    books<
         X extends object, 
         XVariables extends object, 
-        XAlias extends string = "store", 
-        XDirectiveVariables extends object = {}
-    >(
-        child: ObjectFetcher<'BookStore', X, XVariables>, 
-        optionsConfigurer?: (
-            options: FieldOptions<"store", {}, {}>
-        ) => FieldOptions<XAlias, {readonly [key: string]: DirectiveArgs}, XDirectiveVariables>
-    ): BookFetcher<
-        T & {readonly [key in XAlias]?: X}, 
-        TVariables & XVariables & XDirectiveVariables
-    >;
-
-
-    authors<
-        X extends object, 
-        XVariables extends object, 
-        XAlias extends string = "authors", 
+        XAlias extends string = "books", 
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        child: ObjectFetcher<'Author', X, XVariables>, 
+        child: ObjectFetcher<'Book', X, XVariables>, 
         optionsConfigurer?: (
-            options: FieldOptions<"authors", {}, {}>
+            options: FieldOptions<"books", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
-    ): BookFetcher<
+    ): AuthorFetcher<
         T & (
             XDirectives extends { readonly include: any } | { readonly skip: any } ? 
                 {readonly [key in XAlias]?: readonly X[]} : 
@@ -112,10 +96,10 @@ export interface BookFetcher<T extends object, TVariables extends object> extend
     >;
 }
 
-export const book$: BookFetcher<{}, {}> = 
+export const author$: AuthorFetcher<{}, {}> = 
     createFetcher(
         createFetchableType(
-            "Book", 
+            "Author", 
             "OBJECT", 
             [], 
             [
@@ -125,15 +109,9 @@ export const book$: BookFetcher<{}, {}> =
                 }, 
                 "name", 
                 {
-                    category: "REFERENCE", 
-                    name: "store", 
-                    targetTypeName: "BookStore", 
-                    undefinable: true
-                }, 
-                {
                     category: "LIST", 
-                    name: "authors", 
-                    targetTypeName: "Author"
+                    name: "books", 
+                    targetTypeName: "Book"
                 }
             ]
         ), 
@@ -141,8 +119,8 @@ export const book$: BookFetcher<{}, {}> =
     )
 ;
 
-export const book$$ = 
-    book$
+export const author$$ = 
+    author$
         .id
         .name
 ;

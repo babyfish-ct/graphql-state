@@ -1,8 +1,11 @@
 import 'reflect-metadata';
 import { Field, ObjectType } from 'type-graphql';
-import { TBook } from '../../dal/BookRepository';
-import { bookStoreTable, TBookStore } from '../../dal/BookStoreRepository';
+import { TBook } from '../../dal/BookTable';
+import { bookStoreTable, TBookStore } from '../../dal/BookStoreTable';
 import { BookStore } from './BookStore';
+import { Author } from './Author';
+import { bookAuthorMappingTable } from '../../dal/BookAuthorMappingTable';
+import { authorTable } from '../../dal/AuthorTable';
 
 @ObjectType()
 export class Book {
@@ -27,5 +30,12 @@ export class Book {
             return undefined;
         }
         return new BookStore(bookStoreTable.findNonNullById(this.storeId));
+    }
+
+    @Field(() => [Author])
+    authors(): Author[] {
+        return bookAuthorMappingTable.findByProp("bookId", this.id).map(mapping =>
+            new Author(authorTable.findNonNullById(mapping.authorId))
+        );
     }
 }

@@ -1,41 +1,44 @@
-import { ChangeEvent, memo, useCallback, useState } from "react";
-import { Button, Input, Space, Spin, Table, Tag, Modal } from "antd";
-import { ComponentDecorator } from "../../../common/ComponentDecorator";
+import { Space, Table, Modal, Input, Button, Tag, Spin } from "antd";
 import { useQuery } from "graphql-state";
-import { book$$, bookStore$$, query$ } from "../__generated/fetchers";
 import { ModelType } from "graphql-ts-client-api";
+import { ChangeEvent, FC, memo, useCallback, useState } from "react";
+import { ComponentDecorator } from "../../../common/ComponentDecorator";
 import { DELETE_CONFIRM_CLASS, INFORMATION_CLASS } from "../Css";
+import { book$$, author$$, query$ } from "../__generated/fetchers";
 
-const BOOK_STORE_ROW =
-    bookStore$$
+const AUTHOR_ROW =
+    author$$
     .books(
         book$$
-    )
-;
+    );
 
-export const BookStoreList = memo(() => {
+export const AuthorList: FC = memo(() => {
 
     const [name, setName] = useState<string>();
-    const { data, loading } = useQuery(
-        query$.findBooksStores(BOOK_STORE_ROW, options => options.alias("stores")),
-        {
-            asyncStyle: "ASYNC_OBJECT",
-            variables: { name }
-        }
-    );
-    const [dialog, setDialog] = useState<"NEW" | "EDIT">();
-    const [editing, setEditing] = useState<ModelType<typeof BOOK_STORE_ROW>>();
 
     const onNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value.trim();
         setName(value === "" ? undefined : value);
     }, []);
 
-    const onDelete = useCallback((row: ModelType<typeof BOOK_STORE_ROW>) => {
+    const { data, loading } = useQuery(
+        query$.findAuthors(
+            AUTHOR_ROW,
+            options => options.alias("authors")
+        ),
+        {
+            asyncStyle: "ASYNC_OBJECT",
+            variables: { name }
+        }
+    );
+    const [dialog, setDialog] = useState<"NEW" | "EDIT">();
+    const [editing, setEditing] = useState<ModelType<typeof AUTHOR_ROW>>();
+
+    const onDelete = useCallback((row: ModelType<typeof AUTHOR_ROW>) => {
         Modal.confirm({
             title: `Are your sure`,
             content: <>
-                <div className={DELETE_CONFIRM_CLASS}>Are you sure to delete the book store "{row.name}"?</div>
+                <div className={DELETE_CONFIRM_CLASS}>Are you sure to delete the author "{row.name}"?</div>
                 <div className={INFORMATION_CLASS}>
                     If you choose to delete this object
                     <ul>
@@ -44,12 +47,11 @@ export const BookStoreList = memo(() => {
                 </div>
             </>,
             onOk: () => {
-                
             }
         });
     }, []);
 
-    const renderBooks = useCallback((_: any, row: ModelType<typeof BOOK_STORE_ROW>) => {
+    const renderBooks = useCallback((_: any, row: ModelType<typeof AUTHOR_ROW>) => {
         return (
             <>
                 {
@@ -61,32 +63,38 @@ export const BookStoreList = memo(() => {
         );
     }, []);
 
-    const renderOperations = useCallback((_: any, row: ModelType<typeof BOOK_STORE_ROW>) => {
+    const renderOperations = useCallback((_: any, row: ModelType<typeof AUTHOR_ROW>) => {
         return (
             <Button.Group>
                 <Button onClick={() => { setDialog("EDIT"); setEditing(row); }}>Edit</Button>
-                <Button onClick={( )=> { onDelete(row); }}>Delete</Button>
+                <Button onClick={() => { onDelete(row); }}>Delete</Button>
             </Button.Group>
         );
     }, [onDelete]);
 
     const onAddClick = useCallback(() => {
+        setDialog("NEW");
+    }, []);
+
+    const onDialogClose = useCallback(() => {
+        setDialog(undefined);
+        setEditing(undefined);
     }, []);
 
     return (
-        <ComponentDecorator name="BookStoreList">
+        <ComponentDecorator name="AuthorList">
             <Space direction="vertical" style={{width: "100%"}}>
-                <Input value={name} onChange={onNameChange} placeholder="Input name to filter rows..."/>
-                { loading && <div><Spin/>Loading book stores...</div>}
+                <Input value={name} onChange={onNameChange} placeholder="Input name to filter rows"/>
+                { loading && <div><Spin/>Loading authors...</div> }
                 {
-                    !loading && data.stores &&
+                    !loading && data.authors &&
                     <>
-                        <Table rowKey="id" dataSource={data.stores} pagination={false}>
+                        <Table rowKey="id" dataSource={data.authors} pagination={false}>
                             <Table.Column title="Name" dataIndex="name"/>
                             <Table.Column title="Books" render={renderBooks}/>
                             <Table.Column title="Operations" render={renderOperations}/>
                         </Table>
-                        <Button onClick={onAddClick}>Add BookStore</Button>
+                        <Button onClick={onAddClick}>Add Author</Button>
                     </>
                 }
             </Space>

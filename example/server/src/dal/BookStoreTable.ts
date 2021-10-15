@@ -8,7 +8,7 @@ import { Table } from "./Table";
 
 export const bookStoreTable =
     new Table<TBookStore>({
-        name: "book_store",
+        name: "BookStore",
         idProp: "id",
         uniqueIndexs: ["name"]
     })

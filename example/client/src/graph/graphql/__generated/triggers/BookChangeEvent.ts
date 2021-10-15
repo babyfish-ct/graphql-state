@@ -25,7 +25,8 @@ export type BookChangeEventKey<TFieldName extends BookChangeEventFields> =
 
 export type BookChangeEventFields = 
     "name" | 
-    "store"
+    "store" | 
+    "authors"
 ;
 
 export interface BookChangeEventValues {
@@ -33,4 +34,7 @@ export interface BookChangeEventValues {
     readonly store: {
         readonly id: string
     };
+    readonly authors: readonly {
+        readonly id: string
+    }[];
 };

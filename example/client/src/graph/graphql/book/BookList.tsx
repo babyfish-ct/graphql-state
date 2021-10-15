@@ -1,41 +1,47 @@
-import { ChangeEvent, memo, useCallback, useState } from "react";
-import { Button, Input, Space, Spin, Table, Tag, Modal } from "antd";
-import { ComponentDecorator } from "../../../common/ComponentDecorator";
+import { Table, Tag, Space, Button, Input, Modal, Spin } from "antd";
 import { useQuery } from "graphql-state";
-import { book$$, bookStore$$, query$ } from "../__generated/fetchers";
 import { ModelType } from "graphql-ts-client-api";
+import { ChangeEvent, FC, memo, useCallback, useState } from "react";
+import { ComponentDecorator } from "../../../common/ComponentDecorator";
 import { DELETE_CONFIRM_CLASS, INFORMATION_CLASS } from "../Css";
+import { book$$, bookStore$$, query$ } from "../__generated/fetchers";
+import { author$$ } from "../__generated/fetchers/AuthorFetcher";
 
-const BOOK_STORE_ROW =
-    bookStore$$
-    .books(
-        book$$
+const BOOK_ROW =
+    book$$
+    .store(
+        bookStore$$
     )
-;
+    .authors(
+        author$$
+    )
 
-export const BookStoreList = memo(() => {
-
+export const BookList: FC = memo(() => {
+    
     const [name, setName] = useState<string>();
     const { data, loading } = useQuery(
-        query$.findBooksStores(BOOK_STORE_ROW, options => options.alias("stores")),
+        query$.findBooks(
+            BOOK_ROW,
+            options => options.alias("books")
+        ),
         {
             asyncStyle: "ASYNC_OBJECT",
             variables: { name }
         }
     );
     const [dialog, setDialog] = useState<"NEW" | "EDIT">();
-    const [editing, setEditing] = useState<ModelType<typeof BOOK_STORE_ROW>>();
+    const [editing, setEditing] = useState<ModelType<typeof BOOK_ROW>>();
 
     const onNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value.trim();
         setName(value === "" ? undefined : value);
     }, []);
 
-    const onDelete = useCallback((row: ModelType<typeof BOOK_STORE_ROW>) => {
+    const onDelete = useCallback((row: ModelType<typeof BOOK_ROW>) => {
         Modal.confirm({
             title: `Are your sure`,
             content: <>
-                <div className={DELETE_CONFIRM_CLASS}>Are you sure to delete the book store "{row.name}"?</div>
+                <div className={DELETE_CONFIRM_CLASS}>Are you sure to delete the book "{row.name}"?</div>
                 <div className={INFORMATION_CLASS}>
                     If you choose to delete this object
                     <ul>
@@ -49,44 +55,55 @@ export const BookStoreList = memo(() => {
         });
     }, []);
 
-    const renderBooks = useCallback((_: any, row: ModelType<typeof BOOK_STORE_ROW>) => {
+    const renderStoreName = useCallback((name?: string) => {
+        return name ? <Tag>{name}</Tag> : <></>
+    }, []);
+
+    const renderAuthors = useCallback((_: any, row: ModelType<typeof BOOK_ROW>) => {
         return (
             <>
                 {
-                    row.books.map(book => 
-                        <Tag key={book.id}>{book.name}</Tag>
+                    row.authors.map(author => 
+                        <Tag key={author.id}>{author.name}</Tag>
                     )
                 }
             </>
         );
     }, []);
 
-    const renderOperations = useCallback((_: any, row: ModelType<typeof BOOK_STORE_ROW>) => {
+    const renderOperations = useCallback((_: any, row: ModelType<typeof BOOK_ROW>) => {
         return (
             <Button.Group>
                 <Button onClick={() => { setDialog("EDIT"); setEditing(row); }}>Edit</Button>
-                <Button onClick={( )=> { onDelete(row); }}>Delete</Button>
+                <Button onClick={() => { onDelete(row); }}>Delete</Button>
             </Button.Group>
         );
     }, [onDelete]);
 
     const onAddClick = useCallback(() => {
+        setDialog("NEW");
+    }, []);
+
+    const onDialogClose = useCallback(() => {
+        setDialog(undefined);
+        setEditing(undefined);
     }, []);
 
     return (
-        <ComponentDecorator name="BookStoreList">
+        <ComponentDecorator name="BookList">
             <Space direction="vertical" style={{width: "100%"}}>
                 <Input value={name} onChange={onNameChange} placeholder="Input name to filter rows..."/>
-                { loading && <div><Spin/>Loading book stores...</div>}
+                { loading && <div><Spin/>Loading books...</div> }
                 {
-                    !loading && data.stores &&
+                    !loading && data.books &&
                     <>
-                        <Table rowKey="id" dataSource={data.stores} pagination={false}>
+                        <Table rowKey="id" dataSource={data.books} pagination={false}>
                             <Table.Column title="Name" dataIndex="name"/>
-                            <Table.Column title="Books" render={renderBooks}/>
+                            <Table.Column title="Store" dataIndex={["store", "name"]} render={renderStoreName}/>
+                            <Table.Column title="Authors" render={renderAuthors}/>
                             <Table.Column title="Operations" render={renderOperations}/>
                         </Table>
-                        <Button onClick={onAddClick}>Add BookStore</Button>
+                        <Button onClick={onAddClick}>Add Book</Button>
                     </>
                 }
             </Space>
