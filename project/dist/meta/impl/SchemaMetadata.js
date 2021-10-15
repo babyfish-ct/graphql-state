@@ -4,6 +4,7 @@ exports.SchemaMetadata = void 0;
 const TypeMetdata_1 = require("./TypeMetdata");
 class SchemaMetadata {
     constructor() {
+        this._acceptableFetchableTypes = new Set();
         this._typeMap = new Map();
         this._unresolvedPassiveFields = [];
         this._frozen = false;
@@ -15,7 +16,11 @@ class SchemaMetadata {
         if (this._typeMap.has(fetchableType.name)) {
             throw new Error(`The type "${fetchableType.name}" is already exists`);
         }
+        this._acceptableFetchableTypes.add(fetchableType);
         this._typeMap.set(fetchableType.name, new TypeMetdata_1.TypeMetadata(this, fetchableType));
+    }
+    isAcceptable(fetchableType) {
+        return this._acceptableFetchableTypes.has(fetchableType);
     }
     freeze() {
         this._frozen = true;

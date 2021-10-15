@@ -106,6 +106,9 @@ export class QueryResultHolder {
             return;
         }
         
+        if (!this.stateManager.entityManager.schema.isAcceptable(fetcher.fetchableType)) {
+            throw new Error("Cannot accept that fetcher because it is not configured in the state manager");
+        }
         this.release();
         
         this.queryResult = this.stateManager.entityManager.retain(newQueryArgs);

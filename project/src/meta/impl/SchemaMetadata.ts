@@ -4,6 +4,8 @@ import { TypeMetadata } from "./TypeMetdata";
 
 export class SchemaMetadata {
 
+    private _acceptableFetchableTypes = new Set<FetchableType<string>>();
+
     private _typeMap = new Map<string, TypeMetadata>();
 
     private _unresolvedPassiveFields: FieldMetadata[] = [];
@@ -18,7 +20,12 @@ export class SchemaMetadata {
         if (this._typeMap.has(fetchableType.name)) {
             throw new Error(`The type "${fetchableType.name}" is already exists`);
         }
+        this._acceptableFetchableTypes.add(fetchableType);
         this._typeMap.set(fetchableType.name, new TypeMetadata(this, fetchableType));
+    }
+
+    isAcceptable(fetchableType: FetchableType<string>): boolean {
+        return this._acceptableFetchableTypes.has(fetchableType);
     }
 
     freeze(): this {
