@@ -9,13 +9,13 @@ function newConfiguration(...fetchers) {
 exports.newConfiguration = newConfiguration;
 class ConfigurationImpl {
     constructor(fetchableTypes) {
-        this.schema = new SchemaMetadata_1.SchemaMetadata();
+        this._schema = new SchemaMetadata_1.SchemaMetadata();
         for (const fetchableType of fetchableTypes) {
-            this.schema.addFetchableType(fetchableType);
+            this._schema.addFetchableType(fetchableType);
         }
     }
     bidirectionalAssociation(typeName, mappedByFieldName, oppositeFieldName) {
-        const typeMetadata = this.schema.typeMap.get(typeName);
+        const typeMetadata = this._schema.typeMap.get(typeName);
         if (typeMetadata === undefined) {
             throw new Error(`Illegal type name "${typeName}"`);
         }
@@ -26,10 +26,14 @@ class ConfigurationImpl {
         field.setOppositeFieldName(oppositeFieldName);
         return this;
     }
+    network(network) {
+        this._network = network;
+        return this;
+    }
     buildStateManager() {
-        for (const [name, type] of this.schema.typeMap) {
+        for (const [name, type] of this._schema.typeMap) {
             type.idField;
         }
-        return new StateManagerImpl_1.StateManagerImpl(this.schema);
+        return new StateManagerImpl_1.StateManagerImpl(this._schema, this._network);
     }
 }

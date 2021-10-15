@@ -60,7 +60,7 @@ export class QueryResult {
     private async query(): Promise<any> {
         
         const rawResult = new QueryService(this.entityManager).query(this.queryArgs);
-        
+
         if (rawResult.type === 'cached') {
             this.refreshDependencies(rawResult.data);
             this._loadable = { loading: false, data: rawResult.data };

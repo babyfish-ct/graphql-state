@@ -30,7 +30,6 @@ export declare class EntityManager {
     release(args: QueryArgs): void;
     addListener(typeName: string | undefined, listener: (e: EntityChangeEvent) => void): void;
     removeListener(typeName: string | undefined, listener: (e: EntityChangeEvent) => void): void;
-    loadRemoteData(args: QueryArgs): Promise<any>;
     private linkToQuery;
     private publishEntityChangeEvent;
 }

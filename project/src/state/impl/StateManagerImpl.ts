@@ -3,6 +3,7 @@ import { EntityChangeEvent } from "../..";
 import { EntityManager } from "../../entities/EntityManager";
 import { QueryResult } from "../../entities/QueryResult";
 import { toRuntimeShape } from "../../entities/RuntimeShape";
+import { Network } from "../../meta/Configuration";
 import { SchemaMetadata } from "../../meta/impl/SchemaMetadata";
 import { SchemaType } from "../../meta/SchemaType";
 import { StateManager, TransactionStatus } from "../StateManager";
@@ -20,7 +21,7 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
 
     readonly entityManager: EntityManager;
 
-    constructor(schema?: SchemaMetadata) {
+    constructor(schema?: SchemaMetadata, readonly network?: Network) {
         this.entityManager = new EntityManager(this, schema ?? new SchemaMetadata());
     }
     

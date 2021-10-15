@@ -1,4 +1,3 @@
-import { AbstractDataService } from "../data/AbstractDataService";
 import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { EntityManager } from "./EntityManager";

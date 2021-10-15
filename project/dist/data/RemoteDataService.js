@@ -44,7 +44,11 @@ class RemoteDataService extends AbstractDataService_1.AbstractDataService {
         this.pendingRequestMap.delete(args.key);
     }
     onLoad(args) {
-        return this.entityManager.loadRemoteData(args);
+        const network = this.entityManager.stateManager.network;
+        if (network === undefined) {
+            throw new Error(`Cannot execute remote data loading because network is not configured`);
+        }
+        return network.execute(args.fetcher, args.variables);
     }
     onLoaded(args, data) {
         const entityManager = this.entityManager;

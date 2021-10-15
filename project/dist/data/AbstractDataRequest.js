@@ -14,12 +14,13 @@ class AbstractDataRequest {
     constructor(dataService, _args) {
         this.dataService = dataService;
         this._args = _args;
+        this.joinedResolvers = [];
     }
     execute() {
         return __awaiter(this, void 0, void 0, function* () {
             let data;
             try {
-                data = yield this.dataService.load(this.args);
+                data = yield this.dataService.onLoad(this.args);
                 if (typeof data !== 'object' || data === null) {
                     throw new Error("The remote loader must return an object");
                 }
@@ -46,7 +47,7 @@ class AbstractDataRequest {
     resolve(data) {
         for (const resolver of this.joinedResolvers) {
             try {
-                resolver.reject(data);
+                resolver.resolve(data);
             }
             catch (ex) {
                 console.warn(ex);

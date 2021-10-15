@@ -6,7 +6,8 @@ const RuntimeShape_1 = require("../../entities/RuntimeShape");
 const SchemaMetadata_1 = require("../../meta/impl/SchemaMetadata");
 const ScopedStateManager_1 = require("./ScopedStateManager");
 class StateManagerImpl {
-    constructor(schema) {
+    constructor(schema, network) {
+        this.network = network;
         this._stateValueChangeListeners = new Set();
         this._queryResultChangeListeners = new Set();
         this.entityManager = new EntityManager_1.EntityManager(this, schema !== null && schema !== void 0 ? schema : new SchemaMetadata_1.SchemaMetadata());

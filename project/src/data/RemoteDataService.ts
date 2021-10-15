@@ -1,3 +1,4 @@
+import { ObjectFetcher } from "graphql-ts-client-api";
 import { QueryArgs } from "../entities/QueryArgs";
 import { AbstractDataRequest } from "./AbstractDataRequest";
 import { AbstractDataService } from "./AbstractDataService";
@@ -34,7 +35,11 @@ export class RemoteDataService extends AbstractDataService {
     }
 
     onLoad(args: QueryArgs): Promise<any> {
-        return this.entityManager.loadRemoteData(args);
+        const network = this.entityManager.stateManager.network;
+        if (network === undefined) {
+            throw new Error(`Cannot execute remote data loading because network is not configured`);
+        }
+        return network.execute(args.fetcher as ObjectFetcher<'Query' | 'Mutation', any, any>, args.variables);
     }
 
     onLoaded(args: QueryArgs, data: any) {

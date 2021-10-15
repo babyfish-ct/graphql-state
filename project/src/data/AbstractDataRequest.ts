@@ -3,7 +3,7 @@ import { AbstractDataService } from "./AbstractDataService";
 
 export abstract class AbstractDataRequest {
 
-    private joinedResolvers: JoinedResolver[];
+    private joinedResolvers: JoinedResolver[] = [];
 
     constructor(
         private dataService: AbstractDataService,
@@ -13,7 +13,7 @@ export abstract class AbstractDataRequest {
     async execute() {
         let data: any
         try {
-            data = await (this.dataService as any).load(this.args);
+            data = await (this.dataService as any).onLoad(this.args);
             if (typeof data !== 'object' || data  === null) {
                 throw new Error("The remote loader must return an object");
             }
@@ -40,7 +40,7 @@ export abstract class AbstractDataRequest {
     private resolve(data: any) {
         for (const resolver of this.joinedResolvers) {
             try {
-                resolver.reject(data);
+                resolver.resolve(data);
             } catch (ex) {
                 console.warn(ex);
             }

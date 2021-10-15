@@ -8,7 +8,7 @@ import { bookStoreTable, TBookStore } from '../../dal/BookStoreRepository';
 export class BookStoreSerice {
 
     @Query(() => [BookStore])
-    async findBooks(
+    async findBooksStores(
         @Arg("name", () => String, {nullable: true}) name?: string | null
     ): Promise<BookStore[]> {
 

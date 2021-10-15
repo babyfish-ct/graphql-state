@@ -160,10 +160,6 @@ export class EntityManager {
         this._listenerMap.get(typeName)?.delete(listener);
     }
 
-    loadRemoteData(args: QueryArgs): Promise<any> {
-        throw new Error();
-    }
-
     private linkToQuery(type: TypeMetadata, id: any) {
         const qr = this._queryRecord;
         if (qr !== undefined) {

@@ -34,7 +34,7 @@ export const SiderView: FC = memo(() => {
             </Menu.SubMenu>
             <Menu.SubMenu key="graphState" title="Graph state">
                 <Menu.Item key="localData">Local data</Menu.Item>
-                <Menu.Item key="graphQLServer">GraphQL server</Menu.Item>
+                <Menu.Item key="graphqlServer">GraphQL server</Menu.Item>
                 <Menu.Item key="restServer">Rest server</Menu.Item>
             </Menu.SubMenu>
         </Menu>

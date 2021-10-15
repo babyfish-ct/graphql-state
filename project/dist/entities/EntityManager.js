@@ -127,9 +127,6 @@ class EntityManager {
         var _a;
         (_a = this._listenerMap.get(typeName)) === null || _a === void 0 ? void 0 : _a.delete(listener);
     }
-    loadRemoteData(args) {
-        throw new Error();
-    }
     linkToQuery(type, id) {
         const qr = this._queryRecord;
         if (qr !== undefined) {
