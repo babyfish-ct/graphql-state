@@ -1,14 +1,15 @@
 import { ChangeEvent, memo, useCallback, useState } from "react";
-import { Button, Input, Space, Spin, Table, Tag, Modal } from "antd";
+import { Button, Input, Space, Spin, Table, Tag, Modal, Row, Col } from "antd";
 import { ComponentDecorator } from "../../../common/ComponentDecorator";
 import { useQuery } from "graphql-state";
 import { book$$, bookStore$$, query$ } from "../__generated/fetchers";
-import { ModelType } from "graphql-ts-client-api";
+import { ModelType, ParameterRef } from "graphql-ts-client-api";
 import { DELETE_CONFIRM_CLASS, INFORMATION_CLASS } from "../Css";
 
 const BOOK_STORE_ROW =
     bookStore$$
     .books(
+        {name: ParameterRef.of("bookName")},
         book$$
     )
 ;
@@ -16,19 +17,29 @@ const BOOK_STORE_ROW =
 export const BookStoreList = memo(() => {
 
     const [name, setName] = useState<string>();
+    const [bookName, setBookName] = useState<string>();
+
     const { data, loading } = useQuery(
-        query$.findBooksStores(BOOK_STORE_ROW, options => options.alias("stores")),
+        query$.findBooksStores(
+            BOOK_STORE_ROW, 
+            options => options.alias("stores")
+        ),
         {
             asyncStyle: "ASYNC_OBJECT",
-            variables: { name }
+            variables: { name, bookName }
         }
     );
+
     const [dialog, setDialog] = useState<"NEW" | "EDIT">();
     const [editing, setEditing] = useState<ModelType<typeof BOOK_STORE_ROW>>();
 
     const onNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value.trim();
         setName(value === "" ? undefined : value);
+    }, []);
+    const onBookNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value.trim();
+        setBookName(value === "" ? undefined : value);
     }, []);
 
     const onDelete = useCallback((row: ModelType<typeof BOOK_STORE_ROW>) => {
@@ -76,7 +87,17 @@ export const BookStoreList = memo(() => {
     return (
         <ComponentDecorator name="BookStoreList">
             <Space direction="vertical" style={{width: "100%"}}>
-                <Input value={name} onChange={onNameChange} placeholder="Input name to filter rows..."/>
+                <Row gutter={10}>
+                    <Col flex={1}>
+                        <Input value={name} onChange={onNameChange} placeholder="Input name to filter rows..."/>
+                    </Col>
+                    <Col flex={1}>
+                        <Input value={bookName} onChange={onBookNameChange} placeholder="Input name to filter books of each row..."/>
+                    </Col>
+                    <Col>
+                        <Button>Refresh</Button>
+                    </Col>
+                </Row>
                 { loading && <div><Spin/>Loading book stores...</div>}
                 {
                     !loading && data.stores &&

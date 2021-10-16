@@ -17,7 +17,7 @@ class StateManagerImpl {
     }
     save(fetcher, obj, variables) {
         if (!this.entityManager.schema.isAcceptable(fetcher.fetchableType)) {
-            throw new Error("Deos not accept that fetcher because it is not configured in the state manager");
+            throw new Error("Cannot accept that fetcher because it is not configured in the state manager");
         }
         this.entityManager.save(RuntimeShape_1.toRuntimeShape(fetcher, variables), obj);
     }

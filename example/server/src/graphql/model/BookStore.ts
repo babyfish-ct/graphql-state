@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { Field, ObjectType } from 'type-graphql';
+import { Arg, Field, ObjectType } from 'type-graphql';
 import { bookTable } from '../../dal/BookTable';
 import { TBookStore } from '../../dal/BookStoreTable';
 import { Book } from './Book';
@@ -19,9 +19,17 @@ export class BookStore {
     }
 
     @Field(() => [Book])
-    books(): Book[] {
+    books(@Arg("name", () => String, { nullable: true}) name?: string): Book[] {
+        if (name === undefined || name === "") {
+            return bookTable
+                .findByProp("storeId", this.id)
+                .map(row => new Book(row));
+        }
         return bookTable
-            .findByProp("storeId", this.id)
+            .find(
+                [{prop: "storeId", value: this.id}], 
+                row => row.name.toLowerCase().indexOf(name.toLowerCase()) !== -1
+            )
             .map(row => new Book(row));
     }
 }

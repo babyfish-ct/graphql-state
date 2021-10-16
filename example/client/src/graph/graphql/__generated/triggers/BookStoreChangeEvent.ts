@@ -1,4 +1,5 @@
 import {ImplementationType} from '../CommonTypes';
+import {BookStoreArgs} from '../fetchers/BookStoreFetcher';
 
 export interface BookStoreChangeEvent {
 
@@ -20,6 +21,8 @@ export interface BookStoreChangeEvent {
 }
 
 export type BookStoreChangeEventKey<TFieldName extends BookStoreChangeEventFields> = 
+    TFieldName extends "books" ? 
+    { readonly name: "books"; readonly variables: BookStoreArgs } : 
     TFieldName
 ;
 

@@ -1,4 +1,4 @@
-import type { FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
+import type { AcceptableVariables, UnresolvedVariables, FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
 import { ObjectFetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
 import type { WithTypeName, ImplementationType } from '../CommonTypes';
 
@@ -92,7 +92,29 @@ export interface AuthorFetcher<T extends object, TVariables extends object> exte
                 {readonly [key in XAlias]?: readonly X[]} : 
                 {readonly [key in XAlias]: readonly X[]}
         ), 
-        TVariables & XVariables & XDirectiveVariables
+        TVariables & XVariables & AuthorArgs["books"] & XDirectiveVariables
+    >;
+
+    books<
+        XArgs extends AcceptableVariables<AuthorArgs['books']>, 
+        X extends object, 
+        XVariables extends object, 
+        XAlias extends string = "books", 
+        XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+        XDirectiveVariables extends object = {}
+    >(
+        args: XArgs, 
+        child: ObjectFetcher<'Book', X, XVariables>, 
+        optionsConfigurer?: (
+            options: FieldOptions<"books", {}, {}>
+        ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
+    ): AuthorFetcher<
+        T & (
+            XDirectives extends { readonly include: any } | { readonly skip: any } ? 
+                {readonly [key in XAlias]?: readonly X[]} : 
+                {readonly [key in XAlias]: readonly X[]}
+        ), 
+        TVariables & XVariables & UnresolvedVariables<XArgs, AuthorArgs['books']> & XDirectiveVariables
     >;
 }
 
@@ -111,6 +133,7 @@ export const author$: AuthorFetcher<{}, {}> =
                 {
                     category: "LIST", 
                     name: "books", 
+                    argGraphQLTypeMap: {name: 'String'}, 
                     targetTypeName: "Book"
                 }
             ]
@@ -124,3 +147,10 @@ export const author$$ =
         .id
         .name
 ;
+
+export interface AuthorArgs {
+
+    readonly books: {
+        readonly name?: string
+    }
+}

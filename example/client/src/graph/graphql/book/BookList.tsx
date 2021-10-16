@@ -1,6 +1,6 @@
-import { Table, Tag, Space, Button, Input, Modal, Spin } from "antd";
+import { Table, Tag, Space, Button, Input, Modal, Spin, Row, Col } from "antd";
 import { useQuery } from "graphql-state";
-import { ModelType } from "graphql-ts-client-api";
+import { ModelType, ParameterRef } from "graphql-ts-client-api";
 import { ChangeEvent, FC, memo, useCallback, useState } from "react";
 import { ComponentDecorator } from "../../../common/ComponentDecorator";
 import { DELETE_CONFIRM_CLASS, INFORMATION_CLASS } from "../Css";
@@ -13,12 +13,14 @@ const BOOK_ROW =
         bookStore$$
     )
     .authors(
+        { name: ParameterRef.of("authorName") },
         author$$
     )
 
 export const BookList: FC = memo(() => {
     
     const [name, setName] = useState<string>();
+    const [authorName, setAuthorName] = useState<string>();
     const { data, loading } = useQuery(
         query$.findBooks(
             BOOK_ROW,
@@ -26,15 +28,21 @@ export const BookList: FC = memo(() => {
         ),
         {
             asyncStyle: "ASYNC_OBJECT",
-            variables: { name }
+            variables: { name, authorName }
         }
     );
+
     const [dialog, setDialog] = useState<"NEW" | "EDIT">();
     const [editing, setEditing] = useState<ModelType<typeof BOOK_ROW>>();
 
     const onNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value.trim();
         setName(value === "" ? undefined : value);
+    }, []);
+
+    const onAuthorNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value.trim();
+        setAuthorName(value === "" ? undefined : value);
     }, []);
 
     const onDelete = useCallback((row: ModelType<typeof BOOK_ROW>) => {
@@ -92,7 +100,17 @@ export const BookList: FC = memo(() => {
     return (
         <ComponentDecorator name="BookList">
             <Space direction="vertical" style={{width: "100%"}}>
-                <Input value={name} onChange={onNameChange} placeholder="Input name to filter rows..."/>
+                <Row gutter={10}>
+                    <Col flex={1}>
+                        <Input value={name} onChange={onNameChange} placeholder="Input name to filter rows..."/>
+                    </Col>
+                    <Col flex={1}>
+                        <Input value={authorName} onChange={onAuthorNameChange} placeholder="Input name to filter author of each row..."/>
+                    </Col>
+                    <Col>
+                        <Button>Refresh</Button>
+                    </Col>
+                </Row>
                 { loading && <div><Spin/>Loading books...</div> }
                 {
                     !loading && data.books &&
