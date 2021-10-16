@@ -75,7 +75,7 @@ function containsShape(a, b) {
         if (fieldA === undefined) {
             return false;
         }
-        if (fieldA.variables !== field.variables && JSON.stringify(fieldA.variables) !== JSON.stringify(field.variables)) {
+        if (fieldA.args.key !== field.args.key) {
             return false;
         }
         if (!containsShape(fieldA.childShape, field.childShape)) {

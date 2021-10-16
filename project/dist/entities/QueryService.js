@@ -114,9 +114,9 @@ function mapRecord(type, record, runtimeSchape) {
     for (const [, field] of runtimeSchape.fieldMap) {
         if (field.childShape !== undefined) {
             const fieldMetadata = type.fieldMap.get(field.name);
-            const association = record.getAssociation(fieldMetadata, field.variables);
-            if (association === undefined && !record.hasAssociation(fieldMetadata, field.variables)) {
-                canNotFoundFromCache(`Cannot find the associaton field '${fieldMetadata.fullName}${field.variables !== undefined ? `:${JSON.stringify(field.variables)}` : ''}' for object whose id is '${record.id}'`);
+            const association = record.getAssociation(fieldMetadata, field.args);
+            if (association === undefined && !record.hasAssociation(fieldMetadata, field.args)) {
+                canNotFoundFromCache(`Cannot find the associaton field '${fieldMetadata.fullName}${field.args.key !== undefined ? `:${field.args.key}` : ""}' for object whose id is '${record.id}'`);
             }
             entity[(_a = field.alias) !== null && _a !== void 0 ? _a : field.name] = mapAssociation(fieldMetadata, association, field.childShape);
         }

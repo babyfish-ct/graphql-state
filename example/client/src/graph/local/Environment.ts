@@ -9,3 +9,5 @@ export const stateManager =
 ;
 
 initializeDefaultData(stateManager);
+
+(window as any).localStateManager = stateManager;

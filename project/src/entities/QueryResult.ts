@@ -6,6 +6,7 @@ import { EntityManager } from "./EntityManager";
 import { QueryArgs } from "./QueryArgs";
 import { QueryService } from "./QueryService";
 import { RuntimeShape } from "./RuntimeShape";
+import { VariableArgs } from "./VariableArgs";
 
 export class QueryResult {
     
@@ -157,10 +158,10 @@ class Dependencies {
             const changedKeySet = dependency.idChangedKeyMap?.get(e.id);
             if (changedKeySet !== undefined) {
                 for (const changedKey of e.changedKeys) {
-                    if (typeof changedKey === "string" && changedKeySet.has(changedKeyString(changedKey))) {
+                    if (typeof changedKey === "string" && changedKeySet.has(changedKeyString(changedKey, VariableArgs.of(undefined)))) {
                         return true;
                     }
-                    if (typeof changedKey === "object" && changedKeySet.has(changedKeyString(changedKey.name, changedKey.variables))) {
+                    if (typeof changedKey === "object" && changedKeySet.has(changedKeyString(changedKey.name, VariableArgs.of(changedKey.variables)))) {
                         return true;
                     }
                 }
@@ -216,7 +217,7 @@ class Dependencies {
                                 changedKeySet = new Set<string>();
                                 dependency.idChangedKeyMap.set(id, changedKeySet);
                             }
-                            changedKeySet.add(changedKeyString(field.name, field.variables));
+                            changedKeySet.add(changedKeyString(field.name, field.args));
                         }
                     }
                 }
@@ -238,10 +239,9 @@ interface Dependency {
     idChangedKeyMap: Map<any, Set<string>>;
 }
 
-function changedKeyString(fieldName: string, variables?: any): string {
-    const vsCode = variables !== undefined ? JSON.stringify(variables) : undefined;
-    if (vsCode === undefined || vsCode === '{}') {
+function changedKeyString(fieldName: string, args: VariableArgs): string {
+    if (args.key === undefined) {
         return fieldName;
     }
-    return `${fieldName}:${vsCode}`;
+    return `${fieldName}:${args.key}`;
 }

@@ -6,6 +6,7 @@ import { ModificationContext } from "./ModificationContext";
 import { QUERY_OBJECT_ID, Record } from "./Record";
 import { RecordRef } from "./RecordRef";
 import { RuntimeShape } from "./RuntimeShape";
+import { VariableArgs } from "./VariableArgs";
 
 export class RecordManager {
 
@@ -78,14 +79,11 @@ export class RecordManager {
                     throw new Error(`Cannot set the non-existing field "${shapeField.name}" for type "${this.type.name}"`);
                 }
                 const manager = this.fieldManagerMap.get(shapeField.name) ?? this;
-                const variables = standardizedVariables(shapeField.variables);
-                const variablesCode = variables !== undefined ? JSON.stringify(variables) : undefined
                 const value = obj[shapeField.alias ?? shapeField.name];
                 manager.set(
                     id, 
                     field, 
-                    variablesCode, 
-                    variables, 
+                    shapeField.args,
                     value
                 );
                 if (value !== undefined && shapeField.childShape !== undefined) {
@@ -130,12 +128,11 @@ export class RecordManager {
     private set(
         id: any, 
         field: FieldMetadata,
-        variablesCode: string | undefined,
-        variables: any, 
+        args: VariableArgs, 
         value: any
     ) {
         const record = this.saveId(id);
-        record.set(this.entityManager, field, variablesCode, variables, value);
+        record.set(this.entityManager, field, args, value);
     }
 }
 

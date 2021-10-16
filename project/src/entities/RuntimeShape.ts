@@ -1,5 +1,6 @@
 import { Fetcher, FetcherField, ParameterRef } from "graphql-ts-client-api";
 import { standardizedVariables } from "../state/impl/Variables";
+import { VariableArgs } from "./VariableArgs";
 
 /*
  * RuntimeShape = Fetcher + Variables
@@ -12,7 +13,7 @@ export interface RuntimeShape {
 
 export interface RuntimeShapeField {
     readonly name: string;
-    readonly variables?: any;
+    readonly args: VariableArgs;
     readonly alias?: string;
     readonly directives?: any;
     readonly childShape?: RuntimeShape
@@ -62,7 +63,7 @@ function addField(
         }
         return;
     }
-    const variables = standardizedVariables(resolveParameterRefs(field.args, fetcherVaribles));
+    const variables = resolveParameterRefs(field.args, fetcherVaribles);
     if (field.argGraphQLTypes !== undefined) {
         for (const [name, type] of field.argGraphQLTypes) {
             if (type.endsWith("!") && (variables === undefined || variables[name] === undefined)) {
@@ -82,7 +83,7 @@ function addField(
         fieldName,
         {
             name: fieldName,
-            variables,
+            args: VariableArgs.of(variables),
             alias,
             directives,
             childShape
@@ -174,8 +175,8 @@ function fieldString(field: RuntimeShapeField): string {
     return `(${
         field.name
     },${
-        field.variables !== undefined ? 
-        JSON.stringify(field.variables) :
+        field.args.key !== undefined ? 
+        JSON.stringify(field.args.key) :
         ""
     },${
         field.alias !== undefined ?

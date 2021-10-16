@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.toRuntimeShape0 = exports.toRuntimeShape = void 0;
 const graphql_ts_client_api_1 = require("graphql-ts-client-api");
-const Variables_1 = require("../state/impl/Variables");
+const VariableArgs_1 = require("./VariableArgs");
 function toRuntimeShape(fetcher, variables) {
     return toRuntimeShape0("", fetcher, variables);
 }
@@ -29,7 +29,7 @@ function addField(parentPath, fieldName, field, runtimeShapeFieldMap, fetcherVar
         }
         return;
     }
-    const variables = Variables_1.standardizedVariables(resolveParameterRefs(field.args, fetcherVaribles));
+    const variables = resolveParameterRefs(field.args, fetcherVaribles);
     if (field.argGraphQLTypes !== undefined) {
         for (const [name, type] of field.argGraphQLTypes) {
             if (type.endsWith("!") && (variables === undefined || variables[name] === undefined)) {
@@ -44,7 +44,7 @@ function addField(parentPath, fieldName, field, runtimeShapeFieldMap, fetcherVar
         undefined;
     runtimeShapeFieldMap.set(fieldName, {
         name: fieldName,
-        variables,
+        args: VariableArgs_1.VariableArgs.of(variables),
         alias,
         directives,
         childShape
@@ -118,8 +118,8 @@ class RuntimeShapeImpl {
     }
 }
 function fieldString(field) {
-    return `(${field.name},${field.variables !== undefined ?
-        JSON.stringify(field.variables) :
+    return `(${field.name},${field.args.key !== undefined ?
+        JSON.stringify(field.args.key) :
         ""},${field.alias !== undefined ?
         field.alias :
         ""},${field.directives !== undefined ?

@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QueryResult = void 0;
 const QueryService_1 = require("./QueryService");
+const VariableArgs_1 = require("./VariableArgs");
 class QueryResult {
     constructor(entityManager, queryArgs) {
         this.entityManager = entityManager;
@@ -142,10 +143,10 @@ class Dependencies {
             const changedKeySet = (_a = dependency.idChangedKeyMap) === null || _a === void 0 ? void 0 : _a.get(e.id);
             if (changedKeySet !== undefined) {
                 for (const changedKey of e.changedKeys) {
-                    if (typeof changedKey === "string" && changedKeySet.has(changedKeyString(changedKey))) {
+                    if (typeof changedKey === "string" && changedKeySet.has(changedKeyString(changedKey, VariableArgs_1.VariableArgs.of(undefined)))) {
                         return true;
                     }
-                    if (typeof changedKey === "object" && changedKeySet.has(changedKeyString(changedKey.name, changedKey.variables))) {
+                    if (typeof changedKey === "object" && changedKeySet.has(changedKeyString(changedKey.name, VariableArgs_1.VariableArgs.of(changedKey.variables)))) {
                         return true;
                     }
                 }
@@ -203,7 +204,7 @@ class Dependencies {
                                 changedKeySet = new Set();
                                 dependency.idChangedKeyMap.set(id, changedKeySet);
                             }
-                            changedKeySet.add(changedKeyString(field.name, field.variables));
+                            changedKeySet.add(changedKeyString(field.name, field.args));
                         }
                     }
                 }
@@ -217,10 +218,9 @@ class Dependencies {
         }
     }
 }
-function changedKeyString(fieldName, variables) {
-    const vsCode = variables !== undefined ? JSON.stringify(variables) : undefined;
-    if (vsCode === undefined || vsCode === '{}') {
+function changedKeyString(fieldName, args) {
+    if (args.key === undefined) {
         return fieldName;
     }
-    return `${fieldName}:${vsCode}`;
+    return `${fieldName}:${args.key}`;
 }

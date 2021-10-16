@@ -2,28 +2,29 @@ import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { SpaceSavingMap } from "../state/impl/SpaceSavingMap";
 import { Record } from "./Record";
+import { VariableArgs } from "./VariableArgs";
 
 export class BackReferences {
 
     // objecs that associate to me
     private associationOwnerMap = new SpaceSavingMap<FieldMetadata, SpaceSavingMap<string | undefined, ParameterizedRecordSet>>();
 
-    add(associationField: FieldMetadata, variablesCode: string | undefined, variables: any, ownerRecord: Record) {
+    add(associationField: FieldMetadata, args: VariableArgs, ownerRecord: Record) {
         this
         .associationOwnerMap
         .computeIfAbsent(associationField, () => new SpaceSavingMap<string, ParameterizedRecordSet>())
-        .computeIfAbsent(variablesCode, () => new ParameterizedRecordSet(variables))
+        .computeIfAbsent(args.key, () => new ParameterizedRecordSet(args))
         .add(ownerRecord);
     }
 
-    remove(associationField: FieldMetadata, variablesCode: string | undefined, ownerRecord: Record) {
+    remove(associationField: FieldMetadata, args: VariableArgs, ownerRecord: Record) {
         const subMap = this.associationOwnerMap.get(associationField);
         if (subMap !== undefined) {
-            const set = subMap?.get(variablesCode);
+            const set = subMap?.get(args.key);
             if (set !== undefined) {
                 set.remove(ownerRecord);
                 if (set.isEmtpty) {
-                    subMap.remove(variablesCode);
+                    subMap.remove(args.key);
                     if (subMap.isEmpty) {
                         this.associationOwnerMap.remove(associationField);
                     }

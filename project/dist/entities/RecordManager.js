@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RecordManager = void 0;
-const Variables_1 = require("../state/impl/Variables");
 const Record_1 = require("./Record");
 class RecordManager {
     constructor(entityManager, type) {
@@ -66,10 +65,8 @@ class RecordManager {
                     throw new Error(`Cannot set the non-existing field "${shapeField.name}" for type "${this.type.name}"`);
                 }
                 const manager = (_a = this.fieldManagerMap.get(shapeField.name)) !== null && _a !== void 0 ? _a : this;
-                const variables = Variables_1.standardizedVariables(shapeField.variables);
-                const variablesCode = variables !== undefined ? JSON.stringify(variables) : undefined;
                 const value = obj[(_b = shapeField.alias) !== null && _b !== void 0 ? _b : shapeField.name];
-                manager.set(id, field, variablesCode, variables, value);
+                manager.set(id, field, shapeField.args, value);
                 if (value !== undefined && shapeField.childShape !== undefined) {
                     const associationRecordManager = this.entityManager.recordManager(shapeField.childShape.typeName);
                     switch (field.category) {
@@ -109,9 +106,9 @@ class RecordManager {
         }
         (_a = this.superManager) === null || _a === void 0 ? void 0 : _a.delete(id);
     }
-    set(id, field, variablesCode, variables, value) {
+    set(id, field, args, value) {
         const record = this.saveId(id);
-        record.set(this.entityManager, field, variablesCode, variables, value);
+        record.set(this.entityManager, field, args, value);
     }
 }
 exports.RecordManager = RecordManager;

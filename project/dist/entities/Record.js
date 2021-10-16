@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QUERY_OBJECT_ID = exports.Record = void 0;
 const SpaceSavingMap_1 = require("../state/impl/SpaceSavingMap");
-const Variables_1 = require("../state/impl/Variables");
 const BackReferences_1 = require("./BackReferences");
 class Record {
     constructor(type, id, deleted = false) {
@@ -21,29 +20,32 @@ class Record {
             }
         }
     }
+    get isDeleted() {
+        return this.deleted;
+    }
     hasScalar(fieldName) {
         return this.scalarMap.has(fieldName);
     }
     getSalar(fieldName) {
         return this.scalarMap.get(fieldName);
     }
-    hasAssociation(field, variables) {
+    hasAssociation(field, args) {
         var _a;
-        return ((_a = this.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.has(variables)) === true;
+        return ((_a = this.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.has(args)) === true;
     }
-    getAssociation(field, variables) {
+    getAssociation(field, args) {
         var _a;
-        return (_a = this.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.get(variables);
+        return (_a = this.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.get(args);
     }
-    set(entityManager, field, variablesCode, variables, value) {
+    set(entityManager, field, args, value) {
         if (field === null || field === void 0 ? void 0 : field.isAssociation) {
             this
                 .associationMap
                 .computeIfAbsent(field, f => new Association(f))
-                .set(entityManager, this, field, variablesCode, variables, value);
+                .set(entityManager, this, field, args, value);
         }
         else {
-            if (variables !== undefined) {
+            if (args.variables !== undefined) {
                 throw new Error('scalar fields does not support variables');
             }
             if (field === this.type.idField) {
@@ -55,13 +57,18 @@ class Record {
                 const oldValue = this.scalarMap.get(field.name);
                 if (oldValue !== value) {
                     this.scalarMap.set(field.name, value);
-                    entityManager.modificationContext.set(this, field.name, variablesCode, oldValue, value);
+                    entityManager.modificationContext.set(this, field.name, args.key, oldValue, value);
                 }
             }
         }
     }
-    get isDeleted() {
-        return this.deleted;
+    link(entityManager, associationField, record) {
+        var _a;
+        (_a = this.associationMap.get(associationField)) === null || _a === void 0 ? void 0 : _a.link(entityManager, this, record, undefined);
+    }
+    unlink(entityManager, associationField, record) {
+        var _a;
+        (_a = this.associationMap.get(associationField)) === null || _a === void 0 ? void 0 : _a.unlink(entityManager, this, record, undefined);
     }
     delete(entityManager) {
         if (this.deleted) {
@@ -73,28 +80,13 @@ class Record {
         this.scalarMap.clear();
         this.associationMap.clear();
         this.backReferences.forEach((field, _, record) => {
-            record.unlink(entityManager, field, this);
+            var _a;
+            (_a = record.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.forceUnlink(entityManager, record, this);
         });
         this.deleted = true;
     }
     undelete() {
         this.deleted = false;
-    }
-    link(entityManager, associationField, target) {
-        this.associationMap.forEachValue(association => {
-            if (association.field === associationField) {
-                entityManager.modificationContext.update(this);
-                association.link(entityManager, this, target);
-            }
-        });
-    }
-    unlink(entityManager, associationField, target) {
-        this.associationMap.forEachValue(association => {
-            if (association.field === associationField) {
-                entityManager.modificationContext.update(this);
-                association.unlink(entityManager, this, target);
-            }
-        });
     }
 }
 exports.Record = Record;
@@ -102,89 +94,88 @@ class Association {
     constructor(field) {
         this.field = field;
         this.valueMap = new SpaceSavingMap_1.SpaceSavingMap();
+        this.frozen = false;
         if (field.category === "ID") {
             throw new Error("Internal bug: assocaition base on id field");
         }
     }
-    has(variables) {
-        return this.valueOrUndefined(variables) !== undefined;
+    has(args) {
+        return this.valueMap.get(args.key) !== undefined;
     }
-    get(variables) {
+    get(args) {
         var _a;
-        return (_a = this.valueOrUndefined(variables)) === null || _a === void 0 ? void 0 : _a.get();
+        return (_a = this.valueMap.get(args.key)) === null || _a === void 0 ? void 0 : _a.get();
     }
-    set(entityManager, record, associationField, variablesCode, variables, value) {
-        this.value(variables).set(entityManager, record, associationField, variablesCode, variables, value);
+    set(entityManager, record, associationField, args, value) {
+        if (this.frozen) {
+            throw new Error(`Cannot change the association because its frozen`);
+        }
+        this.frozen = true;
+        try {
+            this.value(args).set(entityManager, record, associationField, value);
+        }
+        finally {
+            this.frozen = false;
+        }
     }
-    link(entityManager, self, target) {
-        this.valueMap.forEach((vsCode, value) => {
-            value.link(entityManager, self, this.field, vsCode, target);
+    link(entityManager, self, target, exceptArgs) {
+        if (!this.frozen || exceptArgs !== undefined) {
+            entityManager.modificationContext.update(self);
+            this.valueMap.forEachValue(value => {
+                var _a;
+                if (exceptArgs === undefined || exceptArgs.key !== value.args.key) {
+                    value.link(entityManager, self, this.field, target, (_a = exceptArgs === null || exceptArgs === void 0 ? void 0 : exceptArgs.constains(value.args)) !== null && _a !== void 0 ? _a : false);
+                }
+            });
+        }
+    }
+    unlink(entityManager, self, target, exceptArgs) {
+        if (!this.frozen || exceptArgs !== undefined) {
+            entityManager.modificationContext.update(self);
+            this.valueMap.forEachValue(value => {
+                if (exceptArgs === undefined || exceptArgs.key !== value.args.key) {
+                    value.unlink(entityManager, self, this.field, target, exceptArgs !== undefined ? value.args.constains(exceptArgs) : false);
+                }
+            });
+        }
+    }
+    forceUnlink(entityManager, self, target) {
+        entityManager.modificationContext.update(self);
+        this.valueMap.forEachValue(value => {
+            value.unlink(entityManager, self, this.field, target, true);
         });
     }
-    unlink(entityManager, self, target) {
-        this.valueMap.forEach((vsCode, value) => {
-            value.unlink(entityManager, self, this.field, vsCode, target);
-        });
-    }
-    valueOrUndefined(variables) {
-        const vs = Variables_1.standardizedVariables(variables);
-        const vsCode = vs !== undefined ? JSON.stringify(vs) : undefined;
-        return this.valueMap.get(vsCode);
-    }
-    value(variables) {
-        const vs = Variables_1.standardizedVariables(variables);
-        const vsCode = JSON.stringify(vs);
-        return this.valueMap.computeIfAbsent(vsCode, () => {
+    value(args) {
+        return this.valueMap.computeIfAbsent(args.key, () => {
             switch (this.field.category) {
                 case "CONNECTION":
-                    return new AssociationConnectionValue();
+                    return new AssociationConnectionValue(args);
                 case "LIST":
-                    return new AssociationListValue();
+                    return new AssociationListValue(args);
                 default:
-                    return new AssociationReferenceValue();
+                    return new AssociationReferenceValue(args);
             }
         });
     }
 }
 class AssociationValue {
-    constructor() {
-        this.linkFrozen = false;
+    constructor(args) {
+        this.args = args;
     }
-    link(entityManager, self, associationField, variablesCode, target) {
-        if (!this.linkFrozen) {
-            this.linkFrozen = true;
-            try {
-                this.onLink(entityManager, self, associationField, variablesCode, target);
-            }
-            finally {
-                this.linkFrozen = false;
-            }
-        }
-    }
-    unlink(entityManager, self, associationField, variablesCode, target) {
-        if (!this.linkFrozen) {
-            this.linkFrozen = true;
-            try {
-                this.onUnlink(entityManager, self, associationField, variablesCode, target);
-            }
-            finally {
-                this.linkFrozen = false;
-            }
-        }
-    }
-    releaseOldReference(entityManager, self, associationField, variablesCode, oldRefernce) {
+    releaseOldReference(entityManager, self, associationField, oldRefernce) {
         if (oldRefernce !== undefined) {
-            oldRefernce.backReferences.remove(associationField, variablesCode, self);
+            oldRefernce.backReferences.remove(associationField, this.args, self);
             const oppositeField = associationField.oppositeField;
             if (oppositeField !== undefined) {
-                if (oldRefernce)
+                if (oldRefernce) {
                     oldRefernce.unlink(entityManager, oppositeField, self);
+                }
             }
         }
     }
-    retainNewReference(entityManager, self, associationField, variablesCode, variables, newReference) {
+    retainNewReference(entityManager, self, associationField, newReference) {
         if (newReference !== undefined) {
-            newReference.backReferences.add(associationField, variablesCode, variables, self);
+            newReference.backReferences.add(associationField, this.args, self);
             const oppositeField = associationField.oppositeField;
             if (oppositeField !== undefined) {
                 newReference.link(entityManager, oppositeField, self);
@@ -196,30 +187,54 @@ class AssociationReferenceValue extends AssociationValue {
     get() {
         return this.referfence;
     }
-    set(entityManager, self, associationField, variablesCode, variables, value) {
+    set(entityManager, self, associationField, value) {
         const reference = value !== undefined ?
             entityManager.saveId(associationField.targetType.name, value[associationField.targetType.idField.name]) :
             undefined;
         const oldReference = this.referfence;
         if (oldReference !== reference) {
-            this.releaseOldReference(entityManager, self, associationField, variablesCode, oldReference);
+            this.releaseOldReference(entityManager, self, associationField, oldReference);
             this.referfence = reference;
-            this.retainNewReference(entityManager, self, associationField, variablesCode, variables, reference);
-            entityManager.modificationContext.set(self, associationField.name, variablesCode, objectWithOnlyId(oldReference), objectWithOnlyId(reference));
+            this.retainNewReference(entityManager, self, associationField, reference);
+            entityManager.modificationContext.set(self, associationField.name, this.args.key, objectWithOnlyId(oldReference), objectWithOnlyId(reference));
         }
     }
-    onLink(entityManager, self, associationField, variablesCode, target) {
+    link(entityManager, self, associationField, target, absolute) {
         var _a;
-        if (((_a = this.referfence) === null || _a === void 0 ? void 0 : _a.id) !== target.id) {
-            const variables = variablesCode !== undefined ? JSON.parse(variablesCode) : undefined;
-            this.set(entityManager, self, associationField, variablesCode, variables, { [associationField.targetType.idField.name]: target.id });
+        let targetRecord;
+        if (Array.isArray(target)) {
+            if (target.length === 0) {
+                return;
+            }
+            if (target.length > 1) {
+                throw new Error(`Internal bug: Cannot link AbstractReerenceValue with array whose length is greater than 1`);
+            }
+            targetRecord = target.length === 1 ? target[0] : undefined;
+        }
+        else {
+            targetRecord = target;
+        }
+        if (((_a = this.referfence) === null || _a === void 0 ? void 0 : _a.id) !== (targetRecord === null || targetRecord === void 0 ? void 0 : targetRecord.id)) {
+            this.set(entityManager, self, associationField, { [associationField.targetType.idField.name]: targetRecord.id });
         }
     }
-    onUnlink(entityManager, self, associationField, variablesCode, target) {
+    unlink(entityManager, self, associationField, target, absolute) {
         var _a;
-        if (((_a = this.referfence) === null || _a === void 0 ? void 0 : _a.id) === target.id) {
-            const variables = variablesCode !== undefined ? JSON.parse(variablesCode) : undefined;
-            this.set(entityManager, self, associationField, variablesCode, variables, undefined);
+        let targetRecord;
+        if (Array.isArray(target)) {
+            if (target.length === 0) {
+                return;
+            }
+            if (target.length > 1) {
+                throw new Error(`Internal bug: Cannot unlink AbstractReerenceValue with array whose length is greater than 1`);
+            }
+            targetRecord = target.length === 1 ? target[0] : undefined;
+        }
+        else {
+            targetRecord = target;
+        }
+        if (((_a = this.referfence) === null || _a === void 0 ? void 0 : _a.id) === targetRecord.id) {
+            this.set(entityManager, self, associationField, undefined);
         }
     }
 }
@@ -228,7 +243,7 @@ class AssociationListValue extends AssociationValue {
         var _a;
         return (_a = this.elements) !== null && _a !== void 0 ? _a : [];
     }
-    set(entityManager, self, associationField, variablesCode, variables, value) {
+    set(entityManager, self, associationField, value) {
         var _a, _b, _c, _d, _e, _f, _g, _h;
         let listChanged = ((_b = (_a = this.elements) === null || _a === void 0 ? void 0 : _a.length) !== null && _b !== void 0 ? _b : 0) !== ((_c = value === null || value === void 0 ? void 0 : value.length) !== null && _c !== void 0 ? _c : 0);
         if (!listChanged) {
@@ -269,72 +284,56 @@ class AssociationListValue extends AssociationValue {
         }
         for (const [id, element] of oldMap) {
             if (!newIds.has(id)) {
-                this.releaseOldReference(entityManager, self, associationField, variablesCode, element);
+                this.releaseOldReference(entityManager, self, associationField, element);
             }
         }
         this.elements = newElements.length === 0 ? undefined : newElements;
         for (const newElement of newElements) {
             if (newElement !== undefined) {
                 if (!oldMap.has(newElement.id)) {
-                    this.retainNewReference(entityManager, self, associationField, variablesCode, variables, newElement);
+                    this.retainNewReference(entityManager, self, associationField, newElement);
                 }
             }
         }
         if (listChanged) {
-            entityManager.modificationContext.set(self, associationField.name, variablesCode, oldValueForTriggger, (_h = this.elements) === null || _h === void 0 ? void 0 : _h.map(objectWithOnlyId));
+            entityManager.modificationContext.set(self, associationField.name, this.args.key, oldValueForTriggger, (_h = this.elements) === null || _h === void 0 ? void 0 : _h.map(objectWithOnlyId));
         }
     }
-    onLink(entityManager, self, associationField, variablesCode, target) {
+    link(entityManager, self, associationField, target, absolute) {
         var _a, _b;
-        if (this.elements !== undefined) {
-            for (const element of this.elements) {
-                if ((element === null || element === void 0 ? void 0 : element.id) === target.id) {
-                    return;
-                }
+        const elements = this.elements !== undefined ? [...this.elements] : [];
+        const elementMap = toRecordMap(elements);
+        const linkMap = toRecordMap(Array.isArray(target) ? target : [target]);
+        for (const record of linkMap.values()) {
+            if (!elementMap.has(record.id)) {
+                elements.push(record);
             }
         }
-        const variables = variablesCode !== undefined ? JSON.parse(variablesCode) : undefined;
-        const idFieldName = associationField.targetType.idField.name;
-        const list = (_b = (_a = this.elements) === null || _a === void 0 ? void 0 : _a.map(element => {
-            if (element === undefined) {
-                return undefined;
-            }
-            return { [idFieldName]: element.id };
-        })) !== null && _b !== void 0 ? _b : [];
-        list.push({ [idFieldName]: target.id });
-        this.set(entityManager, self, associationField, variablesCode, variables, list);
+        if ((_b = elements.length !== ((_a = this.elements) === null || _a === void 0 ? void 0 : _a.length)) !== null && _b !== void 0 ? _b : 0) {
+            this.set(entityManager, self, associationField, elements.map(objectWithOnlyId));
+        }
     }
-    onUnlink(entityManager, self, associationField, variablesCode, target) {
-        var _a, _b, _c;
-        let index = -1;
-        if (this.elements !== undefined) {
-            for (let i = this.elements.length - 1; i >= 0; --i) {
-                if (((_a = this.elements[i]) === null || _a === void 0 ? void 0 : _a.id) === target.id) {
-                    index = i;
-                    break;
-                }
+    unlink(entityManager, self, associationField, target, absolute) {
+        var _a, _b;
+        const elements = this.elements !== undefined ? [...this.elements] : [];
+        const elementMap = toRecordMap(elements);
+        const unlinkMap = toRecordMap(Array.isArray(target) ? target : [target]);
+        for (const record of unlinkMap.values()) {
+            if (elementMap.has(record.id)) {
+                const index = elements.findIndex(element => (element === null || element === void 0 ? void 0 : element.id) === record.id);
+                elements.splice(index, 1);
             }
         }
-        if (index === -1) {
-            return;
+        if ((_b = elements.length !== ((_a = this.elements) === null || _a === void 0 ? void 0 : _a.length)) !== null && _b !== void 0 ? _b : 0) {
+            this.set(entityManager, self, associationField, elements.map(objectWithOnlyId));
         }
-        const variables = variablesCode !== undefined ? JSON.parse(variablesCode) : undefined;
-        const idFieldName = associationField.targetType.idField.name;
-        const list = (_c = (_b = this.elements) === null || _b === void 0 ? void 0 : _b.map(element => {
-            if (element === undefined) {
-                return undefined;
-            }
-            return { [idFieldName]: element.id };
-        })) !== null && _c !== void 0 ? _c : [];
-        list.splice(index, 1);
-        this.set(entityManager, self, associationField, variablesCode, variables, list);
     }
 }
 class AssociationConnectionValue extends AssociationValue {
     get() {
         return this.connection;
     }
-    set(entityManager, record, associationField, variablesCode, variables, value) {
+    set(entityManager, record, associationField, value) {
         var _a, _b;
         if (value === undefined) {
             throw Error(`Cannot set the undefined or null value to ${associationField.fullName} because it's connection field`);
@@ -363,22 +362,22 @@ class AssociationConnectionValue extends AssociationValue {
         }
         for (const [id, element] of oldMap) {
             if (!newIds.has(id)) {
-                this.releaseOldReference(entityManager, record, associationField, variablesCode, element);
+                this.releaseOldReference(entityManager, record, associationField, element);
             }
         }
         this.connection = Object.assign(Object.assign({}, value), { edges: newEdges });
         for (const newEdge of newEdges) {
             if (!oldMap.has(newEdge.node.id)) {
-                this.retainNewReference(entityManager, record, associationField, variablesCode, variables, newEdge.node);
+                this.retainNewReference(entityManager, record, associationField, newEdge.node);
             }
         }
         // TODO: Trigger
     }
-    onLink(entityManager, self, associationField, variablesCode, target) {
+    link(entityManager, self, associationField, target, absolute) {
         // TODO: link
     }
-    onUnlink(entityManager, self, associationField, variablesCode, target) {
-        // TODO: unlink
+    unlink(entityManager, self, associationField, target, absolute) {
+        // TODO: link
     }
 }
 function objectWithOnlyId(record) {
@@ -388,3 +387,14 @@ function objectWithOnlyId(record) {
     return { [record.type.idField.name]: record.id };
 }
 exports.QUERY_OBJECT_ID = "unique-id-of-qury-object";
+function toRecordMap(arr) {
+    const map = new Map();
+    if (arr !== undefined) {
+        for (const element of arr) {
+            if (element !== undefined) {
+                map.set(element.id, element);
+            }
+        }
+    }
+    return map;
+}

@@ -1,10 +1,9 @@
 import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { SpaceSavingMap } from "../state/impl/SpaceSavingMap";
-import { standardizedVariables } from "../state/impl/Variables";
 import { BackReferences } from "./BackReferences";
 import { EntityManager } from "./EntityManager";
-import { ModificationContext } from "./ModificationContext";
+import { VariableArgs } from "./VariableArgs";
 
 export class Record {
 
@@ -25,6 +24,10 @@ export class Record {
         }
     }
 
+    get isDeleted(): boolean {
+        return this.deleted;
+    }
+
     hasScalar(fieldName: string): boolean {
         return this.scalarMap.has(fieldName);
     }
@@ -33,19 +36,18 @@ export class Record {
         return this.scalarMap.get(fieldName);
     }
 
-    hasAssociation(field: FieldMetadata, variables: any): boolean {
-        return this.associationMap.get(field)?.has(variables) === true;
+    hasAssociation(field: FieldMetadata, args: VariableArgs): boolean {
+        return this.associationMap.get(field)?.has(args) === true;
     }
 
-    getAssociation(field: FieldMetadata, variables: any): Record | ReadonlyArray<Record | undefined> | RecordConnection | undefined {
-        return this.associationMap.get(field)?.get(variables);
+    getAssociation(field: FieldMetadata, args: VariableArgs): Record | ReadonlyArray<Record | undefined> | RecordConnection | undefined {
+        return this.associationMap.get(field)?.get(args);
     }
 
     set(
         entityManager: EntityManager, 
         field: FieldMetadata,
-        variablesCode: string | undefined,
-        variables: any, 
+        args: VariableArgs,
         value: any
     ) {
         if (field?.isAssociation) {
@@ -56,12 +58,11 @@ export class Record {
                 entityManager,
                 this,
                 field,
-                variablesCode,
-                variables,
+                args,
                 value
             );
         } else {
-            if (variables !== undefined) {
+            if (args.variables !== undefined) {
                 throw new Error('scalar fields does not support variables');
             }
             if (field === this.type.idField) {
@@ -72,14 +73,36 @@ export class Record {
                 const oldValue = this.scalarMap.get(field.name);
                 if (oldValue !== value) {
                     this.scalarMap.set(field.name, value);
-                    entityManager.modificationContext.set(this, field.name, variablesCode, oldValue, value);
+                    entityManager.modificationContext.set(this, field.name, args.key, oldValue, value);
                 }
             }
         }
     }
 
-    get isDeleted(): boolean {
-        return this.deleted;
+    link(
+        entityManager: EntityManager,
+        associationField: FieldMetadata,
+        record: Record
+    ) {
+        this.associationMap.get(associationField)?.link(
+            entityManager,
+            this,
+            record,
+            undefined
+        );
+    }
+
+    unlink(
+        entityManager: EntityManager,
+        associationField: FieldMetadata,
+        record: Record
+    ) {
+        this.associationMap.get(associationField)?.unlink(
+            entityManager,
+            this,
+            record,
+            undefined
+        );
     }
 
     delete(entityManager: EntityManager) {
@@ -92,7 +115,11 @@ export class Record {
         this.scalarMap.clear();
         this.associationMap.clear();
         this.backReferences.forEach((field, _, record) => {
-            record.unlink(entityManager, field, this);
+            record.associationMap.get(field)?.forceUnlink(
+                entityManager,
+                record,
+                this
+            );
         });
         this.deleted = true;
     }
@@ -100,37 +127,13 @@ export class Record {
     undelete() {
         this.deleted = false;
     }
-
-    link(
-        entityManager: EntityManager, 
-        associationField: FieldMetadata,
-        target: Record
-    ) {
-        this.associationMap.forEachValue(association => {
-            if (association.field === associationField) {
-                entityManager.modificationContext.update(this);
-                association.link(entityManager, this, target);
-            }
-        });
-    }
-
-    unlink(
-        entityManager: EntityManager, 
-        associationField: FieldMetadata,
-        target: Record
-    ) {
-        this.associationMap.forEachValue(association => {
-            if (association.field === associationField) {
-                entityManager.modificationContext.update(this);
-                association.unlink(entityManager, this, target);
-            }
-        });
-    }
 }
 
 class Association {
 
     private valueMap = new SpaceSavingMap<string | undefined, AssociationValue>();
+
+    private frozen = false;
 
     constructor(readonly field: FieldMetadata) {
         if (field.category === "ID") {
@@ -138,62 +141,102 @@ class Association {
         }
     }
 
-    has(variables: any): boolean {
-        return this.valueOrUndefined(variables) !== undefined;
+    has(args: VariableArgs): boolean {
+        return this.valueMap.get(args.key) !== undefined;
     }
 
-    get(variables: any): Record | ReadonlyArray<Record | undefined> | RecordConnection | undefined {
-        return this.valueOrUndefined(variables)?.get();
+    get(args: VariableArgs): Record | ReadonlyArray<Record | undefined> | RecordConnection | undefined {
+        return this.valueMap.get(args.key)?.get();
     }
 
     set(
         entityManager: EntityManager, 
         record: Record, 
         associationField: FieldMetadata, 
-        variablesCode: string | undefined,
-        variables: any, 
+        args: VariableArgs, 
         value: any
     ) {
-        this.value(variables).set(entityManager, record, associationField, variablesCode, variables, value);
+        if (this.frozen) {
+            throw new Error(`Cannot change the association because its frozen`);
+        }
+        this.frozen = true;
+        try {
+            this.value(args).set(entityManager, record, associationField, value);
+        } finally {
+            this.frozen = false;
+        }
     }
 
     link(
         entityManager: EntityManager, 
-        self: Record,
-        target: Record
+        self: Record, 
+        target: Record,
+        exceptArgs: VariableArgs | undefined
     ) {
-        this.valueMap.forEach((vsCode, value) => {
-            value.link(entityManager, self, this.field, vsCode, target);
-        });
+        if (!this.frozen || exceptArgs !== undefined) {
+            entityManager.modificationContext.update(self);
+            this.valueMap.forEachValue(value => {
+                if (exceptArgs === undefined || exceptArgs.key !== value.args.key) {
+                    value.link(
+                        entityManager, 
+                        self, 
+                        this.field, 
+                        target, 
+                        exceptArgs?.constains(value.args) ?? false
+                    );
+                }
+            });
+        }
     }
 
     unlink(
         entityManager: EntityManager, 
-        self: Record,
+        self: Record, 
+        target: Record,
+        exceptArgs: VariableArgs | undefined
+    ) {
+        if (!this.frozen || exceptArgs !== undefined) {
+            entityManager.modificationContext.update(self);
+            this.valueMap.forEachValue(value => {
+                if (exceptArgs === undefined || exceptArgs.key !== value.args.key) {
+                    value.unlink(
+                        entityManager, 
+                        self, 
+                        this.field, 
+                        target,
+                        exceptArgs !== undefined ? value.args.constains(exceptArgs) : false
+                    );
+                }
+            });
+        }
+    }
+
+    forceUnlink(
+        entityManager: EntityManager, 
+        self: Record, 
         target: Record
     ) {
-        this.valueMap.forEach((vsCode, value) => {
-            value.unlink(entityManager, self, this.field, vsCode, target);
+        entityManager.modificationContext.update(self);
+        this.valueMap.forEachValue(value => {
+            value.unlink(
+                entityManager, 
+                self, 
+                this.field, 
+                target,
+                true
+            );
         });
     }
 
-    private valueOrUndefined(variables: any): AssociationValue | undefined {
-        const vs = standardizedVariables(variables);
-        const vsCode = vs !== undefined ? JSON.stringify(vs) : undefined;
-        return this.valueMap.get(vsCode);
-    }
-
-    private value(variables: any): AssociationValue {
-        const vs = standardizedVariables(variables);
-        const vsCode = JSON.stringify(vs);
-        return this.valueMap.computeIfAbsent(vsCode, () => {
+    private value(args: VariableArgs): AssociationValue {
+        return this.valueMap.computeIfAbsent(args.key, () => {
             switch (this.field.category) {
                 case "CONNECTION":
-                    return new AssociationConnectionValue();
+                    return new AssociationConnectionValue(args);
                 case "LIST":
-                    return new AssociationListValue();
+                    return new AssociationListValue(args);
                 default:
-                    return new AssociationReferenceValue();
+                    return new AssociationReferenceValue(args);
             }
         });
     }
@@ -201,86 +244,50 @@ class Association {
 
 abstract class AssociationValue {
 
-    private linkFrozen = false;
+    constructor(readonly args: VariableArgs) {}
 
     abstract get(): Record | ReadonlyArray<Record | undefined> | RecordConnection | undefined;
 
     abstract set(
         entityManager: EntityManager, 
-        record: Record, 
+        self: Record, 
         associationField: FieldMetadata, 
-        variablesCode: string | undefined,
-        variables: any, 
         value: any
     ): void;
 
-    link(
+    abstract link(
         entityManager: EntityManager, 
         self: Record, 
         associationField: FieldMetadata, 
-        variablesCode: string | undefined,
-        target: Record
-    ): void {
-        if (!this.linkFrozen) {
-            this.linkFrozen = true;
-            try {
-                this.onLink(entityManager, self, associationField, variablesCode, target);
-            } finally {
-                this.linkFrozen = false;
-            }
-        }
-    }
-
-    unlink(
-        entityManager: EntityManager, 
-        self: Record, 
-        associationField: FieldMetadata, 
-        variablesCode: string | undefined,
-        target: Record
-    ) {
-        if (!this.linkFrozen) {
-            this.linkFrozen = true;
-            try {
-                this.onUnlink(entityManager, self, associationField, variablesCode, target);
-            } finally {
-                this.linkFrozen = false;
-            }
-        }
-    }
-
-    protected abstract onLink(
-        entityManager: EntityManager, 
-        self: Record, 
-        associationField: FieldMetadata, 
-        variablesCode: string | undefined,
-        target: Record
+        target: Record | ReadonlyArray<Record>,
+        absolute: boolean
     ): void;
 
-    protected abstract onUnlink(
+    abstract unlink(
         entityManager: EntityManager, 
         self: Record, 
         associationField: FieldMetadata, 
-        variablesCode: string | undefined,
-        target: Record
+        target: Record | ReadonlyArray<Record>,
+        absolute: boolean
     ): void;
 
     protected releaseOldReference(
         entityManager: EntityManager,
         self: Record,
         associationField: FieldMetadata, 
-        variablesCode: string | undefined,
         oldRefernce: Record | undefined
     ) {
         if (oldRefernce !== undefined) {
             oldRefernce.backReferences.remove(
                 associationField, 
-                variablesCode,
+                this.args,
                 self
             );
             const oppositeField = associationField.oppositeField;
             if (oppositeField !== undefined) {
-                if (oldRefernce)
-                oldRefernce.unlink(entityManager, oppositeField, self);
+                if (oldRefernce) {
+                    oldRefernce.unlink(entityManager, oppositeField, self);
+                }
             }
         }
     }
@@ -289,15 +296,12 @@ abstract class AssociationValue {
         entityManager: EntityManager,
         self: Record,
         associationField: FieldMetadata, 
-        variablesCode: string | undefined,
-        variables: any | undefined,
         newReference: Record | undefined
     ) {
         if (newReference !== undefined) {
             newReference.backReferences.add(
                 associationField, 
-                variablesCode, 
-                variables, 
+                this.args,
                 self
             );
             const oppositeField = associationField.oppositeField;
@@ -320,8 +324,6 @@ class AssociationReferenceValue extends AssociationValue {
         entityManager: EntityManager, 
         self: Record, 
         associationField: FieldMetadata, 
-        variablesCode: string | undefined,
-        variables: any, 
         value: any
     ) {
         const reference = 
@@ -331,54 +333,72 @@ class AssociationReferenceValue extends AssociationValue {
 
         const oldReference = this.referfence;
         if (oldReference !== reference) {
-            this.releaseOldReference(entityManager, self, associationField, variablesCode, oldReference);
+            this.releaseOldReference(entityManager, self, associationField, oldReference);
             this.referfence = reference;
-            this.retainNewReference(entityManager, self, associationField, variablesCode, variables, reference);
+            this.retainNewReference(entityManager, self, associationField, reference);
             entityManager.modificationContext.set(
                 self, 
                 associationField.name, 
-                variablesCode,
+                this.args.key,
                 objectWithOnlyId(oldReference),
                 objectWithOnlyId(reference),
             );
         }
     }
 
-    protected onLink(
+    link(
         entityManager: EntityManager, 
         self: Record, 
         associationField: FieldMetadata, 
-        variablesCode: string | undefined,
-        target: Record
+        target: Record | ReadonlyArray<Record>,
+        absolute: boolean
     ) {
-        if (this.referfence?.id !== target.id) {
-            const variables = variablesCode !== undefined ? JSON.parse(variablesCode) : undefined;
+        let targetRecord: Record;
+        if (Array.isArray(target)) {
+            if (target.length === 0) {
+                return;
+            }
+            if (target.length > 1) {
+                throw new Error(`Internal bug: Cannot link AbstractReerenceValue with array whose length is greater than 1`);
+            }
+            targetRecord = target.length === 1 ? target[0] : undefined;
+        } else {
+            targetRecord = target as Record;
+        }
+        if (this.referfence?.id !== targetRecord?.id) {
             this.set(
                 entityManager,
                 self,
                 associationField,
-                variablesCode,
-                variables,
-                { [associationField.targetType!.idField.name]: target.id }
+                { [associationField.targetType!.idField.name]: targetRecord.id }
             );
         }
     }
 
-    protected onUnlink(
+    unlink(
         entityManager: EntityManager, 
         self: Record, 
         associationField: FieldMetadata, 
-        variablesCode: string | undefined,
-        target: Record
+        target: Record | ReadonlyArray<Record>,
+        absolute: boolean
     ) {
-        if (this.referfence?.id === target.id) {
-            const variables = variablesCode !== undefined ? JSON.parse(variablesCode) : undefined;
+        let targetRecord: Record;
+        if (Array.isArray(target)) {
+            if (target.length === 0) {
+                return;
+            }
+            if (target.length > 1) {
+                throw new Error(`Internal bug: Cannot unlink AbstractReerenceValue with array whose length is greater than 1`);
+            }
+            targetRecord = target.length === 1 ? target[0] : undefined;
+        } else {
+            targetRecord = target as Record;
+        }
+        if (this.referfence?.id === targetRecord.id) {
             this.set(
                 entityManager,
                 self,
                 associationField,
-                variablesCode,
-                variables,
                 undefined
             )
         }
@@ -397,8 +417,6 @@ class AssociationListValue extends AssociationValue {
         entityManager: EntityManager, 
         self: Record, 
         associationField: FieldMetadata, 
-        variablesCode: string | undefined,
-        variables: any, 
         value: any
     ) {
         
@@ -445,7 +463,7 @@ class AssociationListValue extends AssociationValue {
 
         for (const [id, element] of oldMap) {
             if (!newIds.has(id)) {
-                this.releaseOldReference(entityManager, self, associationField, variablesCode, element);
+                this.releaseOldReference(entityManager, self, associationField, element);
             }
         }
 
@@ -454,7 +472,7 @@ class AssociationListValue extends AssociationValue {
         for (const newElement of newElements) {
             if (newElement !== undefined) {
                 if (!oldMap.has(newElement.id)) {
-                    this.retainNewReference(entityManager, self, associationField, variablesCode, variables, newElement);
+                    this.retainNewReference(entityManager, self, associationField, newElement);
                 }
             }
         }
@@ -463,85 +481,62 @@ class AssociationListValue extends AssociationValue {
             entityManager.modificationContext.set(
                 self, 
                 associationField.name, 
-                variablesCode, 
+                this.args.key, 
                 oldValueForTriggger, 
                 this.elements?.map(objectWithOnlyId)
             );
         }
     }
 
-    protected onLink(
+    link(
         entityManager: EntityManager, 
         self: Record, 
         associationField: FieldMetadata, 
-        variablesCode: string | undefined,
-        target: Record
+        target: Record | ReadonlyArray<Record>,
+        absolute: boolean
     ) {
-        
-        if (this.elements !== undefined) {
-            for (const element of this.elements) {
-                if (element?.id === target.id) {
-                    return;
-                }
+        const elements = this.elements !== undefined ? [...this.elements] : [];
+        const elementMap = toRecordMap(elements);
+        const linkMap = toRecordMap(Array.isArray(target) ? target : [target]);
+        for (const record of linkMap.values()) {
+            if (!elementMap.has(record.id)) {
+                elements.push(record);
             }
         }
-
-        const variables = variablesCode !== undefined ? JSON.parse(variablesCode) : undefined;
-        const idFieldName = associationField.targetType!.idField.name;
-        const list = this.elements?.map(element => {
-            if (element === undefined) {
-                return undefined;
-            }
-            return { [idFieldName]: element.id };
-        }) ?? [];
-        list.push({[idFieldName]: target.id});
-        this.set(
-            entityManager,
-            self,
-            associationField,
-            variablesCode,
-            variables,
-            list
-        );
+        if (elements.length !== this.elements?.length ?? 0) {
+            this.set(
+                entityManager,
+                self,
+                associationField,
+                elements.map(objectWithOnlyId)
+            );
+        }
     }
 
-    protected onUnlink(
+    unlink(
         entityManager: EntityManager, 
         self: Record, 
         associationField: FieldMetadata, 
-        variablesCode: string | undefined,
-        target: Record
+        target: Record | ReadonlyArray<Record>,
+        absolute: boolean
     ) {
-        let index = -1;
-        if (this.elements !== undefined) {
-            for (let i = this.elements.length - 1; i >= 0; --i) {
-                if (this.elements[i]?.id === target.id) {
-                    index = i;
-                    break;
-                }
+        const elements = this.elements !== undefined ? [...this.elements] : [];
+        const elementMap = toRecordMap(elements);
+        const unlinkMap = toRecordMap(Array.isArray(target) ? target : [target]);
+        for (const record of unlinkMap.values()) {
+            if (elementMap.has(record.id)) {
+                const index = elements.findIndex(element => element?.id === record.id);
+                elements.splice(index, 1);
             }
         }
-        if (index === -1) {
-            return;
+        if (elements.length !== this.elements?.length ?? 0) {
+            this.set(
+                entityManager,
+                self,
+                associationField,
+                elements.map(objectWithOnlyId)
+            );
         }
-
-        const variables = variablesCode !== undefined ? JSON.parse(variablesCode) : undefined;
-        const idFieldName = associationField.targetType!.idField.name;
-        const list = this.elements?.map(element => {
-            if (element === undefined) {
-                return undefined;
-            }
-            return { [idFieldName]: element.id };
-        }) ?? [];
-        list.splice(index, 1);
-        this.set(
-            entityManager,
-            self,
-            associationField,
-            variablesCode,
-            variables,
-            list
-        );
     }
 }
 
@@ -557,8 +552,6 @@ class AssociationConnectionValue extends AssociationValue {
         entityManager: EntityManager, 
         record: Record, 
         associationField: FieldMetadata, 
-        variablesCode: string | undefined,
-        variables: any, 
         value: any
     ) {
         if (value === undefined) {
@@ -591,7 +584,7 @@ class AssociationConnectionValue extends AssociationValue {
 
         for (const [id, element] of oldMap) {
             if (!newIds.has(id)) {
-                this.releaseOldReference(entityManager, record, associationField, variablesCode, element);
+                this.releaseOldReference(entityManager, record, associationField, element);
             }
         }
         
@@ -602,31 +595,31 @@ class AssociationConnectionValue extends AssociationValue {
         
         for (const newEdge of newEdges) {
             if (!oldMap.has(newEdge.node.id)) {
-                this.retainNewReference(entityManager, record, associationField, variablesCode, variables, newEdge.node);
+                this.retainNewReference(entityManager, record, associationField, newEdge.node);
             }
         }
 
         // TODO: Trigger
     }
 
-    protected onLink(
+    link(
         entityManager: EntityManager, 
         self: Record, 
         associationField: FieldMetadata, 
-        variablesCode: string | undefined,
-        target: Record
-    ) {
+        target: Record | ReadonlyArray<Record>,
+        absolute: boolean
+    ): void {
         // TODO: link
     }
 
-    protected onUnlink(
+    unlink(
         entityManager: EntityManager, 
         self: Record, 
         associationField: FieldMetadata, 
-        variablesCode: string | undefined,
-        target: Record
+        target: Record | ReadonlyArray<Record>,
+        absolute: boolean
     ) {
-        // TODO: unlink
+        // TODO: link
     }
 }
 
@@ -650,3 +643,15 @@ function objectWithOnlyId(record: Record | undefined): any {
 }
 
 export const QUERY_OBJECT_ID = "unique-id-of-qury-object";
+
+function toRecordMap(arr: ReadonlyArray<Record | undefined> | undefined): Map<any, Record> {
+    const map = new Map<any, Record>();
+    if (arr !== undefined) {
+        for (const element of arr) {
+            if (element !== undefined) {
+                map.set(element.id, element);
+            }
+        }
+    }
+    return map;
+}
