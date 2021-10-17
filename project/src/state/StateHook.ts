@@ -169,14 +169,14 @@ export function makeManagedObjectHooks<TSchema extends SchemaType>(): ManagedObj
 export interface ManagedObjectHooks<TSchema extends SchemaType> {
 
     useObject<
-        TName extends keyof TSchema & string,
+        TName extends keyof TSchema["entities"] & string,
         T extends object,
         TVariables extends object,
         TAsyncStyle extends AsyncStyles = "SUSPENSE",
         TObjectStyle extends ObjectStyles = "REQUIRED",
     >(
         fetcher: Fetcher<string, T, TVariables>,
-        id: TSchema[TName][" $id"],
+        id: TSchema["entities"][TName][" $id"],
         options?: ObjectQueryOptions<TVariables, TAsyncStyle, TObjectStyle>
     ): AsyncReturnType<
         ObjectReference<T, TObjectStyle>,
@@ -184,14 +184,14 @@ export interface ManagedObjectHooks<TSchema extends SchemaType> {
     >;
 
     useObjects<
-        TName extends keyof TSchema & string,
+        TName extends keyof TSchema["entities"] & string,
         T extends object,
         TVariables extends object,
         TAsyncStyle extends AsyncStyles = "SUSPENSE",
         TObjectStyle extends ObjectStyles = "REQUIRED"
     >(
         fetcher: Fetcher<string, T, TVariables>,
-        ids: ReadonlyArray<TSchema[TName][" $id"]>,
+        ids: ReadonlyArray<TSchema["entities"][TName][" $id"]>,
         options?: ObjectQueryOptions<TVariables, TAsyncStyle, TObjectStyle>
     ): AsyncReturnType<
         ReadonlyArray<ObjectReference<T, TObjectStyle>>,
@@ -215,14 +215,14 @@ type ObjectReference<T, TObjectStyle extends ObjectStyles> = TObjectStyle extend
 class ManagedObjectHooksImpl<TSchema extends SchemaType> implements ManagedObjectHooks<TSchema> {
 
     useObject<
-        TName extends keyof TSchema & string,
+        TName extends keyof TSchema["entities"] & string,
         T extends object,
         TVariables extends object,
         TAsyncStyle extends AsyncStyles = "SUSPENSE",
         TObjectStyle extends ObjectStyles = "REQUIRED"
     >(
         fetcher: ObjectFetcher<string, T, TVariables>,
-        id: TSchema[TName][" $id"],
+        id: TSchema["entities"][TName][" $id"],
         options?: ObjectQueryOptions<TVariables, TAsyncStyle, TObjectStyle>
     ): AsyncReturnType<
         ObjectReference<T, TObjectStyle>,
@@ -260,14 +260,14 @@ class ManagedObjectHooksImpl<TSchema extends SchemaType> implements ManagedObjec
     }
 
     useObjects<
-        TName extends keyof TSchema & string,
+        TName extends keyof TSchema["entities"] & string,
         T extends object,
         TVariables extends object,
         TAsyncStyle extends AsyncStyles = "SUSPENSE",
         TObjectStyle extends ObjectStyles = "REQUIRED"
     >(
         fetcher: ObjectFetcher<string, T, TVariables>,
-        ids: ReadonlyArray<TSchema[TName][" $id"]>,
+        ids: ReadonlyArray<TSchema["entities"][TName][" $id"]>,
         options?: ObjectQueryOptions<TVariables, TAsyncStyle, TObjectStyle>
     ): AsyncReturnType<
         ReadonlyArray<ObjectReference<T, TObjectStyle>>,

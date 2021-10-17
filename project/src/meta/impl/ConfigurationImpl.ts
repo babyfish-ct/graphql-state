@@ -24,9 +24,11 @@ class ConfigurationImpl<TSchema extends SchemaType> implements Configuration<TSc
     }
 
     bidirectionalAssociation<
-        TTypeName extends keyof TSchema & string, 
-        TMappedByFieldName extends keyof TSchema[TTypeName][" $associations"] & string, 
-        TOppositeFieldName extends keyof TSchema[TSchema[TTypeName][" $associations"][TMappedByFieldName]][" $associations"] & string
+        TTypeName extends keyof TSchema["entities"] & string, 
+        TMappedByFieldName extends keyof TSchema["entities"][TTypeName][" $associationTypes"] & string, 
+        TOppositeFieldName extends keyof TSchema["entities"][
+            TSchema["entities"][TTypeName][" $associationTypes"][TMappedByFieldName]
+        ][" $associationTypes"] & string
     >(
         typeName: TTypeName,
         mappedByFieldName: TMappedByFieldName,

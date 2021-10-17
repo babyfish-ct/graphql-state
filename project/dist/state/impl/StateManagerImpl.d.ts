@@ -18,14 +18,14 @@ export declare class StateManagerImpl<TSchema extends SchemaType> implements Sta
     constructor(schema?: SchemaMetadata, network?: Network | undefined);
     get undoManager(): UndoManagerImpl;
     save<T extends object, TVariables extends object = {}>(fetcher: ObjectFetcher<string, T, any>, obj: T, variables?: TVariables): void;
-    delete<TName extends keyof TSchema & string>(typeName: TName, idOrArray: TSchema[TName][" $id"] | ReadonlyArray<TSchema[TName][" $id"]>): void;
+    delete<TName extends keyof TSchema["entities"] & string>(typeName: TName, idOrArray: TSchema["entities"][TName][" $id"] | ReadonlyArray<TSchema["entities"][TName][" $id"]>): void;
     addListener(listener: (e: EntityChangeEvent) => void): void;
     removeListener(listener: (e: EntityChangeEvent) => void): void;
     addListeners(listeners: {
-        readonly [TName in keyof TSchema & string]?: (e: TSchema[TName][" $event"]) => void;
+        readonly [TName in keyof TSchema["entities"] & string]?: (e: TSchema["entities"][TName][" $event"]) => void;
     }): void;
     removeListeners(listeners: {
-        readonly [TName in keyof TSchema & string]?: (e: TSchema[TName][" $event"]) => void;
+        readonly [TName in keyof TSchema["entities"] & string]?: (e: TSchema["entities"][TName][" $event"]) => void;
     }): void;
     registerScope(): ScopedStateManager;
     unregisterScope(scopedStateManager: ScopedStateManager): void;

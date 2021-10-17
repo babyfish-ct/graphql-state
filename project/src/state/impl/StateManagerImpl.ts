@@ -40,9 +40,9 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
         this.entityManager.save(toRuntimeShape(fetcher, variables), obj);
     }
 
-    delete<TName extends keyof TSchema & string>(
+    delete<TName extends keyof TSchema["entities"] & string>(
         typeName: TName, 
-        idOrArray: TSchema[TName][" $id"] | ReadonlyArray<TSchema[TName][" $id"]>
+        idOrArray: TSchema["entities"][TName][" $id"] | ReadonlyArray<TSchema["entities"][TName][" $id"]>
     ) {
         this.entityManager.delete(typeName, idOrArray);
     }
@@ -57,7 +57,7 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
 
     addListeners(
         listeners: { 
-            readonly [TName in keyof TSchema & string]?: (e: TSchema[TName][" $event"]) => void 
+            readonly [TName in keyof TSchema["entities"] & string]?: (e: TSchema["entities"][TName][" $event"]) => void 
         }
     ): void {
         for (const typeName in listeners) {
@@ -70,7 +70,7 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
 
     removeListeners(
         listeners: { 
-            readonly [TName in keyof TSchema & string]?: (e: TSchema[TName][" $event"]) => void 
+            readonly [TName in keyof TSchema["entities"] & string]?: (e: TSchema["entities"][TName][" $event"]) => void 
         }
     ): void {
         for (const typeName in listeners) {

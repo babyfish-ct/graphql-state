@@ -4,18 +4,17 @@ import { SchemaType } from "../meta/SchemaType";
 export interface StateManager<TSchema extends SchemaType> {
     readonly undoManager: UndoManager;
     transaction<TResult>(callback: (ts: TransactionStatus) => TResult): TResult;
-    save<T extends object, TVariables extends object = {}>(fetcher: ObjectFetcher<"Query", T, TVariables>, obj: T, variables?: TVariables): void;
-    save<TName extends Exclude<keyof TSchema, "Query"> & string, T extends object, TVariables extends object = {}>(fetcher: ObjectFetcher<TName, T, any>, obj: T, variables?: TVariables): void;
-    save<TName extends Exclude<keyof TSchema, "Query"> & string, T extends object, TVariables extends object = {}>(fetcher: ObjectFetcher<TName, T, any>, objs: readonly T[], variables?: TVariables): void;
-    delete<TName extends keyof TSchema & string>(typeName: TName, id: TSchema[TName][" $id"]): void;
-    delete<TName extends keyof TSchema & string>(typeName: TName, ids: ReadonlyArray<TSchema[TName][" $id"]>): void;
+    save<TName extends (keyof TSchema["entities"] & string) | "Query" | "Mutation", T extends object, TVariables extends object = {}>(fetcher: ObjectFetcher<TName, T, any>, obj: T, variables?: TVariables): void;
+    save<TName extends keyof TSchema["entities"] & string, T extends object, TVariables extends object = {}>(fetcher: ObjectFetcher<TName, T, any>, objs: readonly T[], variables?: TVariables): void;
+    delete<TName extends keyof TSchema["entities"] & string>(typeName: TName, id: TSchema["entities"][TName][" $id"]): void;
+    delete<TName extends keyof TSchema["entities"] & string>(typeName: TName, ids: ReadonlyArray<TSchema["entities"][TName][" $id"]>): void;
     addListener(listener: (e: EntityChangeEvent) => void): void;
     removeListener(listener: (e: EntityChangeEvent) => void): void;
     addListeners(listeners: {
-        readonly [TName in keyof TSchema & string]?: (e: TSchema[TName][" $event"]) => void;
+        readonly [TName in keyof TSchema["entities"] & string]?: (e: TSchema["entities"][TName][" $event"]) => void;
     }): void;
     removeListeners(listeners: {
-        readonly [TName in keyof TSchema & string]?: (e: TSchema[TName][" $event"]) => void;
+        readonly [TName in keyof TSchema["entities"] & string]?: (e: TSchema["entities"][TName][" $event"]) => void;
     }): void;
 }
 export interface UndoManager {

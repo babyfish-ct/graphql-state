@@ -215,7 +215,7 @@ class AssociationReferenceValue extends AssociationValue {
             targetRecord = target;
         }
         if (((_a = this.referfence) === null || _a === void 0 ? void 0 : _a.id) !== (targetRecord === null || targetRecord === void 0 ? void 0 : targetRecord.id)) {
-            this.set(entityManager, self, associationField, { [associationField.targetType.idField.name]: targetRecord.id });
+            this.set(entityManager, self, associationField, objectWithOnlyId(targetRecord));
         }
     }
     unlink(entityManager, self, associationField, target, absolute) {

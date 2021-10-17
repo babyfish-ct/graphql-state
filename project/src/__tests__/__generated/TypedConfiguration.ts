@@ -1,9 +1,16 @@
-import { Configuration, newConfiguration } from '../..';
-import { department$ } from './fetchers';
-import { DepartmentChangeEvent } from './triggers';
-import { employee$ } from './fetchers';
-import { EmployeeChangeEvent } from './triggers';
-import { query$ } from './fetchers';
+import { Configuration, newConfiguration } from 'graphql-state';
+import {
+    department$,
+    employee$,
+    query$
+} from './fetchers';
+import {
+    DepartmentArgs
+} from './fetchers';
+import {
+    DepartmentChangeEvent,
+    EmployeeChangeEvent
+} from './triggers';
 
 export function newTypedConfiguration(): Configuration<Schema> {
     return newConfiguration<Schema>(
@@ -14,14 +21,29 @@ export function newTypedConfiguration(): Configuration<Schema> {
 }
 
 export type Schema = {
-    readonly "Department": {
-        readonly " $id": string;
-        readonly " $event": DepartmentChangeEvent;
-        readonly " $associations": {readonly employees: "Employee"};
+    readonly query: {
+        readonly " $associationArgs": {
+        };
     };
-    readonly "Employee": {
-        readonly " $id": string;
-        readonly " $event": EmployeeChangeEvent;
-        readonly " $associations": {readonly department: "Department"};
+    readonly entities: {
+        readonly "Department": {
+            readonly " $id": string;
+            readonly " $event": DepartmentChangeEvent;
+            readonly " $associationTypes": {
+                readonly employees: "Employee"
+            };
+            readonly " $associationArgs": {
+                readonly employees: DepartmentArgs["employees"]
+            };
+        };
+        readonly "Employee": {
+            readonly " $id": string;
+            readonly " $event": EmployeeChangeEvent;
+            readonly " $associationTypes": {
+                readonly department: "Department"
+            };
+            readonly " $associationArgs": {
+            };
+        };
     };
-}
+};

@@ -1,7 +1,7 @@
 import { Fetcher } from "graphql-ts-client-api";
-import { SchemaType } from "../meta/SchemaType";
+import { EmptySchemaType, SchemaType } from "../meta/SchemaType";
 
-export function makeStateFactory<TSchema extends SchemaType = {}>(): StateFactory<TSchema> {
+export function makeStateFactory<TSchema extends SchemaType = EmptySchemaType>(): StateFactory<TSchema> {
     return new StateFactoryImpl<TSchema>();
 }
 
@@ -130,22 +130,22 @@ export interface ComputedContext<TSchema extends SchemaType> {
     ): Promise<X>;
 
     object<
-        TName extends Exclude<keyof TSchema & string, "Query" | "Mutation">,
+        TName extends TSchema["entities"] & string,
         T extends object,
         TVaraibles extends object
     >(
         fetcher: Fetcher<TName, T, TVaraibles>,
-        id: TSchema[TName][" $id"],
+        id: TSchema["entities"][TName][" $id"],
         variables?: TVaraibles
     ): Promise<T | undefined>;
 
     objects<
-        TName extends Exclude<keyof TSchema & string, "Query" | "Mutation">,
+        TName extends TSchema["entities"] & string,
         T extends object,
         TVaraibles extends object
     >(
         fetcher: Fetcher<TName, T, TVaraibles>,
-        ids: ReadonlyArray<TSchema[TName][" $id"]>,
+        ids: ReadonlyArray<TSchema["entities"][TName][" $id"]>,
         variables?: TVaraibles
     ): Promise<ReadonlyArray<T | undefined>>;
 

@@ -370,7 +370,7 @@ class AssociationReferenceValue extends AssociationValue {
                 entityManager,
                 self,
                 associationField,
-                { [associationField.targetType!.idField.name]: targetRecord.id }
+                objectWithOnlyId(targetRecord)
             );
         }
     }

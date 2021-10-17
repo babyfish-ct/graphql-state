@@ -1,11 +1,21 @@
 import { Configuration, newConfiguration } from 'graphql-state';
-import { query$ } from './fetchers';
-import { bookStore$ } from './fetchers';
-import { BookStoreChangeEvent } from './triggers';
-import { book$ } from './fetchers';
-import { BookChangeEvent } from './triggers';
-import { author$ } from './fetchers';
-import { AuthorChangeEvent } from './triggers';
+import {
+    query$,
+    bookStore$,
+    book$,
+    author$
+} from './fetchers';
+import {
+    QueryArgs,
+    BookStoreArgs,
+    BookArgs,
+    AuthorArgs
+} from './fetchers';
+import {
+    BookStoreChangeEvent,
+    BookChangeEvent,
+    AuthorChangeEvent
+} from './triggers';
 
 export function newTypedConfiguration(): Configuration<Schema> {
     return newConfiguration<Schema>(
@@ -17,22 +27,44 @@ export function newTypedConfiguration(): Configuration<Schema> {
 }
 
 export type Schema = {
-    readonly "BookStore": {
-        readonly " $id": string;
-        readonly " $event": BookStoreChangeEvent;
-        readonly " $associations": {readonly books: "Book"};
-    };
-    readonly "Book": {
-        readonly " $id": string;
-        readonly " $event": BookChangeEvent;
-        readonly " $associations": {
-            readonly store: "BookStore", 
-            readonly authors: "Author"
+    readonly query: {
+        readonly " $associationArgs": {
+            readonly findBooksStores: QueryArgs["findBooksStores"], 
+            readonly findBooks: QueryArgs["findBooks"], 
+            readonly findAuthors: QueryArgs["findAuthors"]
         };
     };
-    readonly "Author": {
-        readonly " $id": string;
-        readonly " $event": AuthorChangeEvent;
-        readonly " $associations": {readonly books: "Book"};
+    readonly entities: {
+        readonly "BookStore": {
+            readonly " $id": string;
+            readonly " $event": BookStoreChangeEvent;
+            readonly " $associationTypes": {
+                readonly books: "Book"
+            };
+            readonly " $associationArgs": {
+                readonly books: BookStoreArgs["books"]
+            };
+        };
+        readonly "Book": {
+            readonly " $id": string;
+            readonly " $event": BookChangeEvent;
+            readonly " $associationTypes": {
+                readonly store: "BookStore", 
+                readonly authors: "Author"
+            };
+            readonly " $associationArgs": {
+                readonly authors: BookArgs["authors"]
+            };
+        };
+        readonly "Author": {
+            readonly " $id": string;
+            readonly " $event": AuthorChangeEvent;
+            readonly " $associationTypes": {
+                readonly books: "Book"
+            };
+            readonly " $associationArgs": {
+                readonly books: AuthorArgs["books"]
+            };
+        };
     };
-}
+};
