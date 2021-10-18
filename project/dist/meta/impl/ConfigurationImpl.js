@@ -14,16 +14,12 @@ class ConfigurationImpl {
             this._schema.addFetchableType(fetchableType);
         }
     }
-    bidirectionalAssociation(typeName, mappedByFieldName, oppositeFieldName) {
-        const typeMetadata = this._schema.typeMap.get(typeName);
-        if (typeMetadata === undefined) {
-            throw new Error(`Illegal type name "${typeName}"`);
-        }
-        const field = typeMetadata.fieldMap.get(mappedByFieldName);
-        if (field === undefined) {
-            throw new Error(`There is no field "${mappedByFieldName}" in type "${typeName}"`);
-        }
-        field.setOppositeFieldName(oppositeFieldName);
+    associationProperties(typeName, fieldName, properties) {
+        this.field(typeName, fieldName).setAssocaitionProperties(properties);
+        return this;
+    }
+    bidirectionalAssociation(typeName, fieldName, oppositeFieldName) {
+        this.field(typeName, fieldName).setOppositeFieldName(oppositeFieldName);
         return this;
     }
     network(network) {
@@ -35,5 +31,16 @@ class ConfigurationImpl {
             type.idField;
         }
         return new StateManagerImpl_1.StateManagerImpl(this._schema, this._network);
+    }
+    field(typeName, fieldName) {
+        const typeMetadata = this._schema.typeMap.get(typeName);
+        if (typeMetadata === undefined) {
+            throw new Error(`Illegal type name "${typeName}"`);
+        }
+        const field = typeMetadata.fieldMap.get(fieldName);
+        if (field === undefined) {
+            throw new Error(`There is no field "${fieldName}" in type "${typeName}"`);
+        }
+        return field;
     }
 }

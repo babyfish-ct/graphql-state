@@ -12,6 +12,9 @@ export interface SchemaType {
         readonly [key: string]: {
             readonly " $id": any;
             readonly " $event": EntityChangeEvent;
+            readonly " $scalarTypes": {
+                readonly [key: string]: any;
+            }
             readonly " $associationTypes": {
                 readonly [key: string]: string;
             };

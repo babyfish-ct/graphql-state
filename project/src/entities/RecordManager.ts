@@ -1,8 +1,6 @@
 import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
-import { standardizedVariables } from "../state/impl/Variables";
 import { EntityManager } from "./EntityManager";
-import { ModificationContext } from "./ModificationContext";
 import { QUERY_OBJECT_ID, Record } from "./Record";
 import { RecordRef } from "./RecordRef";
 import { RuntimeShape } from "./RuntimeShape";

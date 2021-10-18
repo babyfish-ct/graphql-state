@@ -100,7 +100,7 @@ export const BookStoreList = memo(() => {
                 </Row>
                 { loading && <div><Spin/>Loading book stores...</div>}
                 {
-                    !loading && data.stores &&
+                    !loading && data &&
                     <>
                         <Table rowKey="id" dataSource={data.stores} pagination={false}>
                             <Table.Column title="Name" dataIndex="name"/>

@@ -5,6 +5,7 @@ class FieldMetadata {
     constructor(declaringType, field) {
         this.declaringType = declaringType;
         this._inversed = false;
+        this._associationProperties = DEFAULT_ASSOCIATION_PROPERITES;
         this.name = field.name;
         this.category = field.category;
         this.fullName = `${declaringType.name}.${field.name}`;
@@ -67,6 +68,9 @@ class FieldMetadata {
         this.declaringType.schema[" $resolvedInversedFields"]();
         return this._oppositeField;
     }
+    get associationProperties() {
+        return this._associationProperties;
+    }
     setOppositeFieldName(oppositeFieldName) {
         this.declaringType.schema.preChange();
         if (this._oppositeField !== undefined) {
@@ -78,6 +82,17 @@ class FieldMetadata {
         this._oppositeField = oppositeFieldName;
         this._inversed = true;
         this.declaringType.schema[" $registerUnresolvedInversedField"](this);
+    }
+    setAssocaitionProperties(properties) {
+        var _a, _b, _c;
+        if (!this.isAssociation) {
+            throw new Error(`Cannot set assciation properties for '${this.fullName}' because its not asscoation field`);
+        }
+        this._associationProperties = {
+            contains: (_a = properties.contains) !== null && _a !== void 0 ? _a : DEFAULT_ASSOCIATION_PROPERITES.contains,
+            position: (_b = properties.position) !== null && _b !== void 0 ? _b : DEFAULT_ASSOCIATION_PROPERITES.position,
+            dependencies: (_c = properties.dependencies) !== null && _c !== void 0 ? _c : DEFAULT_ASSOCIATION_PROPERITES.dependencies
+        };
     }
     " $resolveInversedAssociation"() {
         var _a;
@@ -108,3 +123,14 @@ exports.FieldMetadata = FieldMetadata;
 function isAssociationCategory(category) {
     return category === "REFERENCE" || category === "LIST" || category === "CONNECTION";
 }
+const DEFAULT_ASSOCIATION_PROPERITES = {
+    contains: (row, variables) => {
+        return variables === undefined ? true : undefined;
+    },
+    position: (row, rows, variables) => {
+        return "end";
+    },
+    dependencies: (variables) => {
+        return variables === undefined ? [] : undefined;
+    }
+};

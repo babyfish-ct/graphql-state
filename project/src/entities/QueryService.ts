@@ -1,8 +1,9 @@
 import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
+import { RecordConnection } from "./assocaition/AssociationConnectionValue";;
 import { EntityManager } from "./EntityManager";
 import { QueryArgs } from "./QueryArgs";
-import { QUERY_OBJECT_ID, Record, RecordConnection } from "./Record";
+import { QUERY_OBJECT_ID, Record } from "./Record";
 import { RuntimeShape } from "./RuntimeShape";
 
 export class QueryService {

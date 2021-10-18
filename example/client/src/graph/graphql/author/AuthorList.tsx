@@ -103,7 +103,7 @@ export const AuthorList: FC = memo(() => {
                 </Row>
                 { loading && <div><Spin/>Loading authors...</div> }
                 {
-                    !loading && data.authors &&
+                    !loading && data &&
                     <>
                         <Table rowKey="id" dataSource={data.authors} pagination={false}>
                             <Table.Column title="Name" dataIndex="name"/>

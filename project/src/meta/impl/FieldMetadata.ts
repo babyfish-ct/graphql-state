@@ -1,4 +1,5 @@
 import { FetchableField } from "graphql-ts-client-api";
+import { PositionType, ScalarRow } from "../Configuration";
 import { TypeMetadata } from "./TypeMetdata";
 
 export class FieldMetadata {
@@ -20,6 +21,8 @@ export class FieldMetadata {
     private _targetType?: string | TypeMetadata;
 
     private _oppositeField?: string | FieldMetadata;
+
+    private _associationProperties: AssocaitionProperties = DEFAULT_ASSOCIATION_PROPERITES;
 
     constructor(
         readonly declaringType: TypeMetadata,
@@ -96,6 +99,10 @@ export class FieldMetadata {
         return this._oppositeField as FieldMetadata | undefined;
     }
 
+    get associationProperties(): AssocaitionProperties {
+        return this._associationProperties;
+    }
+
     setOppositeFieldName(oppositeFieldName: string) {
         this.declaringType.schema.preChange();
         if (this._oppositeField !== undefined) {
@@ -107,6 +114,17 @@ export class FieldMetadata {
         this._oppositeField = oppositeFieldName;
         this._inversed = true;
         this.declaringType.schema[" $registerUnresolvedInversedField"](this);
+    }
+
+    setAssocaitionProperties(properties: Partial<AssocaitionProperties>) {
+        if (!this.isAssociation) {
+            throw new Error(`Cannot set assciation properties for '${this.fullName}' because its not asscoation field`);
+        }
+        this._associationProperties = {
+            contains: properties.contains ?? DEFAULT_ASSOCIATION_PROPERITES.contains,
+            position: properties.position ?? DEFAULT_ASSOCIATION_PROPERITES.position,
+            dependencies: properties.dependencies ?? DEFAULT_ASSOCIATION_PROPERITES.dependencies
+        };
     }
 
     " $resolveInversedAssociation"() {
@@ -145,6 +163,42 @@ export interface FieldMetadataOptions {
     readonly mappedBy?: string;
 }
 
+export interface AssocaitionProperties {
+    readonly contains: (
+        row: ScalarRow<any>,
+        variables?: any
+    ) => boolean | undefined,
+    readonly position: (
+        row: ScalarRow<any>,
+        rows: ReadonlyArray<ScalarRow<any>>,
+        variables?: any
+    ) => PositionType | undefined,
+    readonly dependencies: (
+        variables?: any
+    ) => ReadonlyArray<string> | undefined
+}
+
 function isAssociationCategory(category: FieldMetadataCategory) {
     return category === "REFERENCE" || category === "LIST" || category === "CONNECTION";
+}
+
+const DEFAULT_ASSOCIATION_PROPERITES: AssocaitionProperties = {
+    contains: (
+        row: ScalarRow<any>,
+        variables?: any
+    ): boolean | undefined => {
+        return variables === undefined ? true : undefined;
+    },
+    position: (
+        row: ScalarRow<any>,
+        rows: ReadonlyArray<ScalarRow<any>>,
+        variables?: any
+    ): PositionType | undefined => {
+        return "end";
+    },
+    dependencies: (
+        variables?: any
+    ): ReadonlyArray<string> | undefined => {
+        return variables === undefined ? [] : undefined
+    }
 }

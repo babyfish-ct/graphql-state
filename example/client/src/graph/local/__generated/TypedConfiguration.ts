@@ -29,6 +29,10 @@ export type Schema = {
         readonly "BookStore": {
             readonly " $id": string;
             readonly " $event": BookStoreChangeEvent;
+            readonly " $scalarTypes": {
+                readonly id: string, 
+                readonly name: string
+            };
             readonly " $associationTypes": {
                 readonly books: "Book"
             };
@@ -38,6 +42,10 @@ export type Schema = {
         readonly "Book": {
             readonly " $id": string;
             readonly " $event": BookChangeEvent;
+            readonly " $scalarTypes": {
+                readonly id: string, 
+                readonly name: string
+            };
             readonly " $associationTypes": {
                 readonly store: "BookStore", 
                 readonly authors: "Author"
@@ -48,6 +56,10 @@ export type Schema = {
         readonly "Author": {
             readonly " $id": string;
             readonly " $event": AuthorChangeEvent;
+            readonly " $scalarTypes": {
+                readonly id: string, 
+                readonly name: string
+            };
             readonly " $associationTypes": {
                 readonly books: "Book"
             };

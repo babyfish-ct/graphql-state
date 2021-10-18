@@ -1,5 +1,7 @@
+import { ScalarRow } from "../meta/Configuration";
 import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
+import { RecordConnection } from "./assocaition/AssociationConnectionValue";
 import { BackReferences } from "./BackReferences";
 import { EntityManager } from "./EntityManager";
 import { VariableArgs } from "./VariableArgs";
@@ -10,6 +12,7 @@ export declare class Record {
     private scalarMap;
     private associationMap;
     readonly backReferences: BackReferences;
+    private row?;
     constructor(type: TypeMetadata, id: any, deleted?: boolean);
     get isDeleted(): boolean;
     hasScalar(fieldName: string): boolean;
@@ -21,13 +24,8 @@ export declare class Record {
     unlink(entityManager: EntityManager, associationField: FieldMetadata, record: Record): void;
     delete(entityManager: EntityManager): void;
     undelete(): void;
+    toRow(): ScalarRow<any>;
 }
-export interface RecordConnection {
-    readonly edges: ReadonlyArray<RecordEdge>;
-    readonly [key: string]: any;
-}
-export interface RecordEdge {
-    readonly node: Record;
-    readonly cursor: string;
-}
-export declare const QUERY_OBJECT_ID = "unique-id-of-qury-object";
+export declare const QUERY_OBJECT_ID = "____QUERY_OBJECT____";
+export declare function toRecordMap(arr: ReadonlyArray<Record | undefined> | undefined): Map<any, Record>;
+export declare function objectWithOnlyId(record: Record | undefined): any;

@@ -3,6 +3,7 @@ import { StateManagerImpl } from "../../state/impl/StateManagerImpl";
 import { StateManager } from "../../state/StateManager";
 import { Configuration, Network } from "../Configuration";
 import { SchemaType } from "../SchemaType";
+import { AssocaitionProperties, FieldMetadata } from "./FieldMetadata";
 import { SchemaMetadata } from "./SchemaMetadata";
 
 export function newConfiguration<TSchema extends SchemaType>(
@@ -23,26 +24,27 @@ class ConfigurationImpl<TSchema extends SchemaType> implements Configuration<TSc
         }
     }
 
+    associationProperties(
+        typeName: string,
+        fieldName: string,
+        properties: AssocaitionProperties
+    ): this {
+        this.field(typeName, fieldName).setAssocaitionProperties(properties);
+        return this;
+    }
+
     bidirectionalAssociation<
         TTypeName extends keyof TSchema["entities"] & string, 
-        TMappedByFieldName extends keyof TSchema["entities"][TTypeName][" $associationTypes"] & string, 
+        TFieldName extends keyof TSchema["entities"][TTypeName][" $associationTypes"] & string, 
         TOppositeFieldName extends keyof TSchema["entities"][
-            TSchema["entities"][TTypeName][" $associationTypes"][TMappedByFieldName]
+            TSchema["entities"][TTypeName][" $associationTypes"][TFieldName]
         ][" $associationTypes"] & string
     >(
         typeName: TTypeName,
-        mappedByFieldName: TMappedByFieldName,
+        fieldName: TFieldName,
         oppositeFieldName: TOppositeFieldName
     ): this {
-        const typeMetadata = this._schema.typeMap.get(typeName);
-        if (typeMetadata === undefined) {
-            throw new Error(`Illegal type name "${typeName}"`);
-        }
-        const field = typeMetadata.fieldMap.get(mappedByFieldName);
-        if (field === undefined) {
-            throw new Error(`There is no field "${mappedByFieldName}" in type "${typeName}"`);
-        }
-        field.setOppositeFieldName(oppositeFieldName);
+        this.field(typeName, fieldName).setOppositeFieldName(oppositeFieldName);
         return this;
     }
 
@@ -56,5 +58,17 @@ class ConfigurationImpl<TSchema extends SchemaType> implements Configuration<TSc
             type.idField;
         }
         return new StateManagerImpl<TSchema>(this._schema, this._network);
+    }
+
+    private field(typeName: string, fieldName: string): FieldMetadata {
+        const typeMetadata = this._schema.typeMap.get(typeName);
+        if (typeMetadata === undefined) {
+            throw new Error(`Illegal type name "${typeName}"`);
+        }
+        const field = typeMetadata.fieldMap.get(fieldName);
+        if (field === undefined) {
+            throw new Error(`There is no field "${fieldName}" in type "${typeName}"`);
+        }
+        return field;
     }
 }
