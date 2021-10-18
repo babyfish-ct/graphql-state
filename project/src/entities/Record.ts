@@ -57,7 +57,6 @@ export class Record {
             .set(
                 entityManager,
                 this,
-                field,
                 args,
                 value
             );
@@ -152,7 +151,6 @@ class Association {
     set(
         entityManager: EntityManager, 
         record: Record, 
-        associationField: FieldMetadata, 
         args: VariableArgs, 
         value: any
     ) {
@@ -161,7 +159,7 @@ class Association {
         }
         this.frozen = true;
         try {
-            this.value(args).set(entityManager, record, associationField, value);
+            this.value(args).set(entityManager, record, this.field, value);
         } finally {
             this.frozen = false;
         }
@@ -180,7 +178,7 @@ class Association {
                     value.link(
                         entityManager, 
                         self, 
-                        this.field, 
+                        this, 
                         target, 
                         exceptArgs?.constains(value.args) ?? false
                     );
@@ -202,7 +200,7 @@ class Association {
                     value.unlink(
                         entityManager, 
                         self, 
-                        this.field, 
+                        this, 
                         target,
                         exceptArgs !== undefined ? value.args.constains(exceptArgs) : false
                     );
@@ -221,7 +219,7 @@ class Association {
             value.unlink(
                 entityManager, 
                 self, 
-                this.field, 
+                this, 
                 target,
                 true
             );
@@ -258,7 +256,7 @@ abstract class AssociationValue {
     abstract link(
         entityManager: EntityManager, 
         self: Record, 
-        associationField: FieldMetadata, 
+        association: Association, 
         target: Record | ReadonlyArray<Record>,
         absolute: boolean
     ): void;
@@ -266,7 +264,7 @@ abstract class AssociationValue {
     abstract unlink(
         entityManager: EntityManager, 
         self: Record, 
-        associationField: FieldMetadata, 
+        association: Association, 
         target: Record | ReadonlyArray<Record>,
         absolute: boolean
     ): void;
@@ -327,12 +325,12 @@ class AssociationReferenceValue extends AssociationValue {
         value: any
     ) {
         const reference = 
-            value !== undefined ? 
+            value !== undefined && value !== null ? 
             entityManager.saveId(associationField.targetType!.name, value[associationField.targetType!.idField.name]) : 
             undefined;
 
         const oldReference = this.referfence;
-        if (oldReference !== reference) {
+        if (oldReference?.id !== reference?.id) {
             this.releaseOldReference(entityManager, self, associationField, oldReference);
             this.referfence = reference;
             this.retainNewReference(entityManager, self, associationField, reference);
@@ -349,7 +347,7 @@ class AssociationReferenceValue extends AssociationValue {
     link(
         entityManager: EntityManager, 
         self: Record, 
-        associationField: FieldMetadata, 
+        association: Association, 
         target: Record | ReadonlyArray<Record>,
         absolute: boolean
     ) {
@@ -366,10 +364,10 @@ class AssociationReferenceValue extends AssociationValue {
             targetRecord = target as Record;
         }
         if (this.referfence?.id !== targetRecord?.id) {
-            this.set(
+            association.set(
                 entityManager,
                 self,
-                associationField,
+                this.args,
                 objectWithOnlyId(targetRecord)
             );
         }
@@ -378,7 +376,7 @@ class AssociationReferenceValue extends AssociationValue {
     unlink(
         entityManager: EntityManager, 
         self: Record, 
-        associationField: FieldMetadata, 
+        association: Association,
         target: Record | ReadonlyArray<Record>,
         absolute: boolean
     ) {
@@ -395,10 +393,10 @@ class AssociationReferenceValue extends AssociationValue {
             targetRecord = target as Record;
         }
         if (this.referfence?.id === targetRecord.id) {
-            this.set(
+            association.set(
                 entityManager,
                 self,
-                associationField,
+                this.args,
                 undefined
             )
         }
@@ -422,7 +420,7 @@ class AssociationListValue extends AssociationValue {
         
         let listChanged = (this.elements?.length ?? 0) !== (value?.length ?? 0);
         if (!listChanged) {
-            const idFieldName = self.type.idField.name;
+            const idFieldName = associationField.targetType!.idField.name;
             for (let i = (value?.length ?? 0) - 1; i >= 0; --i) {
                 const oldId = this.elements !== undefined && this.elements[i] !== undefined ? 
                     this.elements[i]?.id :
@@ -440,19 +438,15 @@ class AssociationListValue extends AssociationValue {
         }
         const oldValueForTriggger = listChanged ? this.elements?.map(objectWithOnlyId) : undefined;
 
-        const oldMap = new Map<any, Record>();
-        this.elements?.forEach(element => {
-            if (element !== undefined) {
-                oldMap.set(element.id, element);
-            }
-        });
+        const oldMap = toRecordMap(this.elements);
 
         const newIds = new Set<any>();
         const newElements: Array<Record | undefined> = [];
         if (Array.isArray(value)) {
+            const idFieldName = associationField.targetType!.idField.name;
             for (const item of value) {
                 if (item !== undefined && item !== null) {
-                    const newElement = entityManager.saveId(associationField.targetType!.name, item.id);
+                    const newElement = entityManager.saveId(associationField.targetType!.name, item[idFieldName]);
                     newIds.add(newElement.id);
                     newElements.push(newElement);
                 } else {
@@ -491,7 +485,7 @@ class AssociationListValue extends AssociationValue {
     link(
         entityManager: EntityManager, 
         self: Record, 
-        associationField: FieldMetadata, 
+        association: Association,
         target: Record | ReadonlyArray<Record>,
         absolute: boolean
     ) {
@@ -504,10 +498,10 @@ class AssociationListValue extends AssociationValue {
             }
         }
         if (elements.length !== this.elements?.length ?? 0) {
-            this.set(
+            association.set(
                 entityManager,
                 self,
-                associationField,
+                this.args,
                 elements.map(objectWithOnlyId)
             );
         }
@@ -516,7 +510,7 @@ class AssociationListValue extends AssociationValue {
     unlink(
         entityManager: EntityManager, 
         self: Record, 
-        associationField: FieldMetadata, 
+        association: Association,
         target: Record | ReadonlyArray<Record>,
         absolute: boolean
     ) {
@@ -530,10 +524,10 @@ class AssociationListValue extends AssociationValue {
             }
         }
         if (elements.length !== this.elements?.length ?? 0) {
-            this.set(
+            association.set(
                 entityManager,
                 self,
-                associationField,
+                this.args,
                 elements.map(objectWithOnlyId)
             );
         }
@@ -605,7 +599,7 @@ class AssociationConnectionValue extends AssociationValue {
     link(
         entityManager: EntityManager, 
         self: Record, 
-        associationField: FieldMetadata, 
+        association: Association, 
         target: Record | ReadonlyArray<Record>,
         absolute: boolean
     ): void {
@@ -615,7 +609,7 @@ class AssociationConnectionValue extends AssociationValue {
     unlink(
         entityManager: EntityManager, 
         self: Record, 
-        associationField: FieldMetadata, 
+        association: Association, 
         target: Record | ReadonlyArray<Record>,
         absolute: boolean
     ) {
@@ -635,13 +629,6 @@ export interface RecordEdge {
         readonly cursor: string;
 }
 
-function objectWithOnlyId(record: Record | undefined): any {
-    if (record === undefined) {
-        return undefined;
-    }
-    return { [record.type.idField.name]: record.id };
-}
-
 export const QUERY_OBJECT_ID = "unique-id-of-qury-object";
 
 function toRecordMap(arr: ReadonlyArray<Record | undefined> | undefined): Map<any, Record> {
@@ -654,4 +641,11 @@ function toRecordMap(arr: ReadonlyArray<Record | undefined> | undefined): Map<an
         }
     }
     return map;
+}
+
+function objectWithOnlyId(record: Record | undefined): any {
+    if (record === undefined) {
+        return undefined;
+    }
+    return { [record.type.idField.name]: record.id };
 }

@@ -74,7 +74,7 @@ export class TypeMetadata {
             }
             this._superType = superType = superMetadata;
         }
-        return superType as TypeMetadata;
+        return superType as TypeMetadata | undefined;
     }
 
     get derivedType(): ReadonlySet<TypeMetadata> {
