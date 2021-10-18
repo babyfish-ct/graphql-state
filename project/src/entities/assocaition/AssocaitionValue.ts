@@ -14,7 +14,7 @@ export abstract class AssociationValue {
     abstract set(
         entityManager: EntityManager, 
         self: Record, 
-        associationField: FieldMetadata, 
+        association: Association, 
         value: any
     ): void;
 

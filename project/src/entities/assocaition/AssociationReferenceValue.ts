@@ -1,5 +1,3 @@
-import { ScalarRow } from "../../meta/Configuration";
-import { FieldMetadata } from "../../meta/impl/FieldMetadata";
 import { EntityManager } from "../EntityManager";
 import { objectWithOnlyId, Record } from "../Record";
 import { AssociationValue } from "./AssocaitionValue";
@@ -16,22 +14,22 @@ export class AssociationReferenceValue extends AssociationValue {
     set(
         entityManager: EntityManager, 
         self: Record, 
-        associationField: FieldMetadata, 
+        association: Association, 
         value: any
     ) {
         const reference = 
             value !== undefined && value !== null ? 
-            entityManager.saveId(associationField.targetType!.name, value[associationField.targetType!.idField.name]) : 
+            entityManager.saveId(association.field.targetType!.name, value[association.field.targetType!.idField.name]) : 
             undefined;
 
         const oldReference = this.referfence;
         if (oldReference?.id !== reference?.id) {
-            this.releaseOldReference(entityManager, self, associationField, oldReference);
+            this.releaseOldReference(entityManager, self, association.field, oldReference);
             this.referfence = reference;
-            this.retainNewReference(entityManager, self, associationField, reference);
+            this.retainNewReference(entityManager, self, association.field, reference);
             entityManager.modificationContext.set(
                 self, 
-                associationField.name, 
+                association.field.name, 
                 this.args?.key,
                 objectWithOnlyId(oldReference),
                 objectWithOnlyId(reference),

@@ -8,11 +8,11 @@ class AssociationListValue extends AssocaitionValue_1.AssociationValue {
         var _a;
         return (_a = this.elements) !== null && _a !== void 0 ? _a : [];
     }
-    set(entityManager, self, associationField, value) {
+    set(entityManager, self, association, value) {
         var _a, _b, _c, _d, _e, _f, _g, _h;
         let listChanged = ((_b = (_a = this.elements) === null || _a === void 0 ? void 0 : _a.length) !== null && _b !== void 0 ? _b : 0) !== ((_c = value === null || value === void 0 ? void 0 : value.length) !== null && _c !== void 0 ? _c : 0);
         if (!listChanged) {
-            const idFieldName = associationField.targetType.idField.name;
+            const idFieldName = association.field.targetType.idField.name;
             for (let i = ((_d = value === null || value === void 0 ? void 0 : value.length) !== null && _d !== void 0 ? _d : 0) - 1; i >= 0; --i) {
                 const oldId = this.elements !== undefined ?
                     (_e = this.elements[i]) === null || _e === void 0 ? void 0 : _e.id :
@@ -31,32 +31,39 @@ class AssociationListValue extends AssocaitionValue_1.AssociationValue {
         const newIds = new Set();
         const newElements = [];
         if (Array.isArray(value)) {
-            const idFieldName = associationField.targetType.idField.name;
-            const position = associationField.associationProperties.position;
+            const idFieldName = association.field.targetType.idField.name;
+            const position = association.field.associationProperties.position;
             for (const item of value) {
                 if (item === undefined || item === null) {
-                    throw new Error(`Cannot add undfined/null element into ${associationField.fullName}`);
+                    throw new Error(`Cannot add undfined/null element into ${association.field.fullName}`);
                 }
-                const newElement = entityManager.saveId(associationField.targetType.name, item[idFieldName]);
+                const newElement = entityManager.saveId(association.field.targetType.name, item[idFieldName]);
                 newIds.add(newElement.id);
-                appendTo(newElements, newElement, position);
+                try {
+                    appendTo(newElements, newElement, position);
+                }
+                catch (ex) {
+                    if (!ex[" $evict"]) {
+                        throw ex;
+                    }
+                }
             }
         }
         for (const [id, element] of oldMap) {
             if (!newIds.has(id)) {
-                this.releaseOldReference(entityManager, self, associationField, element);
+                this.releaseOldReference(entityManager, self, association.field, element);
             }
         }
         this.elements = newElements.length === 0 ? undefined : newElements;
         for (const newElement of newElements) {
             if (newElement !== undefined) {
                 if (!oldMap.has(newElement.id)) {
-                    this.retainNewReference(entityManager, self, associationField, newElement);
+                    this.retainNewReference(entityManager, self, association.field, newElement);
                 }
             }
         }
         if (listChanged) {
-            entityManager.modificationContext.set(self, associationField.name, (_g = this.args) === null || _g === void 0 ? void 0 : _g.key, oldValueForTriggger, (_h = this.elements) === null || _h === void 0 ? void 0 : _h.map(Record_1.objectWithOnlyId));
+            entityManager.modificationContext.set(self, association.field.name, (_g = this.args) === null || _g === void 0 ? void 0 : _g.key, oldValueForTriggger, (_h = this.elements) === null || _h === void 0 ? void 0 : _h.map(Record_1.objectWithOnlyId));
         }
     }
     link(entityManager, self, association, target) {

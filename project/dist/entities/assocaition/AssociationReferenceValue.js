@@ -7,17 +7,17 @@ class AssociationReferenceValue extends AssocaitionValue_1.AssociationValue {
     get() {
         return this.referfence;
     }
-    set(entityManager, self, associationField, value) {
+    set(entityManager, self, association, value) {
         var _a;
         const reference = value !== undefined && value !== null ?
-            entityManager.saveId(associationField.targetType.name, value[associationField.targetType.idField.name]) :
+            entityManager.saveId(association.field.targetType.name, value[association.field.targetType.idField.name]) :
             undefined;
         const oldReference = this.referfence;
         if ((oldReference === null || oldReference === void 0 ? void 0 : oldReference.id) !== (reference === null || reference === void 0 ? void 0 : reference.id)) {
-            this.releaseOldReference(entityManager, self, associationField, oldReference);
+            this.releaseOldReference(entityManager, self, association.field, oldReference);
             this.referfence = reference;
-            this.retainNewReference(entityManager, self, associationField, reference);
-            entityManager.modificationContext.set(self, associationField.name, (_a = this.args) === null || _a === void 0 ? void 0 : _a.key, Record_1.objectWithOnlyId(oldReference), Record_1.objectWithOnlyId(reference));
+            this.retainNewReference(entityManager, self, association.field, reference);
+            entityManager.modificationContext.set(self, association.field.name, (_a = this.args) === null || _a === void 0 ? void 0 : _a.key, Record_1.objectWithOnlyId(oldReference), Record_1.objectWithOnlyId(reference));
         }
     }
     link(entityManager, self, association, target) {

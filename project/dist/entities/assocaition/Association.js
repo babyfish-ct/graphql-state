@@ -28,7 +28,7 @@ class Association {
         }
         this.frozen = true;
         try {
-            this.value(args).set(entityManager, record, this.field, value);
+            this.value(args).set(entityManager, record, this, value);
         }
         finally {
             this.frozen = false;

@@ -1,4 +1,3 @@
-import { FieldMetadata } from "../../meta/impl/FieldMetadata";
 import { EntityManager } from "../EntityManager";
 import { Record } from "../Record";
 import { AssociationValue } from "./AssocaitionValue";
@@ -15,14 +14,14 @@ export class AssociationConnectionValue extends AssociationValue {
     set(
         entityManager: EntityManager, 
         record: Record, 
-        associationField: FieldMetadata, 
+        association: Association, 
         value: any
     ) {
         if (value === undefined) {
-            throw Error(`Cannot set the undefined or null value to ${associationField.fullName} because it's connection field`);
+            throw Error(`Cannot set the undefined or null value to ${association.field.fullName} because it's connection field`);
         }
         if (!Array.isArray(typeof value.edges)) {
-            throw Error(`The connection object of ${associationField.fullName} must have an array field named "edges"`);
+            throw Error(`The connection object of ${association.field.fullName} must have an array field named "edges"`);
         }
 
         const oldMap = new Map<any, Record>();
@@ -34,12 +33,12 @@ export class AssociationConnectionValue extends AssociationValue {
         const newEdges: Array<RecordEdge> = [];
         for (const edge of value.edges) {
             if (typeof edge.node !== "object") {
-                throw Error(`Each edge of the connection object of ${associationField.fullName} must have an object field named "node"`);
+                throw Error(`Each edge of the connection object of ${association.field.fullName} must have an object field named "node"`);
             }
             if (typeof edge.cursor !== "string") {
-                throw Error(`Each edge of the connection object of ${associationField.fullName} must have an string field named "cursor"`);
+                throw Error(`Each edge of the connection object of ${association.field.fullName} must have an string field named "cursor"`);
             }
-            const newNode = entityManager.saveId(associationField.targetType!.name, edge.node.id);
+            const newNode = entityManager.saveId(association.field.targetType!.name, edge.node.id);
             newEdges.push({
                 node: newNode, 
                 cursor: edge.cursor
@@ -48,7 +47,7 @@ export class AssociationConnectionValue extends AssociationValue {
 
         for (const [id, element] of oldMap) {
             if (!newIds.has(id)) {
-                this.releaseOldReference(entityManager, record, associationField, element);
+                this.releaseOldReference(entityManager, record, association.field, element);
             }
         }
         
@@ -59,7 +58,7 @@ export class AssociationConnectionValue extends AssociationValue {
         
         for (const newEdge of newEdges) {
             if (!oldMap.has(newEdge.node.id)) {
-                this.retainNewReference(entityManager, record, associationField, newEdge.node);
+                this.retainNewReference(entityManager, record, association.field, newEdge.node);
             }
         }
 

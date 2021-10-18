@@ -1,5 +1,4 @@
 import { PositionType, ScalarRow } from "../../meta/Configuration";
-import { FieldMetadata } from "../../meta/impl/FieldMetadata";
 import { EntityManager } from "../EntityManager";
 import { objectWithOnlyId, Record, toRecordMap } from "../Record";
 import { AssociationValue } from "./AssocaitionValue";
@@ -16,13 +15,12 @@ export class AssociationListValue extends AssociationValue {
     set(
         entityManager: EntityManager, 
         self: Record, 
-        associationField: FieldMetadata, 
+        association: Association,
         value: any
     ) {
-        
         let listChanged = (this.elements?.length ?? 0) !== (value?.length ?? 0);
         if (!listChanged) {
-            const idFieldName = associationField.targetType!.idField.name;
+            const idFieldName = association.field.targetType!.idField.name;
             for (let i = (value?.length ?? 0) - 1; i >= 0; --i) {
                 const oldId = this.elements !== undefined ? 
                     this.elements[i]?.id :
@@ -45,21 +43,28 @@ export class AssociationListValue extends AssociationValue {
         const newIds = new Set<any>();
         const newElements: Array<Record> = [];
         if (Array.isArray(value)) {
-            const idFieldName = associationField.targetType!.idField.name;
-            const position = associationField.associationProperties.position;
+            const idFieldName = association.field.targetType!.idField.name;
+            const position = association.field.associationProperties.position;
             for (const item of value) {
                 if (item === undefined || item === null) {
-                    throw new Error(`Cannot add undfined/null element into ${associationField.fullName}`);
+                    throw new Error(`Cannot add undfined/null element into ${association.field.fullName}`);
                 }
-                const newElement = entityManager.saveId(associationField.targetType!.name, item[idFieldName]);
+                const newElement = entityManager.saveId(association.field.targetType!.name, item[idFieldName]);
                 newIds.add(newElement.id);
-                appendTo(newElements, newElement, position);
+                try {
+                    appendTo(newElements, newElement, position);
+                } catch (ex) {
+                    if (!ex[" $evict"]) {
+                        throw ex;
+                    }
+                    
+                }
             }
         }
 
         for (const [id, element] of oldMap) {
             if (!newIds.has(id)) {
-                this.releaseOldReference(entityManager, self, associationField, element);
+                this.releaseOldReference(entityManager, self, association.field, element);
             }
         }
 
@@ -68,7 +73,7 @@ export class AssociationListValue extends AssociationValue {
         for (const newElement of newElements) {
             if (newElement !== undefined) {
                 if (!oldMap.has(newElement.id)) {
-                    this.retainNewReference(entityManager, self, associationField, newElement);
+                    this.retainNewReference(entityManager, self, association.field, newElement);
                 }
             }
         }
@@ -76,7 +81,7 @@ export class AssociationListValue extends AssociationValue {
         if (listChanged) {
             entityManager.modificationContext.set(
                 self, 
-                associationField.name, 
+                association.field.name, 
                 this.args?.key, 
                 oldValueForTriggger, 
                 this.elements?.map(objectWithOnlyId)
