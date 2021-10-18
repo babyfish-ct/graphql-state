@@ -158,7 +158,7 @@ class Dependencies {
             const changedKeySet = dependency.idChangedKeyMap?.get(e.id);
             if (changedKeySet !== undefined) {
                 for (const changedKey of e.changedKeys) {
-                    if (typeof changedKey === "string" && changedKeySet.has(changedKeyString(changedKey, VariableArgs.of(undefined)))) {
+                    if (typeof changedKey === "string" && changedKeySet.has(changedKeyString(changedKey, undefined))) {
                         return true;
                     }
                     if (typeof changedKey === "object" && changedKeySet.has(changedKeyString(changedKey.name, VariableArgs.of(changedKey.variables)))) {
@@ -239,8 +239,8 @@ interface Dependency {
     idChangedKeyMap: Map<any, Set<string>>;
 }
 
-function changedKeyString(fieldName: string, args: VariableArgs): string {
-    if (args.key === undefined) {
+function changedKeyString(fieldName: string, args?: VariableArgs): string {
+    if (args === undefined) {
         return fieldName;
     }
     return `${fieldName}:${args.key}`;

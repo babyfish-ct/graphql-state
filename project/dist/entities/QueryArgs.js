@@ -61,6 +61,7 @@ function containsIds(a, b) {
     return true;
 }
 function containsShape(a, b) {
+    var _a, _b;
     if (a === undefined || b === undefined) {
         if (a !== b) {
             throw new Error("Internal bug: containsShape accept defined shape and undefined shape");
@@ -75,7 +76,7 @@ function containsShape(a, b) {
         if (fieldA === undefined) {
             return false;
         }
-        if (fieldA.args.key !== field.args.key) {
+        if (((_a = fieldA === null || fieldA === void 0 ? void 0 : fieldA.args) === null || _a === void 0 ? void 0 : _a.key) !== ((_b = field === null || field === void 0 ? void 0 : field.args) === null || _b === void 0 ? void 0 : _b.key)) {
             return false;
         }
         if (!containsShape(fieldA.childShape, field.childShape)) {

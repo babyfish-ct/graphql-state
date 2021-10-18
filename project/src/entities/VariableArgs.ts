@@ -2,34 +2,42 @@ import { standardizedVariables } from "../state/impl/Variables";
 
 export class VariableArgs {
 
-    private static readonly EMPTY_ARGS = new VariableArgs();
-
-    private constructor(readonly variables?: any, readonly key?: string) {}
+    private constructor(readonly variables: any, readonly key: string) {}
 
     constains(args: VariableArgs): boolean {
         return contains(this.variables, args.variables);
     }
 
-    static of(variables: any): VariableArgs {
+    static of(variables: any): VariableArgs | undefined {
         if (variables === undefined) {
-            return VariableArgs.EMPTY_ARGS;
+            return undefined;
         }
         const vs = standardizedVariables(variables);
         const vsCode = JSON.stringify(vs);
         if (vsCode === "{}") {
-            return VariableArgs.EMPTY_ARGS;
+            return undefined;
         }
         return new VariableArgs(vs, vsCode);
+    }
+
+    static contains(
+        left: VariableArgs | undefined, 
+        right: VariableArgs | undefined
+    ) {
+        if (left === right) {
+            return true;
+        }
+        if (left === undefined) {
+            return false;
+        }
+        if (right === undefined) {
+            return true;
+        }
+        return contains(left.variables, right.variables)
     }
 }
 
 function contains(variables1: any, variables2: any): boolean {
-    if (variables2 === undefined) {
-        return true;
-    }
-    if (variables1 === undefined) {
-        return false;
-    }
     for (const name in variables2) {
         const value2 = variables2[name];
         const value1 = variables1[name];

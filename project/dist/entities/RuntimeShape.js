@@ -118,9 +118,8 @@ class RuntimeShapeImpl {
     }
 }
 function fieldString(field) {
-    return `(${field.name},${field.args.key !== undefined ?
-        JSON.stringify(field.args.key) :
-        ""},${field.alias !== undefined ?
+    var _a, _b;
+    return `(${field.name},${(_b = (_a = field.args) === null || _a === void 0 ? void 0 : _a.key) !== null && _b !== void 0 ? _b : ""},${field.alias !== undefined ?
         field.alias :
         ""},${field.directives !== undefined ?
         JSON.stringify(field.directives) :

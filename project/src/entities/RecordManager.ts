@@ -128,7 +128,7 @@ export class RecordManager {
     private set(
         id: any, 
         field: FieldMetadata,
-        args: VariableArgs, 
+        args: VariableArgs | undefined, 
         value: any
     ) {
         const record = this.saveId(id);

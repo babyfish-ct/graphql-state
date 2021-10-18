@@ -143,7 +143,7 @@ class Dependencies {
             const changedKeySet = (_a = dependency.idChangedKeyMap) === null || _a === void 0 ? void 0 : _a.get(e.id);
             if (changedKeySet !== undefined) {
                 for (const changedKey of e.changedKeys) {
-                    if (typeof changedKey === "string" && changedKeySet.has(changedKeyString(changedKey, VariableArgs_1.VariableArgs.of(undefined)))) {
+                    if (typeof changedKey === "string" && changedKeySet.has(changedKeyString(changedKey, undefined))) {
                         return true;
                     }
                     if (typeof changedKey === "object" && changedKeySet.has(changedKeyString(changedKey.name, VariableArgs_1.VariableArgs.of(changedKey.variables)))) {
@@ -219,7 +219,7 @@ class Dependencies {
     }
 }
 function changedKeyString(fieldName, args) {
-    if (args.key === undefined) {
+    if (args === undefined) {
         return fieldName;
     }
     return `${fieldName}:${args.key}`;

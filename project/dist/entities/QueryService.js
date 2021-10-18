@@ -105,7 +105,7 @@ class QueryService {
 }
 exports.QueryService = QueryService;
 function mapRecord(type, record, runtimeSchape) {
-    var _a, _b;
+    var _a, _b, _c, _d;
     if (record === undefined) {
         return undefined;
     }
@@ -116,16 +116,16 @@ function mapRecord(type, record, runtimeSchape) {
             const fieldMetadata = type.fieldMap.get(field.name);
             const association = record.getAssociation(fieldMetadata, field.args);
             if (association === undefined && !record.hasAssociation(fieldMetadata, field.args)) {
-                canNotFoundFromCache(`Cannot find the associaton field '${fieldMetadata.fullName}${field.args.key !== undefined ? `:${field.args.key}` : ""}' for object whose id is '${record.id}'`);
+                canNotFoundFromCache(`Cannot find the associaton field '${fieldMetadata.fullName}${(_b = `:${(_a = field.args) === null || _a === void 0 ? void 0 : _a.key}`) !== null && _b !== void 0 ? _b : ""}' for object whose id is '${record.id}'`);
             }
-            entity[(_a = field.alias) !== null && _a !== void 0 ? _a : field.name] = mapAssociation(fieldMetadata, association, field.childShape);
+            entity[(_c = field.alias) !== null && _c !== void 0 ? _c : field.name] = mapAssociation(fieldMetadata, association, field.childShape);
         }
         else if (field.name !== idFieldName) {
             const scalar = record.getSalar(field.name);
             if (scalar === undefined && !record.hasScalar(field.name)) {
                 canNotFoundFromCache(`Cannot find the scalar field '${field.name}' for object whose id is '${record.id}'`);
             }
-            entity[(_b = field.alias) !== null && _b !== void 0 ? _b : field.name] = scalar;
+            entity[(_d = field.alias) !== null && _d !== void 0 ? _d : field.name] = scalar;
         }
     }
     return entity;

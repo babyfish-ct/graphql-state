@@ -13,7 +13,7 @@ export interface RuntimeShape {
 
 export interface RuntimeShapeField {
     readonly name: string;
-    readonly args: VariableArgs;
+    readonly args?: VariableArgs;
     readonly alias?: string;
     readonly directives?: any;
     readonly childShape?: RuntimeShape
@@ -175,9 +175,7 @@ function fieldString(field: RuntimeShapeField): string {
     return `(${
         field.name
     },${
-        field.args.key !== undefined ? 
-        JSON.stringify(field.args.key) :
-        ""
+        field.args?.key ?? ""
     },${
         field.alias !== undefined ?
         field.alias :

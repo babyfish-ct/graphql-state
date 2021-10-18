@@ -36,18 +36,18 @@ export class Record {
         return this.scalarMap.get(fieldName);
     }
 
-    hasAssociation(field: FieldMetadata, args: VariableArgs): boolean {
+    hasAssociation(field: FieldMetadata, args?: VariableArgs): boolean {
         return this.associationMap.get(field)?.has(args) === true;
     }
 
-    getAssociation(field: FieldMetadata, args: VariableArgs): Record | ReadonlyArray<Record | undefined> | RecordConnection | undefined {
+    getAssociation(field: FieldMetadata, args?: VariableArgs): Record | ReadonlyArray<Record | undefined> | RecordConnection | undefined {
         return this.associationMap.get(field)?.get(args);
     }
 
     set(
         entityManager: EntityManager, 
         field: FieldMetadata,
-        args: VariableArgs,
+        args: VariableArgs | undefined,
         value: any
     ) {
         if (field?.isAssociation) {
@@ -61,7 +61,7 @@ export class Record {
                 value
             );
         } else {
-            if (args.variables !== undefined) {
+            if (args?.variables !== undefined) {
                 throw new Error('scalar fields does not support variables');
             }
             if (field === this.type.idField) {
@@ -72,7 +72,7 @@ export class Record {
                 const oldValue = this.scalarMap.get(field.name);
                 if (oldValue !== value) {
                     this.scalarMap.set(field.name, value);
-                    entityManager.modificationContext.set(this, field.name, args.key, oldValue, value);
+                    entityManager.modificationContext.set(this, field.name, args?.key, oldValue, value);
                 }
             }
         }
@@ -87,7 +87,8 @@ export class Record {
             entityManager,
             this,
             record,
-            undefined
+            undefined,
+            true
         );
     }
 
@@ -100,7 +101,8 @@ export class Record {
             entityManager,
             this,
             record,
-            undefined
+            undefined,
+            true
         );
     }
 
@@ -140,18 +142,18 @@ class Association {
         }
     }
 
-    has(args: VariableArgs): boolean {
-        return this.valueMap.get(args.key) !== undefined;
+    has(args: VariableArgs | undefined): boolean {
+        return this.valueMap.get(args?.key) !== undefined;
     }
 
-    get(args: VariableArgs): Record | ReadonlyArray<Record | undefined> | RecordConnection | undefined {
-        return this.valueMap.get(args.key)?.get();
+    get(args: VariableArgs | undefined): Record | ReadonlyArray<Record | undefined> | RecordConnection | undefined {
+        return this.valueMap.get(args?.key)?.get();
     }
 
     set(
         entityManager: EntityManager, 
         record: Record, 
-        args: VariableArgs, 
+        args: VariableArgs | undefined, 
         value: any
     ) {
         if (this.frozen) {
@@ -165,24 +167,30 @@ class Association {
         }
     }
 
+    evict(args: VariableArgs | undefined) {
+        this.valueMap.remove(args?.key);
+    }
+
     link(
         entityManager: EntityManager, 
         self: Record, 
         target: Record,
-        exceptArgs: VariableArgs | undefined
+        mostStringentArgs: VariableArgs | undefined,
+        changedByOpposite: boolean
     ) {
-        if (!this.frozen || exceptArgs !== undefined) {
+        if (!this.frozen || !changedByOpposite) {
             entityManager.modificationContext.update(self);
             this.valueMap.forEachValue(value => {
-                if (exceptArgs === undefined || exceptArgs.key !== value.args.key) {
-                    value.link(
-                        entityManager, 
-                        self, 
-                        this, 
-                        target, 
-                        exceptArgs?.constains(value.args) ?? false
-                    );
+                if (mostStringentArgs?.key === value.args?.key && !changedByOpposite) {
+                    return;
                 }
+                value.link(
+                    entityManager, 
+                    self, 
+                    this, 
+                    target,
+                    VariableArgs.contains(mostStringentArgs, value.args)
+                );
             });
         }
     }
@@ -191,19 +199,25 @@ class Association {
         entityManager: EntityManager, 
         self: Record, 
         target: Record,
-        exceptArgs: VariableArgs | undefined
+        leastStringentArgs: VariableArgs | undefined,
+        changedByOpposite: boolean
     ) {
-        if (!this.frozen || exceptArgs !== undefined) {
+        if (!this.frozen || !changedByOpposite) {
             entityManager.modificationContext.update(self);
             this.valueMap.forEachValue(value => {
-                if (exceptArgs === undefined || exceptArgs.key !== value.args.key) {
+                if (leastStringentArgs?.key === value.args?.key && !changedByOpposite) {
+                    return;
+                }
+                if (VariableArgs.contains(value.args, leastStringentArgs)) {
                     value.unlink(
                         entityManager, 
                         self, 
                         this, 
                         target,
-                        exceptArgs !== undefined ? value.args.constains(exceptArgs) : false
+                        true
                     );
+                } else {
+                    this.evict(value.args);
                 }
             });
         }
@@ -226,8 +240,8 @@ class Association {
         });
     }
 
-    private value(args: VariableArgs): AssociationValue {
-        return this.valueMap.computeIfAbsent(args.key, () => {
+    private value(args: VariableArgs | undefined): AssociationValue {
+        return this.valueMap.computeIfAbsent(args?.key, () => {
             switch (this.field.category) {
                 case "CONNECTION":
                     return new AssociationConnectionValue(args);
@@ -242,7 +256,7 @@ class Association {
 
 abstract class AssociationValue {
 
-    constructor(readonly args: VariableArgs) {}
+    constructor(readonly args?: VariableArgs) {}
 
     abstract get(): Record | ReadonlyArray<Record | undefined> | RecordConnection | undefined;
 
@@ -337,7 +351,7 @@ class AssociationReferenceValue extends AssociationValue {
             entityManager.modificationContext.set(
                 self, 
                 associationField.name, 
-                this.args.key,
+                this.args?.key,
                 objectWithOnlyId(oldReference),
                 objectWithOnlyId(reference),
             );
@@ -475,7 +489,7 @@ class AssociationListValue extends AssociationValue {
             entityManager.modificationContext.set(
                 self, 
                 associationField.name, 
-                this.args.key, 
+                this.args?.key, 
                 oldValueForTriggger, 
                 this.elements?.map(objectWithOnlyId)
             );

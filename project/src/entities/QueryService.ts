@@ -150,7 +150,7 @@ function mapRecord(
                     `Cannot find the associaton field '${
                         fieldMetadata.fullName
                     }${
-                        field.args.key !== undefined ? `:${field.args.key}` : ""
+                        `:${field.args?.key}` ?? ""
                     }' for object whose id is '${record.id}'`);
             }
             entity[field.alias ?? field.name] = mapAssociation(fieldMetadata, association, field.childShape);

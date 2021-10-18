@@ -90,7 +90,7 @@ function containsShape(a?: RuntimeShape, b?: RuntimeShape): boolean {
         if (fieldA === undefined) {
             return false;
         }
-        if (fieldA.args.key !== field.args.key) {
+        if (fieldA?.args?.key !== field?.args?.key) {
             return false;
         }
         if (!containsShape(fieldA.childShape, field.childShape)) {

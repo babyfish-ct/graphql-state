@@ -11,17 +11,17 @@ class BackReferences {
         this
             .associationOwnerMap
             .computeIfAbsent(associationField, () => new SpaceSavingMap_1.SpaceSavingMap())
-            .computeIfAbsent(args.key, () => new ParameterizedRecordSet(args))
+            .computeIfAbsent(args === null || args === void 0 ? void 0 : args.key, () => new ParameterizedRecordSet(args))
             .add(ownerRecord);
     }
     remove(associationField, args, ownerRecord) {
         const subMap = this.associationOwnerMap.get(associationField);
         if (subMap !== undefined) {
-            const set = subMap === null || subMap === void 0 ? void 0 : subMap.get(args.key);
+            const set = subMap === null || subMap === void 0 ? void 0 : subMap.get(args === null || args === void 0 ? void 0 : args.key);
             if (set !== undefined) {
                 set.remove(ownerRecord);
                 if (set.isEmtpty) {
-                    subMap.remove(args.key);
+                    subMap.remove(args === null || args === void 0 ? void 0 : args.key);
                     if (subMap.isEmpty) {
                         this.associationOwnerMap.remove(associationField);
                     }

@@ -14,9 +14,9 @@ export declare class Record {
     get isDeleted(): boolean;
     hasScalar(fieldName: string): boolean;
     getSalar(fieldName: string): any;
-    hasAssociation(field: FieldMetadata, args: VariableArgs): boolean;
-    getAssociation(field: FieldMetadata, args: VariableArgs): Record | ReadonlyArray<Record | undefined> | RecordConnection | undefined;
-    set(entityManager: EntityManager, field: FieldMetadata, args: VariableArgs, value: any): void;
+    hasAssociation(field: FieldMetadata, args?: VariableArgs): boolean;
+    getAssociation(field: FieldMetadata, args?: VariableArgs): Record | ReadonlyArray<Record | undefined> | RecordConnection | undefined;
+    set(entityManager: EntityManager, field: FieldMetadata, args: VariableArgs | undefined, value: any): void;
     link(entityManager: EntityManager, associationField: FieldMetadata, record: Record): void;
     unlink(entityManager: EntityManager, associationField: FieldMetadata, record: Record): void;
     delete(entityManager: EntityManager): void;

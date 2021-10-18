@@ -12,25 +12,30 @@ class VariableArgs {
     }
     static of(variables) {
         if (variables === undefined) {
-            return VariableArgs.EMPTY_ARGS;
+            return undefined;
         }
         const vs = Variables_1.standardizedVariables(variables);
         const vsCode = JSON.stringify(vs);
         if (vsCode === "{}") {
-            return VariableArgs.EMPTY_ARGS;
+            return undefined;
         }
         return new VariableArgs(vs, vsCode);
     }
+    static contains(left, right) {
+        if (left === right) {
+            return true;
+        }
+        if (left === undefined) {
+            return false;
+        }
+        if (right === undefined) {
+            return true;
+        }
+        return contains(left.variables, right.variables);
+    }
 }
 exports.VariableArgs = VariableArgs;
-VariableArgs.EMPTY_ARGS = new VariableArgs();
 function contains(variables1, variables2) {
-    if (variables2 === undefined) {
-        return true;
-    }
-    if (variables1 === undefined) {
-        return false;
-    }
     for (const name in variables2) {
         const value2 = variables2[name];
         const value1 = variables1[name];
