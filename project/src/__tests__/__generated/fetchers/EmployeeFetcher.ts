@@ -124,3 +124,14 @@ export const employee$$ =
         .id
         .name
 ;
+
+export interface EmployeeScalarType {
+    readonly id: string;
+    readonly name: string;
+}
+
+export interface EmployeeFlatType extends EmployeeScalarType {
+    readonly department: {
+        readonly id: string
+    };
+}

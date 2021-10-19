@@ -1,5 +1,5 @@
 import {ImplementationType} from '../CommonTypes';
-import {DepartmentArgs} from '../fetchers/DepartmentFetcher';
+import {DepartmentArgs, DepartmentFlatType} from '../fetchers/DepartmentFetcher';
 
 export interface DepartmentChangeEvent {
 
@@ -13,11 +13,11 @@ export interface DepartmentChangeEvent {
 
     oldValue<TFieldName extends DepartmentChangeEventFields>(
         key: DepartmentChangeEventKey<TFieldName>
-    ): DepartmentChangeEventValues[TFieldName] | undefined;
+    ): DepartmentFlatType[TFieldName] | undefined;
 
     newValue<TFieldName extends DepartmentChangeEventFields>(
         key: DepartmentChangeEventKey<TFieldName>
-    ): DepartmentChangeEventValues[TFieldName] | undefined;
+    ): DepartmentFlatType[TFieldName] | undefined;
 }
 
 export type DepartmentChangeEventKey<TFieldName extends DepartmentChangeEventFields> = 
@@ -30,10 +30,3 @@ export type DepartmentChangeEventFields =
     "name" | 
     "employees"
 ;
-
-export interface DepartmentChangeEventValues {
-    readonly name: string;
-    readonly employees: readonly {
-        readonly id: string
-    }[];
-};

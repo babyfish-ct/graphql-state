@@ -1,4 +1,5 @@
 import {ImplementationType} from '../CommonTypes';
+import {EmployeeFlatType} from '../fetchers/EmployeeFetcher';
 
 export interface EmployeeChangeEvent {
 
@@ -12,11 +13,11 @@ export interface EmployeeChangeEvent {
 
     oldValue<TFieldName extends EmployeeChangeEventFields>(
         key: EmployeeChangeEventKey<TFieldName>
-    ): EmployeeChangeEventValues[TFieldName] | undefined;
+    ): EmployeeFlatType[TFieldName] | undefined;
 
     newValue<TFieldName extends EmployeeChangeEventFields>(
         key: EmployeeChangeEventKey<TFieldName>
-    ): EmployeeChangeEventValues[TFieldName] | undefined;
+    ): EmployeeFlatType[TFieldName] | undefined;
 }
 
 export type EmployeeChangeEventKey<TFieldName extends EmployeeChangeEventFields> = 
@@ -27,10 +28,3 @@ export type EmployeeChangeEventFields =
     "name" | 
     "department"
 ;
-
-export interface EmployeeChangeEventValues {
-    readonly name: string;
-    readonly department: {
-        readonly id: string
-    };
-};

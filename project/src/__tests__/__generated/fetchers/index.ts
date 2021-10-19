@@ -1,6 +1,6 @@
-export type {DepartmentFetcher, DepartmentArgs} from './DepartmentFetcher';
+export type {DepartmentFetcher, DepartmentArgs, DepartmentScalarType, DepartmentFlatType} from './DepartmentFetcher';
 export {department$, department$$} from './DepartmentFetcher';
-export type {EmployeeFetcher} from './EmployeeFetcher';
+export type {EmployeeFetcher, EmployeeScalarType, EmployeeFlatType} from './EmployeeFetcher';
 export {employee$, employee$$} from './EmployeeFetcher';
-export type {QueryFetcher} from './QueryFetcher';
+export type {QueryFetcher, QueryArgs} from './QueryFetcher';
 export {query$} from './QueryFetcher';

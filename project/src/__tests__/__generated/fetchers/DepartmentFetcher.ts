@@ -154,3 +154,13 @@ export interface DepartmentArgs {
         readonly descending?: boolean
     }
 }
+export interface DepartmentScalarType {
+    readonly id: string;
+    readonly name: string;
+}
+
+export interface DepartmentFlatType extends DepartmentScalarType {
+    readonly employees: readonly {
+        readonly id: string
+    }[];
+}
