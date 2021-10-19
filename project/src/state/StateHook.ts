@@ -17,7 +17,8 @@ import { WritableStateValue } from "./impl/WritableStateValue";
 import { ComputedStateValue } from "./impl/ComputedStateValue";
 import { SchemaType } from "../meta/SchemaType";
 import { Fetcher, ObjectFetcher } from "graphql-ts-client-api";
-import { QueryResultHolder, StateValueHolder } from "./impl/Holder";
+import { MutationResultHolder, QueryResultHolder, StateValueHolder } from "./impl/Holder";
+import { Loadable } from "./impl/StateValue";
 
 export function useStateManager<TSchema extends SchemaType>(): StateManager<TSchema> {
     const stateManager = useContext(stateContext);
@@ -162,6 +163,21 @@ export function useQuery<
     }
 }
 
+export function useMutation<
+    T extends object,
+    TVaraibles extends object
+>(
+    fetcher: ObjectFetcher<"Mutation", T, TVaraibles>,
+    options?: MutationOptions<T, TVaraibles>
+): [(variables?: TVaraibles)=> Promise<T>, Loadable<T>] {
+    const stateManager = useStateManager() as StateManagerImpl<any>;
+    const [, setMutationResultVersion] = useState(0);
+    const [holder] = useState(() => new MutationResultHolder(stateManager, setMutationResultVersion));
+    holder.set(fetcher, options);
+    const result = holder.get();
+    return [result.mutate, result.loadable];
+}
+
 export function makeManagedObjectHooks<TSchema extends SchemaType>(): ManagedObjectHooks<TSchema> {
     return new ManagedObjectHooksImpl<TSchema>();
 }
@@ -201,6 +217,13 @@ export interface ManagedObjectHooks<TSchema extends SchemaType> {
 
 export interface QueryOptions<TVariables extends object, TAsyncStyle extends AsyncStyles> extends AsyncOptions<TAsyncStyle> {
     readonly variables?: TVariables;
+}
+
+export interface MutationOptions<T, TVariables extends object> {
+    readonly variables?: TVariables;
+    readonly onSuccess?: (data: T) => void;
+    readonly onError?: (error: any) => void;
+    readonly onCompelete?: (data: T | undefined, error: any) => void;
 }
 
 export type ObjectStyles = "REQUIRED" | "OPTIONAL";

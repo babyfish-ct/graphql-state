@@ -35,19 +35,20 @@ export abstract class AssociationValue {
     protected releaseOldReference(
         entityManager: EntityManager,
         self: Record,
-        associationField: FieldMetadata, 
-        oldRefernce: Record | undefined
+        association: Association, 
+        oldReference: Record | undefined
     ) {
-        if (oldRefernce !== undefined) {
-            oldRefernce.backReferences.remove(
-                associationField, 
+        if (oldReference !== undefined) {
+            oldReference.backReferences.remove(
+                association.field, 
                 this.args,
                 self
             );
-            const oppositeField = associationField.oppositeField;
+            association.unlink(entityManager, self, oldReference, this.args, false);
+            const oppositeField = association.field.oppositeField;
             if (oppositeField !== undefined) {
-                if (oldRefernce) {
-                    oldRefernce.unlink(entityManager, oppositeField, self);
+                if (oldReference) {
+                    oldReference.unlink(entityManager, oppositeField, self);
                 }
             }
         }
@@ -56,16 +57,17 @@ export abstract class AssociationValue {
     protected retainNewReference(
         entityManager: EntityManager,
         self: Record,
-        associationField: FieldMetadata, 
+        association: Association,
         newReference: Record | undefined
     ) {
         if (newReference !== undefined) {
             newReference.backReferences.add(
-                associationField, 
+                association.field, 
                 this.args,
                 self
             );
-            const oppositeField = associationField.oppositeField;
+            association.link(entityManager, self, newReference, this.args, false);
+            const oppositeField = association.field.oppositeField;
             if (oppositeField !== undefined) {
                 newReference.link(entityManager, oppositeField, self);
             }

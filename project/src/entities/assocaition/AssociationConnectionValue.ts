@@ -47,7 +47,7 @@ export class AssociationConnectionValue extends AssociationValue {
 
         for (const [id, element] of oldMap) {
             if (!newIds.has(id)) {
-                this.releaseOldReference(entityManager, record, association.field, element);
+                this.releaseOldReference(entityManager, record, association, element);
             }
         }
         
@@ -58,7 +58,7 @@ export class AssociationConnectionValue extends AssociationValue {
         
         for (const newEdge of newEdges) {
             if (!oldMap.has(newEdge.node.id)) {
-                this.retainNewReference(entityManager, record, association.field, newEdge.node);
+                this.retainNewReference(entityManager, record, association, newEdge.node);
             }
         }
 

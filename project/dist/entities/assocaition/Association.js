@@ -24,14 +24,16 @@ class Association {
     }
     set(entityManager, record, args, value) {
         if (this.frozen) {
-            throw new Error(`Cannot change the association because its frozen`);
-        }
-        this.frozen = true;
-        try {
             this.value(args).set(entityManager, record, this, value);
         }
-        finally {
-            this.frozen = false;
+        else {
+            this.frozen = true;
+            try {
+                this.value(args).set(entityManager, record, this, value);
+            }
+            finally {
+                this.frozen = false;
+            }
         }
     }
     evict(args) {
@@ -41,20 +43,20 @@ class Association {
         if (!this.frozen || !changedByOpposite) {
             entityManager.modificationContext.update(self);
             this.valueMap.forEachValue(value => {
-                var _a;
+                var _a, _b;
                 if ((mostStringentArgs === null || mostStringentArgs === void 0 ? void 0 : mostStringentArgs.key) === ((_a = value.args) === null || _a === void 0 ? void 0 : _a.key) && !changedByOpposite) {
                     return;
                 }
                 if (VariableArgs_1.VariableArgs.contains(mostStringentArgs, value.args)) {
                     value.link(entityManager, self, this, target);
                 }
-                else if (Array.isArray(target)) {
+                else {
                     const contains = this.field.associationProperties.contains;
                     const possibleRecords = Array.isArray(target) ? target : [target];
                     const targetRecords = [];
                     let evict = false;
                     for (const possibleRecord of possibleRecords) {
-                        const result = contains(possibleRecord.toRow(), value.args);
+                        const result = contains(possibleRecord.toRow(), (_b = value.args) === null || _b === void 0 ? void 0 : _b.variables);
                         if (result === undefined || result === null) {
                             evict = true;
                             break;

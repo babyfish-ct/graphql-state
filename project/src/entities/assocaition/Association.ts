@@ -35,13 +35,14 @@ export class Association {
         value: any
     ) {
         if (this.frozen) {
-            throw new Error(`Cannot change the association because its frozen`);
-        }
-        this.frozen = true;
-        try {
             this.value(args).set(entityManager, record, this, value);
-        } finally {
-            this.frozen = false;
+        } else {
+            this.frozen = true;
+            try {
+                this.value(args).set(entityManager, record, this, value);
+            } finally {
+                this.frozen = false;
+            }
         }
     }
 
@@ -64,13 +65,13 @@ export class Association {
                 }
                 if (VariableArgs.contains(mostStringentArgs, value.args)) {
                     value.link(entityManager, self, this, target);
-                } else if (Array.isArray(target)) {
-                    const contains = this.field.associationProperties.contains;
+                } else {
+                    const contains = this.field.associationProperties!.contains!;
                     const possibleRecords = Array.isArray(target) ? target : [target];
                     const targetRecords: Record[] = [];
                     let evict = false;
                     for (const possibleRecord of possibleRecords) {
-                        const result = contains(possibleRecord.toRow(), value.args);
+                        const result = contains(possibleRecord.toRow(), value.args?.variables);
                         if (result === undefined || result === null) {
                             evict = true;
                             break;

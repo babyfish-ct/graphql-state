@@ -67,6 +67,17 @@ export class Table<R extends object> {
         return this.uniqueIndexMap.get(this.idProp)?.get(id);
     }
 
+    findByIds(ids: ReadonlyArray<any>): R[] {
+        const results: R[] = [];
+        for (const id of ids) {
+            const reuslt = this.uniqueIndexMap.get(this.idProp)?.get(id);
+            if (reuslt !== undefined) {
+                results.push(reuslt);
+            }
+        }
+        return results;
+    }
+
     findByUniqueProp(prop: keyof R, value: any): R | undefined {
         if (!this.uniqueIndexMap.has(prop)) {
             throw new Error(`'${prop}' is not column of unique index`);

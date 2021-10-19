@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.QueryResultHolder = exports.StateValueHolder = void 0;
+exports.MutationResultHolder = exports.QueryResultHolder = exports.StateValueHolder = void 0;
+const MutationResult_1 = require("../../entities/MutationResult");
 const QueryArgs_1 = require("../../entities/QueryArgs");
 const Variables_1 = require("./Variables");
 class StateValueHolder {
@@ -106,6 +107,58 @@ class QueryResultHolder {
     }
 }
 exports.QueryResultHolder = QueryResultHolder;
+class MutationResultHolder {
+    constructor(stateManager, localUpdater) {
+        this.stateManager = stateManager;
+        this.localUpdater = localUpdater;
+    }
+    get() {
+        const result = this.mutationResult;
+        if (result === undefined) {
+            throw new Error("Illegal QueryResultHolder that has not been set or has been released");
+        }
+        return result;
+    }
+    set(fetcher, options) {
+        let result;
+        if (this.isSameFetcher(fetcher) && this.isSameVariables(options === null || options === void 0 ? void 0 : options.variables)) {
+            result = this.mutationResult;
+        }
+        else {
+            result = new MutationResult_1.MutationResult(this.stateManager, this.localUpdater, fetcher, options === null || options === void 0 ? void 0 : options.variables);
+            this.mutationResult = result;
+            this.localUpdater(old => old + 1);
+        }
+        result.onSuccess = options === null || options === void 0 ? void 0 : options.onSuccess;
+        result.onError = options === null || options === void 0 ? void 0 : options.onError;
+        result.onCompelete = options === null || options === void 0 ? void 0 : options.onCompelete;
+    }
+    isSameFetcher(fetcher) {
+        if (this.previousFetcher === fetcher) {
+            return true;
+        }
+        const json = fetcher.toJSON();
+        if (this.previousFetcherJson === json) {
+            return true;
+        }
+        this.previousFetcher = fetcher;
+        this.previousFetcherJson = json;
+        return false;
+    }
+    isSameVariables(variables) {
+        if (this.previousVariables === variables) {
+            return true;
+        }
+        const json = standardizedJsonText(variables);
+        if (this.previousVariablesJson === json) {
+            return true;
+        }
+        this.previousVariables = variables;
+        this.previousVariablesJson = json;
+        return false;
+    }
+}
+exports.MutationResultHolder = MutationResultHolder;
 function standardizedJsonText(obj) {
     if (obj === undefined || obj === null) {
         return undefined;

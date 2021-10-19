@@ -1,5 +1,5 @@
 import {ImplementationType} from '../CommonTypes';
-import {BookStoreArgs} from '../fetchers/BookStoreFetcher';
+import {BookStoreArgs, BookStoreFlatType} from '../fetchers/BookStoreFetcher';
 
 export interface BookStoreChangeEvent {
 
@@ -13,11 +13,11 @@ export interface BookStoreChangeEvent {
 
     oldValue<TFieldName extends BookStoreChangeEventFields>(
         key: BookStoreChangeEventKey<TFieldName>
-    ): BookStoreChangeEventValues[TFieldName] | undefined;
+    ): BookStoreFlatType[TFieldName] | undefined;
 
     newValue<TFieldName extends BookStoreChangeEventFields>(
         key: BookStoreChangeEventKey<TFieldName>
-    ): BookStoreChangeEventValues[TFieldName] | undefined;
+    ): BookStoreFlatType[TFieldName] | undefined;
 }
 
 export type BookStoreChangeEventKey<TFieldName extends BookStoreChangeEventFields> = 
@@ -30,10 +30,3 @@ export type BookStoreChangeEventFields =
     "name" | 
     "books"
 ;
-
-export interface BookStoreChangeEventValues {
-    readonly name: string;
-    readonly books: readonly {
-        readonly id: string
-    }[];
-};

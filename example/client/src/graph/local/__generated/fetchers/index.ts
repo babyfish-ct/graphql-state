@@ -1,8 +1,8 @@
-export type {BookStoreFetcher} from './BookStoreFetcher';
+export type {BookStoreFetcher, BookStoreScalarType, BookStoreFlatType} from './BookStoreFetcher';
 export {bookStore$, bookStore$$} from './BookStoreFetcher';
-export type {BookFetcher} from './BookFetcher';
+export type {BookFetcher, BookScalarType, BookFlatType} from './BookFetcher';
 export {book$, book$$} from './BookFetcher';
-export type {AuthorFetcher} from './AuthorFetcher';
+export type {AuthorFetcher, AuthorScalarType, AuthorFlatType} from './AuthorFetcher';
 export {author$, author$$} from './AuthorFetcher';
 export type {QueryFetcher} from './QueryFetcher';
 export {query$} from './QueryFetcher';

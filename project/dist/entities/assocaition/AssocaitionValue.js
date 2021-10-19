@@ -5,21 +5,23 @@ class AssociationValue {
     constructor(args) {
         this.args = args;
     }
-    releaseOldReference(entityManager, self, associationField, oldRefernce) {
-        if (oldRefernce !== undefined) {
-            oldRefernce.backReferences.remove(associationField, this.args, self);
-            const oppositeField = associationField.oppositeField;
+    releaseOldReference(entityManager, self, association, oldReference) {
+        if (oldReference !== undefined) {
+            oldReference.backReferences.remove(association.field, this.args, self);
+            association.unlink(entityManager, self, oldReference, this.args, false);
+            const oppositeField = association.field.oppositeField;
             if (oppositeField !== undefined) {
-                if (oldRefernce) {
-                    oldRefernce.unlink(entityManager, oppositeField, self);
+                if (oldReference) {
+                    oldReference.unlink(entityManager, oppositeField, self);
                 }
             }
         }
     }
-    retainNewReference(entityManager, self, associationField, newReference) {
+    retainNewReference(entityManager, self, association, newReference) {
         if (newReference !== undefined) {
-            newReference.backReferences.add(associationField, this.args, self);
-            const oppositeField = associationField.oppositeField;
+            newReference.backReferences.add(association.field, this.args, self);
+            association.link(entityManager, self, newReference, this.args, false);
+            const oppositeField = association.field.oppositeField;
             if (oppositeField !== undefined) {
                 newReference.link(entityManager, oppositeField, self);
             }

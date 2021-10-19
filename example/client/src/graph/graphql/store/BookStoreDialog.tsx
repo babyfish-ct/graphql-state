@@ -3,20 +3,18 @@ import { useForm } from "antd/lib/form/Form";
 import { ModelType } from "graphql-ts-client-api";
 import { FC, memo, useCallback, useEffect } from "react";
 import UUIDClass from "uuidjs";
-import { book$, bookStore$$ } from "../__generated/fetchers";
+import { book$, bookStore$$, mutation$ } from "../__generated/fetchers";
 import { stateManager } from "../Environment";
-import { BookMultiSelect } from "../book/BookMultiiSelect";
+import { BookMultiSelect } from "../book/BookMultiSelect";
 import { INFORMATION_CLASS, PSEUDO_CODE_CLASS } from "../Css";
+import { BookStoreInput } from "../__generated/inputs";
+import { useMutation } from "graphql-state/dist/state/StateHook";
 
 const BOOK_STORE_EDIT_INFO =
     bookStore$$
     .books(
         book$.id
     );
-
-type BookStoreInput = ModelType<typeof bookStore$$> & {
-    readonly bookIds: readonly string[];
-}
 
 export const BookStoreDialog: FC<{
     value?: ModelType<typeof BOOK_STORE_EDIT_INFO>,
@@ -33,19 +31,25 @@ export const BookStoreDialog: FC<{
         })
     }, [form, value]);
 
-    const onOk = useCallback(() => {
+    const [mutate, {loading}] = useMutation(
+        mutation$.mergeBookStore(BOOK_STORE_EDIT_INFO),
+        {
+            onSuccess: data => {
+                stateManager.save(BOOK_STORE_EDIT_INFO, data.mergeBookStore)
+            }
+        }
+    );
+
+    const onOk = useCallback(async () => {
         const input = form.getFieldsValue();
         const info: ModelType<typeof BOOK_STORE_EDIT_INFO> = {
             id: input.id,
             name: input.name,
             books: input.bookIds.map(bookId => ({id: bookId}))
         };
-        if (info.id === undefined) {
-            throw new Error();
-        }
-        stateManager.save(BOOK_STORE_EDIT_INFO, info);
+        await mutate({input});
         onClose(info);
-    }, [form, onClose]);
+    }, [form, onClose, mutate]);
 
     const onCancel = useCallback(() => {
         onClose();
@@ -57,7 +61,8 @@ export const BookStoreDialog: FC<{
         title={`${value === undefined ? 'Create' : 'Edit'} BookStore`}
         onOk={onOk}
         onCancel={onCancel}
-        width={1000}>
+        width={1000}
+        okButtonProps={{loading}}>
             <Form form={form} labelCol={{span: 8}} wrapperCol={{span: 16}}>
                 <Form.Item name="id" hidden={true}/>
                 <Form.Item label="Name" name="name">
@@ -82,6 +87,9 @@ addBook.store = this;
 const anotherStore = addedBook.store;
 if (anotherStore !== undefined && cached(annotherStore.books)) {
     annotherStore.books.remove(addedBook);
+}
+if (anotherStore !== undefined && cached(annotherStore.books({name: ...}))) {
+    annotherStore.books({name: ...}).remove(addedBook);
 }
 `;
 

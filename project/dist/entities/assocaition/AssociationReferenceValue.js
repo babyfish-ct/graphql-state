@@ -14,9 +14,9 @@ class AssociationReferenceValue extends AssocaitionValue_1.AssociationValue {
             undefined;
         const oldReference = this.referfence;
         if ((oldReference === null || oldReference === void 0 ? void 0 : oldReference.id) !== (reference === null || reference === void 0 ? void 0 : reference.id)) {
-            this.releaseOldReference(entityManager, self, association.field, oldReference);
+            this.releaseOldReference(entityManager, self, association, oldReference);
             this.referfence = reference;
-            this.retainNewReference(entityManager, self, association.field, reference);
+            this.retainNewReference(entityManager, self, association, reference);
             entityManager.modificationContext.set(self, association.field.name, (_a = this.args) === null || _a === void 0 ? void 0 : _a.key, Record_1.objectWithOnlyId(oldReference), Record_1.objectWithOnlyId(reference));
         }
     }

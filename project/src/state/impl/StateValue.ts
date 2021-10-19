@@ -60,8 +60,8 @@ export abstract class StateValue {
     protected abstract createMountContext(): any;
 }
 
-export interface Loadable {
-    readonly data?: any;
+export interface Loadable<T = any> {
+    readonly data?: T;
     readonly loading: boolean;
     readonly error?: Error;
 }

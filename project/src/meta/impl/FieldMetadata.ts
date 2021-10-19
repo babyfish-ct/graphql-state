@@ -22,7 +22,7 @@ export class FieldMetadata {
 
     private _oppositeField?: string | FieldMetadata;
 
-    private _associationProperties: AssocaitionProperties = DEFAULT_ASSOCIATION_PROPERITES;
+    private _associationProperties?: AssocaitionProperties;
 
     constructor(
         readonly declaringType: TypeMetadata,
@@ -34,6 +34,9 @@ export class FieldMetadata {
         this._connectionType = field.connectionTypeName;
         this._edgeType = field.edgeTypeName;
         this._targetType = field.targetTypeName;
+        if (this.isAssociation) {
+            this._associationProperties = createDefaultAssociationProperties(this);
+        }
     }
 
     get deleteOperation(): "CASCADE" | "SET_UNDEFINED" | undefined {
@@ -99,7 +102,7 @@ export class FieldMetadata {
         return this._oppositeField as FieldMetadata | undefined;
     }
 
-    get associationProperties(): AssocaitionProperties {
+    get associationProperties(): AssocaitionProperties | undefined {
         return this._associationProperties;
     }
 
@@ -120,10 +123,11 @@ export class FieldMetadata {
         if (!this.isAssociation) {
             throw new Error(`Cannot set assciation properties for '${this.fullName}' because its not asscoation field`);
         }
+        const defaultProperites = createDefaultAssociationProperties(this);
         this._associationProperties = {
-            contains: properties.contains ?? DEFAULT_ASSOCIATION_PROPERITES.contains,
-            position: properties.position ?? DEFAULT_ASSOCIATION_PROPERITES.position,
-            dependencies: properties.dependencies ?? DEFAULT_ASSOCIATION_PROPERITES.dependencies
+            contains: properties.contains ?? defaultProperites.contains,
+            position: properties.position ?? defaultProperites.position,
+            dependencies: properties.dependencies ?? defaultProperites.dependencies
         };
     }
 
@@ -164,16 +168,16 @@ export interface FieldMetadataOptions {
 }
 
 export interface AssocaitionProperties {
-    readonly contains: (
+    readonly contains?: (
         row: ScalarRow<any>,
         variables?: any
     ) => boolean | undefined,
-    readonly position: (
+    readonly position?: (
         row: ScalarRow<any>,
         rows: ReadonlyArray<ScalarRow<any>>,
         variables?: any
     ) => PositionType | undefined,
-    readonly dependencies: (
+    readonly dependencies?: (
         variables?: any
     ) => ReadonlyArray<string> | undefined
 }
@@ -182,23 +186,39 @@ function isAssociationCategory(category: FieldMetadataCategory) {
     return category === "REFERENCE" || category === "LIST" || category === "CONNECTION";
 }
 
-const DEFAULT_ASSOCIATION_PROPERITES: AssocaitionProperties = {
-    contains: (
-        row: ScalarRow<any>,
-        variables?: any
-    ): boolean | undefined => {
-        return variables === undefined ? true : undefined;
-    },
-    position: (
-        row: ScalarRow<any>,
-        rows: ReadonlyArray<ScalarRow<any>>,
-        variables?: any
-    ): PositionType | undefined => {
-        return "end";
-    },
-    dependencies: (
-        variables?: any
-    ): ReadonlyArray<string> | undefined => {
-        return variables === undefined ? [] : undefined
+function createDefaultAssociationProperties(field: FieldMetadata): AssocaitionProperties {
+    if (!field.isAssociation) {
+        throw new Error(`Cannot create assocaition properties for the field ${field.fullName} because it's not association`);
     }
+    return {
+        contains: (
+            row: ScalarRow<any>,
+            variables?: any
+        ): boolean | undefined => {
+            if (variables === undefined) {
+                return true;
+            }
+            console.log(
+                `Try to add new '${
+                    field.targetType!.name
+                }' object into the parameterized assocaition ${
+                    field.fullName
+                }(${
+                    JSON.stringify(variables)
+                }), but the assocaition properties of that parameterized assocition is not specified, ` +
+                `so the system does not known whether the new object should be added and evict that assocaition from cache`);
+        },
+        position: (
+            row: ScalarRow<any>,
+            rows: ReadonlyArray<ScalarRow<any>>,
+            variables?: any
+        ): PositionType | undefined => {
+            return "end";
+        },
+        dependencies: (
+            variables?: any
+        ): ReadonlyArray<string> | undefined => {
+            return variables === undefined ? [] : undefined
+        }
+    };
 }

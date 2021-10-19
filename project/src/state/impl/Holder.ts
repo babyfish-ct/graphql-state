@@ -1,8 +1,10 @@
 import { ObjectFetcher } from "graphql-ts-client-api";
 import { Dispatch, SetStateAction } from "react";
+import { MutationResult } from "../../entities/MutationResult";
 import { QueryArgs } from "../../entities/QueryArgs";
 import { QueryResult } from "../../entities/QueryResult";
 import { ParameterizedStateAccessingOptions, State, StateAccessingOptions } from "../State";
+import { MutationOptions } from "../StateHook";
 import { QueryResultChangeEvent, StateManagerImpl, StateValueChangeEvent, StateValueChangeListener } from "./StateManagerImpl";
 import { StateValue } from "./StateValue";
 import { standardizedVariables } from "./Variables";
@@ -135,6 +137,72 @@ export class QueryResultHolder {
                 this.stateManager.entityManager.release(result.queryArgs);
             }
         }
+    }
+}
+
+export class MutationResultHolder{
+    
+    private mutationResult?: MutationResult;
+
+    private previousFetcher?: ObjectFetcher<"Mutation", any, any>;
+
+    private previousVariables?: any;
+
+    private previousFetcherJson?: string;
+
+    private previousVariablesJson?: string;
+    
+    constructor(
+        private stateManager: StateManagerImpl<any>,
+        private localUpdater: Dispatch<SetStateAction<number>>
+    ) {}
+
+    get(): MutationResult {
+        const result = this.mutationResult;
+        if (result === undefined) {
+            throw new Error("Illegal QueryResultHolder that has not been set or has been released");
+        }
+        return result;
+    }
+
+    set(fetcher: ObjectFetcher<"Mutation", any, any>, options?: MutationOptions<any, any>) {
+        let result: MutationResult;
+        if (this.isSameFetcher(fetcher) && this.isSameVariables(options?.variables)) {
+            result = this.mutationResult!;
+        } else {
+            result = new MutationResult(this.stateManager, this.localUpdater, fetcher, options?.variables);
+            this.mutationResult = result;
+            this.localUpdater(old => old + 1);
+        }
+        result.onSuccess = options?.onSuccess;
+        result.onError = options?.onError;
+        result.onCompelete = options?.onCompelete;
+    }
+
+    private isSameFetcher(fetcher: ObjectFetcher<"Mutation", any, any>): boolean {
+        if (this.previousFetcher === fetcher) {
+            return true;
+        }
+        const json = fetcher.toJSON();
+        if (this.previousFetcherJson === json) {
+            return true;
+        }
+        this.previousFetcher = fetcher;
+        this.previousFetcherJson = json;
+        return false;
+    }
+
+    private isSameVariables(variables?: any): boolean {
+        if (this.previousVariables === variables) {
+            return true;
+        }
+        const json = standardizedJsonText(variables);
+        if (this.previousVariablesJson === json) {
+            return true;
+        }
+        this.previousVariables = variables;
+        this.previousVariablesJson = json;
+        return false;
     }
 }
 

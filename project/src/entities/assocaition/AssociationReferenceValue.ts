@@ -24,9 +24,9 @@ export class AssociationReferenceValue extends AssociationValue {
 
         const oldReference = this.referfence;
         if (oldReference?.id !== reference?.id) {
-            this.releaseOldReference(entityManager, self, association.field, oldReference);
+            this.releaseOldReference(entityManager, self, association, oldReference);
             this.referfence = reference;
-            this.retainNewReference(entityManager, self, association.field, reference);
+            this.retainNewReference(entityManager, self, association, reference);
             entityManager.modificationContext.set(
                 self, 
                 association.field.name, 

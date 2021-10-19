@@ -44,7 +44,7 @@ export class AssociationListValue extends AssociationValue {
         const newElements: Array<Record> = [];
         if (Array.isArray(value)) {
             const idFieldName = association.field.targetType!.idField.name;
-            const position = association.field.associationProperties.position;
+            const position = association.field.associationProperties!.position!;
             for (const item of value) {
                 if (item === undefined || item === null) {
                     throw new Error(`Cannot add undfined/null element into ${association.field.fullName}`);
@@ -57,14 +57,13 @@ export class AssociationListValue extends AssociationValue {
                     if (!ex[" $evict"]) {
                         throw ex;
                     }
-                    
                 }
             }
         }
 
         for (const [id, element] of oldMap) {
             if (!newIds.has(id)) {
-                this.releaseOldReference(entityManager, self, association.field, element);
+                this.releaseOldReference(entityManager, self, association, element);
             }
         }
 
@@ -73,7 +72,7 @@ export class AssociationListValue extends AssociationValue {
         for (const newElement of newElements) {
             if (newElement !== undefined) {
                 if (!oldMap.has(newElement.id)) {
-                    this.retainNewReference(entityManager, self, association.field, newElement);
+                    this.retainNewReference(entityManager, self, association, newElement);
                 }
             }
         }
@@ -150,7 +149,7 @@ function appendTo(
 ) {
     const pos = newElements.length === 0 ? 
         0 : 
-        position(newElement.toRow(), newElements.map(e => e.toRow()), this.args);
+        position(newElement.toRow(), newElements.map(e => e.toRow()), this.args?.variables);
     if (pos === undefined) {
         throw { " $evict": true };
     }

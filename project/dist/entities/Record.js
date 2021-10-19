@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.objectWithOnlyId = exports.toRecordMap = exports.QUERY_OBJECT_ID = exports.Record = void 0;
+exports.objectWithOnlyId = exports.toRecordMap = exports.MUATION_OBJECT_ID = exports.QUERY_OBJECT_ID = exports.Record = void 0;
 const SpaceSavingMap_1 = require("../state/impl/SpaceSavingMap");
 const Association_1 = require("./assocaition/Association");
 const BackReferences_1 = require("./BackReferences");
@@ -18,6 +18,14 @@ class Record {
             }
             if (deleted) {
                 throw new Error(`The object of special type 'Query' cannot be deleted`);
+            }
+        }
+        else if (type.name === 'Mutation') {
+            if (id !== exports.MUATION_OBJECT_ID) {
+                throw new Error(`The id of mutation object must be '${exports.QUERY_OBJECT_ID}'`);
+            }
+            if (deleted) {
+                throw new Error(`The object of special type 'Mutation' cannot be deleted`);
             }
         }
     }
@@ -99,6 +107,7 @@ class Record {
 }
 exports.Record = Record;
 exports.QUERY_OBJECT_ID = "____QUERY_OBJECT____";
+exports.MUATION_OBJECT_ID = "____MUTATION_OBJECT____";
 function toRecordMap(arr) {
     const map = new Map();
     if (arr !== undefined) {

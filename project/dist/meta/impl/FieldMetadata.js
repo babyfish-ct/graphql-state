@@ -5,13 +5,15 @@ class FieldMetadata {
     constructor(declaringType, field) {
         this.declaringType = declaringType;
         this._inversed = false;
-        this._associationProperties = DEFAULT_ASSOCIATION_PROPERITES;
         this.name = field.name;
         this.category = field.category;
         this.fullName = `${declaringType.name}.${field.name}`;
         this._connectionType = field.connectionTypeName;
         this._edgeType = field.edgeTypeName;
         this._targetType = field.targetTypeName;
+        if (this.isAssociation) {
+            this._associationProperties = createDefaultAssociationProperties(this);
+        }
     }
     get deleteOperation() {
         return this._deleteOperation;
@@ -88,10 +90,11 @@ class FieldMetadata {
         if (!this.isAssociation) {
             throw new Error(`Cannot set assciation properties for '${this.fullName}' because its not asscoation field`);
         }
+        const defaultProperites = createDefaultAssociationProperties(this);
         this._associationProperties = {
-            contains: (_a = properties.contains) !== null && _a !== void 0 ? _a : DEFAULT_ASSOCIATION_PROPERITES.contains,
-            position: (_b = properties.position) !== null && _b !== void 0 ? _b : DEFAULT_ASSOCIATION_PROPERITES.position,
-            dependencies: (_c = properties.dependencies) !== null && _c !== void 0 ? _c : DEFAULT_ASSOCIATION_PROPERITES.dependencies
+            contains: (_a = properties.contains) !== null && _a !== void 0 ? _a : defaultProperites.contains,
+            position: (_b = properties.position) !== null && _b !== void 0 ? _b : defaultProperites.position,
+            dependencies: (_c = properties.dependencies) !== null && _c !== void 0 ? _c : defaultProperites.dependencies
         };
     }
     " $resolveInversedAssociation"() {
@@ -123,14 +126,23 @@ exports.FieldMetadata = FieldMetadata;
 function isAssociationCategory(category) {
     return category === "REFERENCE" || category === "LIST" || category === "CONNECTION";
 }
-const DEFAULT_ASSOCIATION_PROPERITES = {
-    contains: (row, variables) => {
-        return variables === undefined ? true : undefined;
-    },
-    position: (row, rows, variables) => {
-        return "end";
-    },
-    dependencies: (variables) => {
-        return variables === undefined ? [] : undefined;
+function createDefaultAssociationProperties(field) {
+    if (!field.isAssociation) {
+        throw new Error(`Cannot create assocaition properties for the field ${field.fullName} because it's not association`);
     }
-};
+    return {
+        contains: (row, variables) => {
+            if (variables === undefined) {
+                return true;
+            }
+            console.log(`Try to add new '${field.targetType.name}' object into the parameterized assocaition ${field.fullName}(${JSON.stringify(variables)}), but the assocaition properties of that parameterized assocition is not specified, ` +
+                `so the system does not known whether the new object should be added and evict that assocaition from cache`);
+        },
+        position: (row, rows, variables) => {
+            return "end";
+        },
+        dependencies: (variables) => {
+            return variables === undefined ? [] : undefined;
+        }
+    };
+}

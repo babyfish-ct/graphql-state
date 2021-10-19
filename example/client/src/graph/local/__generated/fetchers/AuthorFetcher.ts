@@ -124,3 +124,14 @@ export const author$$ =
         .id
         .name
 ;
+
+export interface AuthorScalarType {
+    readonly id: string;
+    readonly name: string;
+}
+
+export interface AuthorFlatType extends AuthorScalarType {
+    readonly books: readonly {
+        readonly id: string
+    }[];
+}

@@ -18,6 +18,7 @@ export declare class EntityManager {
     private _listenerMap;
     private _ctx?;
     private _queryRecord?;
+    private _mutationRecord?;
     constructor(stateManager: StateManagerImpl<any>, schema: SchemaMetadata);
     recordManager(typeName: string): RecordManager;
     findRefById(typeName: string, id: any): RecordRef | undefined;

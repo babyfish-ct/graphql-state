@@ -14,6 +14,10 @@ class ConfigurationImpl {
             this._schema.addFetchableType(fetchableType);
         }
     }
+    rootAssociationProperties(fieldName, properties) {
+        this.field("Query", fieldName).setAssocaitionProperties(properties);
+        return this;
+    }
     associationProperties(typeName, fieldName, properties) {
         this.field(typeName, fieldName).setAssocaitionProperties(properties);
         return this;

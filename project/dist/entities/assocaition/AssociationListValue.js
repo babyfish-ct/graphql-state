@@ -51,14 +51,14 @@ class AssociationListValue extends AssocaitionValue_1.AssociationValue {
         }
         for (const [id, element] of oldMap) {
             if (!newIds.has(id)) {
-                this.releaseOldReference(entityManager, self, association.field, element);
+                this.releaseOldReference(entityManager, self, association, element);
             }
         }
         this.elements = newElements.length === 0 ? undefined : newElements;
         for (const newElement of newElements) {
             if (newElement !== undefined) {
                 if (!oldMap.has(newElement.id)) {
-                    this.retainNewReference(entityManager, self, association.field, newElement);
+                    this.retainNewReference(entityManager, self, association, newElement);
                 }
             }
         }
@@ -98,9 +98,10 @@ class AssociationListValue extends AssocaitionValue_1.AssociationValue {
 }
 exports.AssociationListValue = AssociationListValue;
 function appendTo(newElements, newElement, position) {
+    var _a;
     const pos = newElements.length === 0 ?
         0 :
-        position(newElement.toRow(), newElements.map(e => e.toRow()), this.args);
+        position(newElement.toRow(), newElements.map(e => e.toRow()), (_a = this.args) === null || _a === void 0 ? void 0 : _a.variables);
     if (pos === undefined) {
         throw { " $evict": true };
     }

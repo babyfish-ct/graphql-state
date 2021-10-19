@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.makeManagedObjectHooks = exports.useQuery = exports.useStateAccessor = exports.useStateValue = exports.useStateManager = void 0;
+exports.makeManagedObjectHooks = exports.useMutation = exports.useQuery = exports.useStateAccessor = exports.useStateValue = exports.useStateManager = void 0;
 const react_1 = require("react");
 const StateManagerProvider_1 = require("./StateManagerProvider");
 const Holder_1 = require("./impl/Holder");
@@ -78,6 +78,15 @@ function useQuery(fetcher, options) {
     }
 }
 exports.useQuery = useQuery;
+function useMutation(fetcher, options) {
+    const stateManager = useStateManager();
+    const [, setMutationResultVersion] = react_1.useState(0);
+    const [holder] = react_1.useState(() => new Holder_1.MutationResultHolder(stateManager, setMutationResultVersion));
+    holder.set(fetcher, options);
+    const result = holder.get();
+    return [result.mutate, result.loadable];
+}
+exports.useMutation = useMutation;
 function makeManagedObjectHooks() {
     return new ManagedObjectHooksImpl();
 }

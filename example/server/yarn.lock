@@ -734,6 +734,11 @@ utils-merge@1.0.1:
   resolved "https://registry.yarnpkg.com/utils-merge/-/utils-merge-1.0.1.tgz#9f95710f50a267947b2ccc124741c1028427e713"
   integrity sha1-n5VxD1CiZ5R7LMwSR0HBAoQn5xM=
 
+uuidjs@^4.2.9:
+  version "4.2.9"
+  resolved "https://registry.yarnpkg.com/uuidjs/-/uuidjs-4.2.9.tgz#f1225bd51f9e8aee3c56ec3be0683c14dd9e05ed"
+  integrity sha512-ie/yQOFIBnswUUTPQRwMphF/OeE3Pg9y0jorjOPPFtGaeVp9JSdGN5rA9odsXDFH1UfwtpriJXKTro1JTNaIXg==
+
 validator@^13.5.2:
   version "13.6.0"
   resolved "https://registry.yarnpkg.com/validator/-/validator-13.6.0.tgz#1e71899c14cdc7b2068463cb24c1cc16f6ec7059"

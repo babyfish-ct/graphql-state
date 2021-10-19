@@ -1,6 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.StateScope = exports.StateManagerProvider = exports.makeManagedObjectHooks = exports.useQuery = exports.useStateAccessor = exports.useStateValue = exports.useStateManager = exports.makeStateFactory = exports.newConfiguration = void 0;
+exports.StateScope = exports.StateManagerProvider = exports.makeManagedObjectHooks = exports.useQuery = exports.useStateAccessor = exports.useStateValue = exports.useStateManager = exports.makeStateFactory = exports.newConfiguration = exports.GraphQLNetwork = void 0;
+var Configuration_1 = require("./meta/Configuration");
+Object.defineProperty(exports, "GraphQLNetwork", { enumerable: true, get: function () { return Configuration_1.GraphQLNetwork; } });
 var ConfigurationImpl_1 = require("./meta/impl/ConfigurationImpl");
 Object.defineProperty(exports, "newConfiguration", { enumerable: true, get: function () { return ConfigurationImpl_1.newConfiguration; } });
 var State_1 = require("./state/State");

@@ -27,5 +27,6 @@ export declare class Record {
     toRow(): ScalarRow<any>;
 }
 export declare const QUERY_OBJECT_ID = "____QUERY_OBJECT____";
+export declare const MUATION_OBJECT_ID = "____MUTATION_OBJECT____";
 export declare function toRecordMap(arr: ReadonlyArray<Record | undefined> | undefined): Map<any, Record>;
 export declare function objectWithOnlyId(record: Record | undefined): any;

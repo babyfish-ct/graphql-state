@@ -26,6 +26,13 @@ export class Record {
             if (deleted) {
                 throw new Error(`The object of special type 'Query' cannot be deleted`);
             }
+        } else if (type.name === 'Mutation') {
+            if (id !== MUATION_OBJECT_ID) {
+                throw new Error(`The id of mutation object must be '${QUERY_OBJECT_ID}'`);
+            }
+            if (deleted) {
+                throw new Error(`The object of special type 'Mutation' cannot be deleted`);
+            }
         }
     }
 
@@ -144,6 +151,8 @@ export class Record {
 }
 
 export const QUERY_OBJECT_ID = "____QUERY_OBJECT____";
+
+export const MUATION_OBJECT_ID = "____MUTATION_OBJECT____";
 
 export function toRecordMap(arr: ReadonlyArray<Record | undefined> | undefined): Map<any, Record> {
     const map = new Map<any, Record>();

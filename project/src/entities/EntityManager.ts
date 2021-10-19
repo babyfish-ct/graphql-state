@@ -8,7 +8,7 @@ import { StateManagerImpl } from "../state/impl/StateManagerImpl";
 import { ModificationContext } from "./ModificationContext";
 import { QueryArgs } from "./QueryArgs";
 import { QueryResult } from "./QueryResult";
-import { QUERY_OBJECT_ID, Record } from "./Record";
+import { MUATION_OBJECT_ID, QUERY_OBJECT_ID, Record } from "./Record";
 import { RecordManager } from "./RecordManager";
 import { RecordRef } from "./RecordRef";
 import { RuntimeShape } from "./RuntimeShape";
@@ -26,6 +26,8 @@ export class EntityManager {
     private _ctx?: ModificationContext;
 
     private _queryRecord?: Record;
+
+    private _mutationRecord?: Record;
     
     constructor(
         readonly stateManager: StateManagerImpl<any>,
@@ -35,6 +37,10 @@ export class EntityManager {
         const queryType = schema.typeMap.get("Query");
         if (queryType !== undefined) {
             this._queryRecord = this.saveId("Query", QUERY_OBJECT_ID);
+        }
+        const mutationType = schema.typeMap.get("Mutation");
+        if (mutationType !== undefined) {
+            this._mutationRecord = this.saveId("Mutation", MUATION_OBJECT_ID);
         }
     }
 

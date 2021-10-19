@@ -5,7 +5,7 @@ import { FC, memo, useCallback, useEffect } from "react";
 import UUIDClass from "uuidjs";
 import { author$$, book$ } from "../__generated/fetchers";
 import { stateManager } from "../Environment";
-import { BookMultiSelect } from "../book/BookMutliSelect";
+import { BookMultiSelect } from "../book/BookMultiiSelect";
 import { INFORMATION_CLASS, PSEUDO_CODE_CLASS } from "../Css";
 
 const AUTHOR_EDIT_INFO =

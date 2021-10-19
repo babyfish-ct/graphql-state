@@ -11,13 +11,13 @@ export const App: FC = memo(() => {
         <StateManagerProvider stateManager={stateManager}>
             <Card>
                 <Tabs>
-                    <Tabs.TabPane tab="Book Stores" key="bookStores">
+                    <Tabs.TabPane tab="Book Store Management" key="bookStores">
                         <BookStoreList/>
                     </Tabs.TabPane>
-                    <Tabs.TabPane tab="Books" key="books">
+                    <Tabs.TabPane tab="Book  Management" key="books">
                         <BookList/>
                     </Tabs.TabPane>
-                    <Tabs.TabPane tab="Authors" key="authors">
+                    <Tabs.TabPane tab="Author  Management" key="authors">
                         <AuthorList/>
                     </Tabs.TabPane>
                 </Tabs>

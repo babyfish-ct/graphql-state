@@ -31,7 +31,18 @@ class TypeMetadata {
         }
         if (fetchableType.name === "Query") {
             this._idField = new FieldMetadata_1.FieldMetadata(this, {
-                name: "__idOfQueryObject",
+                name: "__queryObjectId",
+                category: "ID",
+                argGraphQLTypeMap: new Map(),
+                isPlural: false,
+                isAssociation: false,
+                isFunction: false,
+                isUndefinable: false
+            });
+        }
+        else if (fetchableType.name === "Mutation") {
+            this._idField = new FieldMetadata_1.FieldMetadata(this, {
+                name: "__mutationObjectId",
                 category: "ID",
                 argGraphQLTypeMap: new Map(),
                 isPlural: false,

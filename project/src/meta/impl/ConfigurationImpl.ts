@@ -24,10 +24,18 @@ class ConfigurationImpl<TSchema extends SchemaType> implements Configuration<TSc
         }
     }
 
+    rootAssociationProperties(
+        fieldName: string,
+        properties: any
+    ): this {
+        this.field("Query", fieldName).setAssocaitionProperties(properties);
+        return this;
+    }
+
     associationProperties(
         typeName: string,
         fieldName: string,
-        properties: AssocaitionProperties
+        properties: any
     ): this {
         this.field(typeName, fieldName).setAssocaitionProperties(properties);
         return this;

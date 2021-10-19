@@ -1,8 +1,10 @@
 export type {QueryFetcher, QueryArgs} from './QueryFetcher';
 export {query$} from './QueryFetcher';
-export type {BookStoreFetcher, BookStoreArgs} from './BookStoreFetcher';
+export type {BookStoreFetcher, BookStoreArgs, BookStoreScalarType, BookStoreFlatType} from './BookStoreFetcher';
 export {bookStore$, bookStore$$} from './BookStoreFetcher';
-export type {BookFetcher, BookArgs} from './BookFetcher';
+export type {BookFetcher, BookArgs, BookScalarType, BookFlatType} from './BookFetcher';
 export {book$, book$$} from './BookFetcher';
-export type {AuthorFetcher, AuthorArgs} from './AuthorFetcher';
+export type {AuthorFetcher, AuthorArgs, AuthorScalarType, AuthorFlatType} from './AuthorFetcher';
 export {author$, author$$} from './AuthorFetcher';
+export type {MutationFetcher, MutationArgs} from './MutationFetcher';
+export {mutation$} from './MutationFetcher';

@@ -3,13 +3,19 @@ import {
     query$,
     bookStore$,
     book$,
-    author$
+    author$,
+    mutation$
 } from './fetchers';
 import {
     QueryArgs,
     BookStoreArgs,
     BookArgs,
     AuthorArgs
+} from './fetchers';
+import {
+    BookStoreScalarType,
+    BookScalarType,
+    AuthorScalarType
 } from './fetchers';
 import {
     BookStoreChangeEvent,
@@ -22,40 +28,46 @@ export function newTypedConfiguration(): Configuration<Schema> {
         query$, 
         bookStore$, 
         book$, 
-        author$
+        author$, 
+        mutation$
     );
 }
 
 export type Schema = {
     readonly query: {
+        readonly " $associationTypes": {
+            readonly findBooksStores: "BookStore", 
+            readonly findBooks: "Book", 
+            readonly findAuthors: "Author"
+        };
         readonly " $associationArgs": {
             readonly findBooksStores: QueryArgs["findBooksStores"], 
             readonly findBooks: QueryArgs["findBooks"], 
             readonly findAuthors: QueryArgs["findAuthors"]
+        };
+        readonly " $associationTargetTypes": {
+            readonly findBooksStores: BookStoreScalarType, 
+            readonly findBooks: BookScalarType, 
+            readonly findAuthors: AuthorScalarType
         };
     };
     readonly entities: {
         readonly "BookStore": {
             readonly " $id": string;
             readonly " $event": BookStoreChangeEvent;
-            readonly " $scalarTypes": {
-                readonly id: string, 
-                readonly name: string
-            };
             readonly " $associationTypes": {
                 readonly books: "Book"
             };
             readonly " $associationArgs": {
                 readonly books: BookStoreArgs["books"]
             };
+            readonly " $associationTargetTypes": {
+                readonly books: BookScalarType
+            };
         };
         readonly "Book": {
             readonly " $id": string;
             readonly " $event": BookChangeEvent;
-            readonly " $scalarTypes": {
-                readonly id: string, 
-                readonly name: string
-            };
             readonly " $associationTypes": {
                 readonly store: "BookStore", 
                 readonly authors: "Author"
@@ -63,19 +75,22 @@ export type Schema = {
             readonly " $associationArgs": {
                 readonly authors: BookArgs["authors"]
             };
+            readonly " $associationTargetTypes": {
+                readonly store: BookStoreScalarType, 
+                readonly authors: AuthorScalarType
+            };
         };
         readonly "Author": {
             readonly " $id": string;
             readonly " $event": AuthorChangeEvent;
-            readonly " $scalarTypes": {
-                readonly id: string, 
-                readonly name: string
-            };
             readonly " $associationTypes": {
                 readonly books: "Book"
             };
             readonly " $associationArgs": {
                 readonly books: AuthorArgs["books"]
+            };
+            readonly " $associationTargetTypes": {
+                readonly books: BookScalarType
             };
         };
     };

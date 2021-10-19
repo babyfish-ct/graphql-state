@@ -2,9 +2,12 @@ import { ChangeEvent, memo, useCallback, useState } from "react";
 import { Button, Input, Space, Spin, Table, Tag, Modal, Row, Col } from "antd";
 import { ComponentDecorator } from "../../../common/ComponentDecorator";
 import { useQuery } from "graphql-state";
-import { book$$, bookStore$$, query$ } from "../__generated/fetchers";
+import { book$$, bookStore$$, mutation$, query$ } from "../__generated/fetchers";
 import { ModelType, ParameterRef } from "graphql-ts-client-api";
 import { DELETE_CONFIRM_CLASS, INFORMATION_CLASS } from "../Css";
+import { BookStoreDialog } from "./BookStoreDialog";
+import { useMutation } from "graphql-state/dist/state/StateHook";
+import { stateManager } from "../Environment";
 
 const BOOK_STORE_ROW =
     bookStore$$
@@ -27,6 +30,17 @@ export const BookStoreList = memo(() => {
         {
             asyncStyle: "ASYNC_OBJECT",
             variables: { name, bookName }
+        }
+    );
+
+    const [remove, {loading: removing}] = useMutation(
+        mutation$.deleteBookStore(),
+        {
+            onSuccess: data => {
+                if (data.deleteBookStore !== undefined) {
+                    stateManager.delete("BookStore", data.deleteBookStore)
+                }
+            }
         }
     );
 
@@ -54,8 +68,8 @@ export const BookStoreList = memo(() => {
                     </ul>
                 </div>
             </>,
-            onOk: () => {
-                
+            onOk: async () => {
+                await remove({id: row.id});
             }
         });
     }, []);
@@ -82,6 +96,11 @@ export const BookStoreList = memo(() => {
     }, [onDelete]);
 
     const onAddClick = useCallback(() => {
+        setDialog("NEW");
+    }, []);
+
+    const onDialogClose = useCallback(() => {
+        setDialog(undefined);
     }, []);
 
     return (
@@ -109,6 +128,10 @@ export const BookStoreList = memo(() => {
                         </Table>
                         <Button onClick={onAddClick}>Add BookStore</Button>
                     </>
+                }
+                {
+                    dialog !== undefined &&
+                    <BookStoreDialog value={dialog === "EDIT" ? editing : undefined} onClose={onDialogClose}/>
                 }
             </Space>
         </ComponentDecorator>

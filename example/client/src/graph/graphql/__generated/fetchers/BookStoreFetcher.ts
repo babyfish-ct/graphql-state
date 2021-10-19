@@ -154,3 +154,13 @@ export interface BookStoreArgs {
         readonly name?: string
     }
 }
+export interface BookStoreScalarType {
+    readonly id: string;
+    readonly name: string;
+}
+
+export interface BookStoreFlatType extends BookStoreScalarType {
+    readonly books: readonly {
+        readonly id: string
+    }[];
+}
