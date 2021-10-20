@@ -5,6 +5,13 @@ import { Schema } from "./__generated/TypedConfiguration";
 
 export function initializeDefaultData(stateManager: StateManager<Schema>) {
 
+    stateManager.suspendBidirectionalAssociationManagement(() => {
+        initializeDefaultDataImpl(stateManager);
+    });
+}
+
+function initializeDefaultDataImpl(stateManager: StateManager<Schema>) {
+
     stateManager.save(
         query$.bookStores(
             bookStore$$

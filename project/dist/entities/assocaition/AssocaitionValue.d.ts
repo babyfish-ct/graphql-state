@@ -19,6 +19,7 @@ export declare abstract class AssociationValue {
     dispose(entityManager: EntityManager): void;
     onEntityEvict(entityManager: EntityManager, e: EntityEvictEvent): void;
     onEntityChange(entityManager: EntityManager, e: EntityChangeEvent): void;
+    abstract contains(target: Record): boolean;
     private isTargetChanged;
     private evict;
 }

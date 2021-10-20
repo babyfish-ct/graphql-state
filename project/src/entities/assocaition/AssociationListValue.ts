@@ -132,6 +132,17 @@ export class AssociationListValue extends AssociationValue {
             );
         }
     }
+
+    contains(target: Record): boolean {
+        if (this.elements !== undefined) {
+            for (const element of this.elements) {
+                if (element.id === target.id) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }
 
 function appendTo(

@@ -88,5 +88,9 @@ export class AssociationReferenceValue extends AssociationValue {
             )
         }
     }
+
+    contains(target: Record): boolean {
+        return this.referfence?.id === target.id;
+    }
 }
 

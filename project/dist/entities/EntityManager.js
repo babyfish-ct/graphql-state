@@ -16,6 +16,7 @@ class EntityManager {
         this._evictListenerMap = new Map();
         this._changeListenerMap = new Map();
         this._associationValueObservers = new Set();
+        this._bidirectionalAssociationManagementSuspending = false;
         this.dataService = new BatchDataService_1.BatchDataService(new RemoteDataService_1.RemoteDataService(this));
         const queryType = schema.typeMap.get("Query");
         if (queryType !== undefined) {
@@ -105,16 +106,14 @@ class EntityManager {
     retain(args) {
         let result = this._queryResultMap.get(args.key);
         if (result === undefined) {
-            result = new QueryResult_1.QueryResult(this, args);
+            result = new QueryResult_1.QueryResult(this, args, () => this._queryResultMap.delete(args.key));
             this._queryResultMap.set(args.key, result);
         }
         return result.retain();
     }
     release(args) {
         const result = this._queryResultMap.get(args.key);
-        if ((result === null || result === void 0 ? void 0 : result.release()) === true) {
-            this._queryResultMap.delete(args.key);
-        }
+        result === null || result === void 0 ? void 0 : result.release(5000);
     }
     addEvictListener(typeName, listener) {
         if (listener !== undefined && listener !== null) {
@@ -191,6 +190,21 @@ class EntityManager {
     }
     evictFieldByIdPredicate(field, predicate) {
         this.recordManager(field.declaringType.name).evictFieldByIdPredicate(field, predicate);
+    }
+    get isBidirectionalAssociationManagementSuspending() {
+        return this._bidirectionalAssociationManagementSuspending;
+    }
+    suspendBidirectionalAssociationManagement(action) {
+        if (this._bidirectionalAssociationManagementSuspending) {
+            return action();
+        }
+        this._bidirectionalAssociationManagementSuspending = true;
+        try {
+            return action();
+        }
+        finally {
+            this._bidirectionalAssociationManagementSuspending = false;
+        }
     }
 }
 exports.EntityManager = EntityManager;

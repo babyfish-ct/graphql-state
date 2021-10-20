@@ -8,4 +8,5 @@ export declare class AssociationListValue extends AssociationValue {
     set(entityManager: EntityManager, value: any): void;
     link(entityManager: EntityManager, target: Record | ReadonlyArray<Record>): void;
     unlink(entityManager: EntityManager, target: Record | ReadonlyArray<Record>): void;
+    contains(target: Record): boolean;
 }

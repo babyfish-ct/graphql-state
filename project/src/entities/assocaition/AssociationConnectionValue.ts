@@ -88,6 +88,11 @@ export class AssociationConnectionValue extends AssociationValue {
     ) {
         // TODO: link
     }
+
+    contains(target: Record): boolean {
+        // TODO: contains
+        throw new Error();
+    }
 }
 
 export interface RecordConnection {

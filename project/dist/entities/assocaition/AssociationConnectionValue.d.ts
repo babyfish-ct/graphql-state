@@ -8,6 +8,7 @@ export declare class AssociationConnectionValue extends AssociationValue {
     set(entityManager: EntityManager, value: any): void;
     link(entityManager: EntityManager, target: Record | ReadonlyArray<Record>): void;
     unlink(entityManager: EntityManager, target: Record | ReadonlyArray<Record>): void;
+    contains(target: Record): boolean;
 }
 export interface RecordConnection {
     readonly edges: ReadonlyArray<RecordEdge>;

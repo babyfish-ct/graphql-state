@@ -127,5 +127,8 @@ class StateManagerImpl {
             listener(e);
         }
     }
+    suspendBidirectionalAssociationManagement(action) {
+        return this.entityManager.suspendBidirectionalAssociationManagement(action);
+    }
 }
 exports.StateManagerImpl = StateManagerImpl;

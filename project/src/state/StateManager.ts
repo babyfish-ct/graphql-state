@@ -63,6 +63,8 @@ export interface StateManager<TSchema extends SchemaType> {
             readonly [TName in keyof TSchema["entities"] & string]?: (e: TSchema["entities"][TName][" $changeEvent"]) => void 
         }
     ): void;
+
+    suspendBidirectionalAssociationManagement<T>(action: () => T): T;
 }
 
 export interface UndoManager {

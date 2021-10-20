@@ -17,6 +17,6 @@ export declare class RecordManager {
     save(shape: RuntimeShape, obj: any): void;
     delete(id: any): void;
     evict(id: any): void;
-    evictFieldByIdPredicate(field: FieldMetadata, predicate: (id: any) => boolean): void;
+    evictFieldByIdPredicate(field: FieldMetadata, predicate: (self: Record) => boolean): void;
     private set;
 }

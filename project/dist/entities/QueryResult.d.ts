@@ -4,6 +4,7 @@ import { QueryArgs } from "./QueryArgs";
 export declare class QueryResult {
     readonly entityManager: EntityManager;
     readonly queryArgs: QueryArgs;
+    private disposer;
     private _refCount;
     private _promise?;
     private _loadable;
@@ -12,9 +13,11 @@ export declare class QueryResult {
     private _changeListener;
     private _currentAsyncRequestId;
     private _dependencies?;
-    constructor(entityManager: EntityManager, queryArgs: QueryArgs);
+    private _disposeTimerId?;
+    private _createdMillis;
+    constructor(entityManager: EntityManager, queryArgs: QueryArgs, disposer: () => void);
     retain(): this;
-    release(): boolean;
+    release(maxDelayMillis: number): void;
     get promise(): Promise<any>;
     get loadable(): Loadable;
     private query;
@@ -22,4 +25,5 @@ export declare class QueryResult {
     private onEntityEvict;
     private onEntityChange;
     private invalidate;
+    private dispose;
 }

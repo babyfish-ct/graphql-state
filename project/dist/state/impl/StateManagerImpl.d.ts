@@ -46,6 +46,7 @@ export declare class StateManagerImpl<TSchema extends SchemaType> implements Sta
     addQueryResultChangeListener(listener: QueryResultChangeListener): void;
     removeQueryResultChangeListener(listener: QueryResultChangeListener): void;
     publishQueryResultChangeEvent(e: QueryResultChangeEvent): void;
+    suspendBidirectionalAssociationManagement<T>(action: () => T): T;
 }
 export declare type StateValueChangeListener = (e: StateValueChangeEvent) => void;
 export interface StateValueChangeEvent {

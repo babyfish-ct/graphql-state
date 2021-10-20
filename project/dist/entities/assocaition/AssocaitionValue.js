@@ -17,10 +17,12 @@ class AssociationValue {
         if (oldReference !== undefined) {
             oldReference.backReferences.remove(this.association.field, this.args, self);
             this.association.unlink(entityManager, oldReference, this.args, false);
-            const oppositeField = this.association.field.oppositeField;
-            if (oppositeField !== undefined) {
-                if (oldReference) {
-                    oldReference.unlink(entityManager, oppositeField, self);
+            if (!entityManager.isBidirectionalAssociationManagementSuspending) {
+                const oppositeField = this.association.field.oppositeField;
+                if (oppositeField !== undefined) {
+                    if (oldReference) {
+                        oldReference.unlink(entityManager, oppositeField, self);
+                    }
                 }
             }
         }
@@ -30,11 +32,14 @@ class AssociationValue {
         if (newReference !== undefined) {
             newReference.backReferences.add(this.association.field, this.args, self);
             this.association.link(entityManager, newReference, this.args, false);
-            const oppositeField = this.association.field.oppositeField;
-            if (oppositeField !== undefined) {
-                newReference.link(entityManager, oppositeField, self);
-                if (oppositeField.category === "REFERENCE" && !newReference.hasAssociation(oppositeField)) {
-                    entityManager.evictFieldByIdPredicate(this.association.field, id => id !== this.association.record.id);
+            if (!entityManager.isBidirectionalAssociationManagementSuspending) {
+                const oppositeField = this.association.field.oppositeField;
+                if (oppositeField !== undefined) {
+                    newReference.link(entityManager, oppositeField, self);
+                    if (oppositeField.category === "REFERENCE" && !newReference.hasAssociation(oppositeField)) {
+                        entityManager.evictFieldByIdPredicate(this.association.field, record => record.id !== this.association.record.id &&
+                            record.contains(this.association.field, undefined, newReference, true));
+                    }
                 }
             }
         }

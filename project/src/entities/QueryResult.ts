@@ -27,9 +27,14 @@ export class QueryResult {
 
     private _dependencies?: Dependencies;
 
+    private _disposeTimerId?: NodeJS.Timeout = undefined;
+
+    private _createdMillis = new Date().getTime();
+
     constructor(
         readonly entityManager: EntityManager,
-        readonly queryArgs: QueryArgs
+        readonly queryArgs: QueryArgs,
+        private disposer: () => void
     ) {
         this._evictListener = this.onEntityEvict.bind(this);
         this._changeListener = this.onEntityChange.bind(this);
@@ -42,13 +47,22 @@ export class QueryResult {
         return this;
     }
 
-    release(): boolean {
+    release(maxDelayMillis: number) {
         if (--this._refCount === 0) {
-            this.entityManager.removeEvictListener(undefined, this._evictListener);
-            this.entityManager.removeChangeListener(undefined, this._changeListener);
-            return true;
+            if (maxDelayMillis <= 0) {
+                this.dispose();
+            }
+            const millis = Math.min(new Date().getTime() - this._createdMillis, maxDelayMillis)
+            let timerId = this._disposeTimerId;
+            if (timerId !== undefined) {
+                clearTimeout(timerId);
+            }
+            timerId = setTimeout(() => {
+                if (this._refCount === 0) {
+                    this.dispose();
+                }
+            }, millis);
         }
-        return false;
     }
 
     get promise(): Promise<any> {
@@ -146,6 +160,13 @@ export class QueryResult {
                 changedType: "RESULT_CHANGE"
             });
         }
+    }
+
+    private dispose() {
+        console.log("dispose", this.queryArgs.variables);
+        this.entityManager.removeEvictListener(undefined, this._evictListener);
+        this.entityManager.removeChangeListener(undefined, this._changeListener);
+        this.disposer();
     }
 }
 

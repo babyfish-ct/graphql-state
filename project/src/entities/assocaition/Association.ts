@@ -76,6 +76,22 @@ export class Association {
         }
     }
 
+    contains(args: VariableArgs | undefined, target: Record, tryMoreStrictArgs): boolean {
+        if (!tryMoreStrictArgs) {
+            return this.valueMap.get(args?.key)?.contains(target) === true;
+        }
+        let result = false;
+        this.valueMap.forEachValue(value => {
+            if (VariableArgs.contains(value.args, args)) {
+                if (value.contains(target)) {
+                    result = true;
+                    return false;
+                }
+            }
+        });
+        return result;
+    }
+
     link(
         entityManager: EntityManager, 
         target: Record | ReadonlyArray<Record>,

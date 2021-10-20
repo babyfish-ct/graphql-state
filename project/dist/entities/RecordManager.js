@@ -116,7 +116,7 @@ class RecordManager {
     }
     evictFieldByIdPredicate(field, predicate) {
         for (const [, record] of this.recordMap) {
-            if (predicate(record.id)) {
+            if (predicate(record)) {
                 record.evict(this.entityManager, field, undefined, true);
             }
         }

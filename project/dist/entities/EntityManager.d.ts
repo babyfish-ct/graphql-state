@@ -24,6 +24,7 @@ export declare class EntityManager {
     private _queryRecord?;
     private _mutationRecord?;
     private _associationValueObservers;
+    private _bidirectionalAssociationManagementSuspending;
     constructor(stateManager: StateManagerImpl<any>, schema: SchemaMetadata);
     recordManager(typeName: string): RecordManager;
     findRefById(typeName: string, id: any): RecordRef | undefined;
@@ -43,5 +44,7 @@ export declare class EntityManager {
     private linkToQuery;
     addAssociationValueObserver(observer: AssociationValue): void;
     removeAssociationValueObserver(observer: AssociationValue): void;
-    evictFieldByIdPredicate(field: FieldMetadata, predicate: (id: any) => boolean): void;
+    evictFieldByIdPredicate(field: FieldMetadata, predicate: (self: Record) => boolean): void;
+    get isBidirectionalAssociationManagementSuspending(): boolean;
+    suspendBidirectionalAssociationManagement<T>(action: () => T): T;
 }

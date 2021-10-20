@@ -53,10 +53,12 @@ export abstract class AssociationValue {
                 self
             );
             this.association.unlink(entityManager, oldReference, this.args, false);
-            const oppositeField = this.association.field.oppositeField;
-            if (oppositeField !== undefined) {
-                if (oldReference) {
-                    oldReference.unlink(entityManager, oppositeField, self);
+            if (!entityManager.isBidirectionalAssociationManagementSuspending) {
+                const oppositeField = this.association.field.oppositeField;
+                if (oppositeField !== undefined) {
+                    if (oldReference) {
+                        oldReference.unlink(entityManager, oppositeField, self);
+                    }
                 }
             }
         }
@@ -74,11 +76,18 @@ export abstract class AssociationValue {
                 self
             );
             this.association.link(entityManager, newReference, this.args, false);
-            const oppositeField = this.association.field.oppositeField;
-            if (oppositeField !== undefined) {
-                newReference.link(entityManager, oppositeField, self);
-                if (oppositeField.category === "REFERENCE" && !newReference.hasAssociation(oppositeField)) {
-                    entityManager.evictFieldByIdPredicate(this.association.field, id => id !== this.association.record.id);
+            if (!entityManager.isBidirectionalAssociationManagementSuspending) {
+                const oppositeField = this.association.field.oppositeField;
+                if (oppositeField !== undefined) {
+                    newReference.link(entityManager, oppositeField, self);
+                    if (oppositeField.category === "REFERENCE" && !newReference.hasAssociation(oppositeField)) {
+                        entityManager.evictFieldByIdPredicate(
+                            this.association.field, 
+                            record => 
+                                record.id !== this.association.record.id &&
+                                record.contains(this.association.field, undefined, newReference, true)
+                        );
+                    }
                 }
             }
         }
@@ -136,6 +145,8 @@ export abstract class AssociationValue {
             this.evict(entityManager);
         }
     }
+
+    abstract contains(target: Record): boolean;
 
     private isTargetChanged(targetType: TypeMetadata, keys: ReadonlyArray<EntityKey>) {
         for (const key of keys) {

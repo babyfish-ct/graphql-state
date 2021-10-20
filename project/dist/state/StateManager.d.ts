@@ -25,6 +25,7 @@ export interface StateManager<TSchema extends SchemaType> {
     removeEntityChangeListeners(listeners: {
         readonly [TName in keyof TSchema["entities"] & string]?: (e: TSchema["entities"][TName][" $changeEvent"]) => void;
     }): void;
+    suspendBidirectionalAssociationManagement<T>(action: () => T): T;
 }
 export interface UndoManager {
     readonly isUndoable: boolean;

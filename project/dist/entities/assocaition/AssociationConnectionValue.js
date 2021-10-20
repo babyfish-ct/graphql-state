@@ -59,5 +59,9 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
     unlink(entityManager, target) {
         // TODO: link
     }
+    contains(target) {
+        // TODO: contains
+        throw new Error();
+    }
 }
 exports.AssociationConnectionValue = AssociationConnectionValue;

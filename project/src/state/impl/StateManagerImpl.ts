@@ -184,6 +184,10 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
             listener(e);
         }
     }
+
+    suspendBidirectionalAssociationManagement<T>(action: () => T): T {
+        return this.entityManager.suspendBidirectionalAssociationManagement(action);
+    }
 }
 
 

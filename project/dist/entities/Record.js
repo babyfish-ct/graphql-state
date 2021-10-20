@@ -82,6 +82,10 @@ class Record {
         var _a;
         (_a = this.associationMap.get(associationField)) === null || _a === void 0 ? void 0 : _a.unlink(entityManager, record, undefined, true);
     }
+    contains(field, args, target, tryMoreStrictArgs) {
+        var _a;
+        return ((_a = this.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.contains(args, target, tryMoreStrictArgs)) === true;
+    }
     evict(entityManager, field, args, includeMoreStrictArgs = false) {
         var _a;
         if (field.declaringType !== this.type) {

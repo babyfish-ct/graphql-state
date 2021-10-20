@@ -61,6 +61,22 @@ class Association {
             }
         }
     }
+    contains(args, target, tryMoreStrictArgs) {
+        var _a;
+        if (!tryMoreStrictArgs) {
+            return ((_a = this.valueMap.get(args === null || args === void 0 ? void 0 : args.key)) === null || _a === void 0 ? void 0 : _a.contains(target)) === true;
+        }
+        let result = false;
+        this.valueMap.forEachValue(value => {
+            if (VariableArgs_1.VariableArgs.contains(value.args, args)) {
+                if (value.contains(target)) {
+                    result = true;
+                    return false;
+                }
+            }
+        });
+        return result;
+    }
     link(entityManager, target, mostStringentArgs, changedByOpposite) {
         if (!this.frozen || !changedByOpposite) {
             entityManager.modificationContext.update(this.record);

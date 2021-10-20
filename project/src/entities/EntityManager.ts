@@ -35,6 +35,8 @@ export class EntityManager {
     private _mutationRecord?: Record;
 
     private _associationValueObservers = new Set<AssociationValue>();
+
+    private _bidirectionalAssociationManagementSuspending = false;
     
     constructor(
         readonly stateManager: StateManagerImpl<any>,
@@ -143,7 +145,7 @@ export class EntityManager {
         
         let result = this._queryResultMap.get(args.key);
         if (result === undefined) {
-            result = new QueryResult(this, args);
+            result = new QueryResult(this, args, () => this._queryResultMap.delete(args.key));
             this._queryResultMap.set(args.key, result);
         }
         return result.retain();
@@ -151,9 +153,7 @@ export class EntityManager {
 
     release(args: QueryArgs) {
         const result = this._queryResultMap.get(args.key);
-        if (result?.release() === true) {
-            this._queryResultMap.delete(args.key);
-        }
+        result?.release(5000);
     }
 
     addEvictListener(typeName: string | undefined, listener: (e: EntityEvictEvent) => void): void {
@@ -236,7 +236,23 @@ export class EntityManager {
         this._associationValueObservers.delete(observer);
     }
 
-    evictFieldByIdPredicate(field: FieldMetadata, predicate: (id: any) => boolean) {
+    evictFieldByIdPredicate(field: FieldMetadata, predicate: (self: Record) => boolean) {
         this.recordManager(field.declaringType.name).evictFieldByIdPredicate(field, predicate);
+    }
+
+    get isBidirectionalAssociationManagementSuspending(): boolean {
+        return this._bidirectionalAssociationManagementSuspending;
+    }
+
+    suspendBidirectionalAssociationManagement<T>(action: () => T): T {
+        if (this._bidirectionalAssociationManagementSuspending) {
+            return action();
+        }
+        this._bidirectionalAssociationManagementSuspending = true;
+        try {
+            return action();
+        } finally {
+            this._bidirectionalAssociationManagementSuspending = false;
+        }
     }
 }

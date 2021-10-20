@@ -118,6 +118,15 @@ export class Record {
         );
     }
 
+    contains(
+        field: FieldMetadata, 
+        args: VariableArgs | undefined, 
+        target: Record, 
+        tryMoreStrictArgs: boolean
+    ): boolean {
+        return this.associationMap.get(field)?.contains(args, target, tryMoreStrictArgs) === true;
+    }
+
     evict(
         entityManager: EntityManager, 
         field: FieldMetadata,

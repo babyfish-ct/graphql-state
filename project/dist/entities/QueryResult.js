@@ -13,13 +13,16 @@ exports.QueryResult = void 0;
 const QueryService_1 = require("./QueryService");
 const VariableArgs_1 = require("./VariableArgs");
 class QueryResult {
-    constructor(entityManager, queryArgs) {
+    constructor(entityManager, queryArgs, disposer) {
         this.entityManager = entityManager;
         this.queryArgs = queryArgs;
+        this.disposer = disposer;
         this._refCount = 0;
         this._loadable = { loading: true };
         this._invalid = true;
         this._currentAsyncRequestId = 0;
+        this._disposeTimerId = undefined;
+        this._createdMillis = new Date().getTime();
         this._evictListener = this.onEntityEvict.bind(this);
         this._changeListener = this.onEntityChange.bind(this);
         entityManager.addEvictListener(undefined, this._evictListener);
@@ -29,13 +32,22 @@ class QueryResult {
         this._refCount++;
         return this;
     }
-    release() {
+    release(maxDelayMillis) {
         if (--this._refCount === 0) {
-            this.entityManager.removeEvictListener(undefined, this._evictListener);
-            this.entityManager.removeChangeListener(undefined, this._changeListener);
-            return true;
+            if (maxDelayMillis <= 0) {
+                this.dispose();
+            }
+            const millis = Math.min(new Date().getTime() - this._createdMillis, maxDelayMillis);
+            let timerId = this._disposeTimerId;
+            if (timerId !== undefined) {
+                clearTimeout(timerId);
+            }
+            timerId = setTimeout(() => {
+                if (this._refCount === 0) {
+                    this.dispose();
+                }
+            }, millis);
         }
-        return false;
     }
     get promise() {
         if (this._invalid) {
@@ -128,6 +140,12 @@ class QueryResult {
                 changedType: "RESULT_CHANGE"
             });
         }
+    }
+    dispose() {
+        console.log("dispose", this.queryArgs.variables);
+        this.entityManager.removeEvictListener(undefined, this._evictListener);
+        this.entityManager.removeChangeListener(undefined, this._changeListener);
+        this.disposer();
     }
 }
 exports.QueryResult = QueryResult;

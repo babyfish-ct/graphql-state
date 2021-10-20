@@ -61,5 +61,9 @@ class AssociationReferenceValue extends AssocaitionValue_1.AssociationValue {
             this.association.set(entityManager, this.args, undefined);
         }
     }
+    contains(target) {
+        var _a;
+        return ((_a = this.referfence) === null || _a === void 0 ? void 0 : _a.id) === target.id;
+    }
 }
 exports.AssociationReferenceValue = AssociationReferenceValue;

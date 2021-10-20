@@ -22,6 +22,7 @@ export declare class Record {
     set(entityManager: EntityManager, field: FieldMetadata, args: VariableArgs | undefined, value: any): void;
     link(entityManager: EntityManager, associationField: FieldMetadata, record: Record): void;
     unlink(entityManager: EntityManager, associationField: FieldMetadata, record: Record): void;
+    contains(field: FieldMetadata, args: VariableArgs | undefined, target: Record, tryMoreStrictArgs: boolean): boolean;
     evict(entityManager: EntityManager, field: FieldMetadata, args: VariableArgs | undefined, includeMoreStrictArgs?: boolean): void;
     delete(entityManager: EntityManager): void;
     undelete(): void;

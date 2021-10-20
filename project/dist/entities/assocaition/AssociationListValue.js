@@ -100,6 +100,16 @@ class AssociationListValue extends AssocaitionValue_1.AssociationValue {
             this.association.set(entityManager, this.args, elements.map(Record_1.objectWithOnlyId));
         }
     }
+    contains(target) {
+        if (this.elements !== undefined) {
+            for (const element of this.elements) {
+                if (element.id === target.id) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }
 exports.AssociationListValue = AssociationListValue;
 function appendTo(newElements, newElement, position) {
