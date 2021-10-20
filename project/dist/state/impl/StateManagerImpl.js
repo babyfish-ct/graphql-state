@@ -24,25 +24,47 @@ class StateManagerImpl {
     delete(typeName, idOrArray) {
         this.entityManager.delete(typeName, idOrArray);
     }
-    addListener(listener) {
-        this.entityManager.addListener(undefined, listener);
+    addEntityEvictListener(listener) {
+        this.entityManager.addEvictListener(undefined, listener);
     }
-    removeListener(listener) {
-        this.entityManager.removeListener(undefined, listener);
+    removeEntityEvictListener(listener) {
+        this.entityManager.removeEvictListener(undefined, listener);
     }
-    addListeners(listeners) {
+    addEntityEvictListeners(listeners) {
         for (const typeName in listeners) {
             const listener = listeners[typeName];
             if (listener !== undefined && listener !== null) {
-                this.entityManager.addListener(typeName, listener);
+                this.entityManager.addEvictListener(typeName, listener);
             }
         }
     }
-    removeListeners(listeners) {
+    removeEntityEvictListeners(listeners) {
         for (const typeName in listeners) {
             const listener = listeners[typeName];
             if (listener !== undefined && listener !== null) {
-                this.entityManager.removeListener(typeName, listener);
+                this.entityManager.removeEvictListener(typeName, listener);
+            }
+        }
+    }
+    addEntityChangeListener(listener) {
+        this.entityManager.addChangeListener(undefined, listener);
+    }
+    removeEntityChangeListener(listener) {
+        this.entityManager.removeChangeListener(undefined, listener);
+    }
+    addEntityChangeListeners(listeners) {
+        for (const typeName in listeners) {
+            const listener = listeners[typeName];
+            if (listener !== undefined && listener !== null) {
+                this.entityManager.addChangeListener(typeName, listener);
+            }
+        }
+    }
+    removeEntityChangeListeners(listeners) {
+        for (const typeName in listeners) {
+            const listener = listeners[typeName];
+            if (listener !== undefined && listener !== null) {
+                this.entityManager.removeChangeListener(typeName, listener);
             }
         }
     }

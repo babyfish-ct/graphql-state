@@ -18,8 +18,11 @@ import {
     AuthorScalarType
 } from './fetchers';
 import {
+    BookStoreEvictEvent,
     BookStoreChangeEvent,
+    BookEvictEvent,
     BookChangeEvent,
+    AuthorEvictEvent,
     AuthorChangeEvent
 } from './triggers';
 
@@ -54,7 +57,8 @@ export type Schema = {
     readonly entities: {
         readonly "BookStore": {
             readonly " $id": string;
-            readonly " $event": BookStoreChangeEvent;
+            readonly " $evictEvent": BookStoreEvictEvent;
+            readonly " $changeEvent": BookStoreChangeEvent;
             readonly " $associationTypes": {
                 readonly books: "Book"
             };
@@ -67,7 +71,8 @@ export type Schema = {
         };
         readonly "Book": {
             readonly " $id": string;
-            readonly " $event": BookChangeEvent;
+            readonly " $evictEvent": BookEvictEvent;
+            readonly " $changeEvent": BookChangeEvent;
             readonly " $associationTypes": {
                 readonly store: "BookStore", 
                 readonly authors: "Author"
@@ -82,7 +87,8 @@ export type Schema = {
         };
         readonly "Author": {
             readonly " $id": string;
-            readonly " $event": AuthorChangeEvent;
+            readonly " $evictEvent": AuthorEvictEvent;
+            readonly " $changeEvent": AuthorChangeEvent;
             readonly " $associationTypes": {
                 readonly books: "Book"
             };

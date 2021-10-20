@@ -1,11 +1,23 @@
 import { EntityManager } from "../EntityManager";
-import { Record } from "../Record";
+import { objectWithOnlyId, Record } from "../Record";
 import { AssociationValue } from "./AssocaitionValue";
 import { Association } from "./Association";
 
 export class AssociationConnectionValue extends AssociationValue {
 
     private connection: RecordConnection;
+
+    getAsObject(): ObjectConnection {
+        return {
+            ...this.connection,
+            edges: this.connection.edges.map(edge => {
+                return {
+                    ...edge,
+                    node: objectWithOnlyId(edge.node)
+                };
+            })
+        };
+    }
 
     get(): RecordConnection {
         return this.connection;
@@ -85,13 +97,22 @@ export class AssociationConnectionValue extends AssociationValue {
 }
 
 export interface RecordConnection {
-
-    readonly edges:  ReadonlyArray<RecordEdge>;
-
+    readonly edges: ReadonlyArray<RecordEdge>;
     readonly [key: string]: any;
 }
 
 export interface RecordEdge {
     readonly node: Record;
-        readonly cursor: string;
+    readonly cursor: string;
+}
+
+export interface ObjectConnection {
+
+    readonly edges: ReadonlyArray<ObjectEdge>;
+    readonly [key: string]: any;
+}
+
+export interface ObjectEdge {
+    readonly node: Record;
+    readonly cursor: string;
 }

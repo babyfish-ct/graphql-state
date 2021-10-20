@@ -1,44 +1,29 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.changedKeyString = exports.ModificationContext = void 0;
+exports.ModificationContext = void 0;
+const VariableArgs_1 = require("./VariableArgs");
 class ModificationContext {
-    constructor(linkToQuery, trigger) {
+    constructor(linkToQuery, publishEvictEvent, publishChangeEvent) {
         this.linkToQuery = linkToQuery;
-        this.trigger = trigger;
+        this.publishEvictEvent = publishEvictEvent;
+        this.publishChangeEvent = publishChangeEvent;
         this.objPairMap = new Map();
     }
     close() {
-        var _a;
         for (const [type, subMap] of this.objPairMap) {
-            for (const [id, objectPair] of subMap) {
-                if (objectPair.oldObj === undefined) {
+            for (const [id, pair] of subMap) {
+                if (pair.oldObj === undefined && pair.newObj !== undefined) {
                     this.linkToQuery(type, id);
                 }
             }
         }
         for (const [type, subMap] of this.objPairMap) {
-            for (const [id, objectPair] of subMap) {
-                const fieldKeys = new Set();
-                const oldValueMap = new Map();
-                const newValueMap = new Map();
-                if (objectPair.newObj !== undefined) {
-                    for (const [fieldKey, newValue] of objectPair.newObj) {
-                        const oldValue = (_a = objectPair.oldObj) === null || _a === void 0 ? void 0 : _a.get(fieldKey);
-                        fieldKeys.add(fieldKey);
-                        oldValueMap.set(fieldKey, oldValue);
-                        newValueMap.set(fieldKey, newValue);
-                    }
+            for (const [id, pair] of subMap) {
+                if (pair.evicted || pair.evictedFieldKeys !== undefined) {
+                    this.publishEvictEvents(type, id, pair);
                 }
-                else if (objectPair.oldObj !== undefined) {
-                    for (const [fieldKey, oldValue] of objectPair.oldObj) {
-                        fieldKeys.add(fieldKey);
-                        oldValueMap.set(fieldKey, oldValue);
-                    }
-                }
-                if (objectPair.newObj === undefined || newValueMap.size !== 0) {
-                    const event = new EntityChangeEventImpl(type.name, id, objectPair.oldObj !== undefined && objectPair.newObj !== undefined ?
-                        "UPDATE" : (objectPair.newObj !== undefined ? "INSERT" : "DELETE"), Array.from(fieldKeys).map(parseFieldKey), oldValueMap.size === 0 ? undefined : oldValueMap, newValueMap.size === 0 ? undefined : newValueMap);
-                    this.trigger(event);
+                if (!pair.evicted) {
+                    this.publishChangeEvents(type, id, pair);
                 }
             }
         }
@@ -48,6 +33,7 @@ class ModificationContext {
             const pair = this.pair(record, false);
             if (pair.newObj === undefined) {
                 pair.newObj = new Map();
+                pair.evicted = false;
             }
         }
     }
@@ -56,16 +42,26 @@ class ModificationContext {
             const pair = this.pair(record, true);
             if (pair.newObj === undefined) {
                 pair.newObj = new Map();
+                pair.evicted = false;
             }
         }
     }
     delete(record) {
         if (record.type.superType === undefined) {
-            this.pair(record, true);
+            const pair = this.pair(record, true);
+            pair.newObj = undefined;
+            pair.evicted = false;
         }
     }
-    set(record, fieldName, variablesCode, oldValue, newValue) {
-        var _a, _b;
+    evict(record) {
+        if (record.type.superType === undefined) {
+            const pair = this.pair(record, true);
+            pair.newObj = undefined;
+            pair.evicted = true;
+        }
+    }
+    set(record, fieldName, args, oldValue, newValue) {
+        var _a;
         if (fieldName === record.type.idField.name) {
             throw new Error("Internal bug: the changed name cannot be id");
         }
@@ -75,10 +71,40 @@ class ModificationContext {
                 throw new Error("Internal bug: the changed record is not cached in ModiciationContext");
             }
             if (pair.oldObj !== undefined && !pair.oldObj.has(fieldName)) {
-                pair.oldObj.set(changedKeyString(fieldName, variablesCode), oldValue);
+                pair.oldObj.set(VariableArgs_1.VariableArgs.fieldKey(fieldName, args), oldValue);
             }
-            (_b = pair.newObj) === null || _b === void 0 ? void 0 : _b.set(changedKeyString(fieldName, variablesCode), newValue);
+            let newObj = pair.newObj;
+            if (newObj === undefined) {
+                pair.newObj = newObj = new Map();
+                pair.evicted = false;
+            }
+            const key = VariableArgs_1.VariableArgs.fieldKey(fieldName, args);
+            newObj === null || newObj === void 0 ? void 0 : newObj.set(key, newValue);
+            const evictedFieldKeys = pair.evictedFieldKeys;
+            if (evictedFieldKeys !== undefined) {
+                evictedFieldKeys.delete(key);
+                if (evictedFieldKeys.size === 0) {
+                    pair.evictedFieldKeys = undefined;
+                }
+            }
         }
+    }
+    unset(record, fieldName, args) {
+        var _a, _b;
+        if (fieldName === record.type.idField.name) {
+            throw new Error("Internal bug: the changed name cannot be id");
+        }
+        const pair = (_a = this.objPairMap.get(record.type)) === null || _a === void 0 ? void 0 : _a.get(record.id);
+        if (pair === undefined) {
+            throw new Error("Internal bug: the evicted record is not cached in ModiciationContext");
+        }
+        const key = VariableArgs_1.VariableArgs.fieldKey(fieldName, args);
+        (_b = pair.newObj) === null || _b === void 0 ? void 0 : _b.delete(key);
+        let evictedFieldKeys = pair.evictedFieldKeys;
+        if (evictedFieldKeys === undefined) {
+            pair.evictedFieldKeys = evictedFieldKeys = new Set();
+        }
+        evictedFieldKeys.add(key);
     }
     pair(record, initializeOldObj) {
         const key = record.type;
@@ -89,31 +115,85 @@ class ModificationContext {
         }
         let pair = subMap.get(record.id);
         if (pair === undefined) {
-            pair = { oldObj: initializeOldObj ? new Map() : undefined };
+            pair = { oldObj: initializeOldObj ? record.createMap() : undefined, evicted: false };
             subMap.set(record.id, pair);
         }
         return pair;
     }
+    publishEvictEvents(type, id, pair) {
+        var _a;
+        if (pair.evictedFieldKeys !== undefined) {
+            const map = new Map();
+            if (pair.oldObj !== undefined) {
+                for (const evictedFieldKey of pair.evictedFieldKeys) {
+                    if (pair.oldObj.has(evictedFieldKey)) {
+                        map.set(evictedFieldKey, pair.oldObj.get(evictedFieldKey));
+                    }
+                }
+            }
+            this.publishEvictEvent(new EntityEvictEventImpl(type.name, id, "fields", Array.from(map.keys()).map(parseEntityKey), map));
+        }
+        else {
+            const oldObj = (_a = pair.oldObj) !== null && _a !== void 0 ? _a : new Map();
+            this.publishEvictEvent(new EntityEvictEventImpl(type.name, id, "row", Array.from(oldObj.keys()).map(parseEntityKey), oldObj));
+        }
+    }
+    publishChangeEvents(type, id, pair) {
+        var _a, _b, _c;
+        const fieldKeys = new Set();
+        const oldValueMap = new Map();
+        const newValueMap = new Map();
+        if (pair.newObj !== undefined) {
+            for (const [fieldKey, newValue] of pair.newObj) {
+                if (((_a = pair.evictedFieldKeys) === null || _a === void 0 ? void 0 : _a.has(fieldKey)) !== true) {
+                    const oldValue = (_b = pair.oldObj) === null || _b === void 0 ? void 0 : _b.get(fieldKey);
+                    fieldKeys.add(fieldKey);
+                    oldValueMap.set(fieldKey, oldValue);
+                    newValueMap.set(fieldKey, newValue);
+                }
+            }
+        }
+        else if (pair.oldObj !== undefined) {
+            for (const [fieldKey, oldValue] of pair.oldObj) {
+                if (((_c = pair.evictedFieldKeys) === null || _c === void 0 ? void 0 : _c.has(fieldKey)) !== true) {
+                    fieldKeys.add(fieldKey);
+                    oldValueMap.set(fieldKey, oldValue);
+                }
+            }
+        }
+        if (pair.newObj === undefined || newValueMap.size !== 0) {
+            const event = new EntityChangeEventImpl(type.name, id, pair.oldObj !== undefined && pair.newObj !== undefined ?
+                "update" : (pair.newObj !== undefined ? "insert" : "delete"), Array.from(fieldKeys).map(parseEntityKey), oldValueMap.size === 0 ? undefined : oldValueMap, newValueMap.size === 0 ? undefined : newValueMap);
+            this.publishChangeEvent(event);
+        }
+    }
 }
 exports.ModificationContext = ModificationContext;
-function changedKeyString(fieldName, variables) {
-    const vsCode = typeof variables === 'object' ?
-        JSON.stringify(variables) :
-        typeof variables === 'string' ?
-            variables :
-            undefined;
-    if (vsCode === undefined || vsCode === '{}') {
-        return fieldName;
-    }
-    return `${fieldName}:${vsCode}`;
-}
-exports.changedKeyString = changedKeyString;
-function parseFieldKey(key) {
+function parseEntityKey(key) {
     const commaIndex = key.indexOf(':');
     return commaIndex === -1 ? key : {
         name: key.substring(0, commaIndex),
         variables: JSON.parse(key.substring(commaIndex + 1))
     };
+}
+class EntityEvictEventImpl {
+    constructor(typeName, id, evictedType, evictedKeys, oldValueMap) {
+        this.typeName = typeName;
+        this.id = id;
+        this.evictedType = evictedType;
+        this.evictedKeys = evictedKeys;
+        this.oldValueMap = oldValueMap;
+    }
+    evictedValue(evictedKey) {
+        const key = typeof evictedKey === "string" ?
+            evictedKey :
+            `${evictedKey.name}:${JSON.stringify(evictedKey.variables)}`;
+        const value = this.oldValueMap.get(key);
+        if (value === undefined && !this.oldValueMap.has(key)) {
+            throw new Error(`No evicted key ${key}`);
+        }
+        return value;
+    }
 }
 class EntityChangeEventImpl {
     constructor(typeName, id, changedType, changedKeys, oldValueMap, newValueMap) {
@@ -128,7 +208,7 @@ class EntityChangeEventImpl {
         var _a;
         const key = typeof changedKey === 'string' ?
             changedKey :
-            changedKeyString(changedKey.name, changedKey.variables);
+            VariableArgs_1.VariableArgs.fieldKey(changedKey.name, VariableArgs_1.VariableArgs.of(changedKey.variables));
         const oldValue = (_a = this.oldValueMap) === null || _a === void 0 ? void 0 : _a.get(key);
         if (oldValue === undefined) {
             if (this.oldValueMap === undefined || !this.oldValueMap.has(key)) {
@@ -141,7 +221,7 @@ class EntityChangeEventImpl {
         var _a;
         const key = typeof changedKey === 'string' ?
             changedKey :
-            changedKeyString(changedKey.name, changedKey.variables);
+            VariableArgs_1.VariableArgs.fieldKey(changedKey.name, VariableArgs_1.VariableArgs.of(changedKey.variables));
         const oldValue = (_a = this.newValueMap) === null || _a === void 0 ? void 0 : _a.get(key);
         if (oldValue === undefined) {
             if (this.newValueMap === undefined || !this.newValueMap.has(key)) {

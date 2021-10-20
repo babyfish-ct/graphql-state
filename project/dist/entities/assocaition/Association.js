@@ -98,6 +98,12 @@ class Association {
             value.unlink(entityManager, self, this, target);
         });
     }
+    appendTo(map) {
+        const idFieldName = this.field.targetType.idField.name;
+        this.valueMap.forEachValue(value => {
+            map.set(VariableArgs_1.VariableArgs.fieldKey(this.field.name, value.args), value.getAsObject());
+        });
+    }
     value(args) {
         return this.valueMap.computeIfAbsent(args === null || args === void 0 ? void 0 : args.key, () => {
             switch (this.field.category) {

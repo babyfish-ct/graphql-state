@@ -23,7 +23,7 @@ export class VariableArgs {
     static contains(
         left: VariableArgs | undefined, 
         right: VariableArgs | undefined
-    ) {
+    ): boolean {
         if (left === right) {
             return true;
         }
@@ -34,6 +34,13 @@ export class VariableArgs {
             return true;
         }
         return contains(left.variables, right.variables)
+    }
+
+    static fieldKey(fieldName: string, args?: VariableArgs): string {
+        if (args === undefined) {
+            return fieldName;
+        }
+        return `${fieldName}:${args.key}`;
     }
 }
 

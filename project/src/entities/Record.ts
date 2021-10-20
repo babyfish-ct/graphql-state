@@ -84,7 +84,7 @@ export class Record {
                 const oldValue = this.scalarMap.get(field.name);
                 if (oldValue !== value) {
                     this.scalarMap.set(field.name, value);
-                    entityManager.modificationContext.set(this, field.name, args?.key, oldValue, value);
+                    entityManager.modificationContext.set(this, field.name, args, oldValue, value);
                 }
             }
         }
@@ -148,6 +148,17 @@ export class Record {
         }
         return row;
     }
+
+    createMap(): Map<string, any> {
+        const map = new Map<string, any>();
+        for (const [name, value] of this.scalarMap) {
+            map.set(name, value);
+        }
+        this.associationMap.forEachValue(association => {
+            association.appendTo(map);
+        });
+        return map;
+    } 
 }
 
 export const QUERY_OBJECT_ID = "____QUERY_OBJECT____";

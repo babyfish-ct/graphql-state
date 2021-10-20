@@ -25,6 +25,7 @@ export declare class Record {
     delete(entityManager: EntityManager): void;
     undelete(): void;
     toRow(): ScalarRow<any>;
+    createMap(): Map<string, any>;
 }
 export declare const QUERY_OBJECT_ID = "____QUERY_OBJECT____";
 export declare const MUATION_OBJECT_ID = "____MUTATION_OBJECT____";

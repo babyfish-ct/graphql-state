@@ -4,12 +4,16 @@ exports.AssociationListValue = void 0;
 const Record_1 = require("../Record");
 const AssocaitionValue_1 = require("./AssocaitionValue");
 class AssociationListValue extends AssocaitionValue_1.AssociationValue {
+    getAsObject() {
+        var _a;
+        return (_a = this.elements) === null || _a === void 0 ? void 0 : _a.map(Record_1.objectWithOnlyId);
+    }
     get() {
         var _a;
         return (_a = this.elements) !== null && _a !== void 0 ? _a : [];
     }
     set(entityManager, self, association, value) {
-        var _a, _b, _c, _d, _e, _f, _g, _h;
+        var _a, _b, _c, _d, _e, _f, _g;
         let listChanged = ((_b = (_a = this.elements) === null || _a === void 0 ? void 0 : _a.length) !== null && _b !== void 0 ? _b : 0) !== ((_c = value === null || value === void 0 ? void 0 : value.length) !== null && _c !== void 0 ? _c : 0);
         if (!listChanged) {
             const idFieldName = association.field.targetType.idField.name;
@@ -63,7 +67,7 @@ class AssociationListValue extends AssocaitionValue_1.AssociationValue {
             }
         }
         if (listChanged) {
-            entityManager.modificationContext.set(self, association.field.name, (_g = this.args) === null || _g === void 0 ? void 0 : _g.key, oldValueForTriggger, (_h = this.elements) === null || _h === void 0 ? void 0 : _h.map(Record_1.objectWithOnlyId));
+            entityManager.modificationContext.set(self, association.field.name, this.args, oldValueForTriggger, (_g = this.elements) === null || _g === void 0 ? void 0 : _g.map(Record_1.objectWithOnlyId));
         }
     }
     link(entityManager, self, association, target) {

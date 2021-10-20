@@ -8,7 +8,8 @@ export declare class QueryResult {
     private _promise?;
     private _loadable;
     private _invalid;
-    private _listener;
+    private _evictListener;
+    private _changeListener;
     private _currentAsyncRequestId;
     private _dependencies?;
     constructor(entityManager: EntityManager, queryArgs: QueryArgs);
@@ -18,6 +19,7 @@ export declare class QueryResult {
     get loadable(): Loadable;
     private query;
     private refreshDependencies;
+    private onEntityEvict;
     private onEntityChange;
     private invalidate;
 }

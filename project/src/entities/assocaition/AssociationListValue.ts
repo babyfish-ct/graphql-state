@@ -8,7 +8,11 @@ export class AssociationListValue extends AssociationValue {
 
     private elements?: Array<Record>;
 
-    get(): ReadonlyArray<Record | undefined> {
+    getAsObject(): ReadonlyArray<any> | undefined {
+        return this.elements?.map(objectWithOnlyId);
+    }
+
+    get(): ReadonlyArray<Record> {
         return this.elements ?? [];
     }
 
@@ -81,7 +85,7 @@ export class AssociationListValue extends AssociationValue {
             entityManager.modificationContext.set(
                 self, 
                 association.field.name, 
-                this.args?.key, 
+                this.args, 
                 oldValueForTriggger, 
                 this.elements?.map(objectWithOnlyId)
             );

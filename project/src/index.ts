@@ -12,4 +12,4 @@ export { makeStateFactory } from './state/State';
 export { useStateManager, useStateValue, useStateAccessor, useQuery, makeManagedObjectHooks } from './state/StateHook';
 export { StateManagerProvider } from './state/StateManagerProvider';
 export { StateScope } from './state/StateScope';
-export { EntityChangeEvent } from './entities/EntityChangeEvent';
+export { EntityChangeEvent } from './entities/EntityEvent';

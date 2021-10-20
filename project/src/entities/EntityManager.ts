@@ -5,6 +5,7 @@ import { RemoteDataService } from "../data/RemoteDataService";
 import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { StateManagerImpl } from "../state/impl/StateManagerImpl";
+import { EntityEvictEvent } from "./EntityEvent";
 import { ModificationContext } from "./ModificationContext";
 import { QueryArgs } from "./QueryArgs";
 import { QueryResult } from "./QueryResult";
@@ -21,7 +22,9 @@ export class EntityManager {
 
     private _queryResultMap = new Map<string, QueryResult>();
 
-    private _listenerMap = new Map<string | undefined, Set<(e: EntityChangeEvent) => any>>();
+    private _evictListenerMap = new Map<string | undefined, Set<(e: EntityEvictEvent) => any>>();
+
+    private _changeListenerMap = new Map<string | undefined, Set<(e: EntityChangeEvent) => any>>();
 
     private _ctx?: ModificationContext;
 
@@ -76,6 +79,7 @@ export class EntityManager {
         } else {
             this._ctx = new ModificationContext(
                 this.linkToQuery.bind(this),
+                this.publishEvictChangeEvent.bind(this),
                 this.publishEntityChangeEvent.bind(this)
             );
             try {
@@ -148,12 +152,12 @@ export class EntityManager {
         }
     }
 
-    addListener(typeName: string | undefined, listener: (e: EntityChangeEvent) => void): void {
+    addEvictListener(typeName: string | undefined, listener: (e: EntityEvictEvent) => void): void {
         if (listener !== undefined && listener !== null) {
-            let set = this._listenerMap.get(typeName);
+            let set = this._evictListenerMap.get(typeName);
             if (set === undefined) {
-                set = new Set<(e: EntityChangeEvent) => void>();
-                this._listenerMap.set(typeName, set);
+                set = new Set<(e: EntityEvictEvent) => void>();
+                this._evictListenerMap.set(typeName, set);
             } 
             if (set.has(listener)) {
                 throw new Error(`Cannot add exists listener`);
@@ -162,8 +166,42 @@ export class EntityManager {
         }
     }
 
-    removeListener(typeName: string | undefined, listener: (e: EntityChangeEvent) => void): void {
-        this._listenerMap.get(typeName)?.delete(listener);
+    removeEvictListener(typeName: string | undefined, listener: (e: EntityEvictEvent) => void): void {
+        this._evictListenerMap.get(typeName)?.delete(listener);
+    }
+
+    private publishEvictChangeEvent(e: EntityEvictEvent) {
+        for (const [, set] of this._evictListenerMap) {
+            for (const listener of set) {
+                listener(e);
+            }
+        }
+    }
+
+    addChangeListener(typeName: string | undefined, listener: (e: EntityChangeEvent) => void): void {
+        if (listener !== undefined && listener !== null) {
+            let set = this._changeListenerMap.get(typeName);
+            if (set === undefined) {
+                set = new Set<(e: EntityChangeEvent) => void>();
+                this._changeListenerMap.set(typeName, set);
+            } 
+            if (set.has(listener)) {
+                throw new Error(`Cannot add exists listener`);
+            }
+            set.add(listener);
+        }
+    }
+
+    removeChangeListener(typeName: string | undefined, listener: (e: EntityChangeEvent) => void): void {
+        this._changeListenerMap.get(typeName)?.delete(listener);
+    }
+
+    private publishEntityChangeEvent(e: EntityChangeEvent) {
+        for (const [, set] of this._changeListenerMap) {
+            for (const listener of set) {
+                listener(e);
+            }
+        }
     }
 
     private linkToQuery(type: TypeMetadata, id: any) {
@@ -174,14 +212,6 @@ export class EntityManager {
                 if (field.targetType !== undefined && field.targetType.isAssignableFrom(type)) {
                     qr.link(this, field, record);
                 }
-            }
-        }
-    }
-
-    private publishEntityChangeEvent(e: EntityChangeEvent) {
-        for (const [, set] of this._listenerMap) {
-            for (const listener of set) {
-                listener(e);
             }
         }
     }

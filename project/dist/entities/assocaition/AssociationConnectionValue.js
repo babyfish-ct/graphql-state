@@ -1,8 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AssociationConnectionValue = void 0;
+const Record_1 = require("../Record");
 const AssocaitionValue_1 = require("./AssocaitionValue");
 class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
+    getAsObject() {
+        return Object.assign(Object.assign({}, this.connection), { edges: this.connection.edges.map(edge => {
+                return Object.assign(Object.assign({}, edge), { node: Record_1.objectWithOnlyId(edge.node) });
+            }) });
+    }
     get() {
         return this.connection;
     }

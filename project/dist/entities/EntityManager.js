@@ -13,7 +13,8 @@ class EntityManager {
         this.schema = schema;
         this._recordManagerMap = new Map();
         this._queryResultMap = new Map();
-        this._listenerMap = new Map();
+        this._evictListenerMap = new Map();
+        this._changeListenerMap = new Map();
         this.dataService = new BatchDataService_1.BatchDataService(new RemoteDataService_1.RemoteDataService(this));
         const queryType = schema.typeMap.get("Query");
         if (queryType !== undefined) {
@@ -52,7 +53,7 @@ class EntityManager {
             return action();
         }
         else {
-            this._ctx = new ModificationContext_1.ModificationContext(this.linkToQuery.bind(this), this.publishEntityChangeEvent.bind(this));
+            this._ctx = new ModificationContext_1.ModificationContext(this.linkToQuery.bind(this), this.publishEvictChangeEvent.bind(this), this.publishEntityChangeEvent.bind(this));
             try {
                 return action();
             }
@@ -114,12 +115,12 @@ class EntityManager {
             this._queryResultMap.delete(args.key);
         }
     }
-    addListener(typeName, listener) {
+    addEvictListener(typeName, listener) {
         if (listener !== undefined && listener !== null) {
-            let set = this._listenerMap.get(typeName);
+            let set = this._evictListenerMap.get(typeName);
             if (set === undefined) {
                 set = new Set();
-                this._listenerMap.set(typeName, set);
+                this._evictListenerMap.set(typeName, set);
             }
             if (set.has(listener)) {
                 throw new Error(`Cannot add exists listener`);
@@ -127,9 +128,40 @@ class EntityManager {
             set.add(listener);
         }
     }
-    removeListener(typeName, listener) {
+    removeEvictListener(typeName, listener) {
         var _a;
-        (_a = this._listenerMap.get(typeName)) === null || _a === void 0 ? void 0 : _a.delete(listener);
+        (_a = this._evictListenerMap.get(typeName)) === null || _a === void 0 ? void 0 : _a.delete(listener);
+    }
+    publishEvictChangeEvent(e) {
+        for (const [, set] of this._evictListenerMap) {
+            for (const listener of set) {
+                listener(e);
+            }
+        }
+    }
+    addChangeListener(typeName, listener) {
+        if (listener !== undefined && listener !== null) {
+            let set = this._changeListenerMap.get(typeName);
+            if (set === undefined) {
+                set = new Set();
+                this._changeListenerMap.set(typeName, set);
+            }
+            if (set.has(listener)) {
+                throw new Error(`Cannot add exists listener`);
+            }
+            set.add(listener);
+        }
+    }
+    removeChangeListener(typeName, listener) {
+        var _a;
+        (_a = this._changeListenerMap.get(typeName)) === null || _a === void 0 ? void 0 : _a.delete(listener);
+    }
+    publishEntityChangeEvent(e) {
+        for (const [, set] of this._changeListenerMap) {
+            for (const listener of set) {
+                listener(e);
+            }
+        }
     }
     linkToQuery(type, id) {
         const qr = this._queryRecord;
@@ -139,13 +171,6 @@ class EntityManager {
                 if (field.targetType !== undefined && field.targetType.isAssignableFrom(type)) {
                     qr.link(this, field, record);
                 }
-            }
-        }
-    }
-    publishEntityChangeEvent(e) {
-        for (const [, set] of this._listenerMap) {
-            for (const listener of set) {
-                listener(e);
             }
         }
     }

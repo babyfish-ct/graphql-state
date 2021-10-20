@@ -133,6 +133,16 @@ export class Association {
         });
     }
 
+    appendTo(map: Map<string, any>) {
+        const idFieldName = this.field.targetType!.idField.name;
+        this.valueMap.forEachValue(value => {
+            map.set(
+                VariableArgs.fieldKey(this.field.name, value.args), 
+                value.getAsObject()
+            );
+        });
+    }
+
     private value(args: VariableArgs | undefined): AssociationValue {
         return this.valueMap.computeIfAbsent(args?.key, () => {
             switch (this.field.category) {

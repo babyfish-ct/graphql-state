@@ -15,5 +15,6 @@ export declare class Association {
     link(entityManager: EntityManager, self: Record, target: Record | ReadonlyArray<Record>, mostStringentArgs: VariableArgs | undefined, changedByOpposite: boolean): void;
     unlink(entityManager: EntityManager, self: Record, target: Record | ReadonlyArray<Record>, leastStringentArgs: VariableArgs | undefined, changedByOpposite: boolean): void;
     forceUnlink(entityManager: EntityManager, self: Record, target: Record): void;
+    appendTo(map: Map<string, any>): void;
     private value;
 }

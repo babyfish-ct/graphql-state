@@ -1,5 +1,6 @@
 import { ObjectFetcher } from "graphql-ts-client-api";
 import { EntityChangeEvent } from "../..";
+import { EntityEvictEvent } from "../../entities/EntityEvent";
 import { EntityManager } from "../../entities/EntityManager";
 import { QueryResult } from "../../entities/QueryResult";
 import { toRuntimeShape } from "../../entities/RuntimeShape";
@@ -47,36 +48,70 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
         this.entityManager.delete(typeName, idOrArray);
     }
 
-    addListener(listener: (e: EntityChangeEvent) => void): void {
-        this.entityManager.addListener(undefined, listener);
+    addEntityEvictListener(listener: (e: EntityEvictEvent) => void): void {
+        this.entityManager.addEvictListener(undefined, listener);
     }
 
-    removeListener(listener: (e: EntityChangeEvent) => void): void {
-        this.entityManager.removeListener(undefined, listener);
+    removeEntityEvictListener(listener: (e: EntityEvictEvent) => void): void {
+        this.entityManager.removeEvictListener(undefined, listener);
     }
 
-    addListeners(
+    addEntityEvictListeners(
         listeners: { 
-            readonly [TName in keyof TSchema["entities"] & string]?: (e: TSchema["entities"][TName][" $event"]) => void 
+            readonly [TName in keyof TSchema["entities"] & string]?: (e: TSchema["entities"][TName][" $evictEvent"]) => void 
         }
     ): void {
         for (const typeName in listeners) {
             const listener = listeners[typeName];
             if (listener !== undefined && listener !== null) {
-                this.entityManager.addListener(typeName, listener);
+                this.entityManager.addEvictListener(typeName, listener);
             }
         }
     }
 
-    removeListeners(
+    removeEntityEvictListeners(
         listeners: { 
-            readonly [TName in keyof TSchema["entities"] & string]?: (e: TSchema["entities"][TName][" $event"]) => void 
+            readonly [TName in keyof TSchema["entities"] & string]?: (e: TSchema["entities"][TName][" $evictEvent"]) => void 
         }
     ): void {
         for (const typeName in listeners) {
             const listener = listeners[typeName];
             if (listener !== undefined && listener !== null) {
-                this.entityManager.removeListener(typeName, listener);
+                this.entityManager.removeEvictListener(typeName, listener);
+            }
+        }
+    }
+
+    addEntityChangeListener(listener: (e: EntityChangeEvent) => void): void {
+        this.entityManager.addChangeListener(undefined, listener);
+    }
+
+    removeEntityChangeListener(listener: (e: EntityChangeEvent) => void): void {
+        this.entityManager.removeChangeListener(undefined, listener);
+    }
+
+    addEntityChangeListeners(
+        listeners: { 
+            readonly [TName in keyof TSchema["entities"] & string]?: (e: TSchema["entities"][TName][" $changeEvent"]) => void 
+        }
+    ): void {
+        for (const typeName in listeners) {
+            const listener = listeners[typeName];
+            if (listener !== undefined && listener !== null) {
+                this.entityManager.addChangeListener(typeName, listener);
+            }
+        }
+    }
+
+    removeEntityChangeListeners(
+        listeners: { 
+            readonly [TName in keyof TSchema["entities"] & string]?: (e: TSchema["entities"][TName][" $changeEvent"]) => void 
+        }
+    ): void {
+        for (const typeName in listeners) {
+            const listener = listeners[typeName];
+            if (listener !== undefined && listener !== null) {
+                this.entityManager.removeChangeListener(typeName, listener);
             }
         }
     }

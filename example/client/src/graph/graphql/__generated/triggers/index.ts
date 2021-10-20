@@ -1,3 +1,3 @@
-export type { BookStoreChangeEvent } from './BookStoreChangeEvent';
-export type { BookChangeEvent } from './BookChangeEvent';
-export type { AuthorChangeEvent } from './AuthorChangeEvent';
+export type { BookStoreEvictEvent, BookStoreChangeEvent } from './BookStoreChangeEvent';
+export type { BookEvictEvent, BookChangeEvent } from './BookChangeEvent';
+export type { AuthorEvictEvent, AuthorChangeEvent } from './AuthorChangeEvent';

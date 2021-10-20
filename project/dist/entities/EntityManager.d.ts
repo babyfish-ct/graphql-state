@@ -2,6 +2,7 @@ import { EntityChangeEvent } from "..";
 import { AbstractDataService } from "../data/AbstractDataService";
 import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 import { StateManagerImpl } from "../state/impl/StateManagerImpl";
+import { EntityEvictEvent } from "./EntityEvent";
 import { ModificationContext } from "./ModificationContext";
 import { QueryArgs } from "./QueryArgs";
 import { QueryResult } from "./QueryResult";
@@ -15,7 +16,8 @@ export declare class EntityManager {
     readonly dataService: AbstractDataService;
     private _recordManagerMap;
     private _queryResultMap;
-    private _listenerMap;
+    private _evictListenerMap;
+    private _changeListenerMap;
     private _ctx?;
     private _queryRecord?;
     private _mutationRecord?;
@@ -29,8 +31,11 @@ export declare class EntityManager {
     saveId(typeName: string, id: any): Record;
     retain(args: QueryArgs): QueryResult;
     release(args: QueryArgs): void;
-    addListener(typeName: string | undefined, listener: (e: EntityChangeEvent) => void): void;
-    removeListener(typeName: string | undefined, listener: (e: EntityChangeEvent) => void): void;
-    private linkToQuery;
+    addEvictListener(typeName: string | undefined, listener: (e: EntityEvictEvent) => void): void;
+    removeEvictListener(typeName: string | undefined, listener: (e: EntityEvictEvent) => void): void;
+    private publishEvictChangeEvent;
+    addChangeListener(typeName: string | undefined, listener: (e: EntityChangeEvent) => void): void;
+    removeChangeListener(typeName: string | undefined, listener: (e: EntityChangeEvent) => void): void;
     private publishEntityChangeEvent;
+    private linkToQuery;
 }

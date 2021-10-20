@@ -1,32 +1,48 @@
 import {ImplementationType} from '../CommonTypes';
 import {BookStoreArgs, BookStoreFlatType} from '../fetchers/BookStoreFetcher';
 
+
+export interface BookStoreEvictEvent {
+
+    readonly typeName: ImplementationType<"BookStore">;
+
+     readonly id: string;
+
+    readonly evictedType: "row" | "fields";
+
+    readonly evictedKeys: ReadonlyArray<BookStoreEntityKey<any>>;
+
+    evictedValue<TFieldName extends BookStoreEntityFields>(
+        key: BookStoreEntityKey<TFieldName>
+    ): BookStoreFlatType[TFieldName] | undefined;
+}
+
 export interface BookStoreChangeEvent {
 
     readonly typeName: ImplementationType<"BookStore">;
 
      readonly id: string;
 
-    readonly changedType: "INSERT" | "UPDATE" | "DELETE";
+    readonly changedType: "insert" | "update" | "delete";
 
-    readonly changedKeys: ReadonlyArray<BookStoreChangeEventKey<any>>;
+    readonly changedKeys: ReadonlyArray<BookStoreEntityKey<any>>;
 
-    oldValue<TFieldName extends BookStoreChangeEventFields>(
-        key: BookStoreChangeEventKey<TFieldName>
+    oldValue<TFieldName extends BookStoreEntityFields>(
+        key: BookStoreEntityKey<TFieldName>
     ): BookStoreFlatType[TFieldName] | undefined;
 
-    newValue<TFieldName extends BookStoreChangeEventFields>(
-        key: BookStoreChangeEventKey<TFieldName>
+    newValue<TFieldName extends BookStoreEntityFields>(
+        key: BookStoreEntityKey<TFieldName>
     ): BookStoreFlatType[TFieldName] | undefined;
 }
 
-export type BookStoreChangeEventKey<TFieldName extends BookStoreChangeEventFields> = 
+export type BookStoreEntityKey<TFieldName extends BookStoreEntityFields> = 
     TFieldName extends "books" ? 
     { readonly name: "books"; readonly variables: BookStoreArgs } : 
     TFieldName
 ;
 
-export type BookStoreChangeEventFields = 
+export type BookStoreEntityFields = 
     "name" | 
     "books"
 ;

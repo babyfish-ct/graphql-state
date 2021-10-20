@@ -1,5 +1,6 @@
 import { FetchableType, Fetcher, ObjectFetcher } from "graphql-ts-client-api";
 import { EntityChangeEvent } from "..";
+import { EntityEvictEvent } from "../entities/EntityEvent";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { SchemaType } from "../meta/SchemaType";
 
@@ -31,19 +32,35 @@ export interface StateManager<TSchema extends SchemaType> {
         ids: ReadonlyArray<TSchema["entities"][TName][" $id"]>
     ): void;
 
-    addListener(listener: (e: EntityChangeEvent) => void): void;
+    addEntityEvictListener(listener: (e: EntityEvictEvent) => void): void;
 
-    removeListener(listener: (e: EntityChangeEvent) => void): void;
+    removeEntityEvictListener(listener: (e: EntityEvictEvent) => void): void;
 
-    addListeners(
+    addEntityEvictListeners(
         listeners: { 
-            readonly [TName in keyof TSchema["entities"] & string]?: (e: TSchema["entities"][TName][" $event"]) => void 
+            readonly [TName in keyof TSchema["entities"] & string]?: (e: TSchema["entities"][TName][" $evictEvent"]) => void 
         }
     ): void;
 
-    removeListeners(
+    removeEntityEvictListeners(
         listeners: { 
-            readonly [TName in keyof TSchema["entities"] & string]?: (e: TSchema["entities"][TName][" $event"]) => void 
+            readonly [TName in keyof TSchema["entities"] & string]?: (e: TSchema["entities"][TName][" $evictEvent"]) => void 
+        }
+    ): void;
+
+    addEntityChangeListener(listener: (e: EntityChangeEvent) => void): void;
+
+    removeEntityChangeListener(listener: (e: EntityChangeEvent) => void): void;
+
+    addEntityChangeListeners(
+        listeners: { 
+            readonly [TName in keyof TSchema["entities"] & string]?: (e: TSchema["entities"][TName][" $changeEvent"]) => void 
+        }
+    ): void;
+
+    removeEntityChangeListeners(
+        listeners: { 
+            readonly [TName in keyof TSchema["entities"] & string]?: (e: TSchema["entities"][TName][" $changeEvent"]) => void 
         }
     ): void;
 }

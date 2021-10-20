@@ -1,4 +1,5 @@
 import { EntityChangeEvent } from "..";
+import { EntityEvictEvent } from "../entities/EntityEvent";
 
 export interface SchemaType {
     readonly query: {
@@ -15,7 +16,8 @@ export interface SchemaType {
     readonly entities: {
         readonly [key: string]: {
             readonly " $id": any;
-            readonly " $event": EntityChangeEvent;
+            readonly " $evictEvent": EntityEvictEvent;
+            readonly " $changeEvent": EntityChangeEvent;
             readonly " $associationTypes": {
                 readonly [key: string]: string;
             };

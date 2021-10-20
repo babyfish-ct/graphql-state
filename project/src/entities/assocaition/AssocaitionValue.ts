@@ -3,13 +3,15 @@ import { EntityManager } from "../EntityManager";
 import { Record } from "../Record";
 import { VariableArgs } from "../VariableArgs";
 import { Association } from "./Association";
-import { RecordConnection } from "./AssociationConnectionValue";
+import { ObjectConnection, RecordConnection } from "./AssociationConnectionValue";
 
 export abstract class AssociationValue {
 
     constructor(readonly args?: VariableArgs) {}
 
-    abstract get(): Record | ReadonlyArray<Record | undefined> | RecordConnection | undefined;
+    abstract getAsObject(): any | ReadonlyArray<any> | ObjectConnection | undefined;
+
+    abstract get(): Record | ReadonlyArray<Record> | RecordConnection | undefined;
 
     abstract set(
         entityManager: EntityManager, 

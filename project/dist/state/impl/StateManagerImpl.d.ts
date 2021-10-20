@@ -1,5 +1,6 @@
 import { ObjectFetcher } from "graphql-ts-client-api";
 import { EntityChangeEvent } from "../..";
+import { EntityEvictEvent } from "../../entities/EntityEvent";
 import { EntityManager } from "../../entities/EntityManager";
 import { QueryResult } from "../../entities/QueryResult";
 import { Network } from "../../meta/Configuration";
@@ -19,13 +20,21 @@ export declare class StateManagerImpl<TSchema extends SchemaType> implements Sta
     get undoManager(): UndoManagerImpl;
     save<T extends object, TVariables extends object = {}>(fetcher: ObjectFetcher<string, T, any>, obj: T, variables?: TVariables): void;
     delete<TName extends keyof TSchema["entities"] & string>(typeName: TName, idOrArray: TSchema["entities"][TName][" $id"] | ReadonlyArray<TSchema["entities"][TName][" $id"]>): void;
-    addListener(listener: (e: EntityChangeEvent) => void): void;
-    removeListener(listener: (e: EntityChangeEvent) => void): void;
-    addListeners(listeners: {
-        readonly [TName in keyof TSchema["entities"] & string]?: (e: TSchema["entities"][TName][" $event"]) => void;
+    addEntityEvictListener(listener: (e: EntityEvictEvent) => void): void;
+    removeEntityEvictListener(listener: (e: EntityEvictEvent) => void): void;
+    addEntityEvictListeners(listeners: {
+        readonly [TName in keyof TSchema["entities"] & string]?: (e: TSchema["entities"][TName][" $evictEvent"]) => void;
     }): void;
-    removeListeners(listeners: {
-        readonly [TName in keyof TSchema["entities"] & string]?: (e: TSchema["entities"][TName][" $event"]) => void;
+    removeEntityEvictListeners(listeners: {
+        readonly [TName in keyof TSchema["entities"] & string]?: (e: TSchema["entities"][TName][" $evictEvent"]) => void;
+    }): void;
+    addEntityChangeListener(listener: (e: EntityChangeEvent) => void): void;
+    removeEntityChangeListener(listener: (e: EntityChangeEvent) => void): void;
+    addEntityChangeListeners(listeners: {
+        readonly [TName in keyof TSchema["entities"] & string]?: (e: TSchema["entities"][TName][" $changeEvent"]) => void;
+    }): void;
+    removeEntityChangeListeners(listeners: {
+        readonly [TName in keyof TSchema["entities"] & string]?: (e: TSchema["entities"][TName][" $changeEvent"]) => void;
     }): void;
     registerScope(): ScopedStateManager;
     unregisterScope(scopedStateManager: ScopedStateManager): void;

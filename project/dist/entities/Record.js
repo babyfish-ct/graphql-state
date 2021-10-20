@@ -66,7 +66,7 @@ class Record {
                 const oldValue = this.scalarMap.get(field.name);
                 if (oldValue !== value) {
                     this.scalarMap.set(field.name, value);
-                    entityManager.modificationContext.set(this, field.name, args === null || args === void 0 ? void 0 : args.key, oldValue, value);
+                    entityManager.modificationContext.set(this, field.name, args, oldValue, value);
                 }
             }
         }
@@ -103,6 +103,16 @@ class Record {
             this.row = row = new ScalarRowImpl(this.scalarMap);
         }
         return row;
+    }
+    createMap() {
+        const map = new Map();
+        for (const [name, value] of this.scalarMap) {
+            map.set(name, value);
+        }
+        this.associationMap.forEachValue(association => {
+            association.appendTo(map);
+        });
+        return map;
     }
 }
 exports.Record = Record;

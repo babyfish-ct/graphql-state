@@ -2,6 +2,7 @@ import { Fetcher } from "graphql-ts-client-api";
 import { EntityChangeEvent } from "..";
 import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 import { Loadable } from "../state/impl/StateValue";
+import { EntityEvictEvent } from "./EntityEvent";
 import { EntityManager } from "./EntityManager";
 import { QueryArgs } from "./QueryArgs";
 import { QueryService } from "./QueryService";
@@ -18,7 +19,9 @@ export class QueryResult {
 
     private _invalid = true;
 
-    private _listener: (e: EntityChangeEvent) => void;
+    private _evictListener: (e: EntityEvictEvent) => void;
+
+    private _changeListener: (e: EntityChangeEvent) => void;
 
     private _currentAsyncRequestId = 0;
 
@@ -28,8 +31,10 @@ export class QueryResult {
         readonly entityManager: EntityManager,
         readonly queryArgs: QueryArgs
     ) {
-        this._listener = this.onEntityChange.bind(this);
-        entityManager.stateManager.addListener(this._listener);
+        this._evictListener = this.onEntityEvict.bind(this);
+        this._changeListener = this.onEntityChange.bind(this);
+        entityManager.addEvictListener(undefined, this._evictListener);
+        entityManager.addChangeListener(undefined, this._changeListener);
     }
 
     retain(): this {
@@ -39,7 +44,8 @@ export class QueryResult {
 
     release(): boolean {
         if (--this._refCount === 0) {
-            this.entityManager.stateManager.removeListener(this._listener);
+            this.entityManager.removeEvictListener(undefined, this._evictListener);
+            this.entityManager.removeChangeListener(undefined, this._changeListener);
             return true;
         }
         return false;
@@ -120,8 +126,14 @@ export class QueryResult {
         this._dependencies = dependencies;
     }
 
+    private onEntityEvict(e: EntityEvictEvent) {
+        if (this._dependencies?.isAffectedByEvictEvent(e) === true) {
+            this.invalidate();
+        }
+    }
+
     private onEntityChange(e: EntityChangeEvent) {
-        if (this._dependencies?.has(e) === true) {
+        if (this._dependencies?.isAffectedByChangeEvent(e) === true) {
             this.invalidate();
         }
     }
@@ -146,22 +158,43 @@ class Dependencies {
         this.handleObjectChange(schema, shape, obj);
     }
 
-    has(e: EntityChangeEvent) {
+    isAffectedByEvictEvent(e: EntityEvictEvent): boolean {
         const dependency = this.map.get(e.typeName);
         if (dependency !== undefined) {
-            if (e.changedType === "DELETE") {
+            if (e.evictedType === "row") {
                 return true;
             }
-            if (e.changedType === "INSERT" && dependency.handleInsertion) {
+            const changedKeySet = dependency.idChangedKeyMap?.get(e.id);
+            if (changedKeySet !== undefined) {
+                for (const changedKey of e.evictedKeys) {
+                    if (typeof changedKey === "string" && changedKeySet.has(changedKey)) {
+                        return true;
+                    }
+                    if (typeof changedKey === "object" && changedKeySet.has(VariableArgs.fieldKey(changedKey.name, changedKey.variables))) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    isAffectedByChangeEvent(e: EntityChangeEvent): boolean {
+        const dependency = this.map.get(e.typeName);
+        if (dependency !== undefined) {
+            if (e.changedType === "delete") {
+                return true;
+            }
+            if (e.changedType === "insert" && dependency.handleInsertion) {
                 return true;
             }
             const changedKeySet = dependency.idChangedKeyMap?.get(e.id);
             if (changedKeySet !== undefined) {
                 for (const changedKey of e.changedKeys) {
-                    if (typeof changedKey === "string" && changedKeySet.has(changedKeyString(changedKey, undefined))) {
+                    if (typeof changedKey === "string" && changedKeySet.has(changedKey)) {
                         return true;
                     }
-                    if (typeof changedKey === "object" && changedKeySet.has(changedKeyString(changedKey.name, VariableArgs.of(changedKey.variables)))) {
+                    if (typeof changedKey === "object" && changedKeySet.has(VariableArgs.fieldKey(changedKey.name, changedKey.variables))) {
                         return true;
                     }
                 }
@@ -217,7 +250,7 @@ class Dependencies {
                                 changedKeySet = new Set<string>();
                                 dependency.idChangedKeyMap.set(id, changedKeySet);
                             }
-                            changedKeySet.add(changedKeyString(field.name, field.args));
+                            changedKeySet.add(VariableArgs.fieldKey(field.name, field.args));
                         }
                     }
                 }
@@ -237,11 +270,4 @@ interface Dependency {
     handleInsertion: boolean;
 
     idChangedKeyMap: Map<any, Set<string>>;
-}
-
-function changedKeyString(fieldName: string, args?: VariableArgs): string {
-    if (args === undefined) {
-        return fieldName;
-    }
-    return `${fieldName}:${args.key}`;
 }

@@ -33,6 +33,12 @@ class VariableArgs {
         }
         return contains(left.variables, right.variables);
     }
+    static fieldKey(fieldName, args) {
+        if (args === undefined) {
+            return fieldName;
+        }
+        return `${fieldName}:${args.key}`;
+    }
 }
 exports.VariableArgs = VariableArgs;
 function contains(variables1, variables2) {

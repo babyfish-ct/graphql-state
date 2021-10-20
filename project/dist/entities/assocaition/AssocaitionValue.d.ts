@@ -2,11 +2,12 @@ import { EntityManager } from "../EntityManager";
 import { Record } from "../Record";
 import { VariableArgs } from "../VariableArgs";
 import { Association } from "./Association";
-import { RecordConnection } from "./AssociationConnectionValue";
+import { ObjectConnection, RecordConnection } from "./AssociationConnectionValue";
 export declare abstract class AssociationValue {
     readonly args?: VariableArgs | undefined;
     constructor(args?: VariableArgs | undefined);
-    abstract get(): Record | ReadonlyArray<Record | undefined> | RecordConnection | undefined;
+    abstract getAsObject(): any | ReadonlyArray<any> | ObjectConnection | undefined;
+    abstract get(): Record | ReadonlyArray<Record> | RecordConnection | undefined;
     abstract set(entityManager: EntityManager, self: Record, association: Association, value: any): void;
     abstract link(entityManager: EntityManager, self: Record, association: Association, target: Record | ReadonlyArray<Record>): void;
     abstract unlink(entityManager: EntityManager, self: Record, association: Association, target: Record | ReadonlyArray<Record>): void;

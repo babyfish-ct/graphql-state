@@ -4,6 +4,7 @@ import { AssociationValue } from "./AssocaitionValue";
 import { Association } from "./Association";
 export declare class AssociationReferenceValue extends AssociationValue {
     private referfence?;
+    getAsObject(): any | undefined;
     get(): Record | undefined;
     set(entityManager: EntityManager, self: Record, association: Association, value: any): void;
     link(entityManager: EntityManager, self: Record, association: Association, target: Record | ReadonlyArray<Record>): void;

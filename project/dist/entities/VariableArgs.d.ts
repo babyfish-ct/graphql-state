@@ -5,4 +5,5 @@ export declare class VariableArgs {
     constains(args: VariableArgs): boolean;
     static of(variables: any): VariableArgs | undefined;
     static contains(left: VariableArgs | undefined, right: VariableArgs | undefined): boolean;
+    static fieldKey(fieldName: string, args?: VariableArgs): string;
 }

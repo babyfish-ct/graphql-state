@@ -7,6 +7,10 @@ export class AssociationReferenceValue extends AssociationValue {
 
     private referfence?: Record;
 
+    getAsObject(): any | undefined {
+        return objectWithOnlyId(this.referfence);
+    }
+
     get(): Record | undefined {
         return this.referfence;
     }
@@ -30,7 +34,7 @@ export class AssociationReferenceValue extends AssociationValue {
             entityManager.modificationContext.set(
                 self, 
                 association.field.name, 
-                this.args?.key,
+                this.args,
                 objectWithOnlyId(oldReference),
                 objectWithOnlyId(reference),
             );
