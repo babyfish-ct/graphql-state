@@ -106,6 +106,14 @@ class RecordManager {
         }
         (_a = this.superManager) === null || _a === void 0 ? void 0 : _a.delete(id);
     }
+    evict(id) {
+        let record = this.recordMap.get(id);
+        if (record !== undefined) {
+            this.entityManager.modificationContext.evict(record);
+            this.recordMap.delete(id);
+            record.dispose(this.entityManager);
+        }
+    }
     set(id, field, args, value) {
         const record = this.saveId(id);
         record.set(this.entityManager, field, args, value);

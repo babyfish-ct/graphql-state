@@ -36,7 +36,7 @@ export interface FieldMetadataOptions {
     readonly mappedBy?: string;
 }
 export interface AssocaitionProperties {
-    readonly contains?: (row: ScalarRow<any>, variables?: any) => boolean | undefined;
-    readonly position?: (row: ScalarRow<any>, rows: ReadonlyArray<ScalarRow<any>>, variables?: any) => PositionType | undefined;
-    readonly dependencies?: (variables?: any) => ReadonlyArray<string> | undefined;
+    readonly contains: (row: ScalarRow<any>, variables?: any) => boolean | undefined;
+    readonly position: (row: ScalarRow<any>, rows: ReadonlyArray<ScalarRow<any>>, variables?: any) => PositionType | undefined;
+    readonly dependencies: (variables?: any) => ReadonlyArray<string> | undefined;
 }

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.objectWithOnlyId = exports.toRecordMap = exports.MUATION_OBJECT_ID = exports.QUERY_OBJECT_ID = exports.Record = void 0;
+exports.ScalarRowImpl = exports.objectWithOnlyId = exports.toRecordMap = exports.MUATION_OBJECT_ID = exports.QUERY_OBJECT_ID = exports.Record = void 0;
 const SpaceSavingMap_1 = require("../state/impl/SpaceSavingMap");
 const Association_1 = require("./assocaition/Association");
 const BackReferences_1 = require("./BackReferences");
@@ -50,8 +50,8 @@ class Record {
         if (field === null || field === void 0 ? void 0 : field.isAssociation) {
             this
                 .associationMap
-                .computeIfAbsent(field, f => new Association_1.Association(f))
-                .set(entityManager, this, args, value);
+                .computeIfAbsent(field, f => new Association_1.Association(this, f))
+                .set(entityManager, args, value);
         }
         else {
             if ((args === null || args === void 0 ? void 0 : args.variables) !== undefined) {
@@ -73,11 +73,11 @@ class Record {
     }
     link(entityManager, associationField, record) {
         var _a;
-        (_a = this.associationMap.get(associationField)) === null || _a === void 0 ? void 0 : _a.link(entityManager, this, record, undefined, true);
+        (_a = this.associationMap.get(associationField)) === null || _a === void 0 ? void 0 : _a.link(entityManager, record, undefined, true);
     }
     unlink(entityManager, associationField, record) {
         var _a;
-        (_a = this.associationMap.get(associationField)) === null || _a === void 0 ? void 0 : _a.unlink(entityManager, this, record, undefined, true);
+        (_a = this.associationMap.get(associationField)) === null || _a === void 0 ? void 0 : _a.unlink(entityManager, record, undefined, true);
     }
     delete(entityManager) {
         if (this.deleted) {
@@ -87,10 +87,10 @@ class Record {
             throw new Error(`The object of special type 'Query' cannot be deleted`);
         }
         this.scalarMap.clear();
-        this.associationMap.clear();
+        this.disposeAssocaitions(entityManager);
         this.backReferences.forEach((field, _, record) => {
             var _a;
-            (_a = record.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.forceUnlink(entityManager, record, this);
+            (_a = record.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.forceUnlink(entityManager, this);
         });
         this.deleted = true;
     }
@@ -114,6 +114,16 @@ class Record {
         });
         return map;
     }
+    dispose(entityManager) {
+        this.disposeAssocaitions(entityManager);
+        // Add other behaviors in future
+    }
+    disposeAssocaitions(entityManager) {
+        this.associationMap.forEachValue(assocaition => {
+            assocaition.dispose(entityManager);
+        });
+        this.associationMap.clear();
+    }
 }
 exports.Record = Record;
 exports.QUERY_OBJECT_ID = "____QUERY_OBJECT____";
@@ -134,7 +144,7 @@ function objectWithOnlyId(record) {
     if (record === undefined) {
         return undefined;
     }
-    return { [record.type.idField.name]: record.id };
+    return record.type.createObject(record.id);
 }
 exports.objectWithOnlyId = objectWithOnlyId;
 class ScalarRowImpl {
@@ -152,3 +162,4 @@ class ScalarRowImpl {
         return value;
     }
 }
+exports.ScalarRowImpl = ScalarRowImpl;

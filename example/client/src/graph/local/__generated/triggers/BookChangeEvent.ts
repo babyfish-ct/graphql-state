@@ -12,6 +12,8 @@ export interface BookEvictEvent {
 
     readonly evictedKeys: ReadonlyArray<BookEntityKey<any>>;
 
+    has(evictedKey: BookEntityKey<any>): boolean;
+
     evictedValue<TFieldName extends BookEntityFields>(
         key: BookEntityKey<TFieldName>
     ): BookFlatType[TFieldName] | undefined;
@@ -26,6 +28,8 @@ export interface BookChangeEvent {
     readonly changedType: "insert" | "update" | "delete";
 
     readonly changedKeys: ReadonlyArray<BookEntityKey<any>>;
+
+    has(changedKey: BookEntityKey<any>): boolean;
 
     oldValue<TFieldName extends BookEntityFields>(
         key: BookEntityKey<TFieldName>

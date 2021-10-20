@@ -2,6 +2,7 @@ import { EntityChangeEvent } from "..";
 import { AbstractDataService } from "../data/AbstractDataService";
 import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 import { StateManagerImpl } from "../state/impl/StateManagerImpl";
+import { AssociationValue } from "./assocaition/AssocaitionValue";
 import { EntityEvictEvent } from "./EntityEvent";
 import { ModificationContext } from "./ModificationContext";
 import { QueryArgs } from "./QueryArgs";
@@ -21,6 +22,7 @@ export declare class EntityManager {
     private _ctx?;
     private _queryRecord?;
     private _mutationRecord?;
+    private _associationValueObservers;
     constructor(stateManager: StateManagerImpl<any>, schema: SchemaMetadata);
     recordManager(typeName: string): RecordManager;
     findRefById(typeName: string, id: any): RecordRef | undefined;
@@ -38,4 +40,6 @@ export declare class EntityManager {
     removeChangeListener(typeName: string | undefined, listener: (e: EntityChangeEvent) => void): void;
     private publishEntityChangeEvent;
     private linkToQuery;
+    addAssociationValueObserver(observer: AssociationValue): void;
+    removeAssociationValueObserver(observer: AssociationValue): void;
 }

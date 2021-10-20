@@ -10,23 +10,27 @@ class ModificationContext {
         this.objPairMap = new Map();
     }
     close() {
-        for (const [type, subMap] of this.objPairMap) {
-            for (const [id, pair] of subMap) {
-                if (pair.oldObj === undefined && pair.newObj !== undefined) {
-                    this.linkToQuery(type, id);
+        do {
+            const pairMap = this.objPairMap;
+            this.objPairMap = new Map();
+            for (const [type, subMap] of pairMap) {
+                for (const [id, pair] of subMap) {
+                    if (pair.oldObj === undefined && pair.newObj !== undefined) {
+                        this.linkToQuery(type, id);
+                    }
                 }
             }
-        }
-        for (const [type, subMap] of this.objPairMap) {
-            for (const [id, pair] of subMap) {
-                if (pair.evicted || pair.evictedFieldKeys !== undefined) {
-                    this.publishEvictEvents(type, id, pair);
-                }
-                if (!pair.evicted) {
-                    this.publishChangeEvents(type, id, pair);
+            for (const [type, subMap] of pairMap) {
+                for (const [id, pair] of subMap) {
+                    if (pair.evicted || pair.evictedFieldKeys !== undefined) {
+                        this.publishEvictEvents(type, id, pair);
+                    }
+                    if (!pair.evicted) {
+                        this.publishChangeEvents(type, id, pair);
+                    }
                 }
             }
-        }
+        } while (this.objPairMap.size !== 0);
     }
     insert(record) {
         if (record.type.superType === undefined) {
@@ -158,12 +162,13 @@ class ModificationContext {
                 if (((_c = pair.evictedFieldKeys) === null || _c === void 0 ? void 0 : _c.has(fieldKey)) !== true) {
                     fieldKeys.add(fieldKey);
                     oldValueMap.set(fieldKey, oldValue);
+                    newValueMap.set(fieldKey, undefined);
                 }
             }
         }
         if (pair.newObj === undefined || newValueMap.size !== 0) {
             const event = new EntityChangeEventImpl(type.name, id, pair.oldObj !== undefined && pair.newObj !== undefined ?
-                "update" : (pair.newObj !== undefined ? "insert" : "delete"), Array.from(fieldKeys).map(parseEntityKey), oldValueMap.size === 0 ? undefined : oldValueMap, newValueMap.size === 0 ? undefined : newValueMap);
+                "update" : (pair.newObj !== undefined ? "insert" : "delete"), Array.from(fieldKeys).map(parseEntityKey), oldValueMap, newValueMap);
             this.publishChangeEvent(event);
         }
     }
@@ -184,10 +189,16 @@ class EntityEvictEventImpl {
         this.evictedKeys = evictedKeys;
         this.oldValueMap = oldValueMap;
     }
+    has(evictedKey) {
+        const key = typeof evictedKey === "string" ?
+            evictedKey :
+            VariableArgs_1.VariableArgs.fieldKey(evictedKey.name, VariableArgs_1.VariableArgs.of(evictedKey.variables));
+        return this.oldValueMap.has(key);
+    }
     evictedValue(evictedKey) {
         const key = typeof evictedKey === "string" ?
             evictedKey :
-            `${evictedKey.name}:${JSON.stringify(evictedKey.variables)}`;
+            VariableArgs_1.VariableArgs.fieldKey(evictedKey.name, VariableArgs_1.VariableArgs.of(evictedKey.variables));
         const value = this.oldValueMap.get(key);
         if (value === undefined && !this.oldValueMap.has(key)) {
             throw new Error(`No evicted key ${key}`);
@@ -203,6 +214,15 @@ class EntityChangeEventImpl {
         this.changedKeys = changedKeys;
         this.oldValueMap = oldValueMap;
         this.newValueMap = newValueMap;
+        if (oldValueMap.size !== newValueMap.size) {
+            throw new Error("Internal bug: different sizes of oldValueMap and newValueMap");
+        }
+    }
+    has(changedKey) {
+        const key = typeof changedKey === "string" ?
+            changedKey :
+            VariableArgs_1.VariableArgs.fieldKey(changedKey.name, VariableArgs_1.VariableArgs.of(changedKey.variables));
+        return this.oldValueMap.has(key);
     }
     oldValue(changedKey) {
         var _a;

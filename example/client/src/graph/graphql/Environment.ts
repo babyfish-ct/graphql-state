@@ -5,25 +5,26 @@ function createNameFilterAssociationProperties<
     TScalarType extends { readonly name: string }, 
     TVariables extends { readonly name?: string }
 >(): ParameterizedAssociationProperties<TScalarType, TVariables> {
+    
     return {
 
-        // // Is the object allowed to be inserted into association?
-        // contains: (
-        //     row: ScalarRow<TScalarType>, 
-        //     variables?: TVariables
-        // ): boolean | undefined => {
-        //     if (variables?.name === undefined) {
-        //         // no filter, always allow
-        //         return true; 
-        //     }
-        //     if (row.has("name")) {
-        //         // If "name" field of added object is cached, check whether the name field match the filter
-        //         return row.get("name").toLowerCase().indexOf(variables.name.toLowerCase()) !== -1;
-        //     }
-        //     // Otherwise, return undefined, that means the result is unknown.
-        //     // This association will be evicted from cache and the affected UI will reload the data from server
-        //     return undefined; 
-        // },
+        // Is the object allowed to be inserted into association?
+        contains: (
+            row: ScalarRow<TScalarType>, 
+            variables?: TVariables
+        ): boolean | undefined => {
+            if (variables?.name === undefined) {
+                // no filter, always allow
+                return true; 
+            }
+            if (row.has("name")) {
+                // If "name" field of added object is cached, check whether the name field match the filter
+                return row.get("name").toLowerCase().indexOf(variables.name.toLowerCase()) !== -1;
+            }
+            // Otherwise, return undefined, that means the result is unknown.
+            // This association will be evicted from cache and the affected UI will reload the data from server
+            return undefined; 
+        },
 
         // Does this association depend on some scalar fields of target object?
         // If some dependencies fields of some objects are changed, the current association be evict

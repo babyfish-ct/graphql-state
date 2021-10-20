@@ -15,5 +15,6 @@ export declare class RecordManager {
     saveId(id: any): Record;
     save(shape: RuntimeShape, obj: any): void;
     delete(id: any): void;
+    evict(id: any): void;
     private set;
 }

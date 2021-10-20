@@ -168,18 +168,18 @@ export interface FieldMetadataOptions {
 }
 
 export interface AssocaitionProperties {
-    readonly contains?: (
+    readonly contains: (
         row: ScalarRow<any>,
         variables?: any
-    ) => boolean | undefined,
-    readonly position?: (
+    ) => boolean | undefined;
+    readonly position: (
         row: ScalarRow<any>,
         rows: ReadonlyArray<ScalarRow<any>>,
         variables?: any
-    ) => PositionType | undefined,
-    readonly dependencies?: (
+    ) => PositionType | undefined;
+    readonly dependencies: (
         variables?: any
-    ) => ReadonlyArray<string> | undefined
+    ) => ReadonlyArray<string> | undefined;
 }
 
 function isAssociationCategory(category: FieldMetadataCategory) {
@@ -218,7 +218,7 @@ function createDefaultAssociationProperties(field: FieldMetadata): AssocaitionPr
         dependencies: (
             variables?: any
         ): ReadonlyArray<string> | undefined => {
-            return variables === undefined ? [] : undefined
+            return variables === undefined ? [] : undefined;
         }
     };
 }

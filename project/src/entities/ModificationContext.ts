@@ -14,23 +14,27 @@ export class ModificationContext {
     ) {}
 
     close() {
-        for (const [type, subMap] of this.objPairMap) {
-            for (const [id, pair] of subMap) {
-                if (pair.oldObj === undefined && pair.newObj !== undefined) {
-                    this.linkToQuery(type, id);
+        do {
+            const pairMap = this.objPairMap;
+            this.objPairMap = new Map<TypeMetadata, Map<any, ObjectPair>>();
+            for (const [type, subMap] of pairMap) {
+                for (const [id, pair] of subMap) {
+                    if (pair.oldObj === undefined && pair.newObj !== undefined) {
+                        this.linkToQuery(type, id);
+                    }
                 }
             }
-        }
-        for (const [type, subMap] of this.objPairMap) {
-            for (const [id, pair] of subMap) {
-                if (pair.evicted || pair.evictedFieldKeys !== undefined) {
-                    this.publishEvictEvents(type, id, pair);
-                }
-                if (!pair.evicted) {
-                    this.publishChangeEvents(type, id, pair);
+            for (const [type, subMap] of pairMap) {
+                for (const [id, pair] of subMap) {
+                    if (pair.evicted || pair.evictedFieldKeys !== undefined) {
+                        this.publishEvictEvents(type, id, pair);
+                    }
+                    if (!pair.evicted) {
+                        this.publishChangeEvents(type, id, pair);
+                    }
                 }
             }
-        }
+        } while (this.objPairMap.size !== 0);
     }
 
     insert(record: Record) {
@@ -182,6 +186,7 @@ export class ModificationContext {
                 if (pair.evictedFieldKeys?.has(fieldKey) !== true) {
                     fieldKeys.add(fieldKey);
                     oldValueMap.set(fieldKey, oldValue);
+                    newValueMap.set(fieldKey, undefined);
                 }
             }
         }
@@ -194,8 +199,8 @@ export class ModificationContext {
                     pair.newObj !== undefined ? "insert" : "delete"
                 ),
                 Array.from(fieldKeys).map(parseEntityKey),
-                oldValueMap.size === 0 ? undefined : oldValueMap,
-                newValueMap.size === 0 ? undefined : newValueMap
+                oldValueMap,
+                newValueMap
             );
             this.publishChangeEvent(event);
         }
@@ -228,10 +233,17 @@ class EntityEvictEventImpl implements EntityEvictEvent {
         
     }
 
+    has(evictedKey: EntityKey): boolean {
+        const key = typeof evictedKey === "string" ?
+            evictedKey :
+            VariableArgs.fieldKey(evictedKey.name, VariableArgs.of(evictedKey.variables));
+        return this.oldValueMap.has(key); 
+    }
+
     evictedValue(evictedKey: EntityKey): any {
         const key = typeof evictedKey === "string" ?
             evictedKey :
-            `${evictedKey.name}:${JSON.stringify(evictedKey.variables)}`;
+            VariableArgs.fieldKey(evictedKey.name, VariableArgs.of(evictedKey.variables));
         const value = this.oldValueMap.get(key);
         if (value === undefined && !this.oldValueMap.has(key)) {
             throw new Error(`No evicted key ${key}`);
@@ -252,9 +264,19 @@ class EntityChangeEventImpl implements EntityChangeEvent {
                 readonly variables: any
             }
         >,
-        private oldValueMap?: ReadonlyMap<string, any>,
-        private newValueMap?: ReadonlyMap<string, any>
+        private oldValueMap: ReadonlyMap<string, any>,
+        private newValueMap: ReadonlyMap<string, any>
     ) {
+        if (oldValueMap.size !== newValueMap.size) {
+            throw new Error("Internal bug: different sizes of oldValueMap and newValueMap");
+        }
+    }
+
+    has(changedKey: EntityKey): boolean {
+        const key = typeof changedKey === "string" ?
+            changedKey :
+            VariableArgs.fieldKey(changedKey.name, VariableArgs.of(changedKey.variables));
+        return this.oldValueMap.has(key);
     }
   
     oldValue(changedKey: EntityKey): any {

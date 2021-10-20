@@ -123,6 +123,15 @@ export class RecordManager {
         this.superManager?.delete(id);
     }
 
+    evict(id: any) {
+        let record = this.recordMap.get(id);
+        if (record !== undefined) {
+            this.entityManager.modificationContext.evict(record);
+            this.recordMap.delete(id);
+            record.dispose(this.entityManager);
+        }
+    }
+
     private set(
         id: any, 
         field: FieldMetadata,

@@ -65,10 +65,9 @@ export class Record {
         if (field?.isAssociation) {
             this
             .associationMap
-            .computeIfAbsent(field, f => new Association(f))
+            .computeIfAbsent(field, f => new Association(this, f))
             .set(
                 entityManager,
-                this,
                 args,
                 value
             );
@@ -97,7 +96,6 @@ export class Record {
     ) {
         this.associationMap.get(associationField)?.link(
             entityManager,
-            this,
             record,
             undefined,
             true
@@ -111,7 +109,6 @@ export class Record {
     ) {
         this.associationMap.get(associationField)?.unlink(
             entityManager,
-            this,
             record,
             undefined,
             true
@@ -126,11 +123,10 @@ export class Record {
             throw new Error(`The object of special type 'Query' cannot be deleted`);
         }
         this.scalarMap.clear();
-        this.associationMap.clear();
+        this.disposeAssocaitions(entityManager);
         this.backReferences.forEach((field, _, record) => {
             record.associationMap.get(field)?.forceUnlink(
                 entityManager,
-                record,
                 this
             );
         });
@@ -158,7 +154,19 @@ export class Record {
             association.appendTo(map);
         });
         return map;
-    } 
+    }
+
+    dispose(entityManager: EntityManager) {
+        this.disposeAssocaitions(entityManager);
+        // Add other behaviors in future
+    }
+
+    private disposeAssocaitions(entityManager: EntityManager) {
+        this.associationMap.forEachValue(assocaition => { 
+            assocaition.dispose(entityManager); 
+        });
+        this.associationMap.clear();
+    }
 }
 
 export const QUERY_OBJECT_ID = "____QUERY_OBJECT____";
@@ -181,10 +189,10 @@ export function objectWithOnlyId(record: Record | undefined): any {
     if (record === undefined) {
         return undefined;
     }
-    return { [record.type.idField.name]: record.id };
+    return record.type.createObject(record.id);
 }
 
-class ScalarRowImpl implements ScalarRow<any> {
+export class ScalarRowImpl implements ScalarRow<any> {
     
     constructor(private map: Map<string, any>) {}
 

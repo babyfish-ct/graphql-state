@@ -2,7 +2,6 @@ import { PositionType, ScalarRow } from "../../meta/Configuration";
 import { EntityManager } from "../EntityManager";
 import { objectWithOnlyId, Record, toRecordMap } from "../Record";
 import { AssociationValue } from "./AssocaitionValue";
-import { Association } from "./Association";
 
 export class AssociationListValue extends AssociationValue {
 
@@ -18,10 +17,9 @@ export class AssociationListValue extends AssociationValue {
 
     set(
         entityManager: EntityManager, 
-        self: Record, 
-        association: Association,
         value: any
     ) {
+        const association = this.association;
         let listChanged = (this.elements?.length ?? 0) !== (value?.length ?? 0);
         if (!listChanged) {
             const idFieldName = association.field.targetType!.idField.name;
@@ -48,7 +46,7 @@ export class AssociationListValue extends AssociationValue {
         const newElements: Array<Record> = [];
         if (Array.isArray(value)) {
             const idFieldName = association.field.targetType!.idField.name;
-            const position = association.field.associationProperties!.position!;
+            const position = association.field.associationProperties!.position;
             for (const item of value) {
                 if (item === undefined || item === null) {
                     throw new Error(`Cannot add undfined/null element into ${association.field.fullName}`);
@@ -67,7 +65,7 @@ export class AssociationListValue extends AssociationValue {
 
         for (const [id, element] of oldMap) {
             if (!newIds.has(id)) {
-                this.releaseOldReference(entityManager, self, association, element);
+                this.releaseOldReference(entityManager, element);
             }
         }
 
@@ -76,14 +74,14 @@ export class AssociationListValue extends AssociationValue {
         for (const newElement of newElements) {
             if (newElement !== undefined) {
                 if (!oldMap.has(newElement.id)) {
-                    this.retainNewReference(entityManager, self, association, newElement);
+                    this.retainNewReference(entityManager, newElement);
                 }
             }
         }
 
         if (listChanged) {
             entityManager.modificationContext.set(
-                self, 
+                this.association.record, 
                 association.field.name, 
                 this.args, 
                 oldValueForTriggger, 
@@ -94,8 +92,6 @@ export class AssociationListValue extends AssociationValue {
 
     link(
         entityManager: EntityManager, 
-        self: Record, 
-        association: Association,
         target: Record | ReadonlyArray<Record>
     ) {
         const elements = this.elements !== undefined ? [...this.elements] : [];
@@ -107,9 +103,8 @@ export class AssociationListValue extends AssociationValue {
             }
         }
         if (elements.length !== this.elements?.length ?? 0) {
-            association.set(
+            this.association.set(
                 entityManager,
-                self,
                 this.args,
                 elements.map(objectWithOnlyId)
             );
@@ -118,8 +113,6 @@ export class AssociationListValue extends AssociationValue {
 
     unlink(
         entityManager: EntityManager, 
-        self: Record, 
-        association: Association,
         target: Record | ReadonlyArray<Record>
     ) {
         const elements = this.elements !== undefined ? [...this.elements] : [];
@@ -132,9 +125,8 @@ export class AssociationListValue extends AssociationValue {
             }
         }
         if (elements.length !== this.elements?.length ?? 0) {
-            association.set(
+            this.association.set(
                 entityManager,
-                self,
                 this.args,
                 elements.map(objectWithOnlyId)
             );

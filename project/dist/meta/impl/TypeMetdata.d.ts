@@ -21,5 +21,6 @@ export declare class TypeMetadata {
     isAssignableFrom(type: TypeMetadata): boolean;
     setFieldMappedBy(name: string, oppositeFieldName: string): void;
     private addField;
+    createObject(id: any): any;
 }
 export declare type TypeMetadataCategory = "OBJECT" | "CONNECTION" | "EDGE";

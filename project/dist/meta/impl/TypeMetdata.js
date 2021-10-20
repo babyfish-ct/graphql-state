@@ -161,5 +161,8 @@ class TypeMetadata {
             this._idField = fieldMetadata;
         }
     }
+    createObject(id) {
+        return { [this.idField.name]: id };
+    }
 }
 exports.TypeMetadata = TypeMetadata;

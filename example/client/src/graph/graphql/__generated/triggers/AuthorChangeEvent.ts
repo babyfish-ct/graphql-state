@@ -12,6 +12,8 @@ export interface AuthorEvictEvent {
 
     readonly evictedKeys: ReadonlyArray<AuthorEntityKey<any>>;
 
+    has(evictedKey: AuthorEntityKey<any>): boolean;
+
     evictedValue<TFieldName extends AuthorEntityFields>(
         key: AuthorEntityKey<TFieldName>
     ): AuthorFlatType[TFieldName] | undefined;
@@ -26,6 +28,8 @@ export interface AuthorChangeEvent {
     readonly changedType: "insert" | "update" | "delete";
 
     readonly changedKeys: ReadonlyArray<AuthorEntityKey<any>>;
+
+    has(changedKey: AuthorEntityKey<any>): boolean;
 
     oldValue<TFieldName extends AuthorEntityFields>(
         key: AuthorEntityKey<TFieldName>

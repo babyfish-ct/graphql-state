@@ -15,6 +15,7 @@ class EntityManager {
         this._queryResultMap = new Map();
         this._evictListenerMap = new Map();
         this._changeListenerMap = new Map();
+        this._associationValueObservers = new Set();
         this.dataService = new BatchDataService_1.BatchDataService(new RemoteDataService_1.RemoteDataService(this));
         const queryType = schema.typeMap.get("Query");
         if (queryType !== undefined) {
@@ -133,6 +134,9 @@ class EntityManager {
         (_a = this._evictListenerMap.get(typeName)) === null || _a === void 0 ? void 0 : _a.delete(listener);
     }
     publishEvictChangeEvent(e) {
+        for (const observer of this._associationValueObservers) {
+            observer.onEntityEvict(this, e);
+        }
         for (const [, set] of this._evictListenerMap) {
             for (const listener of set) {
                 listener(e);
@@ -157,6 +161,9 @@ class EntityManager {
         (_a = this._changeListenerMap.get(typeName)) === null || _a === void 0 ? void 0 : _a.delete(listener);
     }
     publishEntityChangeEvent(e) {
+        for (const observer of this._associationValueObservers) {
+            observer.onEntityChange(this, e);
+        }
         for (const [, set] of this._changeListenerMap) {
             for (const listener of set) {
                 listener(e);
@@ -173,6 +180,14 @@ class EntityManager {
                 }
             }
         }
+    }
+    addAssociationValueObserver(observer) {
+        if (observer !== undefined && observer !== null) {
+            this._associationValueObservers.add(observer);
+        }
+    }
+    removeAssociationValueObserver(observer) {
+        this._associationValueObservers.delete(observer);
     }
 }
 exports.EntityManager = EntityManager;

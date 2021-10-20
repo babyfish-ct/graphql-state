@@ -12,6 +12,8 @@ export interface BookStoreEvictEvent {
 
     readonly evictedKeys: ReadonlyArray<BookStoreEntityKey<any>>;
 
+    has(evictedKey: BookStoreEntityKey<any>): boolean;
+
     evictedValue<TFieldName extends BookStoreEntityFields>(
         key: BookStoreEntityKey<TFieldName>
     ): BookStoreFlatType[TFieldName] | undefined;
@@ -26,6 +28,8 @@ export interface BookStoreChangeEvent {
     readonly changedType: "insert" | "update" | "delete";
 
     readonly changedKeys: ReadonlyArray<BookStoreEntityKey<any>>;
+
+    has(changedKey: BookStoreEntityKey<any>): boolean;
 
     oldValue<TFieldName extends BookStoreEntityFields>(
         key: BookStoreEntityKey<TFieldName>

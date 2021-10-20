@@ -1,7 +1,6 @@
 import { EntityManager } from "../EntityManager";
 import { objectWithOnlyId, Record } from "../Record";
 import { AssociationValue } from "./AssocaitionValue";
-import { Association } from "./Association";
 
 export class AssociationConnectionValue extends AssociationValue {
 
@@ -25,10 +24,9 @@ export class AssociationConnectionValue extends AssociationValue {
 
     set(
         entityManager: EntityManager, 
-        record: Record, 
-        association: Association, 
         value: any
     ) {
+        const association = this.association;
         if (value === undefined) {
             throw Error(`Cannot set the undefined or null value to ${association.field.fullName} because it's connection field`);
         }
@@ -59,7 +57,7 @@ export class AssociationConnectionValue extends AssociationValue {
 
         for (const [id, element] of oldMap) {
             if (!newIds.has(id)) {
-                this.releaseOldReference(entityManager, record, association, element);
+                this.releaseOldReference(entityManager, element);
             }
         }
         
@@ -70,7 +68,7 @@ export class AssociationConnectionValue extends AssociationValue {
         
         for (const newEdge of newEdges) {
             if (!oldMap.has(newEdge.node.id)) {
-                this.retainNewReference(entityManager, record, association, newEdge.node);
+                this.retainNewReference(entityManager, newEdge.node);
             }
         }
 
@@ -79,8 +77,6 @@ export class AssociationConnectionValue extends AssociationValue {
 
     link(
         entityManager: EntityManager, 
-        self: Record, 
-        association: Association, 
         target: Record | ReadonlyArray<Record>
     ): void {
         // TODO: link
@@ -88,8 +84,6 @@ export class AssociationConnectionValue extends AssociationValue {
 
     unlink(
         entityManager: EntityManager, 
-        self: Record, 
-        association: Association, 
         target: Record | ReadonlyArray<Record>
     ) {
         // TODO: link

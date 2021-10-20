@@ -3,7 +3,7 @@ import { StateManagerImpl } from "../../state/impl/StateManagerImpl";
 import { StateManager } from "../../state/StateManager";
 import { Configuration, Network } from "../Configuration";
 import { SchemaType } from "../SchemaType";
-import { AssocaitionProperties, FieldMetadata } from "./FieldMetadata";
+import { FieldMetadata } from "./FieldMetadata";
 import { SchemaMetadata } from "./SchemaMetadata";
 
 export function newConfiguration<TSchema extends SchemaType>(

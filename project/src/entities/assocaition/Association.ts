@@ -14,7 +14,10 @@ export class Association {
 
     private frozen = false;
 
-    constructor(readonly field: FieldMetadata) {
+    constructor(
+        readonly record: Record,
+        readonly field: FieldMetadata
+    ) {
         if (field.category === "ID") {
             throw new Error("Internal bug: assocaition base on id field");
         }
@@ -30,49 +33,51 @@ export class Association {
 
     set(
         entityManager: EntityManager, 
-        record: Record, 
         args: VariableArgs | undefined, 
         value: any
     ) {
         if (this.frozen) {
-            this.value(args).set(entityManager, record, this, value);
+            this.value(entityManager, args).set(entityManager, value);
         } else {
             this.frozen = true;
             try {
-                this.value(args).set(entityManager, record, this, value);
+                this.value(entityManager, args).set(entityManager, value);
             } finally {
                 this.frozen = false;
             }
         }
     }
 
-    evict(args: VariableArgs | undefined) {
-        this.valueMap.remove(args?.key);
+    evict(entityManager: EntityManager, args: VariableArgs | undefined) {
+        const value = this.valueMap.get(args?.key);
+        if (value !== undefined) {
+            value.dispose(entityManager);
+            this.valueMap.remove(args?.key);
+        }
     }
 
     link(
         entityManager: EntityManager, 
-        self: Record, 
         target: Record | ReadonlyArray<Record>,
         mostStringentArgs: VariableArgs | undefined,
         changedByOpposite: boolean
     ) {
         if (!this.frozen || !changedByOpposite) {
-            entityManager.modificationContext.update(self);
+            entityManager.modificationContext.update(this.record);
             this.valueMap.forEachValue(value => {
                 if (mostStringentArgs?.key === value.args?.key && !changedByOpposite) {
                     return;
                 }
                 if (VariableArgs.contains(mostStringentArgs, value.args)) {
-                    value.link(entityManager, self, this, target);
+                    value.link(entityManager, target);
                 } else {
-                    const contains = this.field.associationProperties!.contains!;
+                    const contains = this.field.associationProperties!.contains;
                     const possibleRecords = Array.isArray(target) ? target : [target];
                     const targetRecords: Record[] = [];
                     let evict = false;
                     for (const possibleRecord of possibleRecords) {
                         const result = contains(possibleRecord.toRow(), value.args?.variables);
-                        if (result === undefined || result === null) {
+                        if (result === undefined) {
                             evict = true;
                             break;
                         }
@@ -81,9 +86,9 @@ export class Association {
                         }
                     }
                     if (evict) {
-                        this.evict(value.args);
+                        this.evict(entityManager, value.args);
                     } else if (targetRecords.length !== 0) {
-                        value.link(entityManager, self, this, targetRecords);
+                        value.link(entityManager, targetRecords);
                     }
                 }
             });
@@ -92,13 +97,12 @@ export class Association {
 
     unlink(
         entityManager: EntityManager, 
-        self: Record, 
         target: Record | ReadonlyArray<Record>,
         leastStringentArgs: VariableArgs | undefined,
         changedByOpposite: boolean
     ) {
         if (!this.frozen || !changedByOpposite) {
-            entityManager.modificationContext.update(self);
+            entityManager.modificationContext.update(this.record);
             this.valueMap.forEachValue(value => {
                 if (leastStringentArgs?.key === value.args?.key && !changedByOpposite) {
                     return;
@@ -106,12 +110,10 @@ export class Association {
                 if (VariableArgs.contains(value.args, leastStringentArgs)) {
                     value.unlink(
                         entityManager, 
-                        self, 
-                        this, 
                         target
                     );
                 } else {
-                    this.evict(value.args);
+                    this.evict(entityManager, value.args);
                 }
             });
         }
@@ -119,15 +121,12 @@ export class Association {
 
     forceUnlink(
         entityManager: EntityManager, 
-        self: Record, 
         target: Record
     ) {
-        entityManager.modificationContext.update(self);
+        entityManager.modificationContext.update(this.record);
         this.valueMap.forEachValue(value => {
             value.unlink(
                 entityManager, 
-                self, 
-                this, 
                 target
             );
         });
@@ -143,15 +142,21 @@ export class Association {
         });
     }
 
-    private value(args: VariableArgs | undefined): AssociationValue {
+    dispose(entityManager: EntityManager) {
+        this.valueMap.forEachValue(value => {
+            value.dispose(entityManager);
+        })
+    }
+
+    private value(entityManager: EntityManager, args: VariableArgs | undefined): AssociationValue {
         return this.valueMap.computeIfAbsent(args?.key, () => {
             switch (this.field.category) {
                 case "CONNECTION":
-                    return new AssociationConnectionValue(args);
+                    return new AssociationConnectionValue(entityManager, this, args);
                 case "LIST":
-                    return new AssociationListValue(args);
+                    return new AssociationListValue(entityManager, this, args);
                 default:
-                    return new AssociationReferenceValue(args);
+                    return new AssociationReferenceValue(entityManager, this, args);
             }
         });
     }

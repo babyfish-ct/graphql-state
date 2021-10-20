@@ -10,19 +10,20 @@ class AssociationReferenceValue extends AssocaitionValue_1.AssociationValue {
     get() {
         return this.referfence;
     }
-    set(entityManager, self, association, value) {
+    set(entityManager, value) {
+        const association = this.association;
         const reference = value !== undefined && value !== null ?
             entityManager.saveId(association.field.targetType.name, value[association.field.targetType.idField.name]) :
             undefined;
         const oldReference = this.referfence;
         if ((oldReference === null || oldReference === void 0 ? void 0 : oldReference.id) !== (reference === null || reference === void 0 ? void 0 : reference.id)) {
-            this.releaseOldReference(entityManager, self, association, oldReference);
+            this.releaseOldReference(entityManager, oldReference);
             this.referfence = reference;
-            this.retainNewReference(entityManager, self, association, reference);
-            entityManager.modificationContext.set(self, association.field.name, this.args, Record_1.objectWithOnlyId(oldReference), Record_1.objectWithOnlyId(reference));
+            this.retainNewReference(entityManager, reference);
+            entityManager.modificationContext.set(this.association.record, association.field.name, this.args, Record_1.objectWithOnlyId(oldReference), Record_1.objectWithOnlyId(reference));
         }
     }
-    link(entityManager, self, association, target) {
+    link(entityManager, target) {
         var _a;
         let targetRecord;
         if (Array.isArray(target)) {
@@ -38,10 +39,10 @@ class AssociationReferenceValue extends AssocaitionValue_1.AssociationValue {
             targetRecord = target;
         }
         if (((_a = this.referfence) === null || _a === void 0 ? void 0 : _a.id) !== (targetRecord === null || targetRecord === void 0 ? void 0 : targetRecord.id)) {
-            association.set(entityManager, self, this.args, Record_1.objectWithOnlyId(targetRecord));
+            this.association.set(entityManager, this.args, Record_1.objectWithOnlyId(targetRecord));
         }
     }
-    unlink(entityManager, self, association, target) {
+    unlink(entityManager, target) {
         var _a;
         let targetRecord;
         if (Array.isArray(target)) {
@@ -57,7 +58,7 @@ class AssociationReferenceValue extends AssocaitionValue_1.AssociationValue {
             targetRecord = target;
         }
         if (((_a = this.referfence) === null || _a === void 0 ? void 0 : _a.id) === targetRecord.id) {
-            association.set(entityManager, self, this.args, undefined);
+            this.association.set(entityManager, this.args, undefined);
         }
     }
 }

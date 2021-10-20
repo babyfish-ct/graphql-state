@@ -26,8 +26,16 @@ export declare class Record {
     undelete(): void;
     toRow(): ScalarRow<any>;
     createMap(): Map<string, any>;
+    dispose(entityManager: EntityManager): void;
+    private disposeAssocaitions;
 }
 export declare const QUERY_OBJECT_ID = "____QUERY_OBJECT____";
 export declare const MUATION_OBJECT_ID = "____MUTATION_OBJECT____";
 export declare function toRecordMap(arr: ReadonlyArray<Record | undefined> | undefined): Map<any, Record>;
 export declare function objectWithOnlyId(record: Record | undefined): any;
+export declare class ScalarRowImpl implements ScalarRow<any> {
+    private map;
+    constructor(map: Map<string, any>);
+    has(fieldName: string): boolean;
+    get(fieldName: string): any;
+}

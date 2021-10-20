@@ -7,7 +7,8 @@ const AssociationConnectionValue_1 = require("./AssociationConnectionValue");
 const AssociationListValue_1 = require("./AssociationListValue");
 const AssociationReferenceValue_1 = require("./AssociationReferenceValue");
 class Association {
-    constructor(field) {
+    constructor(record, field) {
+        this.record = record;
         this.field = field;
         this.valueMap = new SpaceSavingMap_1.SpaceSavingMap();
         this.frozen = false;
@@ -22,33 +23,37 @@ class Association {
         var _a;
         return (_a = this.valueMap.get(args === null || args === void 0 ? void 0 : args.key)) === null || _a === void 0 ? void 0 : _a.get();
     }
-    set(entityManager, record, args, value) {
+    set(entityManager, args, value) {
         if (this.frozen) {
-            this.value(args).set(entityManager, record, this, value);
+            this.value(entityManager, args).set(entityManager, value);
         }
         else {
             this.frozen = true;
             try {
-                this.value(args).set(entityManager, record, this, value);
+                this.value(entityManager, args).set(entityManager, value);
             }
             finally {
                 this.frozen = false;
             }
         }
     }
-    evict(args) {
-        this.valueMap.remove(args === null || args === void 0 ? void 0 : args.key);
+    evict(entityManager, args) {
+        const value = this.valueMap.get(args === null || args === void 0 ? void 0 : args.key);
+        if (value !== undefined) {
+            value.dispose(entityManager);
+            this.valueMap.remove(args === null || args === void 0 ? void 0 : args.key);
+        }
     }
-    link(entityManager, self, target, mostStringentArgs, changedByOpposite) {
+    link(entityManager, target, mostStringentArgs, changedByOpposite) {
         if (!this.frozen || !changedByOpposite) {
-            entityManager.modificationContext.update(self);
+            entityManager.modificationContext.update(this.record);
             this.valueMap.forEachValue(value => {
                 var _a, _b;
                 if ((mostStringentArgs === null || mostStringentArgs === void 0 ? void 0 : mostStringentArgs.key) === ((_a = value.args) === null || _a === void 0 ? void 0 : _a.key) && !changedByOpposite) {
                     return;
                 }
                 if (VariableArgs_1.VariableArgs.contains(mostStringentArgs, value.args)) {
-                    value.link(entityManager, self, this, target);
+                    value.link(entityManager, target);
                 }
                 else {
                     const contains = this.field.associationProperties.contains;
@@ -57,7 +62,7 @@ class Association {
                     let evict = false;
                     for (const possibleRecord of possibleRecords) {
                         const result = contains(possibleRecord.toRow(), (_b = value.args) === null || _b === void 0 ? void 0 : _b.variables);
-                        if (result === undefined || result === null) {
+                        if (result === undefined) {
                             evict = true;
                             break;
                         }
@@ -66,36 +71,36 @@ class Association {
                         }
                     }
                     if (evict) {
-                        this.evict(value.args);
+                        this.evict(entityManager, value.args);
                     }
                     else if (targetRecords.length !== 0) {
-                        value.link(entityManager, self, this, targetRecords);
+                        value.link(entityManager, targetRecords);
                     }
                 }
             });
         }
     }
-    unlink(entityManager, self, target, leastStringentArgs, changedByOpposite) {
+    unlink(entityManager, target, leastStringentArgs, changedByOpposite) {
         if (!this.frozen || !changedByOpposite) {
-            entityManager.modificationContext.update(self);
+            entityManager.modificationContext.update(this.record);
             this.valueMap.forEachValue(value => {
                 var _a;
                 if ((leastStringentArgs === null || leastStringentArgs === void 0 ? void 0 : leastStringentArgs.key) === ((_a = value.args) === null || _a === void 0 ? void 0 : _a.key) && !changedByOpposite) {
                     return;
                 }
                 if (VariableArgs_1.VariableArgs.contains(value.args, leastStringentArgs)) {
-                    value.unlink(entityManager, self, this, target);
+                    value.unlink(entityManager, target);
                 }
                 else {
-                    this.evict(value.args);
+                    this.evict(entityManager, value.args);
                 }
             });
         }
     }
-    forceUnlink(entityManager, self, target) {
-        entityManager.modificationContext.update(self);
+    forceUnlink(entityManager, target) {
+        entityManager.modificationContext.update(this.record);
         this.valueMap.forEachValue(value => {
-            value.unlink(entityManager, self, this, target);
+            value.unlink(entityManager, target);
         });
     }
     appendTo(map) {
@@ -104,15 +109,20 @@ class Association {
             map.set(VariableArgs_1.VariableArgs.fieldKey(this.field.name, value.args), value.getAsObject());
         });
     }
-    value(args) {
+    dispose(entityManager) {
+        this.valueMap.forEachValue(value => {
+            value.dispose(entityManager);
+        });
+    }
+    value(entityManager, args) {
         return this.valueMap.computeIfAbsent(args === null || args === void 0 ? void 0 : args.key, () => {
             switch (this.field.category) {
                 case "CONNECTION":
-                    return new AssociationConnectionValue_1.AssociationConnectionValue(args);
+                    return new AssociationConnectionValue_1.AssociationConnectionValue(entityManager, this, args);
                 case "LIST":
-                    return new AssociationListValue_1.AssociationListValue(args);
+                    return new AssociationListValue_1.AssociationListValue(entityManager, this, args);
                 default:
-                    return new AssociationReferenceValue_1.AssociationReferenceValue(args);
+                    return new AssociationReferenceValue_1.AssociationReferenceValue(entityManager, this, args);
             }
         });
     }

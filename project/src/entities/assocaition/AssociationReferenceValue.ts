@@ -1,7 +1,6 @@
 import { EntityManager } from "../EntityManager";
 import { objectWithOnlyId, Record } from "../Record";
 import { AssociationValue } from "./AssocaitionValue";
-import { Association } from "./Association";
 
 export class AssociationReferenceValue extends AssociationValue {
 
@@ -17,10 +16,9 @@ export class AssociationReferenceValue extends AssociationValue {
 
     set(
         entityManager: EntityManager, 
-        self: Record, 
-        association: Association, 
         value: any
     ) {
+        const association = this.association;
         const reference = 
             value !== undefined && value !== null ? 
             entityManager.saveId(association.field.targetType!.name, value[association.field.targetType!.idField.name]) : 
@@ -28,11 +26,11 @@ export class AssociationReferenceValue extends AssociationValue {
 
         const oldReference = this.referfence;
         if (oldReference?.id !== reference?.id) {
-            this.releaseOldReference(entityManager, self, association, oldReference);
+            this.releaseOldReference(entityManager, oldReference);
             this.referfence = reference;
-            this.retainNewReference(entityManager, self, association, reference);
+            this.retainNewReference(entityManager, reference);
             entityManager.modificationContext.set(
-                self, 
+                this.association.record, 
                 association.field.name, 
                 this.args,
                 objectWithOnlyId(oldReference),
@@ -43,8 +41,6 @@ export class AssociationReferenceValue extends AssociationValue {
 
     link(
         entityManager: EntityManager, 
-        self: Record, 
-        association: Association, 
         target: Record | ReadonlyArray<Record>
     ) {
         let targetRecord: Record;
@@ -60,9 +56,8 @@ export class AssociationReferenceValue extends AssociationValue {
             targetRecord = target as Record;
         }
         if (this.referfence?.id !== targetRecord?.id) {
-            association.set(
+            this.association.set(
                 entityManager,
-                self,
                 this.args,
                 objectWithOnlyId(targetRecord)
             );
@@ -71,8 +66,6 @@ export class AssociationReferenceValue extends AssociationValue {
 
     unlink(
         entityManager: EntityManager, 
-        self: Record, 
-        association: Association,
         target: Record | ReadonlyArray<Record>
     ) {
         let targetRecord: Record;
@@ -88,9 +81,8 @@ export class AssociationReferenceValue extends AssociationValue {
             targetRecord = target as Record;
         }
         if (this.referfence?.id === targetRecord.id) {
-            association.set(
+            this.association.set(
                 entityManager,
-                self,
                 this.args,
                 undefined
             )

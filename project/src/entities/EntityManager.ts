@@ -5,6 +5,7 @@ import { RemoteDataService } from "../data/RemoteDataService";
 import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { StateManagerImpl } from "../state/impl/StateManagerImpl";
+import { AssociationValue } from "./assocaition/AssocaitionValue";
 import { EntityEvictEvent } from "./EntityEvent";
 import { ModificationContext } from "./ModificationContext";
 import { QueryArgs } from "./QueryArgs";
@@ -31,6 +32,8 @@ export class EntityManager {
     private _queryRecord?: Record;
 
     private _mutationRecord?: Record;
+
+    private _associationValueObservers = new Set<AssociationValue>();
     
     constructor(
         readonly stateManager: StateManagerImpl<any>,
@@ -171,6 +174,9 @@ export class EntityManager {
     }
 
     private publishEvictChangeEvent(e: EntityEvictEvent) {
+        for (const observer of this._associationValueObservers) {
+            observer.onEntityEvict(this, e);
+        }
         for (const [, set] of this._evictListenerMap) {
             for (const listener of set) {
                 listener(e);
@@ -197,6 +203,9 @@ export class EntityManager {
     }
 
     private publishEntityChangeEvent(e: EntityChangeEvent) {
+        for (const observer of this._associationValueObservers) {
+            observer.onEntityChange(this, e);
+        }
         for (const [, set] of this._changeListenerMap) {
             for (const listener of set) {
                 listener(e);
@@ -214,5 +223,15 @@ export class EntityManager {
                 }
             }
         }
+    }
+
+    addAssociationValueObserver(observer: AssociationValue) {
+        if (observer !== undefined && observer !== null) {
+            this._associationValueObservers.add(observer);
+        }
+    }
+
+    removeAssociationValueObserver(observer: AssociationValue) {
+        this._associationValueObservers.delete(observer);
     }
 }

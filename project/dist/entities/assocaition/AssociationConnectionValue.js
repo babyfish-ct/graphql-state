@@ -12,8 +12,9 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
     get() {
         return this.connection;
     }
-    set(entityManager, record, association, value) {
+    set(entityManager, value) {
         var _a, _b;
+        const association = this.association;
         if (value === undefined) {
             throw Error(`Cannot set the undefined or null value to ${association.field.fullName} because it's connection field`);
         }
@@ -41,21 +42,21 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
         }
         for (const [id, element] of oldMap) {
             if (!newIds.has(id)) {
-                this.releaseOldReference(entityManager, record, association, element);
+                this.releaseOldReference(entityManager, element);
             }
         }
         this.connection = Object.assign(Object.assign({}, value), { edges: newEdges });
         for (const newEdge of newEdges) {
             if (!oldMap.has(newEdge.node.id)) {
-                this.retainNewReference(entityManager, record, association, newEdge.node);
+                this.retainNewReference(entityManager, newEdge.node);
             }
         }
         // TODO: Trigger
     }
-    link(entityManager, self, association, target) {
+    link(entityManager, target) {
         // TODO: link
     }
-    unlink(entityManager, self, association, target) {
+    unlink(entityManager, target) {
         // TODO: link
     }
 }

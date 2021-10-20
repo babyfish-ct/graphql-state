@@ -85,7 +85,7 @@ export interface ParameterizedAssociationProperties<TScalarType, TVariables> {
     ) => PositionType | undefined,
     readonly dependencies?: (
         variables?: TVariables
-    ) => ReadonlyArray<keyof TScalarType> | undefined
+    ) => ReadonlyArray<keyof TScalarType> | undefined;
 }
 
 export interface UnparameterizedAssociationProperties<TScalarType> {
@@ -97,7 +97,7 @@ export interface UnparameterizedAssociationProperties<TScalarType> {
         rows: ReadonlyArray<TScalarType>
     ) => PositionType | undefined,
     readonly dependencies: (
-    ) => ReadonlyArray<keyof TScalarType> | undefined
+    ) => ReadonlyArray<keyof TScalarType> | undefined;
 }
 
 export interface ScalarRow<TScalarType extends {readonly [key: string]: any}> {

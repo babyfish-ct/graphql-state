@@ -1,13 +1,26 @@
-import { FieldMetadata } from "../../meta/impl/FieldMetadata";
+import { TypeMetadata } from "../../meta/impl/TypeMetdata";
+import { EntityChangeEvent, EntityEvictEvent, EntityKey } from "../EntityEvent";
 import { EntityManager } from "../EntityManager";
-import { Record } from "../Record";
+import { Record, ScalarRowImpl } from "../Record";
 import { VariableArgs } from "../VariableArgs";
 import { Association } from "./Association";
 import { ObjectConnection, RecordConnection } from "./AssociationConnectionValue";
 
 export abstract class AssociationValue {
 
-    constructor(readonly args?: VariableArgs) {}
+    private dependencies?: ReadonlySet<string> | "all";
+
+    constructor(
+        entityManager: EntityManager,
+        readonly association: Association,
+        readonly args?: VariableArgs
+    ) {
+        const deps = association.field.associationProperties!.dependencies(args?.variables);
+        if (deps === undefined || deps === null || deps.length !== 0) {
+            this.dependencies = deps === undefined || deps === null ? "all" : new Set(deps);
+            entityManager.addAssociationValueObserver(this);
+        }
+    }
 
     abstract getAsObject(): any | ReadonlyArray<any> | ObjectConnection | undefined;
 
@@ -15,39 +28,32 @@ export abstract class AssociationValue {
 
     abstract set(
         entityManager: EntityManager, 
-        self: Record, 
-        association: Association, 
         value: any
     ): void;
 
     abstract link(
         entityManager: EntityManager, 
-        self: Record, 
-        association: Association, 
         target: Record | ReadonlyArray<Record>
     ): void;
 
     abstract unlink(
         entityManager: EntityManager, 
-        self: Record, 
-        association: Association, 
         target: Record | ReadonlyArray<Record>
     ): void;
 
     protected releaseOldReference(
         entityManager: EntityManager,
-        self: Record,
-        association: Association, 
         oldReference: Record | undefined
     ) {
+        const self = this.association.record;
         if (oldReference !== undefined) {
             oldReference.backReferences.remove(
-                association.field, 
+                this.association.field, 
                 this.args,
                 self
             );
-            association.unlink(entityManager, self, oldReference, this.args, false);
-            const oppositeField = association.field.oppositeField;
+            this.association.unlink(entityManager, oldReference, this.args, false);
+            const oppositeField = this.association.field.oppositeField;
             if (oppositeField !== undefined) {
                 if (oldReference) {
                     oldReference.unlink(entityManager, oppositeField, self);
@@ -58,21 +64,90 @@ export abstract class AssociationValue {
 
     protected retainNewReference(
         entityManager: EntityManager,
-        self: Record,
-        association: Association,
         newReference: Record | undefined
     ) {
+        const self = this.association.record;
         if (newReference !== undefined) {
             newReference.backReferences.add(
-                association.field, 
+                this.association.field, 
                 this.args,
                 self
             );
-            association.link(entityManager, self, newReference, this.args, false);
-            const oppositeField = association.field.oppositeField;
+            this.association.link(entityManager, newReference, this.args, false);
+            const oppositeField = this.association.field.oppositeField;
             if (oppositeField !== undefined) {
                 newReference.link(entityManager, oppositeField, self);
             }
         }
+    }
+
+    dispose(entityManager: EntityManager) {
+        if (this.dependencies !== undefined) {
+            entityManager.removeAssociationValueObserver(this);
+        }
+    }
+
+    onEntityEvict(entityManager: EntityManager, e: EntityEvictEvent) {
+        const targetType = this.association.field.targetType!;
+        const actualType = entityManager.schema.typeMap.get(e.typeName)!;
+        if (targetType!.isAssignableFrom(actualType)) {
+            if (e.evictedType === 'row' || this.isTargetChanged(targetType, e.evictedKeys)) {
+                this.evict(entityManager);
+            }
+        }
+    }
+
+    onEntityChange(entityManager: EntityManager, e: EntityChangeEvent) {
+        const declaredTypeName = this.association.field.declaringType.name;
+        const targetType = this.association.field.targetType!;
+        const actualType = entityManager.schema.typeMap.get(e.typeName)!;
+        if (targetType!.isAssignableFrom(actualType) && 
+        e.changedType === "update" &&
+        this.isTargetChanged(targetType, e.changedKeys)) {
+            if (declaredTypeName === "Query") {
+                const ref = entityManager.findRefById(targetType.name, e.id);
+                if (ref?.value !== undefined) {
+                    const fieldNames = Array.isArray(this.dependencies) ? 
+                        this.dependencies :
+                        Array.from(targetType.fieldMap.values())
+                        .filter(field => field.category === "SCALAR")
+                        .map(field => field.name);
+                    const map = new Map<string, any>();
+                    for (const fieldName of fieldNames) {
+                        if (e.has(fieldName)) {
+                            map.set(fieldName, e.newValue(fieldName));
+                        }
+                    }
+                    const result = this.association.field.associationProperties?.contains(
+                        new ScalarRowImpl(map),
+                        this.args?.variables
+                    );
+                    if (result === true) {
+                        this.link(entityManager, ref.value);
+                        return;
+                    }
+                    // Don't excute 'unlink' when result is false, 
+                    // that will indirectly lead to too many unnecessary data modifications
+                }
+            }
+            this.evict(entityManager);
+        }
+    }
+
+    private isTargetChanged(targetType: TypeMetadata, keys: ReadonlyArray<EntityKey>) {
+        for (const key of keys) {
+            if (typeof key === "string" && targetType.fieldMap.get(key)?.category === "SCALAR") {
+                if (this.dependencies === "all") {
+                    return true;
+                }
+                if (this.dependencies?.has(key) === true) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    private evict(entityManager: EntityManager) {
+        this.association.evict(entityManager, this.args);
     }
 }

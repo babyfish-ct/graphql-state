@@ -182,6 +182,10 @@ export class TypeMetadata {
             this._idField = fieldMetadata;
         }
     }
+
+    createObject(id: any): any {
+        return { [this.idField.name]: id };
+    }
 }
 
 export type TypeMetadataCategory = "OBJECT" | "CONNECTION" | "EDGE";
