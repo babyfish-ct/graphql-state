@@ -1,3 +1,4 @@
+import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { EntityManager } from "./EntityManager";
 import { Record } from "./Record";
@@ -16,5 +17,6 @@ export declare class RecordManager {
     save(shape: RuntimeShape, obj: any): void;
     delete(id: any): void;
     evict(id: any): void;
+    evictFieldByIdPredicate(field: FieldMetadata, predicate: (id: any) => boolean): void;
     private set;
 }

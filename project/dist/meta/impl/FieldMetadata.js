@@ -5,6 +5,7 @@ class FieldMetadata {
     constructor(declaringType, field) {
         this.declaringType = declaringType;
         this._inversed = false;
+        this._containingConfigured = false;
         this.name = field.name;
         this.category = field.category;
         this.fullName = `${declaringType.name}.${field.name}`;
@@ -73,6 +74,9 @@ class FieldMetadata {
     get associationProperties() {
         return this._associationProperties;
     }
+    get isContainingConfigured() {
+        return this._containingConfigured;
+    }
     setOppositeFieldName(oppositeFieldName) {
         this.declaringType.schema.preChange();
         if (this._oppositeField !== undefined) {
@@ -96,6 +100,7 @@ class FieldMetadata {
             position: (_b = properties.position) !== null && _b !== void 0 ? _b : defaultProperites.position,
             dependencies: (_c = properties.dependencies) !== null && _c !== void 0 ? _c : defaultProperites.dependencies
         };
+        this._containingConfigured = properties.contains !== undefined;
     }
     " $resolveInversedAssociation"() {
         var _a;

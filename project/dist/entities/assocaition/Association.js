@@ -37,11 +37,28 @@ class Association {
             }
         }
     }
-    evict(entityManager, args) {
-        const value = this.valueMap.get(args === null || args === void 0 ? void 0 : args.key);
-        if (value !== undefined) {
-            value.dispose(entityManager);
-            this.valueMap.remove(args === null || args === void 0 ? void 0 : args.key);
+    evict(entityManager, args, includeMoreStrictArgs) {
+        const ctx = entityManager.modificationContext;
+        if (includeMoreStrictArgs) {
+            const keys = [];
+            this.valueMap.forEachValue(value => {
+                if (VariableArgs_1.VariableArgs.contains(value.args, args)) {
+                    ctx.unset(this.record, this.field.name, value.args);
+                    value.dispose(entityManager);
+                    keys.push(args === null || args === void 0 ? void 0 : args.key);
+                }
+            });
+            for (const key of keys) {
+                this.valueMap.remove(key);
+            }
+        }
+        else {
+            const value = this.valueMap.get(args === null || args === void 0 ? void 0 : args.key);
+            if (value !== undefined) {
+                ctx.unset(this.record, this.field.name, value.args);
+                value.dispose(entityManager);
+                this.valueMap.remove(args === null || args === void 0 ? void 0 : args.key);
+            }
         }
     }
     link(entityManager, target, mostStringentArgs, changedByOpposite) {
@@ -71,7 +88,7 @@ class Association {
                         }
                     }
                     if (evict) {
-                        this.evict(entityManager, value.args);
+                        this.evict(entityManager, value.args, false);
                     }
                     else if (targetRecords.length !== 0) {
                         value.link(entityManager, targetRecords);
@@ -92,7 +109,7 @@ class Association {
                     value.unlink(entityManager, target);
                 }
                 else {
-                    this.evict(entityManager, value.args);
+                    this.evict(entityManager, value.args, false);
                 }
             });
         }

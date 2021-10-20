@@ -13,6 +13,7 @@ export declare class FieldMetadata {
     private _targetType?;
     private _oppositeField?;
     private _associationProperties?;
+    private _containingConfigured;
     constructor(declaringType: TypeMetadata, field: FetchableField);
     get deleteOperation(): "CASCADE" | "SET_UNDEFINED" | undefined;
     get isInversed(): boolean;
@@ -22,6 +23,7 @@ export declare class FieldMetadata {
     get targetType(): TypeMetadata | undefined;
     get oppositeField(): FieldMetadata | undefined;
     get associationProperties(): AssocaitionProperties | undefined;
+    get isContainingConfigured(): boolean;
     setOppositeFieldName(oppositeFieldName: string): void;
     setAssocaitionProperties(properties: Partial<AssocaitionProperties>): void;
     " $resolveInversedAssociation"(): void;

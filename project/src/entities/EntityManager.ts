@@ -2,6 +2,7 @@ import { EntityChangeEvent } from "..";
 import { AbstractDataService } from "../data/AbstractDataService";
 import { BatchDataService } from "../data/BatchDataService";
 import { RemoteDataService } from "../data/RemoteDataService";
+import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { StateManagerImpl } from "../state/impl/StateManagerImpl";
@@ -233,5 +234,9 @@ export class EntityManager {
 
     removeAssociationValueObserver(observer: AssociationValue) {
         this._associationValueObservers.delete(observer);
+    }
+
+    evictFieldByIdPredicate(field: FieldMetadata, predicate: (id: any) => boolean) {
+        this.recordManager(field.declaringType.name).evictFieldByIdPredicate(field, predicate);
     }
 }

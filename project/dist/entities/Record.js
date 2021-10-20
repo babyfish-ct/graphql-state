@@ -47,6 +47,9 @@ class Record {
         return (_a = this.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.get(args);
     }
     set(entityManager, field, args, value) {
+        if (field.declaringType !== this.type) {
+            throw new Error(`'${field.fullName}' is not field of the type '${this.type.name}' of current record`);
+        }
         if (field === null || field === void 0 ? void 0 : field.isAssociation) {
             this
                 .associationMap
@@ -78,6 +81,19 @@ class Record {
     unlink(entityManager, associationField, record) {
         var _a;
         (_a = this.associationMap.get(associationField)) === null || _a === void 0 ? void 0 : _a.unlink(entityManager, record, undefined, true);
+    }
+    evict(entityManager, field, args, includeMoreStrictArgs = false) {
+        var _a;
+        if (field.declaringType !== this.type) {
+            throw new Error(`'${field.fullName}' is not field of the type '${this.type.name}' of current record`);
+        }
+        if (field.isAssociation) {
+            (_a = this.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.evict(entityManager, args, includeMoreStrictArgs);
+        }
+        else {
+            entityManager.modificationContext.unset(this, field.name, undefined);
+            this.scalarMap.delete(field.name);
+        }
     }
     delete(entityManager) {
         if (this.deleted) {

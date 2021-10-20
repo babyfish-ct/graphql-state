@@ -114,6 +114,13 @@ class RecordManager {
             record.dispose(this.entityManager);
         }
     }
+    evictFieldByIdPredicate(field, predicate) {
+        for (const [, record] of this.recordMap) {
+            if (predicate(record.id)) {
+                record.evict(this.entityManager, field, undefined, true);
+            }
+        }
+    }
     set(id, field, args, value) {
         const record = this.saveId(id);
         record.set(this.entityManager, field, args, value);

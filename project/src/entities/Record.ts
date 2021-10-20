@@ -62,6 +62,9 @@ export class Record {
         args: VariableArgs | undefined,
         value: any
     ) {
+        if (field.declaringType !== this.type) {
+            throw new Error(`'${field.fullName}' is not field of the type '${this.type.name}' of current record`);
+        }
         if (field?.isAssociation) {
             this
             .associationMap
@@ -113,6 +116,23 @@ export class Record {
             undefined,
             true
         );
+    }
+
+    evict(
+        entityManager: EntityManager, 
+        field: FieldMetadata,
+        args: VariableArgs | undefined,
+        includeMoreStrictArgs: boolean = false
+    ) {
+        if (field.declaringType !== this.type) {
+            throw new Error(`'${field.fullName}' is not field of the type '${this.type.name}' of current record`);
+        }
+        if (field.isAssociation) {
+            this.associationMap.get(field)?.evict(entityManager, args, includeMoreStrictArgs);
+        } else {
+            entityManager.modificationContext.unset(this, field.name, undefined);
+            this.scalarMap.delete(field.name);
+        }
     }
 
     delete(entityManager: EntityManager) {

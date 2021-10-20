@@ -94,16 +94,13 @@ class ModificationContext {
         }
     }
     unset(record, fieldName, args) {
-        var _a, _b;
+        var _a;
         if (fieldName === record.type.idField.name) {
             throw new Error("Internal bug: the changed name cannot be id");
         }
-        const pair = (_a = this.objPairMap.get(record.type)) === null || _a === void 0 ? void 0 : _a.get(record.id);
-        if (pair === undefined) {
-            throw new Error("Internal bug: the evicted record is not cached in ModiciationContext");
-        }
+        const pair = this.pair(record, true);
         const key = VariableArgs_1.VariableArgs.fieldKey(fieldName, args);
-        (_b = pair.newObj) === null || _b === void 0 ? void 0 : _b.delete(key);
+        (_a = pair.newObj) === null || _a === void 0 ? void 0 : _a.delete(key);
         let evictedFieldKeys = pair.evictedFieldKeys;
         if (evictedFieldKeys === undefined) {
             pair.evictedFieldKeys = evictedFieldKeys = new Set();

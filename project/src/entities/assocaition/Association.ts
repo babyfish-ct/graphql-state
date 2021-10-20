@@ -48,11 +48,31 @@ export class Association {
         }
     }
 
-    evict(entityManager: EntityManager, args: VariableArgs | undefined) {
-        const value = this.valueMap.get(args?.key);
-        if (value !== undefined) {
-            value.dispose(entityManager);
-            this.valueMap.remove(args?.key);
+    evict(
+        entityManager: EntityManager, 
+        args: VariableArgs | undefined,
+        includeMoreStrictArgs: boolean
+    ) {
+        const ctx = entityManager.modificationContext;
+        if (includeMoreStrictArgs) {
+            const keys: Array<string | undefined> = [];
+            this.valueMap.forEachValue(value => {
+                if (VariableArgs.contains(value.args, args)) {
+                    ctx.unset(this.record, this.field.name, value.args);
+                    value.dispose(entityManager);
+                    keys.push(args?.key);
+                }
+            });
+            for (const key of keys) {
+                this.valueMap.remove(key);
+            }
+        } else {
+            const value = this.valueMap.get(args?.key);
+            if (value !== undefined) {
+                ctx.unset(this.record, this.field.name, value.args);
+                value.dispose(entityManager);
+                this.valueMap.remove(args?.key);
+            }
         }
     }
 
@@ -86,7 +106,7 @@ export class Association {
                         }
                     }
                     if (evict) {
-                        this.evict(entityManager, value.args);
+                        this.evict(entityManager, value.args, false);
                     } else if (targetRecords.length !== 0) {
                         value.link(entityManager, targetRecords);
                     }
@@ -113,7 +133,7 @@ export class Association {
                         target
                     );
                 } else {
-                    this.evict(entityManager, value.args);
+                    this.evict(entityManager, value.args, false);
                 }
             });
         }

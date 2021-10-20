@@ -132,6 +132,14 @@ export class RecordManager {
         }
     }
 
+    evictFieldByIdPredicate(field: FieldMetadata, predicate: (id: any) => boolean) {
+        for (const [, record] of this.recordMap) {
+            if (predicate(record.id)) {
+                record.evict(this.entityManager, field, undefined, true);
+            }
+        }
+    }
+
     private set(
         id: any, 
         field: FieldMetadata,

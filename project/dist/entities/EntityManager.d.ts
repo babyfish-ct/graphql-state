@@ -1,5 +1,6 @@
 import { EntityChangeEvent } from "..";
 import { AbstractDataService } from "../data/AbstractDataService";
+import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 import { StateManagerImpl } from "../state/impl/StateManagerImpl";
 import { AssociationValue } from "./assocaition/AssocaitionValue";
@@ -42,4 +43,5 @@ export declare class EntityManager {
     private linkToQuery;
     addAssociationValueObserver(observer: AssociationValue): void;
     removeAssociationValueObserver(observer: AssociationValue): void;
+    evictFieldByIdPredicate(field: FieldMetadata, predicate: (id: any) => boolean): void;
 }

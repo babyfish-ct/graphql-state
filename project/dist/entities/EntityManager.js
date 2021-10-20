@@ -189,5 +189,8 @@ class EntityManager {
     removeAssociationValueObserver(observer) {
         this._associationValueObservers.delete(observer);
     }
+    evictFieldByIdPredicate(field, predicate) {
+        this.recordManager(field.declaringType.name).evictFieldByIdPredicate(field, predicate);
+    }
 }
 exports.EntityManager = EntityManager;

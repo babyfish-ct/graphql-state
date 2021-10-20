@@ -77,6 +77,9 @@ export abstract class AssociationValue {
             const oppositeField = this.association.field.oppositeField;
             if (oppositeField !== undefined) {
                 newReference.link(entityManager, oppositeField, self);
+                if (oppositeField.category === "REFERENCE" && !newReference.hasAssociation(oppositeField)) {
+                    entityManager.evictFieldByIdPredicate(this.association.field, id => id !== this.association.record.id);
+                }
             }
         }
     }
@@ -104,7 +107,7 @@ export abstract class AssociationValue {
         if (targetType!.isAssignableFrom(actualType) && 
         e.changedType === "update" &&
         this.isTargetChanged(targetType, e.changedKeys)) {
-            if (declaredTypeName === "Query") {
+            if (declaredTypeName === "Query" && this.association.field.isContainingConfigured) {
                 const ref = entityManager.findRefById(targetType.name, e.id);
                 if (ref?.value !== undefined) {
                     const fieldNames = Array.isArray(this.dependencies) ? 
@@ -148,6 +151,6 @@ export abstract class AssociationValue {
     }
 
     private evict(entityManager: EntityManager) {
-        this.association.evict(entityManager, this.args);
+        this.association.evict(entityManager, this.args, false);
     }
 }

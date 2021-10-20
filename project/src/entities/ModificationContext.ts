@@ -106,10 +106,7 @@ export class ModificationContext {
         if (fieldName === record.type.idField.name) {
             throw new Error("Internal bug: the changed name cannot be id");
         }
-        const pair = this.objPairMap.get(record.type)?.get(record.id);
-        if (pair === undefined) {
-            throw new Error("Internal bug: the evicted record is not cached in ModiciationContext");
-        }
+        const pair = this.pair(record, true);
         const key = VariableArgs.fieldKey(fieldName, args);
         pair.newObj?.delete(key);
         let evictedFieldKeys = pair.evictedFieldKeys;
