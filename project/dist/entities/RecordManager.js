@@ -114,10 +114,10 @@ class RecordManager {
             record.dispose(this.entityManager);
         }
     }
-    evictFieldByIdPredicate(field, predicate) {
+    forEach(visitor) {
         for (const [, record] of this.recordMap) {
-            if (predicate(record)) {
-                record.evict(this.entityManager, field, undefined, true);
+            if (visitor(record) === false) {
+                break;
             }
         }
     }

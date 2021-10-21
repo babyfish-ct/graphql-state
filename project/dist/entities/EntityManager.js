@@ -188,8 +188,8 @@ class EntityManager {
     removeAssociationValueObserver(observer) {
         this._associationValueObservers.delete(observer);
     }
-    evictFieldByIdPredicate(field, predicate) {
-        this.recordManager(field.declaringType.name).evictFieldByIdPredicate(field, predicate);
+    forEach(typeName, visitor) {
+        this.recordManager(typeName).forEach(visitor);
     }
     get isBidirectionalAssociationManagementSuspending() {
         return this._bidirectionalAssociationManagementSuspending;

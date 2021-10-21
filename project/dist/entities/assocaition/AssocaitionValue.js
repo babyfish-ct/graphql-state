@@ -37,8 +37,12 @@ class AssociationValue {
                 if (oppositeField !== undefined) {
                     newReference.link(entityManager, oppositeField, self);
                     if (oppositeField.category === "REFERENCE" && !newReference.hasAssociation(oppositeField)) {
-                        entityManager.evictFieldByIdPredicate(this.association.field, record => record.id !== this.association.record.id &&
-                            record.contains(this.association.field, undefined, newReference, true));
+                        entityManager.forEach(this.association.field.declaringType.name, record => {
+                            if (record.id !== this.association.record.id &&
+                                record.contains(this.association.field, undefined, newReference, true)) {
+                                record.unlink(entityManager, this.association.field, newReference);
+                            }
+                        });
                     }
                 }
             }

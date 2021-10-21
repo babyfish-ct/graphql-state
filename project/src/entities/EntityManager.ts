@@ -236,8 +236,8 @@ export class EntityManager {
         this._associationValueObservers.delete(observer);
     }
 
-    evictFieldByIdPredicate(field: FieldMetadata, predicate: (self: Record) => boolean) {
-        this.recordManager(field.declaringType.name).evictFieldByIdPredicate(field, predicate);
+    forEach(typeName: string, visitor: (record: Record) => boolean | void) {
+        this.recordManager(typeName).forEach(visitor);
     }
 
     get isBidirectionalAssociationManagementSuspending(): boolean {
