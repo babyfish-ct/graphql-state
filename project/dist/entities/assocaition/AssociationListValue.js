@@ -54,6 +54,7 @@ class AssociationListValue extends AssocaitionValue_1.AssociationValue {
             }
         }
         this.elements = newElements.length === 0 ? undefined : newElements;
+        this.ids = newIds;
         for (const newElement of newElements) {
             if (!oldMap.has(newElement.id)) {
                 this.retainNewReference(entityManager, newElement);
@@ -101,14 +102,8 @@ class AssociationListValue extends AssocaitionValue_1.AssociationValue {
         }
     }
     contains(target) {
-        if (this.elements !== undefined) {
-            for (const element of this.elements) {
-                if (element.id === target.id) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        var _a;
+        return ((_a = this.ids) === null || _a === void 0 ? void 0 : _a.has(target.id)) === true;
     }
     validate(newList) {
         if (newList !== undefined && newList !== null) {

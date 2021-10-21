@@ -185,13 +185,13 @@ class Dependencies {
             if (e.evictedType === "row") {
                 return true;
             }
-            const changedKeySet = dependency.idChangedKeyMap?.get(e.id);
-            if (changedKeySet !== undefined) {
-                for (const changedKey of e.evictedKeys) {
-                    if (typeof changedKey === "string" && changedKeySet.has(changedKey)) {
+            const keySet = dependency.idChangedKeyMap?.get(e.id);
+            if (keySet !== undefined) {
+                for (const evictedKey of e.evictedKeys) {
+                    if (typeof evictedKey === "string" && keySet.has(evictedKey)) {
                         return true;
                     }
-                    if (typeof changedKey === "object" && changedKeySet.has(VariableArgs.fieldKey(changedKey.name, changedKey.variables))) {
+                    if (typeof evictedKey === "object" && keySet.has(VariableArgs.fieldKey(evictedKey.name, evictedKey.variables))) {
                         return true;
                     }
                 }
@@ -209,13 +209,13 @@ class Dependencies {
             if (e.changedType === "insert" && dependency.handleInsertion) {
                 return true;
             }
-            const changedKeySet = dependency.idChangedKeyMap?.get(e.id);
-            if (changedKeySet !== undefined) {
+            const keySet = dependency.idChangedKeyMap?.get(e.id);
+            if (keySet !== undefined) {
                 for (const changedKey of e.changedKeys) {
-                    if (typeof changedKey === "string" && changedKeySet.has(changedKey)) {
+                    if (typeof changedKey === "string" && keySet.has(changedKey)) {
                         return true;
                     }
-                    if (typeof changedKey === "object" && changedKeySet.has(VariableArgs.fieldKey(changedKey.name, changedKey.variables))) {
+                    if (typeof changedKey === "object" && keySet.has(VariableArgs.fieldKey(changedKey.name, changedKey.variables))) {
                         return true;
                     }
                 }

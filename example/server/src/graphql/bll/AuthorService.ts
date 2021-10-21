@@ -3,7 +3,7 @@ import UUIDClass from "uuidjs";
 import { authorTable, TAuthor } from "../../dal/AuthorTable";
 import { bookAuthorMappingTable } from "../../dal/BookAuthorMappingTable";
 import { Predicate } from "../../dal/Table";
-import { delay } from "../../Delay";
+import { delay } from "../../common/Delay";
 import { Author } from "../model/Author";
 import { AuthorInput } from "../model/input/AuthorInput";
 

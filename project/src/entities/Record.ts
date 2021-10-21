@@ -100,8 +100,7 @@ export class Record {
         this.associationMap.get(associationField)?.link(
             entityManager,
             record,
-            undefined,
-            true
+            undefined
         );
     }
 
@@ -113,8 +112,7 @@ export class Record {
         this.associationMap.get(associationField)?.unlink(
             entityManager,
             record,
-            undefined,
-            true
+            undefined
         );
     }
 
@@ -154,7 +152,7 @@ export class Record {
         this.scalarMap.clear();
         this.disposeAssocaitions(entityManager);
         this.backReferences.forEach((field, _, record) => {
-            record.associationMap.get(field)?.forceUnlink(
+            record.associationMap.get(field)?.unlinkAll(
                 entityManager,
                 this
             );

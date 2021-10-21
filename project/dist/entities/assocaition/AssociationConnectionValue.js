@@ -60,6 +60,7 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
             }
         }
         this.connection = Object.assign(Object.assign({}, value), { edges: newEdges });
+        this.ids = newIds;
         for (const newEdge of newEdges) {
             if (!oldMap.has(newEdge.node.id)) {
                 this.retainNewReference(entityManager, newEdge.node);
@@ -111,14 +112,8 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
         }
     }
     contains(target) {
-        if (this.connection !== undefined) {
-            for (const edge of this.connection.edges) {
-                if (edge.node.id === target.id) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        var _a;
+        return ((_a = this.ids) === null || _a === void 0 ? void 0 : _a.has(target.id)) === true;
     }
     validate(value) {
         const association = this.association;

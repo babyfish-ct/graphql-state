@@ -12,11 +12,33 @@ class AssociationValue {
             entityManager.addAssociationValueObserver(this);
         }
     }
+    containsAll(target) {
+        if (Array.isArray(target)) {
+            for (const tgt of target) {
+                if (!this.contains(tgt)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return this.contains(target);
+    }
+    containsNone(target) {
+        if (Array.isArray(target)) {
+            for (const tgt of target) {
+                if (this.contains(tgt)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return !this.contains(target);
+    }
     releaseOldReference(entityManager, oldReference) {
         const self = this.association.record;
         if (oldReference !== undefined) {
             oldReference.backReferences.remove(this.association.field, this.args, self);
-            this.association.unlink(entityManager, oldReference, this.args, false);
+            this.association.unlink(entityManager, oldReference, this.args, true);
             if (!entityManager.isBidirectionalAssociationManagementSuspending) {
                 const oppositeField = this.association.field.oppositeField;
                 if (oppositeField !== undefined) {
@@ -31,7 +53,7 @@ class AssociationValue {
         const self = this.association.record;
         if (newReference !== undefined) {
             newReference.backReferences.add(this.association.field, this.args, self);
-            this.association.link(entityManager, newReference, this.args, false);
+            this.association.link(entityManager, newReference, this.args, true);
             if (!entityManager.isBidirectionalAssociationManagementSuspending) {
                 const oppositeField = this.association.field.oppositeField;
                 if (oppositeField !== undefined) {
@@ -81,12 +103,14 @@ class AssociationValue {
                         }
                     }
                     const result = (_a = this.association.field.associationProperties) === null || _a === void 0 ? void 0 : _a.contains(new Record_1.ScalarRowImpl(map), (_b = this.args) === null || _b === void 0 ? void 0 : _b.variables);
-                    if (result === false) {
-                        this.unlink(entityManager, ref.value);
+                    if (result === true) {
+                        this.association.link(entityManager, ref.value, this.args);
                         return;
                     }
-                    // Don't excute 'link' when result is true, 
-                    // that will indirectly lead to too many unnecessary data modifications
+                    if (result === false) {
+                        this.association.unlink(entityManager, ref.value, this.args);
+                        return;
+                    }
                 }
             }
             this.evict(entityManager);

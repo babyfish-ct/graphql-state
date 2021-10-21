@@ -11,7 +11,7 @@ class Association {
         this.record = record;
         this.field = field;
         this.valueMap = new SpaceSavingMap_1.SpaceSavingMap();
-        this.frozen = false;
+        this.linkChanging = false;
         if (field.category === "ID") {
             throw new Error("Internal bug: assocaition base on id field");
         }
@@ -24,18 +24,7 @@ class Association {
         return (_a = this.valueMap.get(args === null || args === void 0 ? void 0 : args.key)) === null || _a === void 0 ? void 0 : _a.get();
     }
     set(entityManager, args, value) {
-        if (this.frozen) {
-            this.value(entityManager, args).set(entityManager, value);
-        }
-        else {
-            this.frozen = true;
-            try {
-                this.value(entityManager, args).set(entityManager, value);
-            }
-            finally {
-                this.frozen = false;
-            }
-        }
+        this.value(entityManager, args).set(entityManager, value);
     }
     evict(entityManager, args, includeMoreStrictArgs) {
         const ctx = entityManager.modificationContext;
@@ -77,12 +66,15 @@ class Association {
         });
         return result;
     }
-    link(entityManager, target, mostStringentArgs, changedByOpposite) {
-        if (!this.frozen || !changedByOpposite) {
+    link(entityManager, target, mostStringentArgs, insideModification = false) {
+        this.changeLinks(() => {
             entityManager.modificationContext.update(this.record);
             this.valueMap.forEachValue(value => {
                 var _a, _b;
-                if ((mostStringentArgs === null || mostStringentArgs === void 0 ? void 0 : mostStringentArgs.key) === ((_a = value.args) === null || _a === void 0 ? void 0 : _a.key) && !changedByOpposite) {
+                if (insideModification && (mostStringentArgs === null || mostStringentArgs === void 0 ? void 0 : mostStringentArgs.key) === ((_a = value.args) === null || _a === void 0 ? void 0 : _a.key)) {
+                    return;
+                }
+                if (value.containsAll(target)) {
                     return;
                 }
                 if (VariableArgs_1.VariableArgs.contains(mostStringentArgs, value.args)) {
@@ -111,29 +103,53 @@ class Association {
                     }
                 }
             });
-        }
+        });
     }
-    unlink(entityManager, target, leastStringentArgs, changedByOpposite) {
-        if (!this.frozen || !changedByOpposite) {
+    unlink(entityManager, target, leastStringentArgs, insideModification = false) {
+        this.changeLinks(() => {
             entityManager.modificationContext.update(this.record);
             this.valueMap.forEachValue(value => {
-                var _a;
-                if ((leastStringentArgs === null || leastStringentArgs === void 0 ? void 0 : leastStringentArgs.key) === ((_a = value.args) === null || _a === void 0 ? void 0 : _a.key) && !changedByOpposite) {
+                var _a, _b;
+                if (insideModification && (leastStringentArgs === null || leastStringentArgs === void 0 ? void 0 : leastStringentArgs.key) === ((_a = value.args) === null || _a === void 0 ? void 0 : _a.key)) {
+                    return;
+                }
+                if (value.containsNone(target)) {
                     return;
                 }
                 if (VariableArgs_1.VariableArgs.contains(value.args, leastStringentArgs)) {
                     value.unlink(entityManager, target);
                 }
                 else {
-                    this.evict(entityManager, value.args, false);
+                    const contains = this.field.associationProperties.contains;
+                    const possibleRecords = Array.isArray(target) ? target : [target];
+                    const targetRecords = [];
+                    let evict = false;
+                    for (const possibleRecord of possibleRecords) {
+                        const result = contains(possibleRecord.toRow(), (_b = value.args) === null || _b === void 0 ? void 0 : _b.variables);
+                        if (result === undefined) {
+                            evict = true;
+                            break;
+                        }
+                        if (result === false) {
+                            targetRecords.push(possibleRecord);
+                        }
+                    }
+                    if (evict) {
+                        this.evict(entityManager, value.args, false);
+                    }
+                    else if (targetRecords.length !== 0) {
+                        value.unlink(entityManager, targetRecords);
+                    }
                 }
             });
-        }
+        });
     }
-    forceUnlink(entityManager, target) {
-        entityManager.modificationContext.update(this.record);
-        this.valueMap.forEachValue(value => {
-            value.unlink(entityManager, target);
+    unlinkAll(entityManager, target) {
+        this.changeLinks(() => {
+            entityManager.modificationContext.update(this.record);
+            this.valueMap.forEachValue(value => {
+                value.unlink(entityManager, target);
+            });
         });
     }
     appendTo(map) {
@@ -158,6 +174,18 @@ class Association {
                     return new AssociationReferenceValue_1.AssociationReferenceValue(entityManager, this, args);
             }
         });
+    }
+    changeLinks(action) {
+        if (this.linkChanging) {
+            return;
+        }
+        this.linkChanging = true;
+        try {
+            action();
+        }
+        finally {
+            this.linkChanging = false;
+        }
     }
 }
 exports.Association = Association;

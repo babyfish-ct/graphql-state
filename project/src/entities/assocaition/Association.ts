@@ -12,7 +12,7 @@ export class Association {
 
     private valueMap = new SpaceSavingMap<string | undefined, AssociationValue>();
 
-    private frozen = false;
+    private linkChanging = false;
 
     constructor(
         readonly record: Record,
@@ -36,16 +36,7 @@ export class Association {
         args: VariableArgs | undefined, 
         value: any
     ) {
-        if (this.frozen) {
-            this.value(entityManager, args).set(entityManager, value);
-        } else {
-            this.frozen = true;
-            try {
-                this.value(entityManager, args).set(entityManager, value);
-            } finally {
-                this.frozen = false;
-            }
-        }
+        this.value(entityManager, args).set(entityManager, value);
     }
 
     evict(
@@ -96,12 +87,15 @@ export class Association {
         entityManager: EntityManager, 
         target: Record | ReadonlyArray<Record>,
         mostStringentArgs: VariableArgs | undefined,
-        changedByOpposite: boolean
+        insideModification: boolean = false
     ) {
-        if (!this.frozen || !changedByOpposite) {
+        this.changeLinks(() => {
             entityManager.modificationContext.update(this.record);
             this.valueMap.forEachValue(value => {
-                if (mostStringentArgs?.key === value.args?.key && !changedByOpposite) {
+                if (insideModification && mostStringentArgs?.key === value.args?.key) {
+                    return;
+                }
+                if (value.containsAll(target)) {
                     return;
                 }
                 if (VariableArgs.contains(mostStringentArgs, value.args)) {
@@ -128,19 +122,22 @@ export class Association {
                     }
                 }
             });
-        }
+        });
     }
 
     unlink(
         entityManager: EntityManager, 
         target: Record | ReadonlyArray<Record>,
         leastStringentArgs: VariableArgs | undefined,
-        changedByOpposite: boolean
+        insideModification: boolean = false
     ) {
-        if (!this.frozen || !changedByOpposite) {
+        this.changeLinks(() => {
             entityManager.modificationContext.update(this.record);
             this.valueMap.forEachValue(value => {
-                if (leastStringentArgs?.key === value.args?.key && !changedByOpposite) {
+                if (insideModification && leastStringentArgs?.key === value.args?.key) {
+                    return;
+                }
+                if (value.containsNone(target)) {
                     return;
                 }
                 if (VariableArgs.contains(value.args, leastStringentArgs)) {
@@ -149,22 +146,42 @@ export class Association {
                         target
                     );
                 } else {
-                    this.evict(entityManager, value.args, false);
+                    const contains = this.field.associationProperties!.contains;
+                    const possibleRecords = Array.isArray(target) ? target : [target];
+                    const targetRecords: Record[] = [];
+                    let evict = false;
+                    for (const possibleRecord of possibleRecords) {
+                        const result = contains(possibleRecord.toRow(), value.args?.variables);
+                        if (result === undefined) {
+                            evict = true;
+                            break;
+                        }
+                        if (result === false) {
+                            targetRecords.push(possibleRecord);
+                        }
+                    }
+                    if (evict) {
+                        this.evict(entityManager, value.args, false);
+                    } else if (targetRecords.length !== 0) {
+                        value.unlink(entityManager, targetRecords);
+                    }
                 }
             });
-        }
+        });
     }
 
-    forceUnlink(
+    unlinkAll(
         entityManager: EntityManager, 
         target: Record
     ) {
-        entityManager.modificationContext.update(this.record);
-        this.valueMap.forEachValue(value => {
-            value.unlink(
-                entityManager, 
-                target
-            );
+        this.changeLinks(() => {
+            entityManager.modificationContext.update(this.record);
+            this.valueMap.forEachValue(value => {
+                value.unlink(
+                    entityManager, 
+                    target
+                );
+            });
         });
     }
 
@@ -195,5 +212,17 @@ export class Association {
                     return new AssociationReferenceValue(entityManager, this, args);
             }
         });
+    }
+
+    private changeLinks(action: () => void) {
+        if (this.linkChanging) {
+            return;
+        }
+        this.linkChanging = true;
+        try {
+            action();
+        } finally {
+            this.linkChanging = false;
+        }
     }
 }

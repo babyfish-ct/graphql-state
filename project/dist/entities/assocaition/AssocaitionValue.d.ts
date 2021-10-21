@@ -14,12 +14,14 @@ export declare abstract class AssociationValue {
     abstract set(entityManager: EntityManager, value: any): void;
     abstract link(entityManager: EntityManager, target: Record | ReadonlyArray<Record>): void;
     abstract unlink(entityManager: EntityManager, target: Record | ReadonlyArray<Record>): void;
+    abstract contains(target: Record): boolean;
+    containsAll(target: Record | ReadonlyArray<Record>): boolean;
+    containsNone(target: Record | ReadonlyArray<Record>): boolean;
     protected releaseOldReference(entityManager: EntityManager, oldReference: Record | undefined): void;
     protected retainNewReference(entityManager: EntityManager, newReference: Record | undefined): void;
     dispose(entityManager: EntityManager): void;
     onEntityEvict(entityManager: EntityManager, e: EntityEvictEvent): void;
     onEntityChange(entityManager: EntityManager, e: EntityChangeEvent): void;
-    abstract contains(target: Record): boolean;
     private isTargetChanged;
     protected evict(entityManager: EntityManager): void;
 }

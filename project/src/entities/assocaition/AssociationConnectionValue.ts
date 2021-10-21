@@ -9,6 +9,8 @@ export class AssociationConnectionValue extends AssociationValue {
 
     private connection?: RecordConnection;
 
+    private ids?: Set<any>;
+
     getAsObject(): ObjectConnection {
         if (this.connection === undefined) {
             throw new Error("Internal bug: connection cannot be undefined");
@@ -86,6 +88,7 @@ export class AssociationConnectionValue extends AssociationValue {
             ...value,
             edges: newEdges
         };
+        this.ids = newIds;
         
         for (const newEdge of newEdges) {
             if (!oldMap.has(newEdge.node.id)) {
@@ -167,14 +170,7 @@ export class AssociationConnectionValue extends AssociationValue {
     }
 
     contains(target: Record): boolean {
-        if (this.connection !== undefined) {
-            for (const edge of this.connection.edges) {
-                if (edge.node.id === target.id) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return this.ids?.has(target.id) === true;
     }
 
     private validate(value: ObjectConnection) {

@@ -76,11 +76,11 @@ class Record {
     }
     link(entityManager, associationField, record) {
         var _a;
-        (_a = this.associationMap.get(associationField)) === null || _a === void 0 ? void 0 : _a.link(entityManager, record, undefined, true);
+        (_a = this.associationMap.get(associationField)) === null || _a === void 0 ? void 0 : _a.link(entityManager, record, undefined);
     }
     unlink(entityManager, associationField, record) {
         var _a;
-        (_a = this.associationMap.get(associationField)) === null || _a === void 0 ? void 0 : _a.unlink(entityManager, record, undefined, true);
+        (_a = this.associationMap.get(associationField)) === null || _a === void 0 ? void 0 : _a.unlink(entityManager, record, undefined);
     }
     contains(field, args, target, tryMoreStrictArgs) {
         var _a;
@@ -110,7 +110,7 @@ class Record {
         this.disposeAssocaitions(entityManager);
         this.backReferences.forEach((field, _, record) => {
             var _a;
-            (_a = record.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.forceUnlink(entityManager, this);
+            (_a = record.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.unlinkAll(entityManager, this);
         });
         this.deleted = true;
     }

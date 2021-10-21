@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { Arg, Mutation, Query } from 'type-graphql';
 import { Predicate } from '../../dal/Table';
 import { BookStore } from '../model/BookStore';
-import { delay } from '../../Delay';
+import { delay } from '../../common/Delay';
 import { bookStoreTable, TBookStore } from '../../dal/BookStoreTable';
 import { BookStoreInput } from '../model/input/BookStoreInput';
 import { bookTable } from '../../dal/BookTable';

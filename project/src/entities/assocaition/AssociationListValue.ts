@@ -8,6 +8,8 @@ export class AssociationListValue extends AssociationValue {
 
     private elements?: Array<Record>;
 
+    private ids?: Set<any>;
+
     getAsObject(): ReadonlyArray<any> | undefined {
         return this.elements?.map(objectWithOnlyId);
     }
@@ -62,6 +64,7 @@ export class AssociationListValue extends AssociationValue {
         }
 
         this.elements = newElements.length === 0 ? undefined : newElements;
+        this.ids = newIds;
 
         for (const newElement of newElements) {
             if (!oldMap.has(newElement.id)) {
@@ -131,14 +134,7 @@ export class AssociationListValue extends AssociationValue {
     }
 
     contains(target: Record): boolean {
-        if (this.elements !== undefined) {
-            for (const element of this.elements) {
-                if (element.id === target.id) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return this.ids?.has(target.id) === true;
     }
 
     private validate(

@@ -164,13 +164,13 @@ class Dependencies {
             if (e.evictedType === "row") {
                 return true;
             }
-            const changedKeySet = (_a = dependency.idChangedKeyMap) === null || _a === void 0 ? void 0 : _a.get(e.id);
-            if (changedKeySet !== undefined) {
-                for (const changedKey of e.evictedKeys) {
-                    if (typeof changedKey === "string" && changedKeySet.has(changedKey)) {
+            const keySet = (_a = dependency.idChangedKeyMap) === null || _a === void 0 ? void 0 : _a.get(e.id);
+            if (keySet !== undefined) {
+                for (const evictedKey of e.evictedKeys) {
+                    if (typeof evictedKey === "string" && keySet.has(evictedKey)) {
                         return true;
                     }
-                    if (typeof changedKey === "object" && changedKeySet.has(VariableArgs_1.VariableArgs.fieldKey(changedKey.name, changedKey.variables))) {
+                    if (typeof evictedKey === "object" && keySet.has(VariableArgs_1.VariableArgs.fieldKey(evictedKey.name, evictedKey.variables))) {
                         return true;
                     }
                 }
@@ -188,13 +188,13 @@ class Dependencies {
             if (e.changedType === "insert" && dependency.handleInsertion) {
                 return true;
             }
-            const changedKeySet = (_a = dependency.idChangedKeyMap) === null || _a === void 0 ? void 0 : _a.get(e.id);
-            if (changedKeySet !== undefined) {
+            const keySet = (_a = dependency.idChangedKeyMap) === null || _a === void 0 ? void 0 : _a.get(e.id);
+            if (keySet !== undefined) {
                 for (const changedKey of e.changedKeys) {
-                    if (typeof changedKey === "string" && changedKeySet.has(changedKey)) {
+                    if (typeof changedKey === "string" && keySet.has(changedKey)) {
                         return true;
                     }
-                    if (typeof changedKey === "object" && changedKeySet.has(VariableArgs_1.VariableArgs.fieldKey(changedKey.name, changedKey.variables))) {
+                    if (typeof changedKey === "object" && keySet.has(VariableArgs_1.VariableArgs.fieldKey(changedKey.name, changedKey.variables))) {
                         return true;
                     }
                 }
