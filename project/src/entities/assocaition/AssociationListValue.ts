@@ -2,6 +2,7 @@ import { PositionType, ScalarRow } from "../../meta/Configuration";
 import { EntityManager } from "../EntityManager";
 import { objectWithOnlyId, Record } from "../Record";
 import { AssociationValue } from "./AssocaitionValue";
+import { toRecordMap } from "./util";
 
 export class AssociationListValue extends AssociationValue {
 
@@ -48,6 +49,8 @@ export class AssociationListValue extends AssociationValue {
                     if (!ex[" $evict"]) {
                         throw ex;
                     }
+                    this.evict(entityManager);
+                    return;
                 }
             }
         }
@@ -82,9 +85,18 @@ export class AssociationListValue extends AssociationValue {
         const elements = this.elements !== undefined ? [...this.elements] : [];
         const elementMap = toRecordMap(elements);
         const linkMap = toRecordMap(Array.isArray(target) ? target : [target]);
+        const position = this.association.field.associationProperties!.position;
         for (const record of linkMap.values()) {
             if (!elementMap.has(record.id)) {
-                elements.push(record);
+                try {
+                    appendTo(elements, record, position);
+                } catch (ex) {
+                    if (!ex[" $evict"]) {
+                        throw ex;
+                    }
+                    this.evict(entityManager);
+                    return;
+                }
             }
         }
         if (elements.length !== this.elements?.length ?? 0) {
@@ -105,7 +117,7 @@ export class AssociationListValue extends AssociationValue {
         const unlinkMap = toRecordMap(Array.isArray(target) ? target : [target]);
         for (const record of unlinkMap.values()) {
             if (elementMap.has(record.id)) {
-                const index = elements.findIndex(element => element?.id === record.id);
+                const index = elements.findIndex(element => element.id === record.id);
                 elements.splice(index, 1);
             }
         }
@@ -192,14 +204,4 @@ function appendTo(
     } else {
         newElements.splice(Math.max(0, index), 0, newElement);
     }
-}
-
-function toRecordMap(arr: ReadonlyArray<Record> | undefined): Map<any, Record> {
-    const map = new Map<any, Record>();
-    if (arr !== undefined) {
-        for (const element of arr) {
-            map.set(element.id, element);
-        }
-    }
-    return map;
 }

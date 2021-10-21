@@ -39,4 +39,5 @@ export declare class ScalarRowImpl implements ScalarRow<any> {
     constructor(map: Map<string, any>);
     has(fieldName: string): boolean;
     get(fieldName: string): any;
+    toString(): string;
 }

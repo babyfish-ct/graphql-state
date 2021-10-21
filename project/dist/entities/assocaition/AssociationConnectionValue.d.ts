@@ -2,7 +2,7 @@ import { EntityManager } from "../EntityManager";
 import { Record } from "../Record";
 import { AssociationValue } from "./AssocaitionValue";
 export declare class AssociationConnectionValue extends AssociationValue {
-    private connection;
+    private connection?;
     getAsObject(): ObjectConnection;
     get(): RecordConnection;
     set(entityManager: EntityManager, value: ObjectConnection): void;

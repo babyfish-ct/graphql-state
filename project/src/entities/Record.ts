@@ -224,4 +224,20 @@ export class ScalarRowImpl implements ScalarRow<any> {
         }
         return value;
     }
+
+    toString(): string {
+        let sperator = "";
+        let result = "{ ";
+        for (const [k, v] of this.map) {
+            if (v !== undefined) {
+                result += sperator;
+                result += k;
+                result += ": ";
+                result += JSON.stringify(v)
+                sperator = ", ";
+            }
+        }
+        result += " }";
+        return result;
+    }
 }

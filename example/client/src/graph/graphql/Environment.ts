@@ -1,4 +1,5 @@
 import { GraphQLNetwork, ScalarRow, ParameterizedAssociationProperties } from "graphql-state";
+import { PositionType } from "graphql-state/dist/meta/Configuration";
 import { newTypedConfiguration } from "./__generated";
 
 function createNameFilterAssociationProperties<
@@ -24,6 +25,21 @@ function createNameFilterAssociationProperties<
             // Otherwise, return undefined, that means the result is unknown.
             // This association will be evicted from cache and the affected UI will reload the data from server
             return undefined; 
+        },
+
+        position(
+            row: ScalarRow<TScalarType>, 
+            rows: ReadonlyArray<ScalarRow<TScalarType>>
+        ): PositionType | undefined {
+            if (row.has("name")) {
+                const rowName = row.get("name");
+                for (let i = 0; i < rows.length; i++) {
+                    if (rows[i].has("name") && rows[i].get("name") > rowName) {
+                        return i;
+                    }
+                }
+            }
+            return "end";
         },
 
         // Does this association depend on some scalar fields of target object?

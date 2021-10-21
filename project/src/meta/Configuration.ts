@@ -80,7 +80,7 @@ export interface ParameterizedAssociationProperties<TScalarType, TVariables> {
     ) => boolean | undefined,
     readonly position?: (
         row: ScalarRow<TScalarType>,
-        rows: ReadonlyArray<TScalarType>,
+        rows: ReadonlyArray<ScalarRow<TScalarType>>,
         variables?: TVariables
     ) => PositionType | undefined,
     readonly dependencies?: (
@@ -89,20 +89,21 @@ export interface ParameterizedAssociationProperties<TScalarType, TVariables> {
 }
 
 export interface UnparameterizedAssociationProperties<TScalarType> {
-    readonly contains: (
+    readonly contains?: (
         row: ScalarRow<TScalarType>
     ) => boolean | undefined,
     readonly position?: (
         row: ScalarRow<TScalarType>,
-        rows: ReadonlyArray<TScalarType>
+        rows: ReadonlyArray<ScalarRow<TScalarType>>
     ) => PositionType | undefined,
-    readonly dependencies: (
+    readonly dependencies?: (
     ) => ReadonlyArray<keyof TScalarType> | undefined;
 }
 
 export interface ScalarRow<TScalarType extends {readonly [key: string]: any}> {
     has(fieldName: keyof TScalarType): boolean;
     get<TFieldName extends keyof TScalarType & string>(fieldName: TFieldName): TScalarType[TFieldName];
+    toString(): string;
 }
 
 export type PositionType = number | "start" | "end";

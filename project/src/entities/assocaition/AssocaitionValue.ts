@@ -161,7 +161,7 @@ export abstract class AssociationValue {
         }
     }
 
-    private evict(entityManager: EntityManager) {
+    protected evict(entityManager: EntityManager) {
         this.association.evict(entityManager, this.args, false);
     }
 }

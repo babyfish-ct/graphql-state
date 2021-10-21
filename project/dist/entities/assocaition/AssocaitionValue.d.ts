@@ -21,5 +21,5 @@ export declare abstract class AssociationValue {
     onEntityChange(entityManager: EntityManager, e: EntityChangeEvent): void;
     abstract contains(target: Record): boolean;
     private isTargetChanged;
-    private evict;
+    protected evict(entityManager: EntityManager): void;
 }

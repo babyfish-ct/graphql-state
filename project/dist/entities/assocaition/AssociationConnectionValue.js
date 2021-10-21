@@ -3,13 +3,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AssociationConnectionValue = void 0;
 const Record_1 = require("../Record");
 const AssocaitionValue_1 = require("./AssocaitionValue");
+const util_1 = require("./util");
 class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
     getAsObject() {
+        if (this.connection === undefined) {
+            throw new Error("Internal bug: connection cannot be undefined");
+        }
         return Object.assign(Object.assign({}, this.connection), { edges: this.connection.edges.map(edge => {
                 return Object.assign(Object.assign({}, edge), { node: Record_1.objectWithOnlyId(edge.node) });
             }) });
     }
     get() {
+        if (this.connection === undefined) {
+            throw new Error("Internal bug: connection cannot be undefined");
+        }
         return this.connection;
     }
     set(entityManager, value) {
@@ -26,6 +33,7 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
         });
         const newIds = new Set();
         const newEdges = [];
+        const position = this.association.field.associationProperties.position;
         for (const edge of value.edges) {
             if (typeof edge.node !== "object") {
                 throw Error(`Each edge object for the connection "${association.field.fullName}" must have an object field named "node"`);
@@ -35,10 +43,16 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
             }
             const newNode = entityManager.saveId(association.field.targetType.name, edge.node.id);
             newIds.add(newNode.id);
-            newEdges.push({
-                node: newNode,
-                cursor: edge.cursor
-            });
+            try {
+                appendTo(newEdges, newNode, edge.cursor, position);
+            }
+            catch (ex) {
+                if (!ex[" $evict"]) {
+                    throw ex;
+                }
+                this.evict(entityManager);
+                return;
+            }
         }
         for (const [id, node] of oldMap) {
             if (!newIds.has(id)) {
@@ -54,14 +68,57 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
         entityManager.modificationContext.set(this.association.record, association.field.name, this.args, oldValueForTriggger, this.getAsObject());
     }
     link(entityManager, target) {
-        // TODO: link
+        if (this.connection === undefined) {
+            throw new Error("Internal bug: connection cannot be undefined");
+        }
+        const edges = [...this.connection.edges];
+        const nodeMap = toNodeMap(edges);
+        const linkMap = util_1.toRecordMap(Array.isArray(target) ? target : [target]);
+        const position = this.association.field.associationProperties.position;
+        for (const record of linkMap.values()) {
+            if (!nodeMap.has(record.id)) {
+                try {
+                    appendTo(edges, record, undefined, position);
+                }
+                catch (ex) {
+                    if (!ex[" $evict"]) {
+                        throw ex;
+                    }
+                    this.evict(entityManager);
+                    return;
+                }
+            }
+        }
+        if (edges.length !== this.connection.edges.length) {
+            this.association.set(entityManager, this.args, Object.assign(Object.assign({}, this.connection), { edges }));
+        }
     }
     unlink(entityManager, target) {
-        // TODO: link
+        if (this.connection === undefined) {
+            throw new Error("Internal bug: connection cannot be undefined");
+        }
+        const edges = [...this.connection.edges];
+        const elementMap = toNodeMap(edges);
+        const unlinkMap = util_1.toRecordMap(Array.isArray(target) ? target : [target]);
+        for (const record of unlinkMap.values()) {
+            if (elementMap.has(record.id)) {
+                const index = edges.findIndex(edge => edge.node.id === record.id);
+                edges.splice(index, 1);
+            }
+        }
+        if (edges.length !== this.connection.edges.length) {
+            this.association.set(entityManager, this.args, Object.assign(Object.assign({}, this.connection), { edges }));
+        }
     }
     contains(target) {
-        // TODO: contains
-        throw new Error();
+        if (this.connection !== undefined) {
+            for (const edge of this.connection.edges) {
+                if (edge.node.id === target.id) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
     validate(value) {
         const association = this.association;
@@ -141,3 +198,27 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
     }
 }
 exports.AssociationConnectionValue = AssociationConnectionValue;
+function toNodeMap(edges) {
+    const map = new Map();
+    for (const edge of edges) {
+        map.set(edge.node.id, edge.node);
+    }
+    return map;
+}
+function appendTo(newEdges, newNode, newCursor, position) {
+    var _a;
+    const pos = newEdges.length === 0 ?
+        0 :
+        position(newNode.toRow(), newEdges.map(e => e.node.toRow()), (_a = this.args) === null || _a === void 0 ? void 0 : _a.variables);
+    if (pos === undefined) {
+        throw { " $evict": true };
+    }
+    const index = pos === "start" ? 0 : pos === "end" ? newEdges.length : pos;
+    const cursor = newCursor !== null && newCursor !== void 0 ? newCursor : "";
+    if (index >= newEdges.length) {
+        newEdges.push({ node: newNode, cursor });
+    }
+    else {
+        newEdges.splice(Math.max(0, index), 0, { node: newNode, cursor });
+    }
+}

@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AssociationListValue = void 0;
 const Record_1 = require("../Record");
 const AssocaitionValue_1 = require("./AssocaitionValue");
+const util_1 = require("./util");
 class AssociationListValue extends AssocaitionValue_1.AssociationValue {
     getAsObject() {
         var _a;
@@ -42,6 +43,8 @@ class AssociationListValue extends AssocaitionValue_1.AssociationValue {
                     if (!ex[" $evict"]) {
                         throw ex;
                     }
+                    this.evict(entityManager);
+                    return;
                 }
             }
         }
@@ -61,11 +64,21 @@ class AssociationListValue extends AssocaitionValue_1.AssociationValue {
     link(entityManager, target) {
         var _a, _b;
         const elements = this.elements !== undefined ? [...this.elements] : [];
-        const elementMap = toRecordMap(elements);
-        const linkMap = toRecordMap(Array.isArray(target) ? target : [target]);
+        const elementMap = util_1.toRecordMap(elements);
+        const linkMap = util_1.toRecordMap(Array.isArray(target) ? target : [target]);
+        const position = this.association.field.associationProperties.position;
         for (const record of linkMap.values()) {
             if (!elementMap.has(record.id)) {
-                elements.push(record);
+                try {
+                    appendTo(elements, record, position);
+                }
+                catch (ex) {
+                    if (!ex[" $evict"]) {
+                        throw ex;
+                    }
+                    this.evict(entityManager);
+                    return;
+                }
             }
         }
         if ((_b = elements.length !== ((_a = this.elements) === null || _a === void 0 ? void 0 : _a.length)) !== null && _b !== void 0 ? _b : 0) {
@@ -75,11 +88,11 @@ class AssociationListValue extends AssocaitionValue_1.AssociationValue {
     unlink(entityManager, target) {
         var _a, _b;
         const elements = this.elements !== undefined ? [...this.elements] : [];
-        const elementMap = toRecordMap(elements);
-        const unlinkMap = toRecordMap(Array.isArray(target) ? target : [target]);
+        const elementMap = util_1.toRecordMap(elements);
+        const unlinkMap = util_1.toRecordMap(Array.isArray(target) ? target : [target]);
         for (const record of unlinkMap.values()) {
             if (elementMap.has(record.id)) {
-                const index = elements.findIndex(element => (element === null || element === void 0 ? void 0 : element.id) === record.id);
+                const index = elements.findIndex(element => element.id === record.id);
                 elements.splice(index, 1);
             }
         }
@@ -149,13 +162,4 @@ function appendTo(newElements, newElement, position) {
     else {
         newElements.splice(Math.max(0, index), 0, newElement);
     }
-}
-function toRecordMap(arr) {
-    const map = new Map();
-    if (arr !== undefined) {
-        for (const element of arr) {
-            map.set(element.id, element);
-        }
-    }
-    return map;
 }

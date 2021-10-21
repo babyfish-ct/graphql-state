@@ -12,19 +12,20 @@ export interface Configuration<TSchema extends SchemaType> {
 }
 export interface ParameterizedAssociationProperties<TScalarType, TVariables> {
     readonly contains?: (row: ScalarRow<TScalarType>, variables?: TVariables) => boolean | undefined;
-    readonly position?: (row: ScalarRow<TScalarType>, rows: ReadonlyArray<TScalarType>, variables?: TVariables) => PositionType | undefined;
+    readonly position?: (row: ScalarRow<TScalarType>, rows: ReadonlyArray<ScalarRow<TScalarType>>, variables?: TVariables) => PositionType | undefined;
     readonly dependencies?: (variables?: TVariables) => ReadonlyArray<keyof TScalarType> | undefined;
 }
 export interface UnparameterizedAssociationProperties<TScalarType> {
-    readonly contains: (row: ScalarRow<TScalarType>) => boolean | undefined;
-    readonly position?: (row: ScalarRow<TScalarType>, rows: ReadonlyArray<TScalarType>) => PositionType | undefined;
-    readonly dependencies: () => ReadonlyArray<keyof TScalarType> | undefined;
+    readonly contains?: (row: ScalarRow<TScalarType>) => boolean | undefined;
+    readonly position?: (row: ScalarRow<TScalarType>, rows: ReadonlyArray<ScalarRow<TScalarType>>) => PositionType | undefined;
+    readonly dependencies?: () => ReadonlyArray<keyof TScalarType> | undefined;
 }
 export interface ScalarRow<TScalarType extends {
     readonly [key: string]: any;
 }> {
     has(fieldName: keyof TScalarType): boolean;
     get<TFieldName extends keyof TScalarType & string>(fieldName: TFieldName): TScalarType[TFieldName];
+    toString(): string;
 }
 export declare type PositionType = number | "start" | "end";
 export interface Network {

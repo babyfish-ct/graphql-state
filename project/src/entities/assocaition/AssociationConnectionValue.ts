@@ -1,12 +1,18 @@
+import { ScalarRow } from "../..";
+import { PositionType } from "../../meta/Configuration";
 import { EntityManager } from "../EntityManager";
 import { objectWithOnlyId, Record } from "../Record";
 import { AssociationValue } from "./AssocaitionValue";
+import { toRecordMap } from "./util";
 
 export class AssociationConnectionValue extends AssociationValue {
 
-    private connection: RecordConnection;
+    private connection?: RecordConnection;
 
     getAsObject(): ObjectConnection {
+        if (this.connection === undefined) {
+            throw new Error("Internal bug: connection cannot be undefined");
+        }
         return {
             ...this.connection,
             edges: this.connection.edges.map(edge => {
@@ -19,6 +25,9 @@ export class AssociationConnectionValue extends AssociationValue {
     }
 
     get(): RecordConnection {
+        if (this.connection === undefined) {
+            throw new Error("Internal bug: connection cannot be undefined");
+        }
         return this.connection;
     }
 
@@ -41,6 +50,7 @@ export class AssociationConnectionValue extends AssociationValue {
 
         const newIds = new Set<any>();
         const newEdges: Array<RecordEdge> = [];
+        const position = this.association.field.associationProperties!.position;
         for (const edge of value.edges) {
             if (typeof edge.node !== "object") {
                 throw Error(`Each edge object for the connection "${association.field.fullName}" must have an object field named "node"`);
@@ -50,10 +60,20 @@ export class AssociationConnectionValue extends AssociationValue {
             }
             const newNode = entityManager.saveId(association.field.targetType!.name, edge.node.id);
             newIds.add(newNode.id);
-            newEdges.push({
-                node: newNode, 
-                cursor: edge.cursor
-            });
+            try {
+                appendTo(
+                    newEdges,
+                    newNode, 
+                    edge.cursor,
+                    position
+                );
+            } catch (ex) {
+                if (!ex[" $evict"]) {
+                    throw ex;
+                }
+                this.evict(entityManager);
+                return;
+            }
         }
 
         for (const [id, node] of oldMap) {
@@ -86,19 +106,75 @@ export class AssociationConnectionValue extends AssociationValue {
         entityManager: EntityManager, 
         target: Record | ReadonlyArray<Record>
     ): void {
-        // TODO: link
+        if (this.connection === undefined) {
+            throw new Error("Internal bug: connection cannot be undefined");
+        }
+        const edges = [...this.connection.edges];
+        const nodeMap = toNodeMap(edges);
+        const linkMap = toRecordMap(Array.isArray(target) ? target : [target]);
+        const position = this.association.field.associationProperties!.position;
+        for (const record of linkMap.values()) {
+            if (!nodeMap.has(record.id)) {
+                try {
+                    appendTo(edges, record, undefined, position);
+                } catch (ex) {
+                    if (!ex[" $evict"]) {
+                        throw ex;
+                    }
+                    this.evict(entityManager);
+                    return;
+                }
+            }
+        }
+        if (edges.length !== this.connection.edges.length) {
+            this.association.set(
+                entityManager,
+                this.args,
+                {
+                    ...this.connection,
+                    edges
+                }
+            );
+        }
     }
 
     unlink(
         entityManager: EntityManager, 
         target: Record | ReadonlyArray<Record>
     ) {
-        // TODO: link
+        if (this.connection === undefined) {
+            throw new Error("Internal bug: connection cannot be undefined");
+        }
+        const edges = [...this.connection.edges];
+        const elementMap = toNodeMap(edges);
+        const unlinkMap = toRecordMap(Array.isArray(target) ? target : [target]);
+        for (const record of unlinkMap.values()) {
+            if (elementMap.has(record.id)) {
+                const index = edges.findIndex(edge => edge.node.id === record.id);
+                edges.splice(index, 1);
+            }
+        }
+        if (edges.length !== this.connection.edges.length) {
+            this.association.set(
+                entityManager,
+                this.args,
+                {
+                    ...this.connection,
+                    edges
+                }
+            );
+        }
     }
 
     contains(target: Record): boolean {
-        // TODO: contains
-        throw new Error();
+        if (this.connection !== undefined) {
+            for (const edge of this.connection.edges) {
+                if (edge.node.id === target.id) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private validate(value: ObjectConnection) {
@@ -210,4 +286,37 @@ export interface PageInfo {
     hasPreviousPage: boolean;
     startCursor: string;
     endCursor: string;
+}
+
+function toNodeMap(edges: ReadonlyArray<RecordEdge>) {
+    const map = new Map<any, Record>();
+    for (const edge of edges) {
+        map.set(edge.node.id, edge.node);
+    }
+    return map;
+}
+
+function appendTo(
+    newEdges: Array<RecordEdge>, 
+    newNode: Record,
+    newCursor: string | undefined,
+    position: (
+        row: ScalarRow<any>,
+        rows: ReadonlyArray<ScalarRow<any>>,
+        variables?: any
+    ) => PositionType | undefined
+) {
+    const pos = newEdges.length === 0 ? 
+        0 : 
+        position(newNode.toRow(), newEdges.map(e => e.node.toRow()), this.args?.variables);
+    if (pos === undefined) {
+        throw { " $evict": true };
+    }
+    const index = pos === "start" ? 0 : pos === "end" ? newEdges.length : pos;
+    const cursor = newCursor ?? "";
+    if (index >= newEdges.length) {
+        newEdges.push({node: newNode, cursor });
+    } else {
+        newEdges.splice(Math.max(0, index), 0, { node: newNode, cursor });
+    }
 }
