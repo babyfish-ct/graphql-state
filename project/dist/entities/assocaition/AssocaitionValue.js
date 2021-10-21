@@ -81,11 +81,11 @@ class AssociationValue {
                         }
                     }
                     const result = (_a = this.association.field.associationProperties) === null || _a === void 0 ? void 0 : _a.contains(new Record_1.ScalarRowImpl(map), (_b = this.args) === null || _b === void 0 ? void 0 : _b.variables);
-                    if (result === true) {
-                        this.link(entityManager, ref.value);
+                    if (result === false) {
+                        this.unlink(entityManager, ref.value);
                         return;
                     }
-                    // Don't excute 'unlink' when result is false, 
+                    // Don't excute 'link' when result is true, 
                     // that will indirectly lead to too many unnecessary data modifications
                 }
             }

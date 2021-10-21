@@ -202,18 +202,6 @@ export const QUERY_OBJECT_ID = "____QUERY_OBJECT____";
 
 export const MUATION_OBJECT_ID = "____MUTATION_OBJECT____";
 
-export function toRecordMap(arr: ReadonlyArray<Record | undefined> | undefined): Map<any, Record> {
-    const map = new Map<any, Record>();
-    if (arr !== undefined) {
-        for (const element of arr) {
-            if (element !== undefined) {
-                map.set(element.id, element);
-            }
-        }
-    }
-    return map;
-}
-
 export function objectWithOnlyId(record: Record | undefined): any {
     if (record === undefined) {
         return undefined;

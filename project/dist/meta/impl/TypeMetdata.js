@@ -101,7 +101,7 @@ class TypeMetadata {
                 for (const [name, field] of this._declaredFieldMap) {
                     const baseField = fieldMap.get(name);
                     if (baseField !== undefined) {
-                        throw new Error(`The filed "${field.fullName}" overrides "${baseField.fullName}", overridden is forbidden`);
+                        throw new Error(`The field "${field.fullName}" overrides "${baseField.fullName}", overridden is forbidden`);
                     }
                     fieldMap.set(name, field);
                 }
@@ -154,6 +154,13 @@ class TypeMetadata {
             if (this._idField !== undefined) {
                 throw new Error(`Cannot add id field into "${this.name}" because its id field is already specified`);
             }
+        }
+        if (this.name !== "Query" &&
+            this.name !== "Mutation" &&
+            field.argGraphQLTypeMap.size !== 0 &&
+            field.category !== "LIST" &&
+            field.category !== "CONNECTION") {
+            throw new Error(`Illegal field ${this.name}.${field.name}, arguments can only be supported by list or connection`);
         }
         const fieldMetadata = new FieldMetadata_1.FieldMetadata(this, field);
         this._declaredFieldMap.set(fieldMetadata.name, fieldMetadata);

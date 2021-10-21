@@ -33,7 +33,7 @@ class FieldMetadata {
         if (connectionMetadata === undefined) {
             throw new Error(`Illegal connection field "${this.fullName}", its connection type "${this._connectionType}" is not exists`);
         }
-        if (connectionMetadata.category !== "OBJECT") {
+        if (connectionMetadata.category !== "CONNECTION") {
             throw new Error(`Illegal connection field "${this.fullName}", the category of its target type "${this._connectionType}" is not "CONNECTION"`);
         }
         this._connectionType = connectionMetadata;

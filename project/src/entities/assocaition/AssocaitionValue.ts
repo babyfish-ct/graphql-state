@@ -134,11 +134,11 @@ export abstract class AssociationValue {
                         new ScalarRowImpl(map),
                         this.args?.variables
                     );
-                    if (result === true) {
-                        this.link(entityManager, ref.value);
+                    if (result === false) {
+                        this.unlink(entityManager, ref.value);
                         return;
                     }
-                    // Don't excute 'unlink' when result is false, 
+                    // Don't excute 'link' when result is true, 
                     // that will indirectly lead to too many unnecessary data modifications
                 }
             }

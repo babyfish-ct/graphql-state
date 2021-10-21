@@ -19,12 +19,12 @@ export class AssociationReferenceValue extends AssociationValue {
         value: any
     ) {
         const association = this.association;
+        const oldReference = this.referfence;
         const reference = 
             value !== undefined && value !== null ? 
             entityManager.saveId(association.field.targetType!.name, value[association.field.targetType!.idField.name]) : 
             undefined;
-
-        const oldReference = this.referfence;
+    
         if (oldReference?.id !== reference?.id) {
             this.releaseOldReference(entityManager, oldReference);
             this.referfence = reference;

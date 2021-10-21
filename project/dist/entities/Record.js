@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ScalarRowImpl = exports.objectWithOnlyId = exports.toRecordMap = exports.MUATION_OBJECT_ID = exports.QUERY_OBJECT_ID = exports.Record = void 0;
+exports.ScalarRowImpl = exports.objectWithOnlyId = exports.MUATION_OBJECT_ID = exports.QUERY_OBJECT_ID = exports.Record = void 0;
 const SpaceSavingMap_1 = require("../state/impl/SpaceSavingMap");
 const Association_1 = require("./assocaition/Association");
 const BackReferences_1 = require("./BackReferences");
@@ -148,18 +148,6 @@ class Record {
 exports.Record = Record;
 exports.QUERY_OBJECT_ID = "____QUERY_OBJECT____";
 exports.MUATION_OBJECT_ID = "____MUTATION_OBJECT____";
-function toRecordMap(arr) {
-    const map = new Map();
-    if (arr !== undefined) {
-        for (const element of arr) {
-            if (element !== undefined) {
-                map.set(element.id, element);
-            }
-        }
-    }
-    return map;
-}
-exports.toRecordMap = toRecordMap;
 function objectWithOnlyId(record) {
     if (record === undefined) {
         return undefined;

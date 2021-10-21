@@ -1,6 +1,6 @@
 import { PositionType, ScalarRow } from "../../meta/Configuration";
 import { EntityManager } from "../EntityManager";
-import { objectWithOnlyId, Record, toRecordMap } from "../Record";
+import { objectWithOnlyId, Record } from "../Record";
 import { AssociationValue } from "./AssocaitionValue";
 
 export class AssociationListValue extends AssociationValue {
@@ -17,31 +17,20 @@ export class AssociationListValue extends AssociationValue {
 
     set(
         entityManager: EntityManager, 
-        value: any
+        value: ReadonlyArray<any>
     ) {
-        const association = this.association;
-        let listChanged = (this.elements?.length ?? 0) !== (value?.length ?? 0);
-        if (!listChanged) {
-            const idFieldName = association.field.targetType!.idField.name;
-            for (let i = (value?.length ?? 0) - 1; i >= 0; --i) {
-                const oldId = this.elements !== undefined ? 
-                    this.elements[i]?.id :
-                    undefined
-                ;
-                const newId = value[i] !== undefined && value[i] !== null ?
-                    value[i][idFieldName] :
-                    undefined
-                ;
-                if (oldId !== newId) {
-                    listChanged = true;
-                    break;
-                }
-            }
+        this.validate(value);
+        if (this.valueEquals(value)) {
+            return;
         }
-        const oldValueForTriggger = listChanged ? this.elements?.map(objectWithOnlyId) : undefined;
+        const oldValueForTriggger = this.getAsObject();
 
-        const oldMap = toRecordMap(this.elements);
+        const oldMap = new Map<string, Record>();
+        this.elements?.map(element => {
+            oldMap.set(element.id, element);
+        });
 
+        const association = this.association;
         const newIds = new Set<any>();
         const newElements: Array<Record> = [];
         if (Array.isArray(value)) {
@@ -72,22 +61,18 @@ export class AssociationListValue extends AssociationValue {
         this.elements = newElements.length === 0 ? undefined : newElements;
 
         for (const newElement of newElements) {
-            if (newElement !== undefined) {
-                if (!oldMap.has(newElement.id)) {
-                    this.retainNewReference(entityManager, newElement);
-                }
+            if (!oldMap.has(newElement.id)) {
+                this.retainNewReference(entityManager, newElement);
             }
         }
 
-        if (listChanged) {
-            entityManager.modificationContext.set(
-                this.association.record, 
-                association.field.name, 
-                this.args, 
-                oldValueForTriggger, 
-                this.elements?.map(objectWithOnlyId)
-            );
-        }
+        entityManager.modificationContext.set(
+            this.association.record, 
+            association.field.name, 
+            this.args, 
+            oldValueForTriggger, 
+            this.getAsObject()
+        );
     }
 
     link(
@@ -143,6 +128,47 @@ export class AssociationListValue extends AssociationValue {
         }
         return false;
     }
+
+    private validate(
+        newList: ReadonlyArray<any> | undefined
+    ) {
+        if (newList !== undefined && newList !== null) {
+            if (!Array.isArray(newList)) {
+                throw new Error(`The assocaition ${this.association.field.fullName} can only accept array`);
+            }
+            const idFieldName = this.association.field.targetType!.idField.name;
+            for (const element of newList) {
+                if (element === undefined) {
+                    throw new Error(`The element of the array "${this.association.field.fullName}" cannot be undefined or null`);
+                }
+                if (element[idFieldName] === undefined || element[idFieldName] === null) {
+                    throw new Error(`The element of the array "${this.association.field.fullName}" must support id field "${idFieldName}"`);
+                }
+            }
+        }
+    }
+
+    private valueEquals(
+        newList: ReadonlyArray<any> | undefined
+    ): boolean {
+        if ((this.elements?.length ?? 0) !== (newList?.length ?? 0)) {
+            return false;
+        }
+        const idFieldName = this.association.field.targetType!.idField.name;
+        for (let i = (newList?.length ?? 0) - 1; i >= 0; --i) {
+            const oldId = this.elements !== undefined ? 
+                this.elements[i].id :
+                undefined
+            ;
+            const newId = newList !== undefined ? 
+                newList[i][idFieldName] : 
+                undefined;
+            if (oldId !== newId) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
 
 function appendTo(
@@ -166,4 +192,14 @@ function appendTo(
     } else {
         newElements.splice(Math.max(0, index), 0, newElement);
     }
+}
+
+function toRecordMap(arr: ReadonlyArray<Record> | undefined): Map<any, Record> {
+    const map = new Map<any, Record>();
+    if (arr !== undefined) {
+        for (const element of arr) {
+            map.set(element.id, element);
+        }
+    }
+    return map;
 }
