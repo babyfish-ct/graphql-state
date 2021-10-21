@@ -12,11 +12,9 @@ export declare abstract class AssociationValue {
     abstract getAsObject(): any | ReadonlyArray<any> | ObjectConnection | undefined;
     abstract get(): Record | ReadonlyArray<Record> | RecordConnection | undefined;
     abstract set(entityManager: EntityManager, value: any): void;
-    abstract link(entityManager: EntityManager, target: Record | ReadonlyArray<Record>): void;
-    abstract unlink(entityManager: EntityManager, target: Record | ReadonlyArray<Record>): void;
+    abstract link(entityManager: EntityManager, targets: ReadonlyArray<Record>): void;
+    abstract unlink(entityManager: EntityManager, targets: ReadonlyArray<Record>): void;
     abstract contains(target: Record): boolean;
-    containsAll(target: Record | ReadonlyArray<Record>): boolean;
-    containsNone(target: Record | ReadonlyArray<Record>): boolean;
     protected releaseOldReference(entityManager: EntityManager, oldReference: Record | undefined): void;
     protected retainNewReference(entityManager: EntityManager, newReference: Record | undefined): void;
     dispose(entityManager: EntityManager): void;

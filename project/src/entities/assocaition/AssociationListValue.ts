@@ -83,11 +83,11 @@ export class AssociationListValue extends AssociationValue {
 
     link(
         entityManager: EntityManager, 
-        target: Record | ReadonlyArray<Record>
+        targets: ReadonlyArray<Record>
     ) {
         const elements = this.elements !== undefined ? [...this.elements] : [];
         const elementMap = toRecordMap(elements);
-        const linkMap = toRecordMap(Array.isArray(target) ? target : [target]);
+        const linkMap = toRecordMap(targets);
         const position = this.association.field.associationProperties!.position;
         for (const record of linkMap.values()) {
             if (!elementMap.has(record.id)) {
@@ -113,11 +113,11 @@ export class AssociationListValue extends AssociationValue {
 
     unlink(
         entityManager: EntityManager, 
-        target: Record | ReadonlyArray<Record>
+        targets: ReadonlyArray<Record>
     ) {
         const elements = this.elements !== undefined ? [...this.elements] : [];
         const elementMap = toRecordMap(elements);
-        const unlinkMap = toRecordMap(Array.isArray(target) ? target : [target]);
+        const unlinkMap = toRecordMap(targets);
         for (const record of unlinkMap.values()) {
             if (elementMap.has(record.id)) {
                 const index = elements.findIndex(element => element.id === record.id);

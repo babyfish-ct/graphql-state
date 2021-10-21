@@ -74,16 +74,17 @@ class Association {
                 if (insideModification && (mostStringentArgs === null || mostStringentArgs === void 0 ? void 0 : mostStringentArgs.key) === ((_a = value.args) === null || _a === void 0 ? void 0 : _a.key)) {
                     return;
                 }
-                if (value.containsAll(target)) {
+                const possibleRecords = (Array.isArray(target) ? target : [target])
+                    .filter(target => !value.contains(target));
+                if (possibleRecords.length === 0) {
                     return;
                 }
                 if (VariableArgs_1.VariableArgs.contains(mostStringentArgs, value.args)) {
-                    value.link(entityManager, target);
+                    value.link(entityManager, possibleRecords);
                 }
                 else {
                     const contains = this.field.associationProperties.contains;
-                    const possibleRecords = Array.isArray(target) ? target : [target];
-                    const targetRecords = [];
+                    const exactRecords = [];
                     let evict = false;
                     for (const possibleRecord of possibleRecords) {
                         const result = contains(possibleRecord.toRow(), (_b = value.args) === null || _b === void 0 ? void 0 : _b.variables);
@@ -92,14 +93,14 @@ class Association {
                             break;
                         }
                         if (result === true) {
-                            targetRecords.push(possibleRecord);
+                            exactRecords.push(possibleRecord);
                         }
                     }
                     if (evict) {
                         this.evict(entityManager, value.args, false);
                     }
-                    else if (targetRecords.length !== 0) {
-                        value.link(entityManager, targetRecords);
+                    else if (exactRecords.length !== 0) {
+                        value.link(entityManager, exactRecords);
                     }
                 }
             });
@@ -113,16 +114,17 @@ class Association {
                 if (insideModification && (leastStringentArgs === null || leastStringentArgs === void 0 ? void 0 : leastStringentArgs.key) === ((_a = value.args) === null || _a === void 0 ? void 0 : _a.key)) {
                     return;
                 }
-                if (value.containsNone(target)) {
+                const possibleRecords = (Array.isArray(target) ? target : [target])
+                    .filter(target => value.contains(target));
+                if (possibleRecords.length === 0) {
                     return;
                 }
                 if (VariableArgs_1.VariableArgs.contains(value.args, leastStringentArgs)) {
-                    value.unlink(entityManager, target);
+                    value.unlink(entityManager, possibleRecords);
                 }
                 else {
                     const contains = this.field.associationProperties.contains;
-                    const possibleRecords = Array.isArray(target) ? target : [target];
-                    const targetRecords = [];
+                    const exactRecords = [];
                     let evict = false;
                     for (const possibleRecord of possibleRecords) {
                         const result = contains(possibleRecord.toRow(), (_b = value.args) === null || _b === void 0 ? void 0 : _b.variables);
@@ -131,14 +133,14 @@ class Association {
                             break;
                         }
                         if (result === false) {
-                            targetRecords.push(possibleRecord);
+                            exactRecords.push(possibleRecord);
                         }
                     }
                     if (evict) {
                         this.evict(entityManager, value.args, false);
                     }
-                    else if (targetRecords.length !== 0) {
-                        value.unlink(entityManager, targetRecords);
+                    else if (exactRecords.length !== 0) {
+                        value.unlink(entityManager, exactRecords);
                     }
                 }
             });
@@ -148,7 +150,7 @@ class Association {
         this.changeLinks(() => {
             entityManager.modificationContext.update(this.record);
             this.valueMap.forEachValue(value => {
-                value.unlink(entityManager, target);
+                value.unlink(entityManager, [target]);
             });
         });
     }

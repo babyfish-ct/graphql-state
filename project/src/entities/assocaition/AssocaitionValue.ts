@@ -33,40 +33,15 @@ export abstract class AssociationValue {
 
     abstract link(
         entityManager: EntityManager, 
-        target: Record | ReadonlyArray<Record>
+        targets: ReadonlyArray<Record>
     ): void;
 
     abstract unlink(
         entityManager: EntityManager, 
-        target: Record | ReadonlyArray<Record>
+        targets: ReadonlyArray<Record>
     ): void;
 
     abstract contains(target: Record): boolean;
-
-    containsAll(target: Record | ReadonlyArray<Record>) {
-        if (Array.isArray(target)) {
-            for (const tgt of target) {
-                if (!this.contains(tgt)) {
-                    return false;
-                }
-            }
-            return true;
-        }
-        return this.contains(target as Record);
-    }
-
-    containsNone(target: Record | ReadonlyArray<Record>) {
-        if (Array.isArray(target)) {
-            for (const tgt of target) {
-                if (this.contains(tgt)) {
-                    return false;
-                }
-            }
-            return true;
-        }
-        return !this.contains(target as Record);
-    }
-
 
     protected releaseOldReference(
         entityManager: EntityManager,
@@ -162,10 +137,12 @@ export abstract class AssociationValue {
                         this.args?.variables
                     );
                     if (result === true) {
+                        // Cannot invoke "this.link" directly
                         this.association.link(entityManager, ref.value, this.args);
                         return;
                     }
                     if (result === false) {
+                        // Cannot invoke "this.unlink" directly
                         this.association.unlink(entityManager, ref.value, this.args);
                         return;
                     }

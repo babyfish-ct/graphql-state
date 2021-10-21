@@ -107,14 +107,14 @@ export class AssociationConnectionValue extends AssociationValue {
 
     link(
         entityManager: EntityManager, 
-        target: Record | ReadonlyArray<Record>
+        targets: ReadonlyArray<Record>
     ): void {
         if (this.connection === undefined) {
             throw new Error("Internal bug: connection cannot be undefined");
         }
         const edges = [...this.connection.edges];
         const nodeMap = toNodeMap(edges);
-        const linkMap = toRecordMap(Array.isArray(target) ? target : [target]);
+        const linkMap = toRecordMap(targets);
         const position = this.association.field.associationProperties!.position;
         for (const record of linkMap.values()) {
             if (!nodeMap.has(record.id)) {
@@ -143,14 +143,14 @@ export class AssociationConnectionValue extends AssociationValue {
 
     unlink(
         entityManager: EntityManager, 
-        target: Record | ReadonlyArray<Record>
+        targets: ReadonlyArray<Record>
     ) {
         if (this.connection === undefined) {
             throw new Error("Internal bug: connection cannot be undefined");
         }
         const edges = [...this.connection.edges];
         const elementMap = toNodeMap(edges);
-        const unlinkMap = toRecordMap(Array.isArray(target) ? target : [target]);
+        const unlinkMap = toRecordMap(targets);
         for (const record of unlinkMap.values()) {
             if (elementMap.has(record.id)) {
                 const index = edges.findIndex(edge => edge.node.id === record.id);

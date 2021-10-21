@@ -12,28 +12,6 @@ class AssociationValue {
             entityManager.addAssociationValueObserver(this);
         }
     }
-    containsAll(target) {
-        if (Array.isArray(target)) {
-            for (const tgt of target) {
-                if (!this.contains(tgt)) {
-                    return false;
-                }
-            }
-            return true;
-        }
-        return this.contains(target);
-    }
-    containsNone(target) {
-        if (Array.isArray(target)) {
-            for (const tgt of target) {
-                if (this.contains(tgt)) {
-                    return false;
-                }
-            }
-            return true;
-        }
-        return !this.contains(target);
-    }
     releaseOldReference(entityManager, oldReference) {
         const self = this.association.record;
         if (oldReference !== undefined) {
@@ -104,10 +82,12 @@ class AssociationValue {
                     }
                     const result = (_a = this.association.field.associationProperties) === null || _a === void 0 ? void 0 : _a.contains(new Record_1.ScalarRowImpl(map), (_b = this.args) === null || _b === void 0 ? void 0 : _b.variables);
                     if (result === true) {
+                        // Cannot invoke "this.link" directly
                         this.association.link(entityManager, ref.value, this.args);
                         return;
                     }
                     if (result === false) {
+                        // Cannot invoke "this.unlink" directly
                         this.association.unlink(entityManager, ref.value, this.args);
                         return;
                     }

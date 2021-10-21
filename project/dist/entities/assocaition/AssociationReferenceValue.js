@@ -23,41 +23,29 @@ class AssociationReferenceValue extends AssocaitionValue_1.AssociationValue {
             entityManager.modificationContext.set(this.association.record, association.field.name, this.args, Record_1.objectWithOnlyId(oldReference), Record_1.objectWithOnlyId(reference));
         }
     }
-    link(entityManager, target) {
+    link(entityManager, targets) {
         var _a;
-        let targetRecord;
-        if (Array.isArray(target)) {
-            if (target.length === 0) {
-                return;
-            }
-            if (target.length > 1) {
-                throw new Error(`Internal bug: Cannot link AbstractReerenceValue with array whose length is greater than 1`);
-            }
-            targetRecord = target.length === 1 ? target[0] : undefined;
+        if (targets.length === 0) {
+            return;
         }
-        else {
-            targetRecord = target;
+        if (targets.length > 1) {
+            throw new Error(`Internal bug: Cannot link AbstractReerenceValue with array whose length is greater than 1`);
         }
+        const targetRecord = targets.length === 1 ? targets[0] : undefined;
         if (((_a = this.referfence) === null || _a === void 0 ? void 0 : _a.id) !== (targetRecord === null || targetRecord === void 0 ? void 0 : targetRecord.id)) {
             this.association.set(entityManager, this.args, Record_1.objectWithOnlyId(targetRecord));
         }
     }
-    unlink(entityManager, target) {
+    unlink(entityManager, targets) {
         var _a;
-        let targetRecord;
-        if (Array.isArray(target)) {
-            if (target.length === 0) {
-                return;
-            }
-            if (target.length > 1) {
-                throw new Error(`Internal bug: Cannot unlink AbstractReerenceValue with array whose length is greater than 1`);
-            }
-            targetRecord = target.length === 1 ? target[0] : undefined;
+        if (targets.length === 0) {
+            return;
         }
-        else {
-            targetRecord = target;
+        if (targets.length > 1) {
+            throw new Error(`Internal bug: Cannot link AbstractReerenceValue with array whose length is greater than 1`);
         }
-        if (((_a = this.referfence) === null || _a === void 0 ? void 0 : _a.id) === targetRecord.id) {
+        const targetRecord = targets.length === 1 ? targets[0] : undefined;
+        if (((_a = this.referfence) === null || _a === void 0 ? void 0 : _a.id) === (targetRecord === null || targetRecord === void 0 ? void 0 : targetRecord.id)) {
             this.association.set(entityManager, this.args, undefined);
         }
     }

@@ -6,7 +6,7 @@ export declare class AssociationReferenceValue extends AssociationValue {
     getAsObject(): any | undefined;
     get(): Record | undefined;
     set(entityManager: EntityManager, value: any): void;
-    link(entityManager: EntityManager, target: Record | ReadonlyArray<Record>): void;
-    unlink(entityManager: EntityManager, target: Record | ReadonlyArray<Record>): void;
+    link(entityManager: EntityManager, targets: ReadonlyArray<Record>): void;
+    unlink(entityManager: EntityManager, targets: ReadonlyArray<Record>): void;
     contains(target: Record): boolean;
 }

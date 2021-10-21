@@ -7,8 +7,8 @@ export declare class AssociationConnectionValue extends AssociationValue {
     getAsObject(): ObjectConnection;
     get(): RecordConnection;
     set(entityManager: EntityManager, value: ObjectConnection): void;
-    link(entityManager: EntityManager, target: Record | ReadonlyArray<Record>): void;
-    unlink(entityManager: EntityManager, target: Record | ReadonlyArray<Record>): void;
+    link(entityManager: EntityManager, targets: ReadonlyArray<Record>): void;
+    unlink(entityManager: EntityManager, targets: ReadonlyArray<Record>): void;
     contains(target: Record): boolean;
     private validate;
     private valueEquals;

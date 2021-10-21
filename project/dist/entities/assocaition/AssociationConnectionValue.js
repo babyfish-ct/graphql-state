@@ -68,13 +68,13 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
         }
         entityManager.modificationContext.set(this.association.record, association.field.name, this.args, oldValueForTriggger, this.getAsObject());
     }
-    link(entityManager, target) {
+    link(entityManager, targets) {
         if (this.connection === undefined) {
             throw new Error("Internal bug: connection cannot be undefined");
         }
         const edges = [...this.connection.edges];
         const nodeMap = toNodeMap(edges);
-        const linkMap = util_1.toRecordMap(Array.isArray(target) ? target : [target]);
+        const linkMap = util_1.toRecordMap(targets);
         const position = this.association.field.associationProperties.position;
         for (const record of linkMap.values()) {
             if (!nodeMap.has(record.id)) {
@@ -94,13 +94,13 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
             this.association.set(entityManager, this.args, Object.assign(Object.assign({}, this.connection), { edges }));
         }
     }
-    unlink(entityManager, target) {
+    unlink(entityManager, targets) {
         if (this.connection === undefined) {
             throw new Error("Internal bug: connection cannot be undefined");
         }
         const edges = [...this.connection.edges];
         const elementMap = toNodeMap(edges);
-        const unlinkMap = util_1.toRecordMap(Array.isArray(target) ? target : [target]);
+        const unlinkMap = util_1.toRecordMap(targets);
         for (const record of unlinkMap.values()) {
             if (elementMap.has(record.id)) {
                 const index = edges.findIndex(edge => edge.node.id === record.id);

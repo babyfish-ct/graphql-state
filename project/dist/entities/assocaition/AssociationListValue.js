@@ -62,11 +62,11 @@ class AssociationListValue extends AssocaitionValue_1.AssociationValue {
         }
         entityManager.modificationContext.set(this.association.record, association.field.name, this.args, oldValueForTriggger, this.getAsObject());
     }
-    link(entityManager, target) {
+    link(entityManager, targets) {
         var _a, _b;
         const elements = this.elements !== undefined ? [...this.elements] : [];
         const elementMap = util_1.toRecordMap(elements);
-        const linkMap = util_1.toRecordMap(Array.isArray(target) ? target : [target]);
+        const linkMap = util_1.toRecordMap(targets);
         const position = this.association.field.associationProperties.position;
         for (const record of linkMap.values()) {
             if (!elementMap.has(record.id)) {
@@ -86,11 +86,11 @@ class AssociationListValue extends AssocaitionValue_1.AssociationValue {
             this.association.set(entityManager, this.args, elements.map(Record_1.objectWithOnlyId));
         }
     }
-    unlink(entityManager, target) {
+    unlink(entityManager, targets) {
         var _a, _b;
         const elements = this.elements !== undefined ? [...this.elements] : [];
         const elementMap = util_1.toRecordMap(elements);
-        const unlinkMap = util_1.toRecordMap(Array.isArray(target) ? target : [target]);
+        const unlinkMap = util_1.toRecordMap(targets);
         for (const record of unlinkMap.values()) {
             if (elementMap.has(record.id)) {
                 const index = elements.findIndex(element => element.id === record.id);

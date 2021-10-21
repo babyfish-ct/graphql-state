@@ -95,15 +95,17 @@ export class Association {
                 if (insideModification && mostStringentArgs?.key === value.args?.key) {
                     return;
                 }
-                if (value.containsAll(target)) {
+                const possibleRecords = 
+                    (Array.isArray(target) ? target : [target])
+                    .filter(target => !value.contains(target));
+                if (possibleRecords.length === 0) {
                     return;
                 }
                 if (VariableArgs.contains(mostStringentArgs, value.args)) {
-                    value.link(entityManager, target);
+                    value.link(entityManager, possibleRecords);
                 } else {
                     const contains = this.field.associationProperties!.contains;
-                    const possibleRecords = Array.isArray(target) ? target : [target];
-                    const targetRecords: Record[] = [];
+                    const exactRecords: Record[] = [];
                     let evict = false;
                     for (const possibleRecord of possibleRecords) {
                         const result = contains(possibleRecord.toRow(), value.args?.variables);
@@ -112,13 +114,13 @@ export class Association {
                             break;
                         }
                         if (result === true) {
-                            targetRecords.push(possibleRecord);
+                            exactRecords.push(possibleRecord);
                         }
                     }
                     if (evict) {
                         this.evict(entityManager, value.args, false);
-                    } else if (targetRecords.length !== 0) {
-                        value.link(entityManager, targetRecords);
+                    } else if (exactRecords.length !== 0) {
+                        value.link(entityManager, exactRecords);
                     }
                 }
             });
@@ -137,18 +139,20 @@ export class Association {
                 if (insideModification && leastStringentArgs?.key === value.args?.key) {
                     return;
                 }
-                if (value.containsNone(target)) {
+                const possibleRecords = 
+                    (Array.isArray(target) ? target : [target])
+                    .filter(target => value.contains(target));
+                if (possibleRecords.length === 0) {
                     return;
                 }
                 if (VariableArgs.contains(value.args, leastStringentArgs)) {
                     value.unlink(
                         entityManager, 
-                        target
+                        possibleRecords
                     );
                 } else {
                     const contains = this.field.associationProperties!.contains;
-                    const possibleRecords = Array.isArray(target) ? target : [target];
-                    const targetRecords: Record[] = [];
+                    const exactRecords: Record[] = [];
                     let evict = false;
                     for (const possibleRecord of possibleRecords) {
                         const result = contains(possibleRecord.toRow(), value.args?.variables);
@@ -157,13 +161,13 @@ export class Association {
                             break;
                         }
                         if (result === false) {
-                            targetRecords.push(possibleRecord);
+                            exactRecords.push(possibleRecord);
                         }
                     }
                     if (evict) {
                         this.evict(entityManager, value.args, false);
-                    } else if (targetRecords.length !== 0) {
-                        value.unlink(entityManager, targetRecords);
+                    } else if (exactRecords.length !== 0) {
+                        value.unlink(entityManager, exactRecords);
                     }
                 }
             });
@@ -179,7 +183,7 @@ export class Association {
             this.valueMap.forEachValue(value => {
                 value.unlink(
                     entityManager, 
-                    target
+                    [target]
                 );
             });
         });
