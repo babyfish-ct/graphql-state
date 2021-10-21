@@ -20,21 +20,18 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
         return this.connection;
     }
     set(entityManager, value) {
-        var _a, _b;
         const association = this.association;
         this.validate(value);
         if (this.valueEquals(value)) {
             return;
         }
         const oldValueForTriggger = this.getAsObject();
-        const oldMap = new Map();
-        (_b = (_a = this.connection) === null || _a === void 0 ? void 0 : _a.edges) === null || _b === void 0 ? void 0 : _b.forEach(edge => {
-            oldMap.set(edge.node.id, edge.node);
-        });
-        const newIds = new Set();
+        const oldIndexMap = this.indexMap;
+        const newIndexMap = new Map();
         const newEdges = [];
         const position = this.association.field.associationProperties.position;
-        for (const edge of value.edges) {
+        for (let i = 0; i < value.edges.length; i++) {
+            const edge = value.edges[i];
             if (typeof edge.node !== "object") {
                 throw Error(`Each edge object for the connection "${association.field.fullName}" must have an object field named "node"`);
             }
@@ -42,27 +39,22 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
                 throw Error(`Each edge object for the connection "${association.field.fullName}" must have an string field named "cursor"`);
             }
             const newNode = entityManager.saveId(association.field.targetType.name, edge.node.id);
-            newIds.add(newNode.id);
-            try {
-                appendTo(newEdges, newNode, edge.cursor, position);
-            }
-            catch (ex) {
-                if (!ex[" $evict"]) {
-                    throw ex;
-                }
-                this.evict(entityManager);
-                return;
+            if (!newIndexMap.has(newNode.id)) {
+                newEdges.push({ node: newNode, cursor: edge.cursor });
+                newIndexMap.set(newNode.id, i);
             }
         }
-        for (const [id, node] of oldMap) {
-            if (!newIds.has(id)) {
-                this.releaseOldReference(entityManager, node);
+        if (this.connection !== undefined) {
+            for (const oldEdge of this.connection.edges) {
+                if (!newIndexMap.has(oldEdge.node.id)) {
+                    this.releaseOldReference(entityManager, oldEdge.node);
+                }
             }
         }
         this.connection = Object.assign(Object.assign({}, value), { edges: newEdges });
-        this.ids = newIds;
+        this.indexMap = newIndexMap.size !== 0 ? newIndexMap : undefined;
         for (const newEdge of newEdges) {
-            if (!oldMap.has(newEdge.node.id)) {
+            if ((oldIndexMap === null || oldIndexMap === void 0 ? void 0 : oldIndexMap.has(newEdge.node.id)) !== true) {
                 this.retainNewReference(entityManager, newEdge.node);
             }
         }
@@ -73,13 +65,13 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
             throw new Error("Internal bug: connection cannot be undefined");
         }
         const edges = [...this.connection.edges];
-        const nodeMap = toNodeMap(edges);
+        const indexMap = this.indexMap;
         const linkMap = util_1.toRecordMap(targets);
         const position = this.association.field.associationProperties.position;
         for (const record of linkMap.values()) {
-            if (!nodeMap.has(record.id)) {
+            if ((indexMap === null || indexMap === void 0 ? void 0 : indexMap.has(record.id)) !== true) {
                 try {
-                    appendTo(edges, record, undefined, position);
+                    appendTo(edges, record, position);
                 }
                 catch (ex) {
                     if (!ex[" $evict"]) {
@@ -99,11 +91,11 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
             throw new Error("Internal bug: connection cannot be undefined");
         }
         const edges = [...this.connection.edges];
-        const elementMap = toNodeMap(edges);
+        const indexMap = this.indexMap;
         const unlinkMap = util_1.toRecordMap(targets);
         for (const record of unlinkMap.values()) {
-            if (elementMap.has(record.id)) {
-                const index = edges.findIndex(edge => edge.node.id === record.id);
+            const index = indexMap === null || indexMap === void 0 ? void 0 : indexMap.get(record.id);
+            if (index !== undefined) {
                 edges.splice(index, 1);
             }
         }
@@ -113,7 +105,7 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
     }
     contains(target) {
         var _a;
-        return ((_a = this.ids) === null || _a === void 0 ? void 0 : _a.has(target.id)) === true;
+        return ((_a = this.indexMap) === null || _a === void 0 ? void 0 : _a.has(target.id)) === true;
     }
     validate(value) {
         const association = this.association;
@@ -200,7 +192,7 @@ function toNodeMap(edges) {
     }
     return map;
 }
-function appendTo(newEdges, newNode, newCursor, position) {
+function appendTo(newEdges, newNode, position) {
     var _a;
     const pos = newEdges.length === 0 ?
         0 :
@@ -209,7 +201,7 @@ function appendTo(newEdges, newNode, newCursor, position) {
         throw { " $evict": true };
     }
     const index = pos === "start" ? 0 : pos === "end" ? newEdges.length : pos;
-    const cursor = newCursor !== null && newCursor !== void 0 ? newCursor : "";
+    const cursor = "";
     if (index >= newEdges.length) {
         newEdges.push({ node: newNode, cursor });
     }

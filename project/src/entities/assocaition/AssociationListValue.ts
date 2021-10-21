@@ -8,10 +8,10 @@ export class AssociationListValue extends AssociationValue {
 
     private elements?: Array<Record>;
 
-    private ids?: Set<any>;
+    private indexMap?: Map<any, number>;
 
-    getAsObject(): ReadonlyArray<any> | undefined {
-        return this.elements?.map(objectWithOnlyId);
+    getAsObject(): ReadonlyArray<any> {
+        return this.elements?.map(objectWithOnlyId) ?? [];
     }
 
     get(): ReadonlyArray<Record> {
@@ -28,46 +28,39 @@ export class AssociationListValue extends AssociationValue {
         }
         const oldValueForTriggger = this.getAsObject();
 
-        const oldMap = new Map<string, Record>();
-        this.elements?.map(element => {
-            oldMap.set(element.id, element);
-        });
-
+        const oldIndexMap = this.indexMap;
         const association = this.association;
-        const newIds = new Set<any>();
+        const newIndexMap = new Map<any, number>();
         const newElements: Array<Record> = [];
         if (Array.isArray(value)) {
             const idFieldName = association.field.targetType!.idField.name;
             const position = association.field.associationProperties!.position;
-            for (const item of value) {
+            for (let i = 0; i < value.length; i++) {
+                const item = value[i];
                 if (item === undefined || item === null) {
                     throw new Error(`Cannot add undfined/null element into ${association.field.fullName}`);
                 }
                 const newElement = entityManager.saveId(association.field.targetType!.name, item[idFieldName]);
-                newIds.add(newElement.id);
-                try {
-                    appendTo(newElements, newElement, position);
-                } catch (ex) {
-                    if (!ex[" $evict"]) {
-                        throw ex;
-                    }
-                    this.evict(entityManager);
-                    return;
+                if (!newIndexMap.has(newElement.id)) {
+                    newElements.push(newElement);
+                    newIndexMap.set(newElement.id, i);
                 }
             }
         }
 
-        for (const [id, element] of oldMap) {
-            if (!newIds.has(id)) {
-                this.releaseOldReference(entityManager, element);
+        if (this.elements !== undefined) {
+            for (const oldElement of this.elements) {
+                if (!newIndexMap.has(oldElement.id)) {
+                    this.releaseOldReference(entityManager, oldElement);
+                }
             }
         }
 
-        this.elements = newElements.length === 0 ? undefined : newElements;
-        this.ids = newIds;
+        this.elements = newElements;
+        this.indexMap = newIndexMap.size !== 0 ? newIndexMap : undefined;
 
         for (const newElement of newElements) {
-            if (!oldMap.has(newElement.id)) {
+            if (oldIndexMap?.has(newElement.id) !== true) {
                 this.retainNewReference(entityManager, newElement);
             }
         }
@@ -86,11 +79,11 @@ export class AssociationListValue extends AssociationValue {
         targets: ReadonlyArray<Record>
     ) {
         const elements = this.elements !== undefined ? [...this.elements] : [];
-        const elementMap = toRecordMap(elements);
+        const indexMap = this.indexMap;
         const linkMap = toRecordMap(targets);
         const position = this.association.field.associationProperties!.position;
         for (const record of linkMap.values()) {
-            if (!elementMap.has(record.id)) {
+            if (indexMap?.has(record.id) !== true) {
                 try {
                     appendTo(elements, record, position);
                 } catch (ex) {
@@ -116,11 +109,11 @@ export class AssociationListValue extends AssociationValue {
         targets: ReadonlyArray<Record>
     ) {
         const elements = this.elements !== undefined ? [...this.elements] : [];
-        const elementMap = toRecordMap(elements);
+        const indexMap = this.indexMap;
         const unlinkMap = toRecordMap(targets);
         for (const record of unlinkMap.values()) {
-            if (elementMap.has(record.id)) {
-                const index = elements.findIndex(element => element.id === record.id);
+            const index = indexMap?.get(record.id);
+            if (index !== undefined) {
                 elements.splice(index, 1);
             }
         }
@@ -134,7 +127,7 @@ export class AssociationListValue extends AssociationValue {
     }
 
     contains(target: Record): boolean {
-        return this.ids?.has(target.id) === true;
+        return this.indexMap?.has(target.id) === true;
     }
 
     private validate(

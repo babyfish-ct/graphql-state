@@ -6,57 +6,49 @@ const AssocaitionValue_1 = require("./AssocaitionValue");
 const util_1 = require("./util");
 class AssociationListValue extends AssocaitionValue_1.AssociationValue {
     getAsObject() {
-        var _a;
-        return (_a = this.elements) === null || _a === void 0 ? void 0 : _a.map(Record_1.objectWithOnlyId);
+        var _a, _b;
+        return (_b = (_a = this.elements) === null || _a === void 0 ? void 0 : _a.map(Record_1.objectWithOnlyId)) !== null && _b !== void 0 ? _b : [];
     }
     get() {
         var _a;
         return (_a = this.elements) !== null && _a !== void 0 ? _a : [];
     }
     set(entityManager, value) {
-        var _a;
         this.validate(value);
         if (this.valueEquals(value)) {
             return;
         }
         const oldValueForTriggger = this.getAsObject();
-        const oldMap = new Map();
-        (_a = this.elements) === null || _a === void 0 ? void 0 : _a.map(element => {
-            oldMap.set(element.id, element);
-        });
+        const oldIndexMap = this.indexMap;
         const association = this.association;
-        const newIds = new Set();
+        const newIndexMap = new Map();
         const newElements = [];
         if (Array.isArray(value)) {
             const idFieldName = association.field.targetType.idField.name;
             const position = association.field.associationProperties.position;
-            for (const item of value) {
+            for (let i = 0; i < value.length; i++) {
+                const item = value[i];
                 if (item === undefined || item === null) {
                     throw new Error(`Cannot add undfined/null element into ${association.field.fullName}`);
                 }
                 const newElement = entityManager.saveId(association.field.targetType.name, item[idFieldName]);
-                newIds.add(newElement.id);
-                try {
-                    appendTo(newElements, newElement, position);
-                }
-                catch (ex) {
-                    if (!ex[" $evict"]) {
-                        throw ex;
-                    }
-                    this.evict(entityManager);
-                    return;
+                if (!newIndexMap.has(newElement.id)) {
+                    newElements.push(newElement);
+                    newIndexMap.set(newElement.id, i);
                 }
             }
         }
-        for (const [id, element] of oldMap) {
-            if (!newIds.has(id)) {
-                this.releaseOldReference(entityManager, element);
+        if (this.elements !== undefined) {
+            for (const oldElement of this.elements) {
+                if (!newIndexMap.has(oldElement.id)) {
+                    this.releaseOldReference(entityManager, oldElement);
+                }
             }
         }
-        this.elements = newElements.length === 0 ? undefined : newElements;
-        this.ids = newIds;
+        this.elements = newElements;
+        this.indexMap = newIndexMap.size !== 0 ? newIndexMap : undefined;
         for (const newElement of newElements) {
-            if (!oldMap.has(newElement.id)) {
+            if ((oldIndexMap === null || oldIndexMap === void 0 ? void 0 : oldIndexMap.has(newElement.id)) !== true) {
                 this.retainNewReference(entityManager, newElement);
             }
         }
@@ -65,11 +57,11 @@ class AssociationListValue extends AssocaitionValue_1.AssociationValue {
     link(entityManager, targets) {
         var _a, _b;
         const elements = this.elements !== undefined ? [...this.elements] : [];
-        const elementMap = util_1.toRecordMap(elements);
+        const indexMap = this.indexMap;
         const linkMap = util_1.toRecordMap(targets);
         const position = this.association.field.associationProperties.position;
         for (const record of linkMap.values()) {
-            if (!elementMap.has(record.id)) {
+            if ((indexMap === null || indexMap === void 0 ? void 0 : indexMap.has(record.id)) !== true) {
                 try {
                     appendTo(elements, record, position);
                 }
@@ -89,11 +81,11 @@ class AssociationListValue extends AssocaitionValue_1.AssociationValue {
     unlink(entityManager, targets) {
         var _a, _b;
         const elements = this.elements !== undefined ? [...this.elements] : [];
-        const elementMap = util_1.toRecordMap(elements);
+        const indexMap = this.indexMap;
         const unlinkMap = util_1.toRecordMap(targets);
         for (const record of unlinkMap.values()) {
-            if (elementMap.has(record.id)) {
-                const index = elements.findIndex(element => element.id === record.id);
+            const index = indexMap === null || indexMap === void 0 ? void 0 : indexMap.get(record.id);
+            if (index !== undefined) {
                 elements.splice(index, 1);
             }
         }
@@ -103,7 +95,7 @@ class AssociationListValue extends AssocaitionValue_1.AssociationValue {
     }
     contains(target) {
         var _a;
-        return ((_a = this.ids) === null || _a === void 0 ? void 0 : _a.has(target.id)) === true;
+        return ((_a = this.indexMap) === null || _a === void 0 ? void 0 : _a.has(target.id)) === true;
     }
     validate(newList) {
         if (newList !== undefined && newList !== null) {
