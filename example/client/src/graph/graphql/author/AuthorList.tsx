@@ -4,7 +4,7 @@ import { ModelType, ParameterRef } from "graphql-ts-client-api";
 import { ChangeEvent, FC, memo, useCallback, useState } from "react";
 import { ComponentDecorator } from "../../../common/ComponentDecorator";
 import { DELETE_CONFIRM_CLASS, INFORMATION_CLASS } from "../Css";
-import { book$$, author$$, query$ } from "../__generated/fetchers";
+import { book$$, author$$, query$, authorConnection$, authorEdge$ } from "../__generated/fetchers";
 
 const AUTHOR_ROW =
     author$$
@@ -19,8 +19,12 @@ export const AuthorList: FC = memo(() => {
     const [bookName, setBookName] = useState<string>();
     const { data, loading } = useQuery(
         query$.findAuthors(
-            AUTHOR_ROW,
-            options => options.alias("authors")
+            authorConnection$.edges(
+                authorEdge$.node(
+                    AUTHOR_ROW
+                )
+            ),
+            options => options.alias("authorConnection")
         ),
         {
             asyncStyle: "ASYNC_OBJECT",
@@ -105,7 +109,7 @@ export const AuthorList: FC = memo(() => {
                 {
                     !loading && data &&
                     <>
-                        <Table rowKey="id" dataSource={data.authors} pagination={false}>
+                        <Table rowKey="id" dataSource={data.authorConnection.edges.map(edge => edge.node)} pagination={false}>
                             <Table.Column title="Name" dataIndex="name"/>
                             <Table.Column title="Books" render={renderBooks}/>
                             <Table.Column title="Operations" render={renderOperations}/>

@@ -15,21 +15,21 @@ export declare class AssociationConnectionValue extends AssociationValue {
 }
 export interface RecordConnection {
     readonly edges: ReadonlyArray<RecordEdge>;
-    readonly pageInfo: PageInfo;
+    readonly pageInfo?: PageInfo;
     readonly [key: string]: any;
 }
 export interface RecordEdge {
     readonly node: Record;
-    readonly cursor: string;
+    readonly cursor?: string;
 }
 export interface ObjectConnection {
     readonly edges: ReadonlyArray<ObjectEdge>;
-    readonly pageInfo: PageInfo;
+    readonly pageInfo?: PageInfo;
     readonly [key: string]: any;
 }
 export interface ObjectEdge {
     readonly node: any;
-    readonly cursor: string;
+    readonly cursor?: string;
 }
 export interface PageInfo {
     hasNextPage: boolean;

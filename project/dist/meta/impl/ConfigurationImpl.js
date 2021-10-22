@@ -32,7 +32,9 @@ class ConfigurationImpl {
     }
     buildStateManager() {
         for (const [name, type] of this._schema.typeMap) {
-            type.idField;
+            if (type.category === "OBJECT") {
+                type.idField;
+            }
         }
         return new StateManagerImpl_1.StateManagerImpl(this._schema, this._network);
     }

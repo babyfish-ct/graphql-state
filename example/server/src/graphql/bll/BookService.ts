@@ -1,18 +1,24 @@
-import { Arg, Mutation, Query } from "type-graphql";
+import { Arg, Int, Mutation, Query } from "type-graphql";
 import UUIDClass from "uuidjs";
 import { bookAuthorMappingTable } from "../../dal/BookAuthorMappingTable";
 import { bookTable, TBook } from "../../dal/BookTable";
 import { Predicate } from "../../dal/Table";
 import { delay } from "../../common/Delay";
-import { Book } from "../model/Book";
+import { Book, BookConnection, BookEdge } from "../model/Book";
 import { BookInput } from "../model/input/BookInput";
+import { compare } from "../../common/Comparator";
+import { createConnection } from "../../common/Connection";
 
 export class BookSerice {
 
-    @Query(() => [Book])
+    @Query(() => BookConnection)
     async findBooks(
-        @Arg("name", () => String, {nullable: true}) name?: string | null
-    ): Promise<Book[]> {
+        @Arg("name", () => String, {nullable: true}) name?: string | null,
+        @Arg("first", () => Int, {nullable: true}) first?: number | null,
+        @Arg("after", () => String, {nullable: true}) after?: string | null,
+        @Arg("last", () => Int, {nullable: true}) last?: number | null,
+        @Arg("before", () => String, {nullable: true}) before?: string | null
+    ): Promise<BookConnection> {
 
         /*
          * Mock the network delay
@@ -25,10 +31,20 @@ export class BookSerice {
             d => d.name.toLowerCase().indexOf(lowercaseName) !== -1 :
             undefined;
         
-        return bookTable
+        const books = bookTable
             .find([], predicate)
             .map(row => new Book(row))
-            .sort((a, b) => a.name > b.name ? + 1 : a.name < b.name ? -1 :0);
+            .sort((a, b) => compare(a.name, b.name));
+        return createConnection<BookConnection, BookEdge, Book>({
+            totalCount: books.length,
+            getNodes: (offset, count) => books.slice(offset, offset + count),
+            createConnection: (totalCount, edges, pageInfo) => new BookConnection(totalCount, edges, pageInfo),
+            createEdge: (node, cursor) => new BookEdge(node, cursor),
+            first,
+            after,
+            last,
+            before
+        });
     }
 
     @Mutation(() => Book)

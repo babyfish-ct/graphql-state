@@ -85,13 +85,16 @@ export class RecordManager {
                     value
                 );
                 if (value !== undefined && shapeField.childShape !== undefined) {
-                    const associationRecordManager = this.entityManager.recordManager(shapeField.childShape.typeName);
                     switch (field.category) {
                         case "REFERENCE":
-                            associationRecordManager.save(shapeField.childShape, value);
+                            this
+                            .entityManager
+                            .recordManager(shapeField.childShape.typeName)
+                            .save(shapeField.childShape, value);
                             break;
                         case "LIST":
                             if (Array.isArray(value)) {
+                                const associationRecordManager = this.entityManager.recordManager(shapeField.childShape.typeName);
                                 for (const element of value) {
                                     associationRecordManager.save(shapeField.childShape, element);
                                 }
@@ -100,8 +103,19 @@ export class RecordManager {
                         case "CONNECTION":
                             const edges = value.edges;
                             if (Array.isArray(edges)) {
-                                for (const edge of value) {
-                                    associationRecordManager.save(shapeField.childShape, edge.node);
+                                const nodeShape = shapeField
+                                    .childShape
+                                    ?.fieldMap
+                                    ?.get("edges")
+                                    ?.childShape
+                                    ?.fieldMap
+                                    ?.get("node")
+                                    ?.childShape;
+                                if (nodeShape !== undefined) {
+                                    const associationRecordManager = this.entityManager.recordManager(nodeShape.typeName);
+                                    for (const edge of edges) {
+                                        associationRecordManager.save(nodeShape, edge.node);
+                                    }
                                 }
                             }
                             break;

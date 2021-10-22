@@ -1,5 +1,5 @@
 import type { AcceptableVariables, UnresolvedVariables, FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
-import { ObjectFetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
+import { ObjectFetcher, ConnectionFetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
 
 /*
  * Any instance of this interface is immutable,
@@ -64,15 +64,15 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        child: ObjectFetcher<'Book', X, XVariables>, 
+        child: ConnectionFetcher<'BookConnection', X, XVariables>, 
         optionsConfigurer?: (
             options: FieldOptions<"findBooks", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): QueryFetcher<
         T & (
             XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-                {readonly [key in XAlias]?: readonly X[]} : 
-                {readonly [key in XAlias]: readonly X[]}
+                {readonly [key in XAlias]?: X} : 
+                {readonly [key in XAlias]: X}
         ), 
         TVariables & XVariables & QueryArgs["findBooks"] & XDirectiveVariables
     >;
@@ -86,15 +86,15 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
         XDirectiveVariables extends object = {}
     >(
         args: XArgs, 
-        child: ObjectFetcher<'Book', X, XVariables>, 
+        child: ConnectionFetcher<'BookConnection', X, XVariables>, 
         optionsConfigurer?: (
             options: FieldOptions<"findBooks", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): QueryFetcher<
         T & (
             XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-                {readonly [key in XAlias]?: readonly X[]} : 
-                {readonly [key in XAlias]: readonly X[]}
+                {readonly [key in XAlias]?: X} : 
+                {readonly [key in XAlias]: X}
         ), 
         TVariables & XVariables & UnresolvedVariables<XArgs, QueryArgs['findBooks']> & XDirectiveVariables
     >;
@@ -107,15 +107,15 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        child: ObjectFetcher<'Author', X, XVariables>, 
+        child: ConnectionFetcher<'AuthorConnection', X, XVariables>, 
         optionsConfigurer?: (
             options: FieldOptions<"findAuthors", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): QueryFetcher<
         T & (
             XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-                {readonly [key in XAlias]?: readonly X[]} : 
-                {readonly [key in XAlias]: readonly X[]}
+                {readonly [key in XAlias]?: X} : 
+                {readonly [key in XAlias]: X}
         ), 
         TVariables & XVariables & QueryArgs["findAuthors"] & XDirectiveVariables
     >;
@@ -129,15 +129,15 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
         XDirectiveVariables extends object = {}
     >(
         args: XArgs, 
-        child: ObjectFetcher<'Author', X, XVariables>, 
+        child: ConnectionFetcher<'AuthorConnection', X, XVariables>, 
         optionsConfigurer?: (
             options: FieldOptions<"findAuthors", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): QueryFetcher<
         T & (
             XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-                {readonly [key in XAlias]?: readonly X[]} : 
-                {readonly [key in XAlias]: readonly X[]}
+                {readonly [key in XAlias]?: X} : 
+                {readonly [key in XAlias]: X}
         ), 
         TVariables & XVariables & UnresolvedVariables<XArgs, QueryArgs['findAuthors']> & XDirectiveVariables
     >;
@@ -157,15 +157,31 @@ export const query$: QueryFetcher<{}, {}> =
                     targetTypeName: "BookStore"
                 }, 
                 {
-                    category: "LIST", 
+                    category: "CONNECTION", 
                     name: "findBooks", 
-                    argGraphQLTypeMap: {name: 'String'}, 
+                    argGraphQLTypeMap: {
+                        before: 'String', 
+                        last: 'Int', 
+                        after: 'String', 
+                        first: 'Int', 
+                        name: 'String'
+                    }, 
+                    connectionTypeName: "BookConnection", 
+                    edgeTypeName: "BookEdge", 
                     targetTypeName: "Book"
                 }, 
                 {
-                    category: "LIST", 
+                    category: "CONNECTION", 
                     name: "findAuthors", 
-                    argGraphQLTypeMap: {name: 'String'}, 
+                    argGraphQLTypeMap: {
+                        before: 'String', 
+                        last: 'Int', 
+                        after: 'String', 
+                        first: 'Int', 
+                        name: 'String'
+                    }, 
+                    connectionTypeName: "AuthorConnection", 
+                    edgeTypeName: "AuthorEdge", 
                     targetTypeName: "Author"
                 }
             ]
@@ -181,10 +197,18 @@ export interface QueryArgs {
     }, 
 
     readonly findBooks: {
+        readonly before?: string, 
+        readonly last?: number, 
+        readonly after?: string, 
+        readonly first?: number, 
         readonly name?: string
     }, 
 
     readonly findAuthors: {
+        readonly before?: string, 
+        readonly last?: number, 
+        readonly after?: string, 
+        readonly first?: number, 
         readonly name?: string
     }
 }

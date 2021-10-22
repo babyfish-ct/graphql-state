@@ -1,11 +1,12 @@
 import 'reflect-metadata';
-import { Arg, Mutation, Query } from 'type-graphql';
+import { Arg, Int, Mutation, Query } from 'type-graphql';
 import { Predicate } from '../../dal/Table';
 import { BookStore } from '../model/BookStore';
 import { delay } from '../../common/Delay';
 import { bookStoreTable, TBookStore } from '../../dal/BookStoreTable';
 import { BookStoreInput } from '../model/input/BookStoreInput';
 import { bookTable } from '../../dal/BookTable';
+import { compare } from '../../common/Comparator';
 
 export class BookStoreSerice {
 
@@ -28,7 +29,7 @@ export class BookStoreSerice {
         return bookStoreTable
             .find([], predicate)
             .map(row => new BookStore(row))
-            .sort((a, b) => a.name > b.name ? + 1 : a.name < b.name ? -1 :0);
+            .sort((a, b) => compare(a.name, b.name));
     }
 
     @Mutation(() => BookStore)

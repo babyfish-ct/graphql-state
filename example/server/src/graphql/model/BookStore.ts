@@ -3,6 +3,7 @@ import { Arg, Field, ObjectType } from 'type-graphql';
 import { bookTable } from '../../dal/BookTable';
 import { TBookStore } from '../../dal/BookStoreTable';
 import { Book } from './Book';
+import { compare } from '../../common/Comparator';
 
 @ObjectType()
 export class BookStore {
@@ -20,16 +21,19 @@ export class BookStore {
 
     @Field(() => [Book])
     books(@Arg("name", () => String, { nullable: true}) name?: string): Book[] {
+        let list: Book[];
         if (name === undefined || name === "") {
-            return bookTable
+            list = bookTable
                 .findByProp("storeId", this.id)
                 .map(row => new Book(row));
+        } else {
+            list = bookTable
+                .find(
+                    [{prop: "storeId", value: this.id}], 
+                    row => row.name.toLowerCase().indexOf(name.toLowerCase()) !== -1
+                )
+                .map(row => new Book(row));
         }
-        return bookTable
-            .find(
-                [{prop: "storeId", value: this.id}], 
-                row => row.name.toLowerCase().indexOf(name.toLowerCase()) !== -1
-            )
-            .map(row => new Book(row));
+        return list.sort((a, b) => compare(a.name, b.name));
     }
 }

@@ -196,4 +196,4 @@ export class TypeMetadata {
     }
 }
 
-export type TypeMetadataCategory = "OBJECT" | "CONNECTION" | "EDGE";
+export type TypeMetadataCategory = "OBJECT" | "EMBEDDED" | "CONNECTION" | "EDGE";

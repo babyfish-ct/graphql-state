@@ -6,5 +6,15 @@ export type {BookFetcher, BookArgs, BookScalarType, BookFlatType} from './BookFe
 export {book$, book$$} from './BookFetcher';
 export type {AuthorFetcher, AuthorArgs, AuthorScalarType, AuthorFlatType} from './AuthorFetcher';
 export {author$, author$$} from './AuthorFetcher';
+export type {BookConnectionFetcher} from './BookConnectionFetcher';
+export {bookConnection$, bookConnection$$} from './BookConnectionFetcher';
+export type {BookEdgeFetcher} from './BookEdgeFetcher';
+export {bookEdge$, bookEdge$$} from './BookEdgeFetcher';
+export type {PageInfoFetcher} from './PageInfoFetcher';
+export {pageInfo$, pageInfo$$} from './PageInfoFetcher';
+export type {AuthorConnectionFetcher} from './AuthorConnectionFetcher';
+export {authorConnection$, authorConnection$$} from './AuthorConnectionFetcher';
+export type {AuthorEdgeFetcher} from './AuthorEdgeFetcher';
+export {authorEdge$, authorEdge$$} from './AuthorEdgeFetcher';
 export type {MutationFetcher, MutationArgs} from './MutationFetcher';
 export {mutation$} from './MutationFetcher';

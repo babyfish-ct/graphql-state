@@ -13,7 +13,7 @@ export class AssociationConnectionValue extends AssociationValue {
 
     getAsObject(): ObjectConnection {
         if (this.connection === undefined) {
-            throw new Error("Internal bug: connection cannot be undefined");
+            return { edges: [] };
         }
         return {
             ...this.connection,
@@ -27,10 +27,7 @@ export class AssociationConnectionValue extends AssociationValue {
     }
 
     get(): RecordConnection {
-        if (this.connection === undefined) {
-            throw new Error("Internal bug: connection cannot be undefined");
-        }
-        return this.connection;
+        return this.connection ?? { edges: [] };
     }
 
     set(
@@ -49,15 +46,8 @@ export class AssociationConnectionValue extends AssociationValue {
 
         const newIndexMap = new Map<any, number>();
         const newEdges: Array<RecordEdge> = [];
-        const position = this.association.field.associationProperties!.position;
         for (let i = 0; i < value.edges.length; i++) {
             const edge = value.edges[i];
-            if (typeof edge.node !== "object") {
-                throw Error(`Each edge object for the connection "${association.field.fullName}" must have an object field named "node"`);
-            }
-            if (typeof edge.cursor !== "string") {
-                throw Error(`Each edge object for the connection "${association.field.fullName}" must have an string field named "cursor"`);
-            }
             const newNode = entityManager.saveId(association.field.targetType!.name, edge.node.id);
             if (!newIndexMap.has(newNode.id)) {
                 newEdges.push({node: newNode, cursor: edge.cursor});
@@ -167,16 +157,18 @@ export class AssociationConnectionValue extends AssociationValue {
         if (value === undefined) {
             throw Error(`Cannot set the undefined or null value to "${association.field.fullName}" because it's connection field`);
         }
-        if (typeof value.pageInfo !== 'object') {
-            throw Error(`The connection object of "${association.field.fullName}" must have an object field named "pageInfo"`);
+        if (value.pageInfo !== undefined) {
+            if (typeof value.pageInfo !== 'object') {
+                throw Error(`The connection object of "${association.field.fullName}" must have an object field named "pageInfo"`);
+            }
+            if (typeof value.pageInfo.startCursor !== 'string') {
+                throw Error(`The pageInfo object of "${association.field.fullName}.pageInfo" must have string field named "startCursor"`);
+            }
+            if (typeof value.pageInfo.endCursor !== 'string') {
+                throw Error(`The pageInfo object of "${association.field.fullName}.pageInfo" must have string field named "endCursor"`);
+            }
         }
-        if (typeof value.pageInfo.startCursor !== 'string') {
-            throw Error(`The pageInfo object of "${association.field.fullName}.pageInfo" must have string field named "startCursor"`);
-        }
-        if (typeof value.pageInfo.endCursor !== 'string') {
-            throw Error(`The pageInfo object of "${association.field.fullName}.pageInfo" must have string field named "endCursor"`);
-        }
-        if (!Array.isArray(typeof value.edges)) {
+        if (!Array.isArray(value.edges)) {
             throw Error(`The connection object of "${association.field.fullName}" must have an array field named "edges"`);
         }
         const idFieldName = association.field.targetType!.idField.name;
@@ -184,7 +176,7 @@ export class AssociationConnectionValue extends AssociationValue {
             if (edge === undefined || edge === null) {
                 throw Error(`The array "${association.field.fullName}.edges" cannot contain undefined or null`);
             }
-            if (typeof edge.cursor !== "string") {
+            if (value.cursor !== undefined && typeof edge.cursor !== "string") {
                 throw Error(`The edge object in th array "${association.field.fullName}.edges" must support string field "cursor"`);
             }
             if (typeof edge.node !== "object") {
@@ -222,10 +214,10 @@ export class AssociationConnectionValue extends AssociationValue {
                 }
             }
         }
-        if (oldConnection.pageInfo.hasNextPage !== newConnection.pageInfo.hasNextPage ||
-            oldConnection.pageInfo.hasPreviousPage !== newConnection.pageInfo.hasPreviousPage ||
-            oldConnection.pageInfo.startCursor !== newConnection.pageInfo.startCursor ||
-            oldConnection.pageInfo.endCursor !== newConnection.pageInfo.endCursor
+        if (oldConnection.pageInfo?.hasNextPage !== newConnection.pageInfo?.hasNextPage ||
+            oldConnection.pageInfo?.hasPreviousPage !== newConnection.pageInfo?.hasPreviousPage ||
+            oldConnection.pageInfo?.startCursor !== newConnection.pageInfo?.startCursor ||
+            oldConnection.pageInfo?.endCursor !== newConnection.pageInfo?.endCursor
         ) {
             return false;
         }
@@ -246,24 +238,24 @@ export class AssociationConnectionValue extends AssociationValue {
 
 export interface RecordConnection {
     readonly edges: ReadonlyArray<RecordEdge>;
-    readonly pageInfo: PageInfo;
+    readonly pageInfo?: PageInfo;
     readonly [key: string]: any;
 }
 
 export interface RecordEdge {
     readonly node: Record;
-    readonly cursor: string;
+    readonly cursor?: string;
 }
 
 export interface ObjectConnection {
     readonly edges: ReadonlyArray<ObjectEdge>;
-    readonly pageInfo: PageInfo;
+    readonly pageInfo?: PageInfo;
     readonly [key: string]: any;
 }
 
 export interface ObjectEdge {
     readonly node: any;
-    readonly cursor: string;
+    readonly cursor?: string;
 }
 
 export interface PageInfo {

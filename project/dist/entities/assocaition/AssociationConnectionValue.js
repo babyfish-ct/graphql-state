@@ -7,17 +7,15 @@ const util_1 = require("./util");
 class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
     getAsObject() {
         if (this.connection === undefined) {
-            throw new Error("Internal bug: connection cannot be undefined");
+            return { edges: [] };
         }
         return Object.assign(Object.assign({}, this.connection), { edges: this.connection.edges.map(edge => {
                 return Object.assign(Object.assign({}, edge), { node: Record_1.objectWithOnlyId(edge.node) });
             }) });
     }
     get() {
-        if (this.connection === undefined) {
-            throw new Error("Internal bug: connection cannot be undefined");
-        }
-        return this.connection;
+        var _a;
+        return (_a = this.connection) !== null && _a !== void 0 ? _a : { edges: [] };
     }
     set(entityManager, value) {
         const association = this.association;
@@ -29,15 +27,8 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
         const oldIndexMap = this.indexMap;
         const newIndexMap = new Map();
         const newEdges = [];
-        const position = this.association.field.associationProperties.position;
         for (let i = 0; i < value.edges.length; i++) {
             const edge = value.edges[i];
-            if (typeof edge.node !== "object") {
-                throw Error(`Each edge object for the connection "${association.field.fullName}" must have an object field named "node"`);
-            }
-            if (typeof edge.cursor !== "string") {
-                throw Error(`Each edge object for the connection "${association.field.fullName}" must have an string field named "cursor"`);
-            }
             const newNode = entityManager.saveId(association.field.targetType.name, edge.node.id);
             if (!newIndexMap.has(newNode.id)) {
                 newEdges.push({ node: newNode, cursor: edge.cursor });
@@ -112,16 +103,18 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
         if (value === undefined) {
             throw Error(`Cannot set the undefined or null value to "${association.field.fullName}" because it's connection field`);
         }
-        if (typeof value.pageInfo !== 'object') {
-            throw Error(`The connection object of "${association.field.fullName}" must have an object field named "pageInfo"`);
+        if (value.pageInfo !== undefined) {
+            if (typeof value.pageInfo !== 'object') {
+                throw Error(`The connection object of "${association.field.fullName}" must have an object field named "pageInfo"`);
+            }
+            if (typeof value.pageInfo.startCursor !== 'string') {
+                throw Error(`The pageInfo object of "${association.field.fullName}.pageInfo" must have string field named "startCursor"`);
+            }
+            if (typeof value.pageInfo.endCursor !== 'string') {
+                throw Error(`The pageInfo object of "${association.field.fullName}.pageInfo" must have string field named "endCursor"`);
+            }
         }
-        if (typeof value.pageInfo.startCursor !== 'string') {
-            throw Error(`The pageInfo object of "${association.field.fullName}.pageInfo" must have string field named "startCursor"`);
-        }
-        if (typeof value.pageInfo.endCursor !== 'string') {
-            throw Error(`The pageInfo object of "${association.field.fullName}.pageInfo" must have string field named "endCursor"`);
-        }
-        if (!Array.isArray(typeof value.edges)) {
+        if (!Array.isArray(value.edges)) {
             throw Error(`The connection object of "${association.field.fullName}" must have an array field named "edges"`);
         }
         const idFieldName = association.field.targetType.idField.name;
@@ -129,7 +122,7 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
             if (edge === undefined || edge === null) {
                 throw Error(`The array "${association.field.fullName}.edges" cannot contain undefined or null`);
             }
-            if (typeof edge.cursor !== "string") {
+            if (value.cursor !== undefined && typeof edge.cursor !== "string") {
                 throw Error(`The edge object in th array "${association.field.fullName}.edges" must support string field "cursor"`);
             }
             if (typeof edge.node !== "object") {
@@ -141,6 +134,7 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
         }
     }
     valueEquals(newConnection) {
+        var _a, _b, _c, _d, _e, _f, _g, _h;
         const oldConnection = this.connection;
         if (oldConnection === undefined) {
             return false;
@@ -164,10 +158,10 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
                 }
             }
         }
-        if (oldConnection.pageInfo.hasNextPage !== newConnection.pageInfo.hasNextPage ||
-            oldConnection.pageInfo.hasPreviousPage !== newConnection.pageInfo.hasPreviousPage ||
-            oldConnection.pageInfo.startCursor !== newConnection.pageInfo.startCursor ||
-            oldConnection.pageInfo.endCursor !== newConnection.pageInfo.endCursor) {
+        if (((_a = oldConnection.pageInfo) === null || _a === void 0 ? void 0 : _a.hasNextPage) !== ((_b = newConnection.pageInfo) === null || _b === void 0 ? void 0 : _b.hasNextPage) ||
+            ((_c = oldConnection.pageInfo) === null || _c === void 0 ? void 0 : _c.hasPreviousPage) !== ((_d = newConnection.pageInfo) === null || _d === void 0 ? void 0 : _d.hasPreviousPage) ||
+            ((_e = oldConnection.pageInfo) === null || _e === void 0 ? void 0 : _e.startCursor) !== ((_f = newConnection.pageInfo) === null || _f === void 0 ? void 0 : _f.startCursor) ||
+            ((_g = oldConnection.pageInfo) === null || _g === void 0 ? void 0 : _g.endCursor) !== ((_h = newConnection.pageInfo) === null || _h === void 0 ? void 0 : _h.endCursor)) {
             return false;
         }
         const idFieldName = this.association.field.targetType.idField.name;

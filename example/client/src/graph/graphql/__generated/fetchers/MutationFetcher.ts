@@ -177,7 +177,7 @@ export const mutation$: MutationFetcher<{}, {}> =
     createFetcher(
         createFetchableType(
             "Mutation", 
-            "OBJECT", 
+            "EMBEDDED", 
             [], 
             [
                 {

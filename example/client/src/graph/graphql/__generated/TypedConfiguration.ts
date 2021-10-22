@@ -4,6 +4,11 @@ import {
     bookStore$,
     book$,
     author$,
+    bookConnection$,
+    bookEdge$,
+    pageInfo$,
+    authorConnection$,
+    authorEdge$,
     mutation$
 } from './fetchers';
 import {
@@ -32,6 +37,11 @@ export function newTypedConfiguration(): Configuration<Schema> {
         bookStore$, 
         book$, 
         author$, 
+        bookConnection$, 
+        bookEdge$, 
+        pageInfo$, 
+        authorConnection$, 
+        authorEdge$, 
         mutation$
     );
 }

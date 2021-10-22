@@ -1,6 +1,6 @@
 import { FC, memo } from "react";
 import { Select, Spin } from "antd";
-import { book$$, query$ } from "../__generated/fetchers";
+import { book$$, bookConnection$, bookEdge$, query$ } from "../__generated/fetchers";
 import { useQuery } from "graphql-state";
 
 export const BookMultiSelect: FC<{
@@ -10,8 +10,12 @@ export const BookMultiSelect: FC<{
 
     const { data, loading, error } = useQuery(
         query$.findBooks(
-            book$$,
-            options => options.alias("options")
+            bookConnection$.edges(
+                bookEdge$.node(
+                    book$$,
+                )
+            ),
+            options => options.alias("bookConnection")
         ), {
         asyncStyle: "ASYNC_OBJECT"
     });
@@ -27,8 +31,10 @@ export const BookMultiSelect: FC<{
                 data &&
                 <Select mode="multiple" value={value ?? []} onChange={onChange}>
                     {
-                        data.options.map(option =>
-                            <Select.Option key={option.id} value={option.id}>{option.name}</Select.Option>
+                        data.bookConnection.edges.map(edge =>
+                            <Select.Option key={edge.node.id} value={edge.node.id}>
+                                {edge.node.name}
+                            </Select.Option>
                         )
                     }
                 </Select>

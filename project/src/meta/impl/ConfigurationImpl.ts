@@ -63,7 +63,9 @@ class ConfigurationImpl<TSchema extends SchemaType> implements Configuration<TSc
 
     buildStateManager(): StateManager<TSchema> {
         for (const [name, type] of this._schema.typeMap) {
-            type.idField;
+            if (type.category === "OBJECT") {
+                type.idField;
+            }
         }
         return new StateManagerImpl<TSchema>(this._schema, this._network);
     }

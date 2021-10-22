@@ -23,4 +23,4 @@ export declare class TypeMetadata {
     private addField;
     createObject(id: any): any;
 }
-export declare type TypeMetadataCategory = "OBJECT" | "CONNECTION" | "EDGE";
+export declare type TypeMetadataCategory = "OBJECT" | "EMBEDDED" | "CONNECTION" | "EDGE";
