@@ -1,4 +1,5 @@
 export interface EntityEvictEvent {
+    readonly eventType: "evict";
     readonly typeName: string;
     readonly id: any;
     readonly evictedType: "row" | "fields";
@@ -8,6 +9,7 @@ export interface EntityEvictEvent {
 }
 
 export interface EntityChangeEvent {
+    readonly eventType: "change";
     readonly typeName: string;
     readonly id: any;
     readonly changedType: "insert" | "update" | "delete";

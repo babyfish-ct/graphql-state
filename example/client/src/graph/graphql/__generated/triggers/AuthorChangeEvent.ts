@@ -4,6 +4,8 @@ import {AuthorArgs, AuthorFlatType} from '../fetchers/AuthorFetcher';
 
 export interface AuthorEvictEvent {
 
+    readonly eventType: "evict";
+
     readonly typeName: ImplementationType<"Author">;
 
      readonly id: string;
@@ -20,6 +22,8 @@ export interface AuthorEvictEvent {
 }
 
 export interface AuthorChangeEvent {
+
+    readonly eventType: "change";
 
     readonly typeName: ImplementationType<"Author">;
 

@@ -4,6 +4,8 @@ import {BookStoreArgs, BookStoreFlatType} from '../fetchers/BookStoreFetcher';
 
 export interface BookStoreEvictEvent {
 
+    readonly eventType: "evict";
+
     readonly typeName: ImplementationType<"BookStore">;
 
      readonly id: string;
@@ -20,6 +22,8 @@ export interface BookStoreEvictEvent {
 }
 
 export interface BookStoreChangeEvent {
+
+    readonly eventType: "change";
 
     readonly typeName: ImplementationType<"BookStore">;
 

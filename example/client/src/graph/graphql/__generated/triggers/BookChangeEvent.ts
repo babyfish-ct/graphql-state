@@ -4,6 +4,8 @@ import {BookArgs, BookFlatType} from '../fetchers/BookFetcher';
 
 export interface BookEvictEvent {
 
+    readonly eventType: "evict";
+
     readonly typeName: ImplementationType<"Book">;
 
      readonly id: string;
@@ -20,6 +22,8 @@ export interface BookEvictEvent {
 }
 
 export interface BookChangeEvent {
+
+    readonly eventType: "change";
 
     readonly typeName: ImplementationType<"Book">;
 

@@ -13,16 +13,16 @@ export abstract class AbstractDataRequest {
     async execute() {
         let data: any
         try {
-            data = await (this.dataService as any).onLoad(this.args);
+            data = await (this.dataService as any).onExecute(this.args);
             if (typeof data !== 'object' || data  === null) {
                 throw new Error("The remote loader must return an object");
             }
-            (this.dataService as any).onLoaded(this.args, data);
+            this.dataService.onExecuted(this.args, data);
         } catch (ex) {
             this.reject(ex);
             return;
         } finally {
-            this.dataService[" $unregister"](this.args);
+            this.dataService.onComplete(this.args);
         }
         this.resolve(data);
     }
@@ -36,6 +36,8 @@ export abstract class AbstractDataRequest {
     get args(): QueryArgs {
         return this._args;
     }
+
+    
 
     private resolve(data: any) {
         for (const resolver of this.joinedResolvers) {

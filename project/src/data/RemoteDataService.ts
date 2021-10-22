@@ -30,11 +30,7 @@ export class RemoteDataService extends AbstractDataService {
         return [pendingRequest.newPromise(), false];
     }
 
-    " $unregister"(args: QueryArgs) {
-        this.pendingRequestMap.delete(args.key);
-    }
-
-    onLoad(args: QueryArgs): Promise<any> {
+    onExecute(args: QueryArgs): Promise<any> {
         const network = this.entityManager.stateManager.network;
         if (network === undefined) {
             throw new Error(`Cannot execute remote data loading because network is not configured`);
@@ -42,7 +38,7 @@ export class RemoteDataService extends AbstractDataService {
         return network.execute(args.fetcher as ObjectFetcher<'Query' | 'Mutation', any, any>, args.variables);
     }
 
-    onLoaded(args: QueryArgs, data: any) {
+    onExecuted(args: QueryArgs, data: any) {
         const entityManager = this.entityManager;
         const shape = args.shape;
         const ids = args.ids;
@@ -61,6 +57,10 @@ export class RemoteDataService extends AbstractDataService {
                 }
             });
         }
+    }
+
+    onComplete(args: QueryArgs) {
+        this.pendingRequestMap.delete(args.key);
     }
 }
 

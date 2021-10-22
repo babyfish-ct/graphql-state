@@ -67,7 +67,7 @@ export abstract class AbstractDataService {
     private reshapeConnnection(connection: any, nodeShape: RuntimeShape) {
         const edges = connection
             .edges
-            .map(edge => {
+            .map((edge: any) => {
                 return {
                     ...edge,
                     node: this.reshapeObject(edge.node, nodeShape)
@@ -79,7 +79,9 @@ export abstract class AbstractDataService {
         };
     }
 
-    protected abstract onLoad(args: QueryArgs): Promise<any>;
+    abstract onExecute(args: QueryArgs): Promise<any>;
 
-    protected onLoaded(args: QueryArgs, data: any): void {}
+    abstract onExecuted(args: QueryArgs, data: any): void;
+
+    abstract onComplete(args: QueryArgs): void;
 }

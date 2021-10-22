@@ -1,5 +1,6 @@
 import { GraphQLNetwork, ScalarRow, ParameterizedAssociationProperties } from "graphql-state";
 import { PositionType } from "graphql-state/dist/meta/Configuration";
+import { publishEntityLog } from "./log/EntityLog";
 import { publishRequestLog, publishResponseLog } from "./log/HttpLog";
 import { newTypedConfiguration } from "./__generated";
 
@@ -89,5 +90,8 @@ export const stateManager =
     }))
     .buildStateManager()
 ;
+
+stateManager.addEntityEvictListener(e => { publishEntityLog(e) });
+stateManager.addEntityChangeListener(e => { publishEntityLog(e) });
 
 (window as any).graphqlStateManager = stateManager;

@@ -8,6 +8,7 @@ export declare abstract class AbstractDataService {
     protected standardizedResult(data: any, args: QueryArgs, reshapeObject?: boolean): any;
     private reshapeObject;
     private reshapeConnnection;
-    protected abstract onLoad(args: QueryArgs): Promise<any>;
-    protected onLoaded(args: QueryArgs, data: any): void;
+    abstract onExecute(args: QueryArgs): Promise<any>;
+    abstract onExecuted(args: QueryArgs, data: any): void;
+    abstract onComplete(args: QueryArgs): void;
 }

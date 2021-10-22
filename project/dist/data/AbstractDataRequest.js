@@ -20,18 +20,18 @@ class AbstractDataRequest {
         return __awaiter(this, void 0, void 0, function* () {
             let data;
             try {
-                data = yield this.dataService.onLoad(this.args);
+                data = yield this.dataService.onExecute(this.args);
                 if (typeof data !== 'object' || data === null) {
                     throw new Error("The remote loader must return an object");
                 }
-                this.dataService.onLoaded(this.args, data);
+                this.dataService.onExecuted(this.args, data);
             }
             catch (ex) {
                 this.reject(ex);
                 return;
             }
             finally {
-                this.dataService[" $unregister"](this.args);
+                this.dataService.onComplete(this.args);
             }
             this.resolve(data);
         });

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntityManager = void 0;
-const BatchDataService_1 = require("../data/BatchDataService");
+const MergedDataService_1 = require("../data/MergedDataService");
 const RemoteDataService_1 = require("../data/RemoteDataService");
 const ModificationContext_1 = require("./ModificationContext");
 const QueryResult_1 = require("./QueryResult");
@@ -17,7 +17,7 @@ class EntityManager {
         this._changeListenerMap = new Map();
         this._associationValueObservers = new Set();
         this._bidirectionalAssociationManagementSuspending = false;
-        this.dataService = new BatchDataService_1.BatchDataService(new RemoteDataService_1.RemoteDataService(this));
+        this.dataService = new MergedDataService_1.MergedDataService(new RemoteDataService_1.RemoteDataService(this));
         const queryType = schema.typeMap.get("Query");
         if (queryType !== undefined) {
             this._queryRecord = this.saveId("Query", Record_1.QUERY_OBJECT_ID);

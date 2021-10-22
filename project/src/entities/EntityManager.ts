@@ -1,8 +1,7 @@
 import { EntityChangeEvent } from "..";
 import { AbstractDataService } from "../data/AbstractDataService";
-import { BatchDataService } from "../data/BatchDataService";
+import { MergedDataService } from "../data/MergedDataService";
 import { RemoteDataService } from "../data/RemoteDataService";
-import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { StateManagerImpl } from "../state/impl/StateManagerImpl";
@@ -42,7 +41,7 @@ export class EntityManager {
         readonly stateManager: StateManagerImpl<any>,
         readonly schema: SchemaMetadata
     ) {
-        this.dataService = new BatchDataService(new RemoteDataService(this));
+        this.dataService = new MergedDataService(new RemoteDataService(this));
         const queryType = schema.typeMap.get("Query");
         if (queryType !== undefined) {
             this._queryRecord = this.saveId("Query", QUERY_OBJECT_ID);

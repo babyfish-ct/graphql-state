@@ -4,7 +4,7 @@ export declare class RemoteDataService extends AbstractDataService {
     private pendingRequestMap;
     query(args: QueryArgs): Promise<any>;
     private getPromise;
-    " $unregister"(args: QueryArgs): void;
-    onLoad(args: QueryArgs): Promise<any>;
-    onLoaded(args: QueryArgs, data: any): void;
+    onExecute(args: QueryArgs): Promise<any>;
+    onExecuted(args: QueryArgs, data: any): void;
+    onComplete(args: QueryArgs): void;
 }

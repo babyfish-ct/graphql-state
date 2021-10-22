@@ -65,11 +65,10 @@ class AbstractDataService {
     reshapeConnnection(connection, nodeShape) {
         const edges = connection
             .edges
-            .map(edge => {
+            .map((edge) => {
             return Object.assign(Object.assign({}, edge), { node: this.reshapeObject(edge.node, nodeShape) });
         });
         return Object.assign(Object.assign({}, connection), { edges });
     }
-    onLoaded(args, data) { }
 }
 exports.AbstractDataService = AbstractDataService;

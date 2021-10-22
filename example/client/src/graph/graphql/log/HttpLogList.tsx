@@ -1,6 +1,7 @@
-import { Timeline, Card, Button } from "antd";
+import { Timeline, Card, Button, Collapse, Spin } from "antd";
 import { useStateAccessor } from "graphql-state";
 import { FC, memo, useCallback } from "react";
+import { LOG_LABEL_CLASS, LOG_VALUE_CLASS } from "../Css";
 import { httpLogListState } from "./HttpLog";
 import { format } from "./util";
 
@@ -22,19 +23,30 @@ export const HttpLogList: FC = memo(() => {
                 {
                     logs().map(log =>
                         <Timeline.Item key={log.id}>
-                            <div>
-                                {format(log.time)}
-                                <div>Body</div>
-                                <pre>{log.body}</pre>
-                                <div>Variables</div>
-                                <pre>{JSON.stringify(log.variables)}</pre>
-                                <div>Response</div>
-                                <pre>{
-                                    typeof log.response === "string" ?
-                                    log.response :
-                                    JSON.stringify(log.response, undefined, "    ")
-                                }</pre>
-                            </div>
+                            <Collapse>
+                                <Collapse.Panel 
+                                header={
+                                    <>
+                                        {log.response === undefined && <Spin/>}
+                                        {format(log.time)},&nbsp;
+                                        {log.body.startsWith("query") ? "query to download data" : "mutation to upload data"}
+                                    </>
+                                } 
+                                key="message">
+                                    <div className={LOG_LABEL_CLASS}>Body</div>
+                                    <pre className={LOG_VALUE_CLASS}>{log.body}</pre>
+                                    <div className={LOG_LABEL_CLASS}>Variables</div>
+                                    <pre className={LOG_VALUE_CLASS}>{
+                                        JSON.stringify(log.variables, undefined, "  ")
+                                    }</pre>
+                                    <div className={LOG_LABEL_CLASS}>Response</div>
+                                    <pre className={LOG_VALUE_CLASS}>{
+                                        typeof log.response === "string" ?
+                                        log.response :
+                                        JSON.stringify(log.response, undefined, "  ")
+                                    }</pre>
+                                </Collapse.Panel>
+                            </Collapse>
                         </Timeline.Item>
                     )
                 }

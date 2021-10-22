@@ -17,26 +17,19 @@ export function publishRequestLog(
     body: string,
     variables: any
 ): number {
-    const impl = (id: number) => {
-        window.dispatchEvent(
-            new CustomEvent("http-request-event", { 
-                detail: {
-                    log: {
-                        id,
-                        time: new Date(),
-                        body,
-                        variables
-                    }
-                } 
-            })
-        ); 
-    };
     const id = idSequence++;
-    if (id === 0) {
-        setTimeout(() => { impl(id); }, 0);
-    } else {
-        impl(id);
-    }
+    window.dispatchEvent(
+        new CustomEvent("http-request-event", { 
+            detail: {
+                log: {
+                    id,
+                    time: new Date(),
+                    body,
+                    variables
+                }
+            } 
+        })
+    ); 
     return id;
 }
 

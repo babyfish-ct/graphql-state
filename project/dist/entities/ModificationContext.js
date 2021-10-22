@@ -185,6 +185,7 @@ class EntityEvictEventImpl {
         this.evictedType = evictedType;
         this.evictedKeys = evictedKeys;
         this.oldValueMap = oldValueMap;
+        this.eventType = "evict";
     }
     has(evictedKey) {
         const key = typeof evictedKey === "string" ?
@@ -211,6 +212,7 @@ class EntityChangeEventImpl {
         this.changedKeys = changedKeys;
         this.oldValueMap = oldValueMap;
         this.newValueMap = newValueMap;
+        this.eventType = "change";
         if (oldValueMap.size !== newValueMap.size) {
             throw new Error("Internal bug: different sizes of oldValueMap and newValueMap");
         }

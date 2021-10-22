@@ -220,15 +220,16 @@ interface ObjectPair {
 }
 
 class EntityEvictEventImpl implements EntityEvictEvent {
+    
+    readonly eventType: "evict" = "evict";
+
     constructor(
         readonly typeName: string,
         readonly id: any,
         readonly evictedType: "row" | "fields",
         readonly evictedKeys: ReadonlyArray<EntityKey>,
         private oldValueMap: ReadonlyMap<string, any>
-    ) {
-        
-    }
+    ) {}
 
     has(evictedKey: EntityKey): boolean {
         const key = typeof evictedKey === "string" ?
@@ -250,6 +251,8 @@ class EntityEvictEventImpl implements EntityEvictEvent {
 }
 
 class EntityChangeEventImpl implements EntityChangeEvent {
+
+    readonly eventType: "change" = "change";
 
     constructor(
         readonly typeName: string,

@@ -127,7 +127,7 @@ class PendingRequest {
                 return;
             }
             finally {
-                this.remoteSercice[" $unregister"](this.args);
+                this.remoteSercice.request(this.args);
             }
             this.resolve(data);
         });
