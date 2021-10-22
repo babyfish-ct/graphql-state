@@ -16,3 +16,8 @@ export const PSEUDO_CODE_CLASS = css({
     borderLeft: "solid 3px gray",
     paddingLeft: "1rem"
 });
+
+export const DELETING_ROW_CLASS = css({
+    textDecoration: "line-through",
+    backgroundColor: "lightgray"
+});

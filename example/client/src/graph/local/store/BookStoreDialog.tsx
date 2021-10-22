@@ -5,7 +5,7 @@ import { FC, memo, useCallback, useEffect } from "react";
 import UUIDClass from "uuidjs";
 import { book$, bookStore$$ } from "../__generated/fetchers";
 import { stateManager } from "../Environment";
-import { BookMultiSelect } from "../book/BookMultiiSelect";
+import { BookMultiSelect } from "../book/BookMultiSelect";
 import { INFORMATION_CLASS, PSEUDO_CODE_CLASS } from "../Css";
 
 const BOOK_STORE_EDIT_INFO =
@@ -33,8 +33,8 @@ export const BookStoreDialog: FC<{
         })
     }, [form, value]);
 
-    const onOk = useCallback(() => {
-        const input = form.getFieldsValue();
+    const onOk = useCallback(async () => {
+        const input = await form.validateFields();
         const info: ModelType<typeof BOOK_STORE_EDIT_INFO> = {
             id: input.id,
             name: input.name,

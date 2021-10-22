@@ -71,4 +71,20 @@ export class AuthorService {
 
         return new Author(input);
     }
+
+    @Mutation(() => String, { nullable: true })
+    async deleteAuthor(
+        @Arg("id", () => String) id: string
+    ): Promise<string | undefined> {
+
+        /*
+         * Mock the network delay
+         */
+        await delay(1000);
+        
+        for (const oldMapping of bookAuthorMappingTable.findByProp("authorId", id)) {
+            bookAuthorMappingTable.delete(oldMapping.id);
+        }
+        return authorTable.delete(id) !== 0 ? id : undefined;
+    }
 }

@@ -71,4 +71,20 @@ export class BookSerice {
 
         return new Book(input);
     }
+
+    @Mutation(() => String, { nullable: true })
+    async deleteBook(
+        @Arg("id", () => String) id: string
+    ): Promise<string | undefined> {
+
+        /*
+         * Mock the network delay
+         */
+        await delay(1000);
+        
+        for (const oldMapping of bookAuthorMappingTable.findByProp("bookId", id)) {
+            bookAuthorMappingTable.delete(oldMapping.id);
+        }
+        return bookTable.delete(id) !== 0 ? id : undefined;
+    }
 }

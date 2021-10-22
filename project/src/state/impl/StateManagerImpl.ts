@@ -43,7 +43,7 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
 
     delete<TName extends keyof TSchema["entities"] & string>(
         typeName: TName, 
-        idOrArray: TSchema["entities"][TName][" $id"] | ReadonlyArray<TSchema["entities"][TName][" $id"]>
+        idOrArray: TSchema["entities"][TName][" $id"] | ReadonlyArray<TSchema["entities"][TName][" $id"] | undefined> | undefined
     ) {
         this.entityManager.delete(typeName, idOrArray);
     }

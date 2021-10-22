@@ -3,11 +3,13 @@ import { useForm } from "antd/lib/form/Form";
 import { ModelType } from "graphql-ts-client-api";
 import { FC, memo, useCallback, useEffect } from "react";
 import UUIDClass from "uuidjs";
-import { author$, book$$, bookStore$ } from "../__generated/fetchers";
+import { author$, book$$, bookStore$, mutation$ } from "../__generated/fetchers";
 import { stateManager } from "../Environment";
 import { AuthorMultiSelect } from "../author/AuthorMultiSelect";
 import { INFORMATION_CLASS, PSEUDO_CODE_CLASS } from "../Css";
 import { BookStoreSelect } from "../store/BookStoreSelect";
+import { BookInput } from "../__generated/inputs";
+import { useMutation } from "graphql-state/dist/state/StateHook";
 
 const BOOK_EDIT_INFO =
     book$$
@@ -15,14 +17,9 @@ const BOOK_EDIT_INFO =
     .authors(author$.id)
 ;
 
-type BookInput = ModelType<typeof book$$> & {
-    readonly storeId?: string;
-    readonly authorIds: readonly string[];
-}
-
 export const BookDialog: FC<{
     value?: ModelType<typeof BOOK_EDIT_INFO>,
-    onClose: (value?: ModelType<typeof BOOK_EDIT_INFO>) => void
+    onClose: () => void
 }> = memo(({value, onClose}) => {
 
     const [form] = useForm<BookInput>();
@@ -36,20 +33,23 @@ export const BookDialog: FC<{
         })
     }, [form, value]);
 
+    const [mutate, { loading }] = useMutation(
+        mutation$.mergeBook(
+            BOOK_EDIT_INFO
+        ),
+        {
+            onSuccess: data => {
+                console.log(JSON.stringify(data.mergeBook));
+                stateManager.save(BOOK_EDIT_INFO, data.mergeBook);
+            }
+        }
+    );
+
     const onOk = useCallback(async () => {
         const input = await form.validateFields();
-        const info: ModelType<typeof BOOK_EDIT_INFO> = {
-            id: input.id,
-            name: input.name,
-            store: input.storeId !== undefined ? {id: input.storeId} : undefined,
-            authors: input.authorIds.map(authorId => ({id: authorId}))
-        };
-        if (info.id === undefined) {
-            throw new Error();
-        }
-        stateManager.save(BOOK_EDIT_INFO, info);
-        onClose(info);
-    }, [form, onClose]);
+        await mutate({input});
+        onClose();
+    }, [form, mutate, onClose]);
 
     const onCancel = useCallback(() => {
         onClose();
@@ -61,7 +61,8 @@ export const BookDialog: FC<{
         title={`${value === undefined ? 'Create' : 'Edit'} Book`}
         onOk={onOk}
         onCancel={onCancel}
-        width={1000}>
+        width={1000}
+        okButtonProps={{loading}}>
             <Form form={form} labelCol={{span: 8}} wrapperCol={{span: 16}}>
                 <Form.Item name="id" hidden={true}/>
                 <Form.Item label="Name" name="name">

@@ -1,5 +1,6 @@
 import { GraphQLNetwork, ScalarRow, ParameterizedAssociationProperties } from "graphql-state";
 import { PositionType } from "graphql-state/dist/meta/Configuration";
+import { publishRequestLog, publishResponseLog } from "./log/HttpLog";
 import { newTypedConfiguration } from "./__generated";
 
 function createNameFilterAssociationProperties<
@@ -71,7 +72,7 @@ export const stateManager =
     .associationProperties("Author", "books", createNameFilterAssociationProperties())
 
     .network(new GraphQLNetwork(async(body, variables) => {
-        console.log(`fetching query ${body} with ${JSON.stringify(variables)}`);
+        const id = publishRequestLog(body, variables);
         const response = await fetch('http://localhost:8080/graphql', {
             method: 'POST',
             headers: {
@@ -82,7 +83,9 @@ export const stateManager =
                 variables,
             }),
         }); 
-        return await response.json();
+        const json = await response.json();
+        publishResponseLog(id, json);
+        return json;
     }))
     .buildStateManager()
 ;

@@ -90,10 +90,12 @@ class EntityManager {
             const recordManager = this.recordManager(typeName);
             if (Array.isArray(idOrArray)) {
                 for (const id of idOrArray) {
-                    recordManager.delete(id);
+                    if (id !== undefined && id !== null) {
+                        recordManager.delete(id);
+                    }
                 }
             }
-            else {
+            else if (idOrArray !== undefined && idOrArray !== undefined) {
                 recordManager.delete(idOrArray);
             }
         });

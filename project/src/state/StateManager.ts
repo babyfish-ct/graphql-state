@@ -24,12 +24,12 @@ export interface StateManager<TSchema extends SchemaType> {
 
     delete<TName extends keyof TSchema["entities"] & string>(
         typeName: TName, 
-        id: TSchema["entities"][TName][" $id"]
+        id: TSchema["entities"][TName][" $id"] | undefined
     ): void;
 
     delete<TName extends keyof TSchema["entities"] & string>(
         typeName: TName, 
-        ids: ReadonlyArray<TSchema["entities"][TName][" $id"]>
+        ids: ReadonlyArray<TSchema["entities"][TName][" $id"] | undefined> | undefined
     ): void;
 
     addEntityEvictListener(listener: (e: EntityEvictEvent) => void): void;

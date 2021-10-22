@@ -4,7 +4,7 @@ import { ComponentDecorator } from "../../../common/ComponentDecorator";
 import { useQuery } from "graphql-state";
 import { book$$, bookStore$$, mutation$, query$ } from "../__generated/fetchers";
 import { ModelType, ParameterRef } from "graphql-ts-client-api";
-import { DELETE_CONFIRM_CLASS, INFORMATION_CLASS } from "../Css";
+import { DELETE_CONFIRM_CLASS, DELETING_ROW_CLASS, INFORMATION_CLASS } from "../Css";
 import { BookStoreDialog } from "./BookStoreDialog";
 import { useMutation } from "graphql-state/dist/state/StateHook";
 import { stateManager } from "../Environment";
@@ -37,15 +37,14 @@ export const BookStoreList = memo(() => {
         mutation$.deleteBookStore(),
         {
             onSuccess: data => {
-                if (data.deleteBookStore !== undefined) {
-                    stateManager.delete("BookStore", data.deleteBookStore)
-                }
+                stateManager.delete("BookStore", data.deleteBookStore);
             }
         }
     );
 
     const [dialog, setDialog] = useState<"NEW" | "EDIT">();
     const [editing, setEditing] = useState<ModelType<typeof BOOK_STORE_ROW>>();
+    const [deleting, setDeleting] = useState<ModelType<typeof BOOK_STORE_ROW>>();
 
     const onNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value.trim();
@@ -68,10 +67,19 @@ export const BookStoreList = memo(() => {
                     </ul>
                 </div>
             </>,
-            onOk: async () => {
-                await remove({id: row.id});
+            onOk: () => {
+                setDeleting(row);
+                remove({id: row.id});
             }
         });
+    }, [remove]);
+
+    const onAddClick = useCallback(() => {
+        setDialog("NEW");
+    }, []);
+
+    const onDialogClose = useCallback(() => {
+        setDialog(undefined);
     }, []);
 
     const renderBooks = useCallback((_: any, row: ModelType<typeof BOOK_STORE_ROW>) => {
@@ -90,18 +98,18 @@ export const BookStoreList = memo(() => {
         return (
             <Button.Group>
                 <Button onClick={() => { setDialog("EDIT"); setEditing(row); }}>Edit</Button>
-                <Button onClick={( )=> { onDelete(row); }}>Delete</Button>
+                <Button 
+                onClick={()=> { onDelete(row); }} 
+                loading={removing && deleting?.id === row.id }>
+                    Delete
+                </Button>
             </Button.Group>
         );
-    }, [onDelete]);
+    }, [onDelete, removing, deleting]);
 
-    const onAddClick = useCallback(() => {
-        setDialog("NEW");
-    }, []);
-
-    const onDialogClose = useCallback(() => {
-        setDialog(undefined);
-    }, []);
+    const rowClassName = useCallback((row: ModelType<typeof BOOK_STORE_ROW>) => {
+        return removing && deleting?.id === row.id ? DELETING_ROW_CLASS : "";
+    }, [deleting, removing]);
 
     return (
         <ComponentDecorator name="BookStoreList">
@@ -121,7 +129,11 @@ export const BookStoreList = memo(() => {
                 {
                     !loading && data &&
                     <>
-                        <Table rowKey="id" dataSource={data.stores} pagination={false}>
+                        <Table 
+                        rowKey="id" 
+                        dataSource={data.stores} 
+                        pagination={false}
+                        rowClassName={rowClassName}>
                             <Table.Column title="Name" dataIndex="name"/>
                             <Table.Column title="Books" render={renderBooks}/>
                             <Table.Column title="Operations" render={renderOperations}/>
