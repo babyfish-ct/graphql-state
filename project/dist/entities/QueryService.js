@@ -115,11 +115,14 @@ function mapRecord(type, record, runtimeSchape) {
     for (const [, field] of runtimeSchape.fieldMap) {
         if (field.childShape !== undefined) {
             const fieldMetadata = type.fieldMap.get(field.name);
+            if (fieldMetadata === undefined) {
+                throw new Error(`Cannot find the method for field "${type.name}.${field.name}"`);
+            }
             const association = record.getAssociation(fieldMetadata, field.args);
             if (association === undefined && !record.hasAssociation(fieldMetadata, field.args)) {
                 canNotFoundFromCache(`Cannot find the associaton field '${fieldMetadata.fullName}${(_b = `:${(_a = field.args) === null || _a === void 0 ? void 0 : _a.key}`) !== null && _b !== void 0 ? _b : ""}' for object whose id is '${record.id}'`);
             }
-            entity[(_c = field.alias) !== null && _c !== void 0 ? _c : field.name] = mapAssociation(fieldMetadata, association, field.childShape);
+            entity[(_c = field.alias) !== null && _c !== void 0 ? _c : field.name] = mapAssociation(fieldMetadata, association, fieldMetadata.category === "CONNECTION" ? field.nodeShape : field.childShape);
         }
         else if (field.name !== idFieldName) {
             const scalar = record.getSalar(field.name);

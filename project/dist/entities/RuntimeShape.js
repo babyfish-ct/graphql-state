@@ -18,7 +18,7 @@ function toRuntimeShape0(parentPath, fetcher, variables) {
 }
 exports.toRuntimeShape0 = toRuntimeShape0;
 function addField(parentPath, fieldName, field, runtimeShapeFieldMap, fetcherVaribles) {
-    var _a;
+    var _a, _b, _c, _d, _e, _f;
     if (fieldName.startsWith("...")) {
         if (field.childFetchers !== undefined) {
             for (const childFetcher of field.childFetchers) {
@@ -39,15 +39,24 @@ function addField(parentPath, fieldName, field, runtimeShapeFieldMap, fetcherVar
     }
     const alias = (_a = field.fieldOptionsValue) === null || _a === void 0 ? void 0 : _a.alias;
     const directives = standardizedDirectives(field, fetcherVaribles);
-    const childShape = field.childFetchers !== undefined ?
-        toRuntimeShape0(`${parentPath}${fieldName}/`, field.childFetchers[0], fetcherVaribles) :
+    const childFetcher = field.childFetchers !== undefined ? field.childFetchers[0] : undefined;
+    const childShape = childFetcher !== undefined ?
+        toRuntimeShape0(`${parentPath}${fieldName}/`, childFetcher, fetcherVaribles) :
         undefined;
+    let nodeShape = undefined;
+    if ((childFetcher === null || childFetcher === void 0 ? void 0 : childFetcher.fetchableType.category) === "CONNECTION") {
+        nodeShape = (_f = (_e = (_d = (_c = (_b = childShape === null || childShape === void 0 ? void 0 : childShape.fieldMap) === null || _b === void 0 ? void 0 : _b.get("edges")) === null || _c === void 0 ? void 0 : _c.childShape) === null || _d === void 0 ? void 0 : _d.fieldMap) === null || _e === void 0 ? void 0 : _e.get("node")) === null || _f === void 0 ? void 0 : _f.childShape;
+        if (nodeShape === undefined) {
+            throw new Error(`Illega fetch path ${parentPath}${fieldName}, the sub path "edges/node" of connecton is required`);
+        }
+    }
     runtimeShapeFieldMap.set(fieldName, {
         name: fieldName,
         args: VariableArgs_1.VariableArgs.of(variables),
         alias,
         directives,
-        childShape
+        childShape,
+        nodeShape
     });
 }
 function standardizedDirectives(field, fetcherVaribles) {

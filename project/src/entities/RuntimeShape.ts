@@ -1,5 +1,4 @@
 import { Fetcher, FetcherField, ParameterRef } from "graphql-ts-client-api";
-import { standardizedVariables } from "../state/impl/Variables";
 import { VariableArgs } from "./VariableArgs";
 
 /*
@@ -16,7 +15,8 @@ export interface RuntimeShapeField {
     readonly args?: VariableArgs;
     readonly alias?: string;
     readonly directives?: any;
-    readonly childShape?: RuntimeShape
+    readonly childShape?: RuntimeShape;
+    readonly nodeShape?: RuntimeShape;
 }
 
 export function toRuntimeShape<TVariables extends object>(
@@ -74,10 +74,18 @@ function addField(
 
     const alias = field.fieldOptionsValue?.alias;
     const directives = standardizedDirectives(field, fetcherVaribles);
+    const childFetcher = field.childFetchers !== undefined ? field.childFetchers[0] : undefined;
     const childShape = 
-        field.childFetchers !== undefined ?
-        toRuntimeShape0(`${parentPath}${fieldName}/`, field.childFetchers[0], fetcherVaribles) :
+        childFetcher !== undefined ?
+        toRuntimeShape0(`${parentPath}${fieldName}/`, childFetcher, fetcherVaribles) :
         undefined;
+    let nodeShape: RuntimeShape | undefined = undefined;
+    if (childFetcher?.fetchableType.category === "CONNECTION") {
+        nodeShape = childShape?.fieldMap?.get("edges")?.childShape?.fieldMap?.get("node")?.childShape;
+        if (nodeShape === undefined) {
+            throw new Error(`Illega fetch path ${parentPath}${fieldName}, the sub path "edges/node" of connecton is required`);
+        } 
+    }
     
     runtimeShapeFieldMap.set(
         fieldName,
@@ -86,7 +94,8 @@ function addField(
             args: VariableArgs.of(variables),
             alias,
             directives,
-            childShape
+            childShape,
+            nodeShape
         }
     );
 }

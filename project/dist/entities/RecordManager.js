@@ -43,7 +43,7 @@ class RecordManager {
         return record;
     }
     save(shape, obj) {
-        var _a, _b, _c, _d, _e, _f, _g, _h;
+        var _a, _b;
         if (typeof obj !== "object" || Array.isArray(obj)) {
             throw new Error("obj can only be plain object");
         }
@@ -86,13 +86,10 @@ class RecordManager {
                         case "CONNECTION":
                             const edges = value.edges;
                             if (Array.isArray(edges)) {
-                                const nodeShape = (_h = (_g = (_f = (_e = (_d = (_c = shapeField
-                                    .childShape) === null || _c === void 0 ? void 0 : _c.fieldMap) === null || _d === void 0 ? void 0 : _d.get("edges")) === null || _e === void 0 ? void 0 : _e.childShape) === null || _f === void 0 ? void 0 : _f.fieldMap) === null || _g === void 0 ? void 0 : _g.get("node")) === null || _h === void 0 ? void 0 : _h.childShape;
-                                if (nodeShape !== undefined) {
-                                    const associationRecordManager = this.entityManager.recordManager(nodeShape.typeName);
-                                    for (const edge of edges) {
-                                        associationRecordManager.save(nodeShape, edge.node);
-                                    }
+                                const nodeShape = shapeField.nodeShape;
+                                const associationRecordManager = this.entityManager.recordManager(nodeShape.typeName);
+                                for (const edge of edges) {
+                                    associationRecordManager.save(nodeShape, edge.node);
                                 }
                             }
                             break;

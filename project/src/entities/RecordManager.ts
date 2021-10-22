@@ -103,19 +103,10 @@ export class RecordManager {
                         case "CONNECTION":
                             const edges = value.edges;
                             if (Array.isArray(edges)) {
-                                const nodeShape = shapeField
-                                    .childShape
-                                    ?.fieldMap
-                                    ?.get("edges")
-                                    ?.childShape
-                                    ?.fieldMap
-                                    ?.get("node")
-                                    ?.childShape;
-                                if (nodeShape !== undefined) {
-                                    const associationRecordManager = this.entityManager.recordManager(nodeShape.typeName);
-                                    for (const edge of edges) {
-                                        associationRecordManager.save(nodeShape, edge.node);
-                                    }
+                                const nodeShape = shapeField.nodeShape!;
+                                const associationRecordManager = this.entityManager.recordManager(nodeShape.typeName);
+                                for (const edge of edges) {
+                                    associationRecordManager.save(nodeShape, edge.node);
                                 }
                             }
                             break;

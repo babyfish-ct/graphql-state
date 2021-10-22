@@ -11,6 +11,7 @@ export interface RuntimeShapeField {
     readonly alias?: string;
     readonly directives?: any;
     readonly childShape?: RuntimeShape;
+    readonly nodeShape?: RuntimeShape;
 }
 export declare function toRuntimeShape<TVariables extends object>(fetcher: Fetcher<string, object, TVariables>, variables?: TVariables): RuntimeShape;
 export declare function toRuntimeShape0(parentPath: string, fetcher: Fetcher<string, object, object>, variables?: object): RuntimeShape;
