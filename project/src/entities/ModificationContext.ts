@@ -26,12 +26,8 @@ export class ModificationContext {
             }
             for (const [type, subMap] of pairMap) {
                 for (const [id, pair] of subMap) {
-                    if (pair.evicted || pair.evictedFieldKeys !== undefined) {
-                        this.publishEvictEvents(type, id, pair);
-                    }
-                    if (!pair.evicted) {
-                        this.publishChangeEvents(type, id, pair);
-                    }
+                    this.publishEvents(type, id, pair);
+                    
                 }
             }
         } while (this.objPairMap.size !== 0);
@@ -39,37 +35,21 @@ export class ModificationContext {
 
     insert(record: Record) {
         if (record.type.superType === undefined) {
-            const pair = this.pair(record, false);
-            if (pair.newObj === undefined) {
-                pair.newObj = new Map<string, any>();
-                pair.evicted = false;
-            }
-        }
-    }
-
-    update(record: Record) {
-        if (record.type.superType === undefined) {
-            const pair = this.pair(record, true);
-            if (pair.newObj === undefined) {
-                pair.newObj = new Map<string, any>();
-                pair.evicted = false;
-            }
+            const pair = this.pair(record, false, true);
         }
     }
 
     delete(record: Record) {
         if (record.type.superType === undefined) {
-            const pair = this.pair(record, true);
-            pair.newObj = undefined;
-            pair.evicted = false;
+            const pair = this.pair(record, true, false);
+            pair.deleted = true;
         }
     }
 
     evict(record: Record) {
         if (record.type.superType === undefined) {
-            const pair = this.pair(record, true);
-            pair.newObj = undefined;
-            pair.evicted = true;
+            const pair = this.pair(record, true, false);
+            pair.deleted = false;
         }
     }
 
@@ -78,27 +58,10 @@ export class ModificationContext {
             throw new Error("Internal bug: the changed name cannot be id");
         }
         if (oldValue !== newValue) {
-            const pair = this.objPairMap.get(record.type)?.get(record.id);
-            if (pair === undefined) {
-                throw new Error("Internal bug: the changed record is not cached in ModiciationContext");
-            }
-            if (pair.oldObj !== undefined && !pair.oldObj.has(fieldName)) {
-                pair.oldObj.set(VariableArgs.fieldKey(fieldName, args), oldValue);
-            }
-            let newObj = pair.newObj;
-            if (newObj === undefined) {
-                pair.newObj = newObj = new Map<string, any>();
-                pair.evicted = false;
-            }
+            const pair = this.pair(record, true, true);
             const key = VariableArgs.fieldKey(fieldName, args);
-            newObj?.set(key, newValue);
-            const evictedFieldKeys = pair.evictedFieldKeys;
-            if (evictedFieldKeys !== undefined) {
-                evictedFieldKeys.delete(key);
-                if (evictedFieldKeys.size === 0) {
-                    pair.evictedFieldKeys = undefined;
-                }            
-            }
+            pair.oldObj?.set(key, oldValue);
+            pair.newObj?.set(key, newValue);
         }
     }
 
@@ -106,17 +69,15 @@ export class ModificationContext {
         if (fieldName === record.type.idField.name) {
             throw new Error("Internal bug: the changed name cannot be id");
         }
-        const pair = this.pair(record, true);
+        const pair = this.pair(record, true, true);
+        
         const key = VariableArgs.fieldKey(fieldName, args);
+        console.log("before unset", key, pair)
         pair.newObj?.delete(key);
-        let evictedFieldKeys = pair.evictedFieldKeys;
-        if (evictedFieldKeys === undefined) {
-            pair.evictedFieldKeys = evictedFieldKeys = new Set<string>();
-        }
-        evictedFieldKeys.add(key);
+        console.log("after unset", key, pair)
     }
 
-    private pair(record: Record, initializeOldObj: boolean): ObjectPair {
+    private pair(record: Record, initializeOldObj: boolean, useNewObj: boolean): ObjectPair {
         const key = record.type;
         let subMap = this.objPairMap.get(key);
         if (subMap === undefined) {
@@ -126,80 +87,101 @@ export class ModificationContext {
 
         let pair = subMap.get(record.id);
         if (pair === undefined) {
-            pair = { oldObj: initializeOldObj ? record.createMap(): undefined, evicted: false };
+            const map = record.createMap();
+            pair = { 
+                oldObj: initializeOldObj ? map : undefined,
+                deleted: false 
+            };
             subMap.set(record.id, pair);
+        }
+        if (useNewObj) {
+            if (pair.newObj === undefined) {
+                const map = new Map<string, any>();
+                if (pair.oldObj !== undefined) {
+                    for (const [k, v] of pair.oldObj) {
+                        map.set(k, v);
+                    }
+                }
+                pair.newObj = map;
+                pair.deleted = false;
+            }
+        } else {
+            pair.newObj = undefined;
         }
         return pair;
     }
 
-    private publishEvictEvents(type: TypeMetadata, id: any, pair: ObjectPair) {
-        if (pair.evictedFieldKeys !== undefined) {
-            const map = new Map<string, any>();
+    private publishEvents(type: TypeMetadata, id: any, pair: ObjectPair) {
+        if (pair.newObj === undefined) {
+            const oldValueMap = new Map<string, any>();
             if (pair.oldObj !== undefined) {
-                for (const evictedFieldKey of pair.evictedFieldKeys) {
-                    if (pair.oldObj.has(evictedFieldKey)) {
-                        map.set(evictedFieldKey, pair.oldObj.get(evictedFieldKey));
+                for (const [key, value] of pair.oldObj) {
+                    oldValueMap.set(key, value);
+                }
+            }
+            if (pair.deleted) {
+                this.publishChangeEvent(
+                    new EntityChangeEventImpl(
+                        type.name,
+                        id,
+                        Array.from(oldValueMap.keys()).map(parseEntityKey),
+                        oldValueMap,
+                        undefined
+                    )
+                );
+            } else {
+                this.publishEvictEvent(
+                    new EntityEvictEventImpl(
+                        type.name,
+                        id,
+                        "row",
+                        Array.from(oldValueMap.keys()).map(parseEntityKey),
+                        oldValueMap
+                    )
+                );
+            }
+        } else {
+            const evictedValueMap = new Map<string, any>();
+            const oldValueMap = new Map<string, any>();
+            const newValueMap = new Map<string, any>();
+            if (pair.oldObj !== undefined) {
+                for (const [k, v] of pair.oldObj) {
+                    if (pair.newObj.has(k)) {
+                        if (v !== pair.newObj.get(k)) {
+                            oldValueMap.set(k, v);
+                        }
+                    } else {
+                        evictedValueMap.set(k, v);
                     }
                 }
             }
-            this.publishEvictEvent(
-                new EntityEvictEventImpl(
-                    type.name,
-                    id,
-                    "fields",
-                    Array.from(map.keys()).map(parseEntityKey),
-                    map
-                )
-            );
-        } else {
-            const oldObj = pair.oldObj ?? new Map<string, any>();
-            this.publishEvictEvent(
-                new EntityEvictEventImpl(
-                    type.name,
-                    id,
-                    "row",
-                    Array.from(oldObj.keys()).map(parseEntityKey),
-                    oldObj
-                )
-            );
-        }
-    }
-
-    private publishChangeEvents(type: TypeMetadata, id: any, pair: ObjectPair) {
-        const fieldKeys = new Set<string>();
-        const oldValueMap = new Map<string, any>();
-        const newValueMap = new Map<string, any>();
-        if (pair.newObj !== undefined) {
-            for (const [fieldKey, newValue] of pair.newObj) {
-                if (pair.evictedFieldKeys?.has(fieldKey) !== true) {
-                    const oldValue = pair.oldObj?.get(fieldKey);
-                    fieldKeys.add(fieldKey);
-                    oldValueMap.set(fieldKey, oldValue);
-                    newValueMap.set(fieldKey, newValue);
+            for (const [k, v] of pair.newObj) {
+                if (pair.oldObj === undefined || oldValueMap.has(k)) {
+                    newValueMap.set(k, v);
                 }
             }
-        } else if (pair.oldObj !== undefined) {
-            for (const [fieldKey, oldValue] of pair.oldObj) {
-                if (pair.evictedFieldKeys?.has(fieldKey) !== true) {
-                    fieldKeys.add(fieldKey);
-                    oldValueMap.set(fieldKey, oldValue);
-                    newValueMap.set(fieldKey, undefined);
-                }
+            if (evictedValueMap.size !== 0) {
+                this.publishEvictEvent(
+                    new EntityEvictEventImpl(
+                        type.name,
+                        id,
+                        "fields",
+                        Array.from(evictedValueMap.keys()).map(parseEntityKey),
+                        evictedValueMap
+                    )
+                );
             }
-        }
-        if (pair.newObj === undefined || newValueMap.size !== 0) {
-            const event = new EntityChangeEventImpl(
-                type.name,
-                id,
-                pair.oldObj !== undefined && pair.newObj !== undefined ? 
-                "update" : (
-                    pair.newObj !== undefined ? "insert" : "delete"
-                ),
-                Array.from(fieldKeys).map(parseEntityKey),
-                oldValueMap,
-                newValueMap
-            );
-            this.publishChangeEvent(event);
+            if (oldValueMap.size !== 0 || newValueMap.size !== 0) {
+                this.publishChangeEvent(
+                    new EntityChangeEventImpl(
+                        type.name,
+                        id,
+                        Array.from((newValueMap ?? oldValueMap).keys()).map(parseEntityKey),
+                        oldValueMap.size !== 0 ? oldValueMap : undefined,
+                        newValueMap.size !== 0 ? newValueMap : undefined
+                    )
+                );
+            }
         }
     }
 }
@@ -215,8 +197,7 @@ function parseEntityKey(key: string): EntityKey {
 interface ObjectPair {
     oldObj?: Map<string, any>;
     newObj?: Map<string, any>;
-    evicted: boolean;
-    evictedFieldKeys?: Set<string>;
+    deleted: boolean;
 }
 
 class EntityEvictEventImpl implements EntityEvictEvent {
@@ -254,21 +235,30 @@ class EntityChangeEventImpl implements EntityChangeEvent {
 
     readonly eventType: "change" = "change";
 
+    readonly changedType: "insert" | "update" | "delete";
+
     constructor(
         readonly typeName: string,
         readonly id: any,
-        readonly changedType: "insert" | "update" | "delete",
+
         readonly changedKeys: ReadonlyArray<
             string | {
                 readonly name: string,
                 readonly variables: any
             }
         >,
-        private oldValueMap: ReadonlyMap<string, any>,
-        private newValueMap: ReadonlyMap<string, any>
+        private oldValueMap: ReadonlyMap<string, any> | undefined,
+        private newValueMap: ReadonlyMap<string, any> | undefined
     ) {
-        if (oldValueMap.size !== newValueMap.size) {
-            throw new Error("Internal bug: different sizes of oldValueMap and newValueMap");
+        if (oldValueMap !== undefined && newValueMap !== undefined) {
+            if (oldValueMap.size !== newValueMap.size) {
+                throw new Error("Internal bug: different sizes of oldValueMap and newValueMap");
+            }
+            this.changedType = "update";
+        } else if (newValueMap === undefined) {
+            this.changedType = "delete";
+        } else {
+            this.changedType = "insert";
         }
     }
 
@@ -276,7 +266,7 @@ class EntityChangeEventImpl implements EntityChangeEvent {
         const key = typeof changedKey === "string" ?
             changedKey :
             VariableArgs.fieldKey(changedKey.name, VariableArgs.of(changedKey.variables));
-        return this.oldValueMap.has(key);
+        return this.oldValueMap?.has(key) === true || this.newValueMap?.has(key) === true;
     }
   
     oldValue(changedKey: EntityKey): any {

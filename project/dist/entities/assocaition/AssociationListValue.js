@@ -114,12 +114,12 @@ class AssociationListValue extends AssocaitionValue_1.AssociationValue {
         }
     }
     valueEquals(newList) {
-        var _a, _b, _c, _d;
-        if (((_b = (_a = this.elements) === null || _a === void 0 ? void 0 : _a.length) !== null && _b !== void 0 ? _b : 0) !== ((_c = newList === null || newList === void 0 ? void 0 : newList.length) !== null && _c !== void 0 ? _c : 0)) {
+        var _a;
+        if (this.elements === undefined || this.elements.length !== newList.length) {
             return false;
         }
         const idFieldName = this.association.field.targetType.idField.name;
-        for (let i = ((_d = newList === null || newList === void 0 ? void 0 : newList.length) !== null && _d !== void 0 ? _d : 0) - 1; i >= 0; --i) {
+        for (let i = ((_a = newList === null || newList === void 0 ? void 0 : newList.length) !== null && _a !== void 0 ? _a : 0) - 1; i >= 0; --i) {
             const oldId = this.elements !== undefined ?
                 this.elements[i].id :
                 undefined;

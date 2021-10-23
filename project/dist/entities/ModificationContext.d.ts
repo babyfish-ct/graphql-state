@@ -10,12 +10,10 @@ export declare class ModificationContext {
     constructor(linkToQuery: (type: TypeMetadata, id: any) => void, publishEvictEvent: (event: EntityEvictEvent) => void, publishChangeEvent: (event: EntityChangeEvent) => void);
     close(): void;
     insert(record: Record): void;
-    update(record: Record): void;
     delete(record: Record): void;
     evict(record: Record): void;
     set(record: Record, fieldName: string, args: VariableArgs | undefined, oldValue: any, newValue: any): void;
     unset(record: Record, fieldName: string, args: VariableArgs | undefined): void;
     private pair;
-    private publishEvictEvents;
-    private publishChangeEvents;
+    private publishEvents;
 }

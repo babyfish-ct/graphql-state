@@ -150,9 +150,9 @@ export class AssociationListValue extends AssociationValue {
     }
 
     private valueEquals(
-        newList: ReadonlyArray<any> | undefined
+        newList: ReadonlyArray<any>
     ): boolean {
-        if ((this.elements?.length ?? 0) !== (newList?.length ?? 0)) {
+        if (this.elements === undefined || this.elements.length !== newList.length) {
             return false;
         }
         const idFieldName = this.association.field.targetType!.idField.name;

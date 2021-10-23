@@ -68,7 +68,6 @@ class Association {
     }
     link(entityManager, target, mostStringentArgs, insideModification = false) {
         this.changeLinks(() => {
-            entityManager.modificationContext.update(this.record);
             this.valueMap.forEachValue(value => {
                 var _a, _b;
                 if (insideModification && (mostStringentArgs === null || mostStringentArgs === void 0 ? void 0 : mostStringentArgs.key) === ((_a = value.args) === null || _a === void 0 ? void 0 : _a.key)) {
@@ -108,7 +107,6 @@ class Association {
     }
     unlink(entityManager, target, leastStringentArgs, insideModification = false) {
         this.changeLinks(() => {
-            entityManager.modificationContext.update(this.record);
             this.valueMap.forEachValue(value => {
                 var _a, _b;
                 if (insideModification && (leastStringentArgs === null || leastStringentArgs === void 0 ? void 0 : leastStringentArgs.key) === ((_a = value.args) === null || _a === void 0 ? void 0 : _a.key)) {
@@ -148,7 +146,6 @@ class Association {
     }
     unlinkAll(entityManager, target) {
         this.changeLinks(() => {
-            entityManager.modificationContext.update(this.record);
             this.valueMap.forEachValue(value => {
                 value.unlink(entityManager, [target]);
             });

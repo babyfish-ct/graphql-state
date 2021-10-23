@@ -31,7 +31,6 @@ class RecordManager {
         const ctx = this.entityManager.modificationContext;
         let record = this.recordMap.get(id);
         if (record !== undefined) {
-            ctx.update(record);
             record.undelete();
         }
         else {

@@ -90,7 +90,6 @@ export class Association {
         insideModification: boolean = false
     ) {
         this.changeLinks(() => {
-            entityManager.modificationContext.update(this.record);
             this.valueMap.forEachValue(value => {
                 if (insideModification && mostStringentArgs?.key === value.args?.key) {
                     return;
@@ -134,7 +133,6 @@ export class Association {
         insideModification: boolean = false
     ) {
         this.changeLinks(() => {
-            entityManager.modificationContext.update(this.record);
             this.valueMap.forEachValue(value => {
                 if (insideModification && leastStringentArgs?.key === value.args?.key) {
                     return;
@@ -179,7 +177,6 @@ export class Association {
         target: Record
     ) {
         this.changeLinks(() => {
-            entityManager.modificationContext.update(this.record);
             this.valueMap.forEachValue(value => {
                 value.unlink(
                     entityManager, 
