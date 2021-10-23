@@ -1,3 +1,4 @@
+import { VariableArgs } from "../../entities/VariableArgs";
 import { State } from "../State";
 import { ScopedStateManager } from "./ScopedStateManager";
 import { StateValue } from "./StateValue";
@@ -6,6 +7,6 @@ export declare class StateInstance {
     readonly state: State<any>;
     private valueMap;
     constructor(scopedStateManager: ScopedStateManager, state: State<any>);
-    retain(variablesCode: string | undefined, variables: any): StateValue;
-    release(variablesCode: string | undefined): void;
+    retain(args: VariableArgs | undefined): StateValue;
+    release(args: VariableArgs | undefined): void;
 }

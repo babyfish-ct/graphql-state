@@ -8,31 +8,37 @@ export function makeStateFactory<TSchema extends SchemaType = EmptySchemaType>()
 export interface StateFactory<TSchema extends SchemaType> {
 
     createState<T>(
+        name: string,
         defaultValue: T,
         options?: WritableStateCreationOptions<T>
     ): SingleWritableState<T>;
 
     createParameterizedState<T, TVariables>(
+        name: string,
         defaultValue: T | ((variables: TVariables) => T),
         options?: WritableStateCreationOptions<T>
     ): ParameterizedWritableState<T, TVariables>;
 
     createComputedState<T>(
+        name: string,
         valueSupplier: (ctx: ComputedContext<TSchema>) => T,
         options?: ComputedStateCreationOptions
     ): SingleComputedState<T>;
 
     createParameterizedComputedState<T, TVariables>(
+        name: string,
         valueSupplier: (ctx: ParameterizedComputedContext<TSchema, T, TVariables>, variables: TVariables) => T,
         options?: ComputedStateCreationOptions
     ): ParameterizedComputedState<T, TVariables>;
     
-    createAsyncState<T>( 
+    createAsyncState<T>(
+        name: string, 
         valueSupplier: (ctx: ComputedContext<TSchema>) => Promise<T>,
         options?: ComputedStateCreationOptions
     ): SingleAsyncState<T>;
 
     createParameterizedAsyncState<T, TVariables>( 
+        name: string,
         valueSupplier: (ctx: ParameterizedAsyncContext<TSchema, T, TVariables>, variables: TVariables) => Promise<T>,
         options?: ComputedStateCreationOptions
     ): ParameterizedAsyncState<T, TVariables>;
@@ -49,6 +55,7 @@ export type ParameterizedState<T, TVariables> =
 
 export interface SingleWritableState<T> {
 
+    readonly " $name": string;
     readonly " $stateType": "WRITABLE";
     readonly " $parameterized": false;
 
@@ -59,6 +66,7 @@ export interface SingleWritableState<T> {
 
 export interface ParameterizedWritableState<T, TVariables> {
 
+    readonly " $name": string;
     readonly " $stateType": "WRITABLE";
     readonly " $parameterized": true;
 
@@ -69,6 +77,7 @@ export interface ParameterizedWritableState<T, TVariables> {
 
 export interface SingleComputedState<T> {
 
+    readonly " $name": string;
     readonly " $stateType": "COMPUTED";
     readonly " $parameterized": false;
 
@@ -79,6 +88,7 @@ export interface SingleComputedState<T> {
 
 export interface ParameterizedComputedState<T, TVariables> {
 
+    readonly " $name": string;
     readonly " $stateType": "COMPUTED";
     readonly " $parameterized": true;
 
@@ -89,6 +99,7 @@ export interface ParameterizedComputedState<T, TVariables> {
 
 export interface SingleAsyncState<T> {
 
+    readonly " $name": string;
     readonly " $stateType": "ASYNC";
     readonly " $parameterized": false;
     
@@ -99,6 +110,7 @@ export interface SingleAsyncState<T> {
 
 export interface ParameterizedAsyncState<T, TVariables> {
 
+    readonly " $name": string;
     readonly " $stateType": "ASYNC";
     readonly " $parameterized": true;
     
@@ -180,15 +192,18 @@ export interface ParameterizedAsyncContext<
     ): Promise<T>;
 }
 
-export type StatePropagation = "REQUIRED" | "REQUIRES_NEW" | "MANDATORY";
+export type StateAccessingScope = "auto" | "local";
 
 class StateFactoryImpl<TSchema extends SchemaType> implements StateFactory<TSchema> {
 
     createState<T>(
+        name: string,
         defaultValue: T,
         options?: StateCreationOptions
     ): SingleWritableState<T> {
+        stateRegistry.register(name);
         return {
+            " $name": name,
             " $stateType": "WRITABLE",
             " $parameterized": false,
             " $defaultValue": defaultValue,
@@ -198,10 +213,13 @@ class StateFactoryImpl<TSchema extends SchemaType> implements StateFactory<TSche
     }
 
     createParameterizedState<T, TVariables>(
+        name: string,
         defaultValue: T | ((variables: TVariables) => T),
         options?: StateCreationOptions
     ): ParameterizedWritableState<T, TVariables> {
+        stateRegistry.register(name);
         return {
+            " $name": name,
             " $stateType": "WRITABLE",
             " $parameterized": true,
             " $defaultValue": defaultValue,
@@ -211,10 +229,13 @@ class StateFactoryImpl<TSchema extends SchemaType> implements StateFactory<TSche
     }
 
     createComputedState<T>(
+        name: string,
         valueSupplier: (ctx: ComputedContext<TSchema>) => T,
         options?: ComputedStateCreationOptions
     ): SingleComputedState<T> {
+        stateRegistry.register(name);
         return {
+            " $name": name,
             " $stateType": "COMPUTED",
             " $parameterized": false,
             " $valueSupplier": valueSupplier,
@@ -224,10 +245,13 @@ class StateFactoryImpl<TSchema extends SchemaType> implements StateFactory<TSche
     }
 
     createParameterizedComputedState<T, TVariables>(
+        name: string,
         valueSupplier: (ctx: ParameterizedComputedContext<TSchema, T, TVariables>, variables: TVariables) => T,
         options?: ComputedStateCreationOptions
     ): ParameterizedComputedState<T, TVariables> {
+        stateRegistry.register(name);
         return {
+            " $name": name,
             " $stateType": "COMPUTED",
             " $parameterized": true,
             " $valueSupplier": valueSupplier,
@@ -237,10 +261,13 @@ class StateFactoryImpl<TSchema extends SchemaType> implements StateFactory<TSche
     }
     
     createAsyncState<T>( 
+        name: string,
         valueSupplier: (ctx: ComputedContext<TSchema>) => Promise<T>,
         options?: ComputedStateCreationOptions
     ): SingleAsyncState<T> {
+        stateRegistry.register(name);
         return {
+            " $name": name,
             " $stateType": "ASYNC",
             " $parameterized": false,
             " $valueSupplier": valueSupplier,
@@ -250,10 +277,13 @@ class StateFactoryImpl<TSchema extends SchemaType> implements StateFactory<TSche
     }
 
     createParameterizedAsyncState<T, TVariables>( 
+        name: string,
         valueSupplier: (ctx: ParameterizedAsyncContext<TSchema, T, TVariables>, variables: TVariables) => Promise<T>,
         options?: ComputedStateCreationOptions
     ): ParameterizedAsyncState<T, TVariables> {
+        stateRegistry.register(name);
         return {
+            " $name": name,
             " $stateType": "ASYNC",
             " $parameterized": true,
             " $valueSupplier": valueSupplier,
@@ -286,10 +316,10 @@ export interface ComputedStateCreatingContext extends StateCreationOptions {
 
 export type StateUnmoutHandler = () => void;
 
-export type StateScopeMode = "GLOBAL_SCOPE_ONLY" | "NESTED_SCOPE_ONLY" | "ANY_SCOPE"; 
+export type StateScopeMode = "global-scope-only" | "any-scope"; 
 
 export interface StateAccessingOptions {
-    readonly propagation?: StatePropagation;
+    readonly scope?: StateAccessingScope;
 }
 
 export interface ParameterizedStateAccessingOptions<TVariables> extends StateAccessingOptions {
@@ -299,3 +329,32 @@ export interface ParameterizedStateAccessingOptions<TVariables> extends StateAcc
 function unsupportedOperation() {
     throw new Error("UnsupportedOperationException");
 }
+
+class StateRegistry {
+
+    private nameVersionMap = new Map<string, number>();
+
+    private version = 0;
+
+    constructor() {
+        const win = window as any;
+        const hotUpdate = win.webpackHotUpdate;
+        if (typeof hotUpdate === "function") {
+            win.hotUpdate = undefined;
+            win.webpackHotUpdate = (...args: any[]) => {
+                this.version++;
+                hotUpdate.apply(this, args);
+            }
+        }
+    }
+
+    register(name: string) {
+        const version = this.nameVersionMap.get(name);
+        if (version !== undefined && version >= this.version) {
+            throw new Error(`Duplicated state name "${name}"`);
+        }
+        this.nameVersionMap.set(name, this.version);
+    }
+}
+
+const stateRegistry = new StateRegistry();

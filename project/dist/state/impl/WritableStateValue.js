@@ -3,15 +3,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.WritableStateValue = void 0;
 const StateValue_1 = require("./StateValue");
 class WritableStateValue extends StateValue_1.StateValue {
-    constructor(stateInstance, variablesCode, variables) {
-        super(stateInstance, variablesCode, variables);
+    constructor(stateInstance, args, disposer) {
+        var _a;
+        super(stateInstance, args, disposer);
         this._lodable = {
             loading: false
         };
         this.accessor = access.bind(this);
         const defaultValue = this.stateInstance.state[" $defaultValue"];
         this._lodable = Object.assign(Object.assign({}, this._lodable), { data: stateInstance.state[" $parameterized"] && typeof defaultValue === "function" ?
-                defaultValue(variables !== null && variables !== void 0 ? variables : {}) :
+                defaultValue((_a = args === null || args === void 0 ? void 0 : args.variables) !== null && _a !== void 0 ? _a : {}) :
                 defaultValue });
     }
     get result() {

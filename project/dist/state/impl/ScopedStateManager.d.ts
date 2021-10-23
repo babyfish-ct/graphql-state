@@ -1,4 +1,4 @@
-import { State, StatePropagation } from "../State";
+import { State, StateAccessingScope } from "../State";
 import { StateInstance } from "./StateInstance";
 import { StateManagerImpl } from "./StateManagerImpl";
 export declare class ScopedStateManager {
@@ -8,8 +8,7 @@ export declare class ScopedStateManager {
     constructor(parent: StateManagerImpl<any> | ScopedStateManager);
     get parent(): ScopedStateManager | undefined;
     get stateManager(): StateManagerImpl<any>;
-    instance(state: State<any>, propagation: StatePropagation): StateInstance;
+    instance(state: State<any>, scope: StateAccessingScope): StateInstance;
     private getInstance;
     private createInstance;
-    private createInstance0;
 }

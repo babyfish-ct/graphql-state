@@ -1,18 +1,25 @@
+import { VariableArgs } from "../../entities/VariableArgs";
 import { StateInstance } from "./StateInstance";
 export declare abstract class StateValue {
     readonly stateInstance: StateInstance;
-    readonly variablesCode: string | undefined;
-    readonly variables: any;
+    readonly args: VariableArgs | undefined;
+    private disposer;
     private _refCount;
+    private _mounted;
     private _unmountHandler?;
-    constructor(stateInstance: StateInstance, variablesCode: string | undefined, variables: any);
+    private _disposeTimerId?;
+    private _createdMillis;
+    constructor(stateInstance: StateInstance, args: VariableArgs | undefined, disposer: () => void);
     abstract get result(): any;
     abstract get loadable(): any;
-    retain(): boolean;
-    release(): boolean;
-    mount(): void;
-    umount(): void;
+    retain(): this;
+    release(maxDelayMillis: number): void;
     protected abstract createMountContext(): any;
+    private dispose;
+    private mount;
+    private umount;
+    protected onMount(): void;
+    protected onUnmount(): void;
 }
 export interface Loadable<T = any> {
     readonly data?: T;

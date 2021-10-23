@@ -1,6 +1,7 @@
 import { ObjectFetcher } from "graphql-ts-client-api";
 import { QueryArgs } from "../../entities/QueryArgs";
 import { QueryResult } from "../../entities/QueryResult";
+import { VariableArgs } from "../../entities/VariableArgs";
 import { ParameterizedStateAccessingOptions, State, StateAccessingOptions } from "../State";
 import { ComputedStateValue } from "./ComputedStateValue";
 import { ScopedStateManager } from "./ScopedStateManager";
@@ -48,7 +49,7 @@ export class InternalComputedContext {
             let exception = undefined;
             for (const dep of this.stateValueDependencies) {
                 try {
-                    dep.stateInstance.release(dep.variables);
+                    dep.stateInstance.release(dep.args);
                 } catch (ex) {
                     if (exception === undefined) {
                         exception = ex;
@@ -72,9 +73,8 @@ export class InternalComputedContext {
     }
 
     getSelf(options?: StateAccessingOptions): any {
-        const variables = standardizedVariables((options as any)?.variables);
-        const variablesCode = variables !== undefined ? JSON.stringify(variables) : undefined;
-        if (this.currentStateValue.variablesCode === variablesCode) {
+        const args = VariableArgs.of((options as any)?.variables);
+        if (this.currentStateValue.args?.key === args?.key) {
             throw new Error("Cannot get the current state with same variables in the computing implementation, please support another variables");
         }
         return this.get(this.currentStateValue.stateInstance.state, options);
@@ -85,16 +85,15 @@ export class InternalComputedContext {
             throw new Error("ComputedContext has been closed");
         }
 
-        const variables = standardizedVariables((options as Partial<ParameterizedStateAccessingOptions<any>>)?.variables);
-        const variablesCode = variables !== undefined ? JSON.stringify(variables) : undefined;
-        const stateInstance = this.scope.instance(state, options?.propagation ?? "REQUIRED");
-        const stateValue = stateInstance.retain(variablesCode, variables);
+        const args = VariableArgs.of((options as Partial<ParameterizedStateAccessingOptions<any>>)?.variables);
+        const stateInstance = this.scope.instance(state, options?.scope ?? "auto");
+        const stateValue = stateInstance.retain(args);
 
         let result: any;
         try {
             result = this.get0(stateValue);
         } catch (ex) {
-            stateInstance.release(variablesCode);
+            stateInstance.release(args);
             throw ex;
         }
         

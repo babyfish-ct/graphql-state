@@ -19,45 +19,34 @@ class ScopedStateManager {
     get stateManager() {
         return this._stateManager;
     }
-    instance(state, propagation) {
-        const instance = this.getInstance(state, propagation !== "REQUIRES_NEW");
+    instance(state, scope) {
+        const instance = this.getInstance(state, scope);
         if (instance !== undefined) {
             return instance;
         }
-        if (propagation === "MANDATORY") {
-            throw new Error(`This propagation is "MANDATORY" but the state cannot be found`);
-        }
-        return this.createInstance(state, propagation);
+        return this.createInstance(state, scope);
     }
-    getInstance(state, findInParent) {
-        const instance = this._instanceMap.get(state);
+    getInstance(state, scope) {
+        const instance = this._instanceMap.get(state[" $name"]);
         if (instance !== undefined) {
             return instance;
         }
-        if (findInParent && this._parent) {
-            return this._parent.getInstance(state, true);
+        if (scope !== "local" && this._parent) {
+            return this._parent.getInstance(state, scope);
         }
         return undefined;
     }
-    createInstance(state, propagation) {
+    createInstance(state, scope) {
         var _a, _b;
-        const mode = (_b = (_a = state[" $options"]) === null || _a === void 0 ? void 0 : _a.mode) !== null && _b !== void 0 ? _b : "GLOBAL_SCOPE_ONLY";
-        if (propagation === "REQUIRES_NEW" && this._parent !== undefined) {
-            if (mode === "GLOBAL_SCOPE_ONLY") {
-                throw new Error(`This propagation is "REQUIRES_NEW" and current scope is not global scope, but the state is "GLOBAL_SCOPE_ONLY"`);
-            }
+        if (scope !== "local" && this._parent) {
+            return this._parent.createInstance(state, scope);
         }
-        return this.createInstance0(state, mode);
-    }
-    createInstance0(state, mode) {
-        if (mode === "NESTED_SCOPE_ONLY" && this._parent === undefined) {
-            throw new Error(`The current scope is global scope, but the state is "NESTED_SCOPE_ONLY"`);
-        }
-        if (mode === "GLOBAL_SCOPE_ONLY" && this._parent !== undefined) {
-            return this._parent.createInstance0(state, mode);
+        const mode = (_b = (_a = state[" $options"]) === null || _a === void 0 ? void 0 : _a.mode) !== null && _b !== void 0 ? _b : "global-scope-only";
+        if (mode === "global-scope-only" && this._parent) {
+            throw new Error(`The state using scope is "local" and current scope is not global scope, but the state is "global-scope-only"`);
         }
         const instance = new StateInstance_1.StateInstance(this, state);
-        this._instanceMap.set(state, instance);
+        this._instanceMap.set(state[" $name"], instance);
         return instance;
     }
 }

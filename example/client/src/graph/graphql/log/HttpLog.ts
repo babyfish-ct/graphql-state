@@ -47,29 +47,33 @@ export function publishResponseLog(
     );
 }
 
-export const httpLogListState = createState<ReadonlyArray<HttpLog>>([], {
-    mount: ctx => {
-        const onRequest = (e: CustomEvent) => {
-            const arr = [...ctx(), e.detail.log];
-            if (arr.length > 50) {
-                arr.splice(0, arr.length - 50);
-            }
-            ctx(arr);
-        };
-        const onResponse = (e: CustomEvent) => {
-            ctx(produce(ctx(), draft => {
-                const log = draft.find(log => log.id === e.detail.id);
-                if (log !== undefined) {
-                    log.response = e.detail.response;
+export const httpLogListState = createState<ReadonlyArray<HttpLog>>(
+    "graphql-demo-httpLogs", 
+    [], 
+    {
+        mount: ctx => {
+            const onRequest = (e: CustomEvent) => {
+                const arr = [...ctx(), e.detail.log];
+                if (arr.length > 50) {
+                    arr.splice(0, arr.length - 50);
                 }
-            }));
-        };
-        const win = window as any;
-        win.addEventListener("http-request-event", onRequest);
-        win.addEventListener("http-response-event", onResponse);
-        return () => {
-            win.removeEventListener("http-request-event", onRequest);
-            win.removeEventListener("http-response-event", onResponse);
+                ctx(arr);
+            };
+            const onResponse = (e: CustomEvent) => {
+                ctx(produce(ctx(), draft => {
+                    const log = draft.find(log => log.id === e.detail.id);
+                    if (log !== undefined) {
+                        log.response = e.detail.response;
+                    }
+                }));
+            };
+            const win = window as any;
+            win.addEventListener("http-request-event", onRequest);
+            win.addEventListener("http-response-event", onResponse);
+            return () => {
+                win.removeEventListener("http-request-event", onRequest);
+                win.removeEventListener("http-response-event", onResponse);
+            }
         }
     }
-});
+);

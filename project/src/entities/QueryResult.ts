@@ -53,11 +53,10 @@ export class QueryResult {
                 this.dispose();
             }
             const millis = Math.min(new Date().getTime() - this._createdMillis, maxDelayMillis)
-            let timerId = this._disposeTimerId;
-            if (timerId !== undefined) {
-                clearTimeout(timerId);
+            if (this._disposeTimerId !== undefined) {
+                clearTimeout(this._disposeTimerId);
             }
-            timerId = setTimeout(() => {
+            this._disposeTimerId = setTimeout(() => {
                 if (this._refCount === 0) {
                     this.dispose();
                 }

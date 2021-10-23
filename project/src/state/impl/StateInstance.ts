@@ -1,3 +1,4 @@
+import { VariableArgs } from "../../entities/VariableArgs";
 import { State } from "../State";
 import { ComputedStateValue } from "./ComputedStateValue";
 import { ScopedStateManager } from "./ScopedStateManager";
@@ -16,27 +17,18 @@ export class StateInstance {
 
     }
 
-    retain(variablesCode: string | undefined, variables: any): StateValue {
+    retain(args: VariableArgs | undefined): StateValue {
         const stateValue = this.valueMap.computeIfAbsent(
-            variablesCode, 
+            args?.key, 
             () => this.state[" $stateType"] === "WRITABLE" ?
-                new WritableStateValue(this, variablesCode, variables) :
-                new ComputedStateValue(this, variablesCode, variables)
+                new WritableStateValue(this, args, () => { this.valueMap.remove(args?.key)}) :
+                new ComputedStateValue(this, args, () => { this.valueMap.remove(args?.key)})
         );
-        if (stateValue.retain()) {
-            stateValue.mount();
-        }
-        return stateValue;
+        return stateValue.retain();
     }
 
-    release(variablesCode: string | undefined) {
-        const stateValue = this.valueMap.get(variablesCode);
-        if (stateValue !== undefined && stateValue.release()) {
-            try {
-                stateValue.umount();
-            } finally {
-                this.valueMap.remove(variablesCode);
-            }
-        }
+    release(args: VariableArgs | undefined) {
+        const stateValue = this.valueMap.get(args?.key);
+        stateValue?.release(60000);
     }
 }

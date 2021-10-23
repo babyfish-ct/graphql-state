@@ -1,4 +1,5 @@
 import { ObjectFetcher } from "graphql-ts-client-api";
+import { VariableArgs } from "../../entities/VariableArgs";
 import { InternalComputedContext } from "./InternalComputedContext";
 import { StateInstance } from "./StateInstance";
 import { Loadable, StateValue } from "./StateValue";
@@ -17,21 +18,13 @@ export class ComputedStateValue extends StateValue {
 
     constructor(
         stateInstance: StateInstance,
-        variablesCode: string | undefined,
-        variables: any
+        args: VariableArgs | undefined,
+        disposer: () => void
     ) {
-        super(stateInstance, variablesCode, variables);
+        super(stateInstance, args, disposer);
         this._loadable = {
             loading: this.isAsync
         };
-    }
-
-    umount() {
-        try {
-            this.freeContext();
-        } finally {
-            super.umount();
-        }
     }
 
     invalidate() {
@@ -74,7 +67,7 @@ export class ComputedStateValue extends StateValue {
         let result: any;
         try {
             if (this.stateInstance.state[" $parameterized"]) {
-                result = (this.stateInstance.state as any)[" $valueSupplier"](this.exportContext(newCtx), this.variables);
+                result = (this.stateInstance.state as any)[" $valueSupplier"](this.exportContext(newCtx), this.args?.variables ?? {});
             } else {
                 result = (this.stateInstance.state as any)[" $valueSupplier"](this.exportContext(newCtx));
             }
@@ -86,6 +79,10 @@ export class ComputedStateValue extends StateValue {
         this.freeContext();
         this._ctx = newCtx;
         return result;
+    }
+
+    protected onUnmount() {
+        this.freeContext();
     }
 
     private freeContext() {
@@ -153,7 +150,7 @@ export class ComputedStateValue extends StateValue {
                             })
                         }
                     } finally {
-                        this.stateInstance.release(this.variablesCode); // Self holding during Async computing
+                        this.stateInstance.release(this.args); // Self holding during Async computing
                     }
                 });
         }

@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MutationResultHolder = exports.QueryResultHolder = exports.StateValueHolder = void 0;
 const MutationResult_1 = require("../../entities/MutationResult");
 const QueryArgs_1 = require("../../entities/QueryArgs");
+const VariableArgs_1 = require("../../entities/VariableArgs");
 const Variables_1 = require("./Variables");
 class StateValueHolder {
     constructor(stateManager, localUpdater) {
@@ -24,14 +25,12 @@ class StateValueHolder {
             return;
         }
         this.release();
-        const vs = Variables_1.standardizedVariables((_c = options) === null || _c === void 0 ? void 0 : _c.variables);
-        const vsCode = vs !== undefined ? JSON.stringify(vs) : undefined;
         this.previousOptionsJsonText = newOptionsJsonText;
         this.stateValue = this
             .stateManager
             .scope
-            .instance(state, (_d = options === null || options === void 0 ? void 0 : options.propagation) !== null && _d !== void 0 ? _d : "REQUIRED")
-            .retain(vsCode, vs);
+            .instance(state, (_c = options === null || options === void 0 ? void 0 : options.scope) !== null && _c !== void 0 ? _c : "auto")
+            .retain(VariableArgs_1.VariableArgs.of((_d = options) === null || _d === void 0 ? void 0 : _d.variables));
         this.stateValueChangeListener = (e) => {
             if (e.stateValue === this.stateValue) {
                 this.localUpdater(old => old + 1); // Change a local state to update react component
@@ -52,7 +51,7 @@ class StateValueHolder {
             if (value !== undefined) {
                 this.stateValue = undefined;
                 this.previousOptionsJsonText = undefined;
-                value.stateInstance.release(value.variablesCode);
+                value.stateInstance.release(value.args);
             }
         }
     }

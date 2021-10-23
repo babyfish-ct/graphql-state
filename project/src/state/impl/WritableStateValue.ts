@@ -1,3 +1,4 @@
+import { VariableArgs } from "../../entities/VariableArgs";
 import { StateInstance } from "./StateInstance";
 import { Loadable, StateValue } from "./StateValue";
 
@@ -11,15 +12,15 @@ export class WritableStateValue extends StateValue {
     
     constructor(
         stateInstance: StateInstance, 
-        variablesCode: string | undefined,
-        variables: any
+        args: VariableArgs | undefined,
+        disposer: () => void
     ) {
-        super(stateInstance, variablesCode, variables);
+        super(stateInstance, args, disposer);
         const defaultValue = this.stateInstance.state[" $defaultValue"];
         this._lodable = { 
             ...this._lodable,
             data: stateInstance.state[" $parameterized"] && typeof defaultValue === "function" ? 
-                defaultValue(variables ?? {}) : 
+                defaultValue(args?.variables ?? {}) : 
                 defaultValue 
         };
     }

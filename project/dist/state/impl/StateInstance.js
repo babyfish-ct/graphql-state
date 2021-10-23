@@ -10,25 +10,15 @@ class StateInstance {
         this.state = state;
         this.valueMap = new SpaceSavingMap_1.SpaceSavingMap();
     }
-    retain(variablesCode, variables) {
-        const stateValue = this.valueMap.computeIfAbsent(variablesCode, () => this.state[" $stateType"] === "WRITABLE" ?
-            new WritableStateValue_1.WritableStateValue(this, variablesCode, variables) :
-            new ComputedStateValue_1.ComputedStateValue(this, variablesCode, variables));
-        if (stateValue.retain()) {
-            stateValue.mount();
-        }
-        return stateValue;
+    retain(args) {
+        const stateValue = this.valueMap.computeIfAbsent(args === null || args === void 0 ? void 0 : args.key, () => this.state[" $stateType"] === "WRITABLE" ?
+            new WritableStateValue_1.WritableStateValue(this, args, () => { this.valueMap.remove(args === null || args === void 0 ? void 0 : args.key); }) :
+            new ComputedStateValue_1.ComputedStateValue(this, args, () => { this.valueMap.remove(args === null || args === void 0 ? void 0 : args.key); }));
+        return stateValue.retain();
     }
-    release(variablesCode) {
-        const stateValue = this.valueMap.get(variablesCode);
-        if (stateValue !== undefined && stateValue.release()) {
-            try {
-                stateValue.umount();
-            }
-            finally {
-                this.valueMap.remove(variablesCode);
-            }
-        }
+    release(args) {
+        const stateValue = this.valueMap.get(args === null || args === void 0 ? void 0 : args.key);
+        stateValue === null || stateValue === void 0 ? void 0 : stateValue.release(60000);
     }
 }
 exports.StateInstance = StateInstance;

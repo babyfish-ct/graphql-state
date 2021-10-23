@@ -3,6 +3,7 @@ import { Dispatch, SetStateAction } from "react";
 import { MutationResult } from "../../entities/MutationResult";
 import { QueryArgs } from "../../entities/QueryArgs";
 import { QueryResult } from "../../entities/QueryResult";
+import { VariableArgs } from "../../entities/VariableArgs";
 import { ParameterizedStateAccessingOptions, State, StateAccessingOptions } from "../State";
 import { MutationOptions } from "../StateHook";
 import { QueryResultChangeEvent, StateManagerImpl, StateValueChangeEvent, StateValueChangeListener } from "./StateManagerImpl";
@@ -42,15 +43,14 @@ export class StateValueHolder {
 
         this.release();
 
-        const vs = standardizedVariables((options as Partial<ParameterizedStateAccessingOptions<any>>)?.variables);
-        const vsCode = vs !== undefined ? JSON.stringify(vs) : undefined;
-
         this.previousOptionsJsonText = newOptionsJsonText;
         this.stateValue = this
             .stateManager
             .scope
-            .instance(state, options?.propagation ?? "REQUIRED")
-            .retain(vsCode, vs);
+            .instance(state, options?.scope ?? "auto")
+            .retain(
+                VariableArgs.of((options as Partial<ParameterizedStateAccessingOptions<any>>)?.variables)
+            );
 
         this.stateValueChangeListener = (e: StateValueChangeEvent) => {
             if (e.stateValue === this.stateValue) {
@@ -72,7 +72,7 @@ export class StateValueHolder {
             if (value !== undefined) {
                 this.stateValue = undefined;
                 this.previousOptionsJsonText = undefined;
-                value.stateInstance.release(value.variablesCode);
+                value.stateInstance.release(value.args);
             }
         }
     }

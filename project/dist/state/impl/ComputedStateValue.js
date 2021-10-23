@@ -4,21 +4,13 @@ exports.ComputedStateValue = void 0;
 const InternalComputedContext_1 = require("./InternalComputedContext");
 const StateValue_1 = require("./StateValue");
 class ComputedStateValue extends StateValue_1.StateValue {
-    constructor(stateInstance, variablesCode, variables) {
-        super(stateInstance, variablesCode, variables);
+    constructor(stateInstance, args, disposer) {
+        super(stateInstance, args, disposer);
         this._invalid = true;
         this.currentAsyncRequestId = 0;
         this._loadable = {
             loading: this.isAsync
         };
-    }
-    umount() {
-        try {
-            this.freeContext();
-        }
-        finally {
-            super.umount();
-        }
     }
     invalidate() {
         if (!this._invalid) {
@@ -51,11 +43,12 @@ class ComputedStateValue extends StateValue_1.StateValue {
         };
     }
     compute0(parentContext) {
+        var _a, _b;
         const newCtx = new InternalComputedContext_1.InternalComputedContext(parentContext !== null && parentContext !== void 0 ? parentContext : this.stateInstance.scopedStateManager, this);
         let result;
         try {
             if (this.stateInstance.state[" $parameterized"]) {
-                result = this.stateInstance.state[" $valueSupplier"](this.exportContext(newCtx), this.variables);
+                result = this.stateInstance.state[" $valueSupplier"](this.exportContext(newCtx), (_b = (_a = this.args) === null || _a === void 0 ? void 0 : _a.variables) !== null && _b !== void 0 ? _b : {});
             }
             else {
                 result = this.stateInstance.state[" $valueSupplier"](this.exportContext(newCtx));
@@ -68,6 +61,9 @@ class ComputedStateValue extends StateValue_1.StateValue {
         this.freeContext();
         this._ctx = newCtx;
         return result;
+    }
+    onUnmount() {
+        this.freeContext();
     }
     freeContext() {
         const ctx = this._ctx;
@@ -131,7 +127,7 @@ class ComputedStateValue extends StateValue_1.StateValue {
                     }
                 }
                 finally {
-                    this.stateInstance.release(this.variablesCode); // Self holding during Async computing
+                    this.stateInstance.release(this.args); // Self holding during Async computing
                 }
             });
         }

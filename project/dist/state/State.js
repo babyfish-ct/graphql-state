@@ -6,8 +6,10 @@ function makeStateFactory() {
 }
 exports.makeStateFactory = makeStateFactory;
 class StateFactoryImpl {
-    createState(defaultValue, options) {
+    createState(name, defaultValue, options) {
+        stateRegistry.register(name);
         return {
+            " $name": name,
             " $stateType": "WRITABLE",
             " $parameterized": false,
             " $defaultValue": defaultValue,
@@ -15,8 +17,10 @@ class StateFactoryImpl {
             " $supressWarnings": unsupportedOperation
         };
     }
-    createParameterizedState(defaultValue, options) {
+    createParameterizedState(name, defaultValue, options) {
+        stateRegistry.register(name);
         return {
+            " $name": name,
             " $stateType": "WRITABLE",
             " $parameterized": true,
             " $defaultValue": defaultValue,
@@ -24,8 +28,10 @@ class StateFactoryImpl {
             " $supressWarnings": unsupportedOperation
         };
     }
-    createComputedState(valueSupplier, options) {
+    createComputedState(name, valueSupplier, options) {
+        stateRegistry.register(name);
         return {
+            " $name": name,
             " $stateType": "COMPUTED",
             " $parameterized": false,
             " $valueSupplier": valueSupplier,
@@ -33,8 +39,10 @@ class StateFactoryImpl {
             " $supressWarnings": unsupportedOperation
         };
     }
-    createParameterizedComputedState(valueSupplier, options) {
+    createParameterizedComputedState(name, valueSupplier, options) {
+        stateRegistry.register(name);
         return {
+            " $name": name,
             " $stateType": "COMPUTED",
             " $parameterized": true,
             " $valueSupplier": valueSupplier,
@@ -42,8 +50,10 @@ class StateFactoryImpl {
             " $supressWarnings": unsupportedOperation
         };
     }
-    createAsyncState(valueSupplier, options) {
+    createAsyncState(name, valueSupplier, options) {
+        stateRegistry.register(name);
         return {
+            " $name": name,
             " $stateType": "ASYNC",
             " $parameterized": false,
             " $valueSupplier": valueSupplier,
@@ -51,8 +61,10 @@ class StateFactoryImpl {
             " $supressWarnings": unsupportedOperation
         };
     }
-    createParameterizedAsyncState(valueSupplier, options) {
+    createParameterizedAsyncState(name, valueSupplier, options) {
+        stateRegistry.register(name);
         return {
+            " $name": name,
             " $stateType": "ASYNC",
             " $parameterized": true,
             " $valueSupplier": valueSupplier,
@@ -64,3 +76,26 @@ class StateFactoryImpl {
 function unsupportedOperation() {
     throw new Error("UnsupportedOperationException");
 }
+class StateRegistry {
+    constructor() {
+        this.nameVersionMap = new Map();
+        this.version = 0;
+        const win = window;
+        const hotUpdate = win.webpackHotUpdate;
+        if (typeof hotUpdate === "function") {
+            win.hotUpdate = undefined;
+            win.webpackHotUpdate = (...args) => {
+                this.version++;
+                hotUpdate.apply(this, args);
+            };
+        }
+    }
+    register(name) {
+        const version = this.nameVersionMap.get(name);
+        if (version !== undefined && version >= this.version) {
+            throw new Error(`Duplicated state name "${name}"`);
+        }
+        this.nameVersionMap.set(name, this.version);
+    }
+}
+const stateRegistry = new StateRegistry();

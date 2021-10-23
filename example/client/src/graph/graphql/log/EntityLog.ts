@@ -28,19 +28,23 @@ export function publishEntityLog(
     return id;
 }
 
-export const entityLogListState = createState<ReadonlyArray<EntityLog>>([], {
-    mount: ctx => {
-        const onEntityEvent = (e: CustomEvent) => {
-            const arr = [...ctx(), e.detail.log];
-            if (arr.length > 50) {
-                arr.splice(0, arr.length - 50);
+export const entityLogListState = createState<ReadonlyArray<EntityLog>>(
+    "graphql-demo-entityLogs", 
+    [], 
+    {
+        mount: ctx => {
+            const onEntityEvent = (e: CustomEvent) => {
+                const arr = [...ctx(), e.detail.log];
+                if (arr.length > 50) {
+                    arr.splice(0, arr.length - 50);
+                }
+                ctx(arr);
+            };
+            const win = window as any;
+            win.addEventListener("entity-event", onEntityEvent);
+            return () => {
+                win.removeEventListener("entity-event", onEntityEvent);
             }
-            ctx(arr);
-        };
-        const win = window as any;
-        win.addEventListener("entity-event", onEntityEvent);
-        return () => {
-            win.removeEventListener("entity-event", onEntityEvent);
         }
     }
-});
+);
