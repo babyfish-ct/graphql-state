@@ -93,10 +93,18 @@ const EntityChangeDetail: FC<{
                         size="small"
                         key={JSON.stringify(key)}
                         title={typeof key === "string" ? key : `${key.name}(${JSON.stringify(key.variables)})`}>
-                            <div>Old Value</div>
-                            <div className={LOG_VALUE_CLASS}>{valueNode(event.oldValue(key))}</div>
-                            <div>New Value</div>
-                            <div className={LOG_VALUE_CLASS}>{valueNode(event.newValue(key))}</div>
+                            {
+                                event.changedType !== "insert" && <>
+                                    <div>Old Value</div>
+                                    <div className={LOG_VALUE_CLASS}>{valueNode(event.oldValue(key))}</div>
+                                </>
+                            }
+                            {
+                                event.changedType !== "delete" && <>
+                                    <div>New Value</div>
+                                    <div className={LOG_VALUE_CLASS}>{valueNode(event.newValue(key))}</div>
+                                </>
+                            }
                         </Card>
                     );
                 })

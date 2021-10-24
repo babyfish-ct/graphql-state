@@ -66,7 +66,11 @@ export class RecordManager {
             id = QUERY_OBJECT_ID;
         } else {
             idFieldName = this.type.idField.name;
-            id = obj[idFieldName];
+            const idShapeField = shape.fieldMap.get(idFieldName);
+            if (idShapeField === undefined) {
+                throw new Error(`Cannot save the object whose type is "${shape.typeName}" without id`);
+            }
+            id = obj[idShapeField.alias ?? idShapeField.name];
         }
         const fieldMap = this.type.fieldMap;
         for (const [, shapeField] of shape.fieldMap) { 

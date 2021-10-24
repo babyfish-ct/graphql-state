@@ -42,7 +42,7 @@ class RecordManager {
         return record;
     }
     save(shape, obj) {
-        var _a, _b;
+        var _a, _b, _c;
         if (typeof obj !== "object" || Array.isArray(obj)) {
             throw new Error("obj can only be plain object");
         }
@@ -54,7 +54,11 @@ class RecordManager {
         }
         else {
             idFieldName = this.type.idField.name;
-            id = obj[idFieldName];
+            const idShapeField = shape.fieldMap.get(idFieldName);
+            if (idShapeField === undefined) {
+                throw new Error(`Cannot save the object whose type is "${shape.typeName}" without id`);
+            }
+            id = obj[(_a = idShapeField.alias) !== null && _a !== void 0 ? _a : idShapeField.name];
         }
         const fieldMap = this.type.fieldMap;
         for (const [, shapeField] of shape.fieldMap) {
@@ -63,8 +67,8 @@ class RecordManager {
                 if (field === undefined) {
                     throw new Error(`Cannot set the non-existing field "${shapeField.name}" for type "${this.type.name}"`);
                 }
-                const manager = (_a = this.fieldManagerMap.get(shapeField.name)) !== null && _a !== void 0 ? _a : this;
-                const value = obj[(_b = shapeField.alias) !== null && _b !== void 0 ? _b : shapeField.name];
+                const manager = (_b = this.fieldManagerMap.get(shapeField.name)) !== null && _b !== void 0 ? _b : this;
+                const value = obj[(_c = shapeField.alias) !== null && _c !== void 0 ? _c : shapeField.name];
                 manager.set(id, field, shapeField.args, value);
                 if (value !== undefined && shapeField.childShape !== undefined) {
                     switch (field.category) {

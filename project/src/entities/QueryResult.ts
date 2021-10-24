@@ -1,12 +1,14 @@
 import { Fetcher } from "graphql-ts-client-api";
 import { EntityChangeEvent } from "..";
 import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
+import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { Loadable } from "../state/impl/StateValue";
 import { EntityEvictEvent } from "./EntityEvent";
 import { EntityManager } from "./EntityManager";
 import { QueryArgs } from "./QueryArgs";
 import { QueryService } from "./QueryService";
-import { RuntimeShape } from "./RuntimeShape";
+import { QUERY_OBJECT_ID } from "./Record";
+import { RuntimeShape, RuntimeShapeField } from "./RuntimeShape";
 import { VariableArgs } from "./VariableArgs";
 
 export class QueryResult {
@@ -140,13 +142,13 @@ export class QueryResult {
     }
 
     private onEntityEvict(e: EntityEvictEvent) {
-        if (this._dependencies?.isAffectedByEvictEvent(e) === true) {
+        if (this._dependencies?.isAffectedBy(e) === true) {
             this.invalidate();
         }
     }
 
     private onEntityChange(e: EntityChangeEvent) {
-        if (this._dependencies?.isAffectedByChangeEvent(e) === true) {
+        if (this._dependencies?.isAffectedBy(e) === true) {
             this.invalidate();
         }
     }
@@ -171,123 +173,120 @@ export class QueryResult {
 
 class Dependencies {
     
-    private map = new Map<string, Dependency>();
+    private map = new Map<string, TypeDependency>();
 
     accept(schema: SchemaMetadata, shape: RuntimeShape, obj: any) {
-        this.handleInsertion(schema, shape, false);
-        this.handleObjectChange(schema, shape, obj);
-    }
-
-    isAffectedByEvictEvent(e: EntityEvictEvent): boolean {
-        const dependency = this.map.get(e.typeName);
-        if (dependency !== undefined) {
-            if (e.evictedType === "row") {
-                return true;
-            }
-            const keySet = dependency.idChangedKeyMap?.get(e.id);
-            if (keySet !== undefined) {
-                for (const evictedKey of e.evictedKeys) {
-                    if (typeof evictedKey === "string" && keySet.has(evictedKey)) {
-                        return true;
-                    }
-                    if (typeof evictedKey === "object" && keySet.has(VariableArgs.fieldKey(evictedKey.name, evictedKey.variables))) {
-                        return true;
-                    }
-                }
-            }
+        const baseTypeName = shape.typeName;
+        const type = schema.typeMap.get(baseTypeName);
+        if (type === undefined) {
+            throw new Error(`Illegal type "${baseTypeName}"`);
         }
-        return false;
-    }
-
-    isAffectedByChangeEvent(e: EntityChangeEvent): boolean {
-        const dependency = this.map.get(e.typeName);
-        if (dependency !== undefined) {
-            if (e.changedType === "delete") {
-                return true;
-            }
-            if (e.changedType === "insert" && dependency.handleInsertion) {
-                return true;
-            }
-            const keySet = dependency.idChangedKeyMap?.get(e.id);
-            if (keySet !== undefined) {
-                for (const changedKey of e.changedKeys) {
-                    if (typeof changedKey === "string" && keySet.has(changedKey)) {
-                        return true;
-                    }
-                    if (typeof changedKey === "object" && keySet.has(VariableArgs.fieldKey(changedKey.name, changedKey.variables))) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    private handleInsertion(schema: SchemaMetadata, shape: RuntimeShape, isLeaf: boolean) {
-        if (isLeaf && schema.typeMap.get(shape.typeName)?.category === 'OBJECT') {
-            let dependency = this.map.get(shape.typeName);
-            if (dependency === undefined) {
-                dependency = { 
-                    handleInsertion: true, 
-                    idChangedKeyMap: new Map<String, Set<string>>() 
-                };
-                this.map.set(shape.typeName, dependency);
-            } else {
-                dependency.handleInsertion ||= true;
-            }
-        }
-        for (const [, field] of shape.fieldMap) {
-            const childShape = field.childShape;
-            if (childShape !== undefined) {
-                this.handleInsertion(schema, childShape, true);
-            }
-        }
-    }
-
-    private handleObjectChange(schema: SchemaMetadata, shape: RuntimeShape, obj: any) {
-        if (Array.isArray(obj)) {
-            for (const element of obj) {
-                this.handleObjectChange(schema, shape, element);
+        const typeDependency = this.typeDependency(baseTypeName);
+        if (typeDependency.isQuery) {
+            const id = QUERY_OBJECT_ID;
+            for (const [, field] of shape.fieldMap) {
+                this
+                .typeDependency(field.declaringTypeName ?? baseTypeName)
+                .addObjectId(field, id);
             }
         } else {
-            const type = schema.typeMap.get(shape.typeName)!;
-            if (obj !== undefined) {
-                if (type.name !== 'Query' && type.category !== 'CONNECTION' && type.category !== 'EDGE') {
-                    let dependency = this.map.get(shape.typeName);
-                    if (dependency === undefined) {
-                        dependency = { 
-                            handleInsertion: false, 
-                            idChangedKeyMap: new Map<String, Set<string>>() 
-                        };
-                        this.map.set(shape.typeName, dependency);
-                    }
-                    const idFieldName = schema.typeMap.get(shape.typeName)!.idField.name;
-                    const id = obj[idFieldName];
-                    for (const [, field] of shape.fieldMap) {
-                        if (field.name !== idFieldName) {
-                            let changedKeySet = dependency.idChangedKeyMap.get(id); 
-                            if (changedKeySet === undefined) {
-                                changedKeySet = new Set<string>();
-                                dependency.idChangedKeyMap.set(id, changedKeySet);
-                            }
-                            changedKeySet.add(VariableArgs.fieldKey(field.name, field.args));
+            const idFieldName = type.idField.name;
+            const idShapedField = shape.fieldMap.get(idFieldName);
+            if (idShapedField === undefined) {
+                throw new Error(`Cannot accept the runtime shape whose type is "${type.name}" without id`);
+            }
+            const id = obj[idShapedField.alias ?? idShapedField.name];
+            for (const [, field] of shape.fieldMap) {
+                this
+                .typeDependency(field.declaringTypeName ?? baseTypeName)
+                .addObjectId(field, id);
+            }
+        }
+        for (const [fieldName, field] of shape.fieldMap) {
+            if (field.childShape !== undefined) {
+                const value = obj[field.alias ?? fieldName];
+                if (value !== undefined) {
+                    const category = type.fieldMap.get(field.name)?.category;
+                    if (category === "LIST") {
+                        for (const element of value) {
+                            this.accept(schema, field.childShape, element);
                         }
-                    }
-                }
-                for (const [, field] of shape.fieldMap) {
-                    const childShape = field.childShape;
-                    if (childShape !== undefined) {
-                        this.handleObjectChange(schema, childShape, obj[field.alias ?? field.name]);
+                    } else if (category === "CONNECTION") {
+                        for (const edge of value.edges) {
+                            this.accept(schema, field.nodeShape!, edge.node);
+                        }
+                    } else {
+                        this.accept(schema, field.childShape, value);
                     }
                 }
             }
         }
+    }
+
+    isAffectedBy(e: EntityEvictEvent | EntityChangeEvent): boolean {
+        return this.map.get(e.typeName)?.isAffectedBy(e) === true;
+    }
+
+    private typeDependency(typeName: string) {
+        let typeDependency = this.map.get(typeName);
+        if (typeDependency === undefined) {
+            typeDependency = new TypeDependency(typeName);
+            this.map.set(typeName, typeDependency);
+        }
+        return typeDependency;
     }
 }
 
-interface Dependency {
-    
-    handleInsertion: boolean;
+class TypeDependency {
 
-    idChangedKeyMap: Map<any, Set<string>>;
+    readonly isQuery: boolean;
+
+    private fieldKeyIdMutlipMap = new Map<string, Set<any>>();
+
+    constructor(typeName: string) {
+        this.isQuery = typeName === "Query";
+    }
+
+    addObjectId(field: RuntimeShapeField, id: any) {
+        const key = VariableArgs.fieldKey(field.name, field.args);
+        let ids = this.fieldKeyIdMutlipMap.get(key);
+        if (ids === undefined) {
+            ids = new Set<any>();
+            this.fieldKeyIdMutlipMap.set(key, ids);
+        }
+        ids.add(id);
+    }
+
+    isAffectedBy(e: EntityEvictEvent | EntityChangeEvent) {
+        return e.eventType === "evict" ?
+            this.isAffectedByEvictEvent(e) :
+            this.isAffectedByChangeEvent(e);
+    }
+
+    private isAffectedByEvictEvent(e: EntityEvictEvent) {
+        if (e.evictedType === "row") {
+            return true;
+        }
+        for (const entityKey of e.evictedKeys) {
+            const key = typeof entityKey === "string" ? 
+                entityKey :
+                VariableArgs.fieldKey(entityKey.name, VariableArgs.of(entityKey.variables));
+            if (this.fieldKeyIdMutlipMap.has(key) === true) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private isAffectedByChangeEvent(e: EntityChangeEvent): boolean {
+        for (const entityKey of e.changedKeys) {
+            const key = typeof entityKey === "string" ? 
+                entityKey :
+                VariableArgs.fieldKey(entityKey.name, VariableArgs.of(entityKey.variables));
+            if (this.fieldKeyIdMutlipMap.get(key)?.has(e.id) === true) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

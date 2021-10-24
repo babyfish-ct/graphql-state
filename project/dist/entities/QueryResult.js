@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QueryResult = void 0;
 const QueryService_1 = require("./QueryService");
+const Record_1 = require("./Record");
 const VariableArgs_1 = require("./VariableArgs");
 class QueryResult {
     constructor(entityManager, queryArgs, disposer) {
@@ -121,13 +122,13 @@ class QueryResult {
     }
     onEntityEvict(e) {
         var _a;
-        if (((_a = this._dependencies) === null || _a === void 0 ? void 0 : _a.isAffectedByEvictEvent(e)) === true) {
+        if (((_a = this._dependencies) === null || _a === void 0 ? void 0 : _a.isAffectedBy(e)) === true) {
             this.invalidate();
         }
     }
     onEntityChange(e) {
         var _a;
-        if (((_a = this._dependencies) === null || _a === void 0 ? void 0 : _a.isAffectedByChangeEvent(e)) === true) {
+        if (((_a = this._dependencies) === null || _a === void 0 ? void 0 : _a.isAffectedBy(e)) === true) {
             this.invalidate();
         }
     }
@@ -153,115 +154,112 @@ class Dependencies {
         this.map = new Map();
     }
     accept(schema, shape, obj) {
-        this.handleInsertion(schema, shape, false);
-        this.handleObjectChange(schema, shape, obj);
-    }
-    isAffectedByEvictEvent(e) {
-        var _a;
-        const dependency = this.map.get(e.typeName);
-        if (dependency !== undefined) {
-            if (e.evictedType === "row") {
-                return true;
+        var _a, _b, _c, _d, _e;
+        const baseTypeName = shape.typeName;
+        const type = schema.typeMap.get(baseTypeName);
+        if (type === undefined) {
+            throw new Error(`Illegal type "${baseTypeName}"`);
+        }
+        const typeDependency = this.typeDependency(baseTypeName);
+        if (typeDependency.isQuery) {
+            const id = Record_1.QUERY_OBJECT_ID;
+            for (const [, field] of shape.fieldMap) {
+                this
+                    .typeDependency((_a = field.declaringTypeName) !== null && _a !== void 0 ? _a : baseTypeName)
+                    .addObjectId(field, id);
             }
-            const keySet = (_a = dependency.idChangedKeyMap) === null || _a === void 0 ? void 0 : _a.get(e.id);
-            if (keySet !== undefined) {
-                for (const evictedKey of e.evictedKeys) {
-                    if (typeof evictedKey === "string" && keySet.has(evictedKey)) {
-                        return true;
+        }
+        else {
+            const idFieldName = type.idField.name;
+            const idShapedField = shape.fieldMap.get(idFieldName);
+            if (idShapedField === undefined) {
+                throw new Error(`Cannot accept the runtime shape whose type is "${type.name}" without id`);
+            }
+            const id = obj[(_b = idShapedField.alias) !== null && _b !== void 0 ? _b : idShapedField.name];
+            for (const [, field] of shape.fieldMap) {
+                this
+                    .typeDependency((_c = field.declaringTypeName) !== null && _c !== void 0 ? _c : baseTypeName)
+                    .addObjectId(field, id);
+            }
+        }
+        for (const [fieldName, field] of shape.fieldMap) {
+            if (field.childShape !== undefined) {
+                const value = obj[(_d = field.alias) !== null && _d !== void 0 ? _d : fieldName];
+                if (value !== undefined) {
+                    const category = (_e = type.fieldMap.get(field.name)) === null || _e === void 0 ? void 0 : _e.category;
+                    if (category === "LIST") {
+                        for (const element of value) {
+                            this.accept(schema, field.childShape, element);
+                        }
                     }
-                    if (typeof evictedKey === "object" && keySet.has(VariableArgs_1.VariableArgs.fieldKey(evictedKey.name, evictedKey.variables))) {
-                        return true;
+                    else if (category === "CONNECTION") {
+                        for (const edge of value.edges) {
+                            this.accept(schema, field.nodeShape, edge.node);
+                        }
+                    }
+                    else {
+                        this.accept(schema, field.childShape, value);
                     }
                 }
+            }
+        }
+    }
+    isAffectedBy(e) {
+        var _a;
+        return ((_a = this.map.get(e.typeName)) === null || _a === void 0 ? void 0 : _a.isAffectedBy(e)) === true;
+    }
+    typeDependency(typeName) {
+        let typeDependency = this.map.get(typeName);
+        if (typeDependency === undefined) {
+            typeDependency = new TypeDependency(typeName);
+            this.map.set(typeName, typeDependency);
+        }
+        return typeDependency;
+    }
+}
+class TypeDependency {
+    constructor(typeName) {
+        this.fieldKeyIdMutlipMap = new Map();
+        this.isQuery = typeName === "Query";
+    }
+    addObjectId(field, id) {
+        const key = VariableArgs_1.VariableArgs.fieldKey(field.name, field.args);
+        let ids = this.fieldKeyIdMutlipMap.get(key);
+        if (ids === undefined) {
+            ids = new Set();
+            this.fieldKeyIdMutlipMap.set(key, ids);
+        }
+        ids.add(id);
+    }
+    isAffectedBy(e) {
+        return e.eventType === "evict" ?
+            this.isAffectedByEvictEvent(e) :
+            this.isAffectedByChangeEvent(e);
+    }
+    isAffectedByEvictEvent(e) {
+        if (e.evictedType === "row") {
+            return true;
+        }
+        for (const entityKey of e.evictedKeys) {
+            const key = typeof entityKey === "string" ?
+                entityKey :
+                VariableArgs_1.VariableArgs.fieldKey(entityKey.name, VariableArgs_1.VariableArgs.of(entityKey.variables));
+            if (this.fieldKeyIdMutlipMap.has(key) === true) {
+                return true;
             }
         }
         return false;
     }
     isAffectedByChangeEvent(e) {
         var _a;
-        const dependency = this.map.get(e.typeName);
-        if (dependency !== undefined) {
-            if (e.changedType === "delete") {
+        for (const entityKey of e.changedKeys) {
+            const key = typeof entityKey === "string" ?
+                entityKey :
+                VariableArgs_1.VariableArgs.fieldKey(entityKey.name, VariableArgs_1.VariableArgs.of(entityKey.variables));
+            if (((_a = this.fieldKeyIdMutlipMap.get(key)) === null || _a === void 0 ? void 0 : _a.has(e.id)) === true) {
                 return true;
-            }
-            if (e.changedType === "insert" && dependency.handleInsertion) {
-                return true;
-            }
-            const keySet = (_a = dependency.idChangedKeyMap) === null || _a === void 0 ? void 0 : _a.get(e.id);
-            if (keySet !== undefined) {
-                for (const changedKey of e.changedKeys) {
-                    if (typeof changedKey === "string" && keySet.has(changedKey)) {
-                        return true;
-                    }
-                    if (typeof changedKey === "object" && keySet.has(VariableArgs_1.VariableArgs.fieldKey(changedKey.name, changedKey.variables))) {
-                        return true;
-                    }
-                }
             }
         }
         return false;
-    }
-    handleInsertion(schema, shape, isLeaf) {
-        var _a;
-        if (isLeaf && ((_a = schema.typeMap.get(shape.typeName)) === null || _a === void 0 ? void 0 : _a.category) === 'OBJECT') {
-            let dependency = this.map.get(shape.typeName);
-            if (dependency === undefined) {
-                dependency = {
-                    handleInsertion: true,
-                    idChangedKeyMap: new Map()
-                };
-                this.map.set(shape.typeName, dependency);
-            }
-            else {
-                dependency.handleInsertion || (dependency.handleInsertion = true);
-            }
-        }
-        for (const [, field] of shape.fieldMap) {
-            const childShape = field.childShape;
-            if (childShape !== undefined) {
-                this.handleInsertion(schema, childShape, true);
-            }
-        }
-    }
-    handleObjectChange(schema, shape, obj) {
-        var _a;
-        if (Array.isArray(obj)) {
-            for (const element of obj) {
-                this.handleObjectChange(schema, shape, element);
-            }
-        }
-        else {
-            const type = schema.typeMap.get(shape.typeName);
-            if (obj !== undefined) {
-                if (type.name !== 'Query' && type.category !== 'CONNECTION' && type.category !== 'EDGE') {
-                    let dependency = this.map.get(shape.typeName);
-                    if (dependency === undefined) {
-                        dependency = {
-                            handleInsertion: false,
-                            idChangedKeyMap: new Map()
-                        };
-                        this.map.set(shape.typeName, dependency);
-                    }
-                    const idFieldName = schema.typeMap.get(shape.typeName).idField.name;
-                    const id = obj[idFieldName];
-                    for (const [, field] of shape.fieldMap) {
-                        if (field.name !== idFieldName) {
-                            let changedKeySet = dependency.idChangedKeyMap.get(id);
-                            if (changedKeySet === undefined) {
-                                changedKeySet = new Set();
-                                dependency.idChangedKeyMap.set(id, changedKeySet);
-                            }
-                            changedKeySet.add(VariableArgs_1.VariableArgs.fieldKey(field.name, field.args));
-                        }
-                    }
-                }
-                for (const [, field] of shape.fieldMap) {
-                    const childShape = field.childShape;
-                    if (childShape !== undefined) {
-                        this.handleObjectChange(schema, childShape, obj[(_a = field.alias) !== null && _a !== void 0 ? _a : field.name]);
-                    }
-                }
-            }
-        }
     }
 }
