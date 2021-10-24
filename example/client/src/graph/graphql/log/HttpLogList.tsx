@@ -29,7 +29,7 @@ export const HttpLogList: FC = memo(() => {
                                     <>
                                         {log.response === undefined && <Spin/>}
                                         {format(log.time)},&nbsp;
-                                        {log.body.startsWith("query") ? "query to download data" : "mutation to upload data"}
+                                        {log.body.startsWith("query") ? "query data" : "mutation data"}
                                     </>
                                 } 
                                 key="message">

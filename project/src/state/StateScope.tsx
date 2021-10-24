@@ -3,14 +3,16 @@ import { StateManagerImpl } from "./impl/StateManagerImpl";
 import { useStateManager } from "./StateHook";
 
 export const StateScope: FC<
-    PropsWithChildren<{}>
-> = memo(({children}) => {
+    PropsWithChildren<{
+        readonly name: string
+    }>
+> = memo(({name, children}) => {
     
     const stateManagerImpl = useStateManager() as StateManagerImpl<any>;
 
     const [scopeReady, setScopeReady] = useState(false);
     useEffect(() => {
-        const scopedStateManager = stateManagerImpl.registerScope();
+        const scopedStateManager = stateManagerImpl.registerScope(name);
         setScopeReady(true);
         return () => {
             stateManagerImpl.unregisterScope(scopedStateManager);
@@ -25,5 +27,5 @@ export const StateScope: FC<
      * 
      * The unmouting logic has the same problem, please view  "stateManagerImpl.unregisterScope" to know more
      */
-    return <>{ scopeReady && children}</>;
+    return <>{ scopeReady && children }</>;
 });

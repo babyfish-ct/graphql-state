@@ -8,6 +8,7 @@ const ScopedStateManager_1 = require("./ScopedStateManager");
 class StateManagerImpl {
     constructor(schema, network) {
         this.network = network;
+        this._rootScopedStateManager = ScopedStateManager_1.ScopedStateManager.createRoot(this);
         this._stateValueChangeListeners = new Set();
         this._queryResultChangeListeners = new Set();
         this.entityManager = new EntityManager_1.EntityManager(this, schema !== null && schema !== void 0 ? schema : new SchemaMetadata_1.SchemaMetadata());
@@ -68,9 +69,18 @@ class StateManagerImpl {
             }
         }
     }
-    registerScope() {
-        var _a;
-        return this._scopedStateManager = new ScopedStateManager_1.ScopedStateManager((_a = this._scopedStateManager) !== null && _a !== void 0 ? _a : this);
+    registerScope(name) {
+        if (this._scopedStateManager !== undefined) {
+            return this._scopedStateManager.child(name);
+        }
+        else {
+            if (name !== "") {
+                throw new Error('The name of root scope must be ""');
+            }
+            const rootScope = this._rootScopedStateManager;
+            this._scopedStateManager = rootScope;
+            return rootScope;
+        }
     }
     unregisterScope(scopedStateManager) {
         /*
@@ -78,12 +88,13 @@ class StateManagerImpl {
          * because unmounting logic of useEffect is executed by wrong order: Parent first, child later.
          */
         for (let scope = this._scopedStateManager; scope !== undefined; scope = scope.parent) {
-            if (scope === scopedStateManager) {
+            if (scope.path === scopedStateManager.path) {
                 this._scopedStateManager = scope.parent;
+                scope.dispose();
                 return;
             }
         }
-        console.warn('Failed to unregster because the argument "scopedStateManager" is not an existing scope');
+        throw new Error('Failed to unregster because the argument "scopedStateManager" is not an existing scope');
     }
     get scope() {
         const result = this._scopedStateManager;

@@ -7,7 +7,6 @@ import { ComputedStateValue } from "./ComputedStateValue";
 import { ScopedStateManager } from "./ScopedStateManager";
 import { QueryResultChangeEvent, QueryResultChangeListener, StateValueChangeEvent, StateValueChangeListener } from "./StateManagerImpl";
 import { StateValue } from "./StateValue";
-import { standardizedVariables } from "./Variables";
 
 export class InternalComputedContext {
 
@@ -45,7 +44,6 @@ export class InternalComputedContext {
         if (!this.closed) {
             this.scope.stateManager.removeQueryResultChangeListener(this.queryResultChangeListener);
             this.scope.stateManager.removeStateValueChangeListener(this.stateValueChangeListener);
-            this.closed = true;
             let exception = undefined;
             for (const dep of this.stateValueDependencies) {
                 try {
@@ -69,6 +67,7 @@ export class InternalComputedContext {
             if (exception !== undefined) {
                 throw exception;
             }
+            this.closed = true;
         }
     }
 

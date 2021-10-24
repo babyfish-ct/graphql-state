@@ -4,12 +4,11 @@ import { ModelType } from "graphql-ts-client-api";
 import { FC, memo, useCallback, useEffect } from "react";
 import UUIDClass from "uuidjs";
 import { author$, book$$, bookStore$, mutation$ } from "../__generated/fetchers";
-import { stateManager } from "../Environment";
 import { AuthorMultiSelect } from "../author/AuthorMultiSelect";
 import { INFORMATION_CLASS, PSEUDO_CODE_CLASS } from "../Css";
 import { BookStoreSelect } from "../store/BookStoreSelect";
 import { BookInput } from "../__generated/inputs";
-import { useMutation } from "graphql-state/dist/state/StateHook";
+import { useMutation, useStateManager } from "graphql-state";
 
 const BOOK_EDIT_INFO =
     book$$
@@ -33,6 +32,8 @@ export const BookDialog: FC<{
         })
     }, [form, value]);
 
+    const stateManager = useStateManager();
+    
     const [mutate, { loading }] = useMutation(
         mutation$.mergeBook(
             BOOK_EDIT_INFO

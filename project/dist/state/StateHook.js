@@ -142,7 +142,9 @@ class ManagedObjectHooksImpl {
 function useInternalStateValueHolder(state, options) {
     const stateManager = useStateManager();
     const [, setStateValueVersion] = react_1.useState(0);
-    const [stateValueHolder] = react_1.useState(() => new Holder_1.StateValueHolder(stateManager, setStateValueVersion));
+    const stateValueHolder = react_1.useMemo(() => {
+        return new Holder_1.StateValueHolder(stateManager, setStateValueVersion);
+    }, [stateManager, setStateValueVersion]);
     stateValueHolder.set(state, options);
     react_1.useEffect(() => {
         return () => {
@@ -154,7 +156,9 @@ function useInternalStateValueHolder(state, options) {
 function useInternalQueryResultHolder(fetcher, ids, variables) {
     const stateManager = useStateManager();
     const [, setQueryResultVersion] = react_1.useState(0);
-    const [queryResultHolder] = react_1.useState(() => new Holder_1.QueryResultHolder(stateManager, setQueryResultVersion));
+    const queryResultHolder = react_1.useMemo(() => {
+        return new Holder_1.QueryResultHolder(stateManager, setQueryResultVersion);
+    }, [stateManager, setQueryResultVersion]);
     queryResultHolder.set(fetcher, ids, variables);
     react_1.useEffect(() => {
         return () => {

@@ -3,21 +3,48 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ScopedStateManager = void 0;
 const StateInstance_1 = require("./StateInstance");
 class ScopedStateManager {
-    constructor(parent) {
+    constructor(parent, name) {
+        this.name = name;
+        this._childMap = new Map();
         this._instanceMap = new Map();
         if (parent instanceof ScopedStateManager) {
             this._parent = parent;
             this._stateManager = parent._stateManager;
+            this._path = `${parent._path}/${name}`;
         }
         else {
             this._stateManager = parent;
+            this._path = "";
         }
     }
     get parent() {
         return this._parent;
     }
+    get path() {
+        return this._path;
+    }
     get stateManager() {
         return this._stateManager;
+    }
+    static createRoot(stateManager) {
+        return new ScopedStateManager(stateManager);
+    }
+    child(name) {
+        if (name === undefined || name === null || name === "") {
+            throw new Error("name is required for child scope");
+        }
+        let child = this._childMap.get(name);
+        if (child === undefined) {
+            child = new ScopedStateManager(this, name);
+            this._childMap.get(name);
+        }
+        return child;
+    }
+    dispose() {
+        for (const [, child] of this._childMap) {
+            child.dispose();
+        }
+        this._childMap.clear();
     }
     instance(state, scope) {
         const instance = this.getInstance(state, scope);

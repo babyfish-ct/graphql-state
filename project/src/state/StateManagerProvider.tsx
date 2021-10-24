@@ -10,7 +10,7 @@ export const StateManagerProvider: FC<
 > = memo(({stateManager, children}) => {
     return (
         <stateContext.Provider value={stateManager ?? defaultStateManager}>
-            <StateScope>
+            <StateScope name="">
                 {children}
             </StateScope>
         </stateContext.Provider>

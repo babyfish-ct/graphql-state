@@ -35,7 +35,7 @@ export class StateValueHolder {
 
         const newOptionsJsonText = standardizedJsonText(options);
 
-        if (this.stateValue?.stateInstance?.state === state && 
+        if (this.stateValue?.stateInstance?.state[" $name"] === state[" $name"] && 
             this.previousOptionsJsonText === newOptionsJsonText
         ) {
             return;

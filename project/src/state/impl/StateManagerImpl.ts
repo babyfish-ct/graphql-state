@@ -14,6 +14,8 @@ import { UndoManagerImpl } from "./UndoManagerImpl";
 
 export class StateManagerImpl<TSchema extends SchemaType> implements StateManager<TSchema> {
 
+    private readonly _rootScopedStateManager = ScopedStateManager.createRoot(this);
+
     private _scopedStateManager?: ScopedStateManager;
 
     private _stateValueChangeListeners = new Set<StateValueChangeListener>();
@@ -116,8 +118,17 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
         }
     }
 
-    registerScope(): ScopedStateManager {
-        return this._scopedStateManager = new ScopedStateManager(this._scopedStateManager ?? this);
+    registerScope(name: string): ScopedStateManager {
+        if (this._scopedStateManager !== undefined) {
+            return this._scopedStateManager.child(name);
+        } else {
+            if (name !== "") {
+                throw new Error('The name of root scope must be ""');
+            }
+            const rootScope = this._rootScopedStateManager;
+            this._scopedStateManager = rootScope;
+            return rootScope;
+        }
     }
 
     unregisterScope(scopedStateManager: ScopedStateManager) {
@@ -127,12 +138,13 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
          * because unmounting logic of useEffect is executed by wrong order: Parent first, child later. 
          */
         for (let scope = this._scopedStateManager; scope !== undefined; scope = scope.parent) {
-            if (scope === scopedStateManager) {
+            if (scope.path === scopedStateManager.path) {
                 this._scopedStateManager = scope.parent;
+                scope.dispose();
                 return;
             }
         }
-        console.warn('Failed to unregster because the argument "scopedStateManager" is not an existing scope');
+        throw new Error('Failed to unregster because the argument "scopedStateManager" is not an existing scope');
     }
 
     get scope(): ScopedStateManager {

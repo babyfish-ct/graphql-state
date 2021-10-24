@@ -2,10 +2,14 @@ import { FC, memo } from "react";
 import { StateManagerProvider } from "graphql-state";
 import { Card, Space, Tabs } from "antd";
 import { BookStoreList } from "./store/BookStoreList";
-import { stateManager } from "./Environment";
+import { createStateManager } from "./Environment";
 import { AuthorList } from "./author/AuthorList";
 import { BookList } from "./book/BookList";
 import { LogPanel } from "./log/LogPanel";
+
+const stateManager = createStateManager(false);
+
+(window as any).graphqlStateManager = stateManager;
 
 export const App: FC = memo(() => {
     return (

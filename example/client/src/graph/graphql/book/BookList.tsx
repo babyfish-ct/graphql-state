@@ -1,11 +1,9 @@
 import { Table, Tag, Space, Button, Input, Modal, Spin, Row, Col } from "antd";
-import { useQuery } from "graphql-state";
-import { useMutation } from "graphql-state/dist/state/StateHook";
+import { useQuery, useMutation, useStateManager } from "graphql-state";
 import { ModelType, ParameterRef } from "graphql-ts-client-api";
 import { ChangeEvent, FC, memo, useCallback, useState } from "react";
 import { ComponentDecorator } from "../../../common/ComponentDecorator";
 import { BookDialog } from "../book/BookDialog";
-import { stateManager } from "../Environment";
 import { DELETE_CONFIRM_CLASS, DELETING_ROW_CLASS, INFORMATION_CLASS } from "../Css";
 import { book$$, bookConnection$, bookEdge$, bookStore$$, mutation$, query$ } from "../__generated/fetchers";
 import { author$$ } from "../__generated/fetchers/AuthorFetcher";
@@ -39,6 +37,8 @@ export const BookList: FC = memo(() => {
             variables: { name, authorName }
         }
     );
+
+    const stateManager = useStateManager();
 
     const [remove, {loading: removing}] = useMutation(
         mutation$.deleteBook(),
@@ -146,6 +146,7 @@ export const BookList: FC = memo(() => {
                     dataSource={data.bookConnection.edges.map(edge => edge.node)} 
                     pagination={false}
                     rowClassName={rowClassName}>
+                        <Table.Column title="Id" dataIndex="id"/>
                         <Table.Column title="Name" dataIndex="name"/>
                         <Table.Column title="Store" dataIndex={["store", "name"]} render={renderStoreName}/>
                         <Table.Column title="Authors" render={renderAuthors}/>

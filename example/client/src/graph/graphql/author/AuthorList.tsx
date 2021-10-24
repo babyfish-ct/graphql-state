@@ -1,12 +1,10 @@
 import { Space, Table, Modal, Input, Button, Tag, Spin, Row, Col } from "antd";
-import { useQuery } from "graphql-state";
-import { useMutation } from "graphql-state/dist/state/StateHook";
+import { useQuery, useMutation, useStateManager } from "graphql-state";
 import { ModelType, ParameterRef } from "graphql-ts-client-api";
 import { ChangeEvent, FC, memo, useCallback, useState } from "react";
 import { ComponentDecorator } from "../../../common/ComponentDecorator";
 import { AuthorDialog } from "../author/AuthorDialog";
 import { DELETE_CONFIRM_CLASS, DELETING_ROW_CLASS, INFORMATION_CLASS } from "../Css";
-import { stateManager } from "../Environment";
 import { book$$, author$$, query$, authorConnection$, authorEdge$, mutation$ } from "../__generated/fetchers";
 
 const AUTHOR_ROW =
@@ -36,6 +34,8 @@ export const AuthorList: FC = memo(() => {
         }
     );
 
+    const stateManager = useStateManager();
+    
     const [remove, {loading: removing}] = useMutation(
         mutation$.deleteAuthor(),
         {
@@ -138,6 +138,7 @@ export const AuthorList: FC = memo(() => {
                         dataSource={data.authorConnection.edges.map(edge => edge.node)} 
                         pagination={false}
                         rowClassName={rowClassName}>
+                            <Table.Column title="Id" dataIndex="id"/>
                             <Table.Column title="Name" dataIndex="name"/>
                             <Table.Column title="Books" render={renderBooks}/>
                             <Table.Column title="Operations" render={renderOperations}/>

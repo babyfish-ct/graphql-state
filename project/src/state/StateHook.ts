@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { 
     StateAccessingOptions, 
     State, 
@@ -335,7 +335,9 @@ function useInternalStateValueHolder(
 
     const stateManager = useStateManager() as StateManagerImpl<any>;
     const [, setStateValueVersion] = useState(0);
-    const [stateValueHolder] = useState(() => new StateValueHolder(stateManager, setStateValueVersion));
+    const stateValueHolder = useMemo(() => { 
+        return new StateValueHolder(stateManager, setStateValueVersion);
+    }, [stateManager, setStateValueVersion]);
     stateValueHolder.set(state, options);
     useEffect(() => {
         return () => {
@@ -353,7 +355,9 @@ function useInternalQueryResultHolder(
 
     const stateManager = useStateManager() as StateManagerImpl<any>;
     const [, setQueryResultVersion] = useState(0);
-    const [queryResultHolder] = useState(() => new QueryResultHolder(stateManager, setQueryResultVersion));
+    const queryResultHolder = useMemo(() => {
+        return new QueryResultHolder(stateManager, setQueryResultVersion);
+    }, [stateManager, setQueryResultVersion]);
     queryResultHolder.set(fetcher, ids, variables);
     useEffect(() => {
         return () => {

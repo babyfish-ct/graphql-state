@@ -37,6 +37,7 @@ class QueryResult {
         if (--this._refCount === 0) {
             if (maxDelayMillis <= 0) {
                 this.dispose();
+                return;
             }
             const millis = Math.min(new Date().getTime() - this._createdMillis, maxDelayMillis);
             if (this._disposeTimerId !== undefined) {

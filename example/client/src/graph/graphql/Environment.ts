@@ -1,5 +1,6 @@
-import { GraphQLNetwork, ScalarRow, ParameterizedAssociationProperties } from "graphql-state";
+import { GraphQLNetwork, ScalarRow, ParameterizedAssociationProperties, StateManager } from "graphql-state";
 import { PositionType } from "graphql-state/dist/meta/Configuration";
+import { Schema } from "./__generated/TypedConfiguration";
 import { publishEntityLog } from "./log/EntityLog";
 import { publishRequestLog, publishResponseLog } from "./log/HttpLog";
 import { newTypedConfiguration } from "./__generated";
@@ -59,39 +60,45 @@ function createNameFilterAssociationProperties<
     }
 };
 
-export const stateManager =
-    newTypedConfiguration()
+export function createStateManager(useAssocaitionOptimization: boolean): StateManager<Schema> {
 
-    .bidirectionalAssociation("BookStore", "books", "store")
-    .bidirectionalAssociation("Book", "authors", "books")
+    const cfg = newTypedConfiguration()
+
+        .bidirectionalAssociation("BookStore", "books", "store")
+        .bidirectionalAssociation("Book", "authors", "books")
+
+        .network(new GraphQLNetwork(async(body, variables) => {
+            const id = publishRequestLog(body, variables);
+            const response = await fetch('http://localhost:8080/graphql', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    query: body,
+                    variables,
+                }),
+            }); 
+            const json = await response.json();
+            publishResponseLog(id, json);
+            return json;
+        }))
+    ;
+
+    if (useAssocaitionOptimization) {
+        cfg
+        .rootAssociationProperties("findBooksStores", createNameFilterAssociationProperties())
+        .rootAssociationProperties("findBooks", createNameFilterAssociationProperties())
+        .rootAssociationProperties("findAuthors", createNameFilterAssociationProperties())
+        .associationProperties("BookStore", "books", createNameFilterAssociationProperties())
+        .associationProperties("Book", "authors", createNameFilterAssociationProperties())
+        .associationProperties("Author", "books", createNameFilterAssociationProperties())
+    }
+
+    const stateManager = cfg.buildStateManager();
     
-    .rootAssociationProperties("findBooksStores", createNameFilterAssociationProperties())
-    .rootAssociationProperties("findBooks", createNameFilterAssociationProperties())
-    .rootAssociationProperties("findAuthors", createNameFilterAssociationProperties())
-    .associationProperties("BookStore", "books", createNameFilterAssociationProperties())
-    .associationProperties("Book", "authors", createNameFilterAssociationProperties())
-    .associationProperties("Author", "books", createNameFilterAssociationProperties())
+    stateManager.addEntityEvictListener(e => { publishEntityLog(e) });
+    stateManager.addEntityChangeListener(e => { publishEntityLog(e) });
 
-    .network(new GraphQLNetwork(async(body, variables) => {
-        const id = publishRequestLog(body, variables);
-        const response = await fetch('http://localhost:8080/graphql', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                query: body,
-                variables,
-            }),
-        }); 
-        const json = await response.json();
-        publishResponseLog(id, json);
-        return json;
-    }))
-    .buildStateManager()
-;
-
-stateManager.addEntityEvictListener(e => { publishEntityLog(e) });
-stateManager.addEntityChangeListener(e => { publishEntityLog(e) });
-
-(window as any).graphqlStateManager = stateManager;
+    return stateManager;
+}

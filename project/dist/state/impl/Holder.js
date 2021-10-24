@@ -20,7 +20,7 @@ class StateValueHolder {
     set(state, options) {
         var _a, _b, _c, _d;
         const newOptionsJsonText = standardizedJsonText(options);
-        if (((_b = (_a = this.stateValue) === null || _a === void 0 ? void 0 : _a.stateInstance) === null || _b === void 0 ? void 0 : _b.state) === state &&
+        if (((_b = (_a = this.stateValue) === null || _a === void 0 ? void 0 : _a.stateInstance) === null || _b === void 0 ? void 0 : _b.state[" $name"]) === state[" $name"] &&
             this.previousOptionsJsonText === newOptionsJsonText) {
             return;
         }

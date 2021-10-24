@@ -8,14 +8,20 @@ export class ScopedStateManager {
 
     private _parent?: ScopedStateManager;
 
+    private _childMap = new Map<string, ScopedStateManager>();
+
+    private _path: string;
+
     private _instanceMap = new Map<string, StateInstance>();
 
-    constructor(parent: StateManagerImpl<any> | ScopedStateManager) {
+    private constructor(parent: StateManagerImpl<any> | ScopedStateManager, readonly name?: string) {
         if (parent instanceof ScopedStateManager) {
             this._parent = parent;
             this._stateManager = parent._stateManager;
+            this._path = `${parent._path}/${name}`;
         } else {
             this._stateManager = parent;
+            this._path = "";
         }
     }
 
@@ -23,8 +29,35 @@ export class ScopedStateManager {
         return this._parent;
     }
 
+    get path(): string {
+        return this._path;
+    }
+
     get stateManager(): StateManagerImpl<any> {
         return this._stateManager;
+    }
+
+    static createRoot(stateManager: StateManagerImpl<any>): ScopedStateManager {
+        return new ScopedStateManager(stateManager);
+    }
+
+    child(name: string): ScopedStateManager {
+        if (name === undefined || name === null || name === "") {
+            throw new Error("name is required for child scope");
+        }
+        let child = this._childMap.get(name);
+        if (child === undefined) {
+            child = new ScopedStateManager(this, name);
+            this._childMap.get(name);
+        }
+        return child;
+    }
+
+    dispose() {
+        for (const [, child] of this._childMap) {
+            child.dispose();
+        }
+        this._childMap.clear();
     }
 
     instance(

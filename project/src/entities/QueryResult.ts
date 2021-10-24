@@ -1,7 +1,5 @@
-import { Fetcher } from "graphql-ts-client-api";
 import { EntityChangeEvent } from "..";
 import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
-import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { Loadable } from "../state/impl/StateValue";
 import { EntityEvictEvent } from "./EntityEvent";
 import { EntityManager } from "./EntityManager";
@@ -53,6 +51,7 @@ export class QueryResult {
         if (--this._refCount === 0) {
             if (maxDelayMillis <= 0) {
                 this.dispose();
+                return;
             }
             const millis = Math.min(new Date().getTime() - this._createdMillis, maxDelayMillis)
             if (this._disposeTimerId !== undefined) {
