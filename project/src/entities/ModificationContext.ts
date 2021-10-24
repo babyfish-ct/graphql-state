@@ -70,11 +70,8 @@ export class ModificationContext {
             throw new Error("Internal bug: the changed name cannot be id");
         }
         const pair = this.pair(record, true, true);
-        
         const key = VariableArgs.fieldKey(fieldName, args);
-        console.log("before unset", key, pair)
         pair.newObj?.delete(key);
-        console.log("after unset", key, pair)
     }
 
     private pair(record: Record, initializeOldObj: boolean, useNewObj: boolean): ObjectPair {

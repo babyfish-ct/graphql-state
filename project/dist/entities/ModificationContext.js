@@ -63,9 +63,7 @@ class ModificationContext {
         }
         const pair = this.pair(record, true, true);
         const key = VariableArgs_1.VariableArgs.fieldKey(fieldName, args);
-        console.log("before unset", key, pair);
         (_a = pair.newObj) === null || _a === void 0 ? void 0 : _a.delete(key);
-        console.log("after unset", key, pair);
     }
     pair(record, initializeOldObj, useNewObj) {
         const key = record.type;

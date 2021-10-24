@@ -58,7 +58,11 @@ class AssociationValue {
         const actualType = entityManager.schema.typeMap.get(e.typeName);
         if (targetType.isAssignableFrom(actualType)) {
             if (e.evictedType === 'row' || this.isTargetChanged(targetType, e.evictedKeys)) {
+                console.log("match");
                 this.evict(entityManager);
+            }
+            else {
+                console.log("not match");
             }
         }
     }
