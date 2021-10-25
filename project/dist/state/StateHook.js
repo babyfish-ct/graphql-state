@@ -4,6 +4,7 @@ exports.makeManagedObjectHooks = exports.useMutation = exports.useQuery = export
 const react_1 = require("react");
 const StateManagerProvider_1 = require("./StateManagerProvider");
 const Holder_1 = require("./impl/Holder");
+const StateScope_1 = require("./StateScope");
 function useStateManager() {
     const stateManager = react_1.useContext(StateManagerProvider_1.stateContext);
     if (stateManager === undefined) {
@@ -142,10 +143,11 @@ class ManagedObjectHooksImpl {
 function useInternalStateValueHolder(state, options) {
     const stateManager = useStateManager();
     const [, setStateValueVersion] = react_1.useState(0);
+    const scopePath = StateScope_1.useScopePath();
     const stateValueHolder = react_1.useMemo(() => {
-        return new Holder_1.StateValueHolder(stateManager, setStateValueVersion);
-    }, [stateManager, setStateValueVersion]);
-    stateValueHolder.set(state, options);
+        return new Holder_1.StateValueHolder(stateManager, scopePath, setStateValueVersion);
+    }, [stateManager, scopePath, setStateValueVersion]);
+    stateValueHolder.set(state, scopePath, options);
     react_1.useEffect(() => {
         return () => {
             stateValueHolder.release();

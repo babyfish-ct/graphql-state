@@ -12,8 +12,7 @@ import { StateValue } from "./StateValue";
 import { UndoManagerImpl } from "./UndoManagerImpl";
 export declare class StateManagerImpl<TSchema extends SchemaType> implements StateManager<TSchema> {
     readonly network?: Network | undefined;
-    private readonly _rootScopedStateManager;
-    private _scopedStateManager?;
+    private _rootScope;
     private _stateValueChangeListeners;
     private _queryResultChangeListeners;
     readonly entityManager: EntityManager;
@@ -37,9 +36,7 @@ export declare class StateManagerImpl<TSchema extends SchemaType> implements Sta
     removeEntityChangeListeners(listeners: {
         readonly [TName in keyof TSchema["entities"] & string]?: (e: TSchema["entities"][TName][" $changeEvent"]) => void;
     }): void;
-    registerScope(name: string): ScopedStateManager;
-    unregisterScope(scopedStateManager: ScopedStateManager): void;
-    get scope(): ScopedStateManager;
+    scope(path: string): ScopedStateManager;
     transaction<TResult>(callback: (ts: TransactionStatus) => TResult): TResult;
     addStateValueChangeListener(listener: StateValueChangeListener): void;
     removeStateValueChangeListener(listener: StateValueChangeListener): void;

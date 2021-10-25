@@ -77,7 +77,7 @@ export interface ParameterizedAsyncContext<TSchema extends SchemaType, T, TVaria
 }
 export declare type StateAccessingScope = "auto" | "local";
 export interface StateCreationOptions {
-    readonly mode?: StateScopeMode;
+    readonly scope?: StateCreationScope;
 }
 export interface WritableStateCreationOptions<T> extends StateCreationOptions {
     readonly mount?: (ctx: WritableStateCreatingContext<T>) => StateUnmoutHandler | undefined | void;
@@ -93,7 +93,7 @@ export interface ComputedStateCreatingContext extends StateCreationOptions {
     invalidate(): void;
 }
 export declare type StateUnmoutHandler = () => void;
-export declare type StateScopeMode = "global-scope-only" | "any-scope";
+export declare type StateCreationScope = "global-scope-only" | "any-scope";
 export interface StateAccessingOptions {
     readonly scope?: StateAccessingScope;
 }

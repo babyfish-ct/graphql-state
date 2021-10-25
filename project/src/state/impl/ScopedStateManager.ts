@@ -1,4 +1,4 @@
-import { State, StateAccessingScope, StateScopeMode } from "../State";
+import { State, StateAccessingScope, StateCreationScope } from "../State";
 import { StateInstance } from "./StateInstance";
 import { StateManagerImpl } from "./StateManagerImpl";
 
@@ -8,20 +8,23 @@ export class ScopedStateManager {
 
     private _parent?: ScopedStateManager;
 
-    private _childMap = new Map<string, ScopedStateManager>();
-
-    private _path: string;
+    private _childMap?: Map<string, ScopedStateManager>;
 
     private _instanceMap = new Map<string, StateInstance>();
 
-    private constructor(parent: StateManagerImpl<any> | ScopedStateManager, readonly name?: string) {
+    private _path: string;
+
+    constructor(
+        parent: StateManagerImpl<any> | ScopedStateManager, 
+        private name?: string
+    ) {
         if (parent instanceof ScopedStateManager) {
             this._parent = parent;
             this._stateManager = parent._stateManager;
-            this._path = `${parent._path}/${name}`;
+            this._path = parent.name === undefined ? `/${name}`: `${parent._path}/${name}`;
         } else {
             this._stateManager = parent;
-            this._path = "";
+            this._path = `/`;
         }
     }
 
@@ -29,35 +32,42 @@ export class ScopedStateManager {
         return this._parent;
     }
 
-    get path(): string {
-        return this._path;
-    }
-
     get stateManager(): StateManagerImpl<any> {
         return this._stateManager;
     }
 
-    static createRoot(stateManager: StateManagerImpl<any>): ScopedStateManager {
-        return new ScopedStateManager(stateManager);
+    get path(): string {
+        return this._path;
     }
 
-    child(name: string): ScopedStateManager {
-        if (name === undefined || name === null || name === "") {
-            throw new Error("name is required for child scope");
+    subScope(path: string): ScopedStateManager {
+        if (this.parent !== undefined) {
+            throw new Error('The function "subScope" can only be supported by root scope');
         }
-        let child = this._childMap.get(name);
+        if (path === "/") {
+            return this;
+        }
+        let scope: ScopedStateManager = this;
+        for (const name of path.split("/")) {
+            scope = scope.childScope(name);
+        }
+        return scope;
+    }
+
+    private childScope(name: string): ScopedStateManager {
+        if (name === "") {
+            return this;
+        }
+        let child = this._childMap?.get(name);
         if (child === undefined) {
-            child = new ScopedStateManager(this, name);
-            this._childMap.get(name);
+            let childMap = this._childMap;
+            if (childMap === undefined) {
+                this._childMap = childMap = new Map<string, ScopedStateManager>();
+            }
+            childMap.set(name, child = new ScopedStateManager(this, name));
+            console.log(childMap);
         }
         return child;
-    }
-
-    dispose() {
-        for (const [, child] of this._childMap) {
-            child.dispose();
-        }
-        this._childMap.clear();
     }
 
     instance(
@@ -65,6 +75,7 @@ export class ScopedStateManager {
         scope: StateAccessingScope
     ): StateInstance {
 
+        console.log(`Get ${state[" $name"]} from ${this.path}`);
         const instance = this.getInstance(state, scope);
         if (instance !== undefined) {
             return instance;
@@ -91,12 +102,13 @@ export class ScopedStateManager {
         scope: StateAccessingScope
     ): StateInstance {
 
+        console.log("Create local state................");
         if (scope !== "local" && this._parent) {
             return this._parent.createInstance(state, scope);
         }
         
-        const mode: StateScopeMode = state[" $options"]?.mode ?? "global-scope-only";
-        if (mode === "global-scope-only" && this._parent) {
+        const creatingScope: StateCreationScope = state[" $options"]?.scope ?? "global-scope-only";
+        if (creatingScope === "global-scope-only" && this._parent) {
             throw new Error(`The state using scope is "local" and current scope is not global scope, but the state is "global-scope-only"`);
         }
 

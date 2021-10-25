@@ -19,6 +19,7 @@ import { SchemaType } from "../meta/SchemaType";
 import { Fetcher, ObjectFetcher } from "graphql-ts-client-api";
 import { MutationResultHolder, QueryResultHolder, StateValueHolder } from "./impl/Holder";
 import { Loadable } from "./impl/StateValue";
+import { useScopePath } from "./StateScope";
 
 export function useStateManager<TSchema extends SchemaType>(): StateManager<TSchema> {
     const stateManager = useContext(stateContext);
@@ -335,10 +336,11 @@ function useInternalStateValueHolder(
 
     const stateManager = useStateManager() as StateManagerImpl<any>;
     const [, setStateValueVersion] = useState(0);
+    const scopePath = useScopePath();
     const stateValueHolder = useMemo(() => { 
-        return new StateValueHolder(stateManager, setStateValueVersion);
-    }, [stateManager, setStateValueVersion]);
-    stateValueHolder.set(state, options);
+        return new StateValueHolder(stateManager, scopePath, setStateValueVersion);
+    }, [stateManager, scopePath, setStateValueVersion]);
+    stateValueHolder.set(state, scopePath, options);
     useEffect(() => {
         return () => {
             stateValueHolder.release();

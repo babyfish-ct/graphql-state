@@ -7,11 +7,13 @@ import { AuthorList } from "./author/AuthorList";
 import { BookList } from "./book/BookList";
 import { LogPanel } from "./log/LogPanel";
 
-const stateManager = createStateManager(false);
+export const App: FC<{
+    readonly withCustomerOptimization: boolean
+}> = memo(({withCustomerOptimization}) => {
 
-(window as any).graphqlStateManager = stateManager;
+    const stateManager = createStateManager(withCustomerOptimization);
+    (window as any).graphqlStateManager = stateManager;
 
-export const App: FC = memo(() => {
     return (
         <StateManagerProvider stateManager={stateManager}>
             <Card>

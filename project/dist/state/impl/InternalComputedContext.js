@@ -26,7 +26,6 @@ class InternalComputedContext {
         if (!this.closed) {
             this.scope.stateManager.removeQueryResultChangeListener(this.queryResultChangeListener);
             this.scope.stateManager.removeStateValueChangeListener(this.stateValueChangeListener);
-            this.closed = true;
             let exception = undefined;
             for (const dep of this.stateValueDependencies) {
                 try {
@@ -52,6 +51,7 @@ class InternalComputedContext {
             if (exception !== undefined) {
                 throw exception;
             }
+            this.closed = true;
         }
     }
     getSelf(options) {

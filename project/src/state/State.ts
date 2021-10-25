@@ -294,7 +294,7 @@ class StateFactoryImpl<TSchema extends SchemaType> implements StateFactory<TSche
 }
 
 export interface StateCreationOptions {
-    readonly mode?: StateScopeMode;
+    readonly scope?: StateCreationScope;
 }
 
 export interface WritableStateCreationOptions<T> extends StateCreationOptions {
@@ -316,7 +316,7 @@ export interface ComputedStateCreatingContext extends StateCreationOptions {
 
 export type StateUnmoutHandler = () => void;
 
-export type StateScopeMode = "global-scope-only" | "any-scope"; 
+export type StateCreationScope = "global-scope-only" | "any-scope"; 
 
 export interface StateAccessingOptions {
     readonly scope?: StateAccessingScope;

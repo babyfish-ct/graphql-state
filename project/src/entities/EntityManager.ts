@@ -146,6 +146,9 @@ export class EntityManager {
         
         let result = this._queryResultMap.get(args.key);
         if (result === undefined) {
+            if (!this.schema.isAcceptable(args.fetcher.fetchableType)) {
+                throw new Error("Cannot accept that fetcher because it is not configured in the state manager");
+            }
             result = new QueryResult(this, args, () => this._queryResultMap.delete(args.key));
             this._queryResultMap.set(args.key, result);
         }

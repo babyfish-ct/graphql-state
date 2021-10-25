@@ -1,10 +1,9 @@
 import { Button, Modal, Space, Table, Tag } from "antd";
-import { useQuery } from "graphql-state";
+import { useQuery, useStateManager } from "graphql-state";
 import { ModelType } from "graphql-ts-client-api";
 import { FC, memo, useCallback, useState } from "react";
 import { ComponentDecorator } from "../../../common/ComponentDecorator";
 import { author$$, book$$, bookStore$$, query$ } from "../__generated/fetchers";
-import { stateManager } from "../Environment";
 import { DELETE_CONFIRM_CLASS, INFORMATION_CLASS } from "../Css";
 import { BookDialog } from "./BookDialog";
 
@@ -19,6 +18,8 @@ export const BookList: FC = memo(() => {
     const { books } = useQuery(query$.books(BOOK_ROW));
     const [dialog, setDialog] = useState<"NEW" | "EDIT">();
     const [editing, setEditing] = useState<ModelType<typeof BOOK_ROW>>();
+
+    const stateManager = useStateManager();
 
     const onDelete = useCallback((row: ModelType<typeof BOOK_ROW>) => {
         Modal.confirm({
@@ -36,7 +37,7 @@ export const BookList: FC = memo(() => {
                 stateManager.delete("Book", row.id);
             }
         });
-    }, []);
+    }, [stateManager]);
 
     const renderStoreName = useCallback((name?: string) => {
         return name ? <Tag>{name}</Tag> : <></>

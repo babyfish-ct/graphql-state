@@ -3,8 +3,11 @@ import { StateManagerProvider } from "graphql-state";
 import { BookList } from "./book/BookList";
 import { BookStoreList } from "./store/BookStoreList";
 import { AuthorList } from "./author/AuthorList";
-import { stateManager } from "./Environment";
+import { createStateManager } from "./Environment";
 
+const stateManager = createStateManager();
+
+(window as any).localStateManager = stateManager;
 
 export const App: FC = memo(() => {
     return (

@@ -6,8 +6,9 @@ const QueryArgs_1 = require("../../entities/QueryArgs");
 const VariableArgs_1 = require("../../entities/VariableArgs");
 const Variables_1 = require("./Variables");
 class StateValueHolder {
-    constructor(stateManager, localUpdater) {
+    constructor(stateManager, scopePath, localUpdater) {
         this.stateManager = stateManager;
+        this.scopePath = scopePath;
         this.localUpdater = localUpdater;
     }
     get() {
@@ -17,18 +18,20 @@ class StateValueHolder {
         }
         return value;
     }
-    set(state, options) {
+    set(state, scopePath, options) {
         var _a, _b, _c, _d;
         const newOptionsJsonText = standardizedJsonText(options);
         if (((_b = (_a = this.stateValue) === null || _a === void 0 ? void 0 : _a.stateInstance) === null || _b === void 0 ? void 0 : _b.state[" $name"]) === state[" $name"] &&
+            this.scopePath === scopePath &&
             this.previousOptionsJsonText === newOptionsJsonText) {
             return;
         }
         this.release();
+        this.scopePath = scopePath;
         this.previousOptionsJsonText = newOptionsJsonText;
         this.stateValue = this
             .stateManager
-            .scope
+            .scope(scopePath)
             .instance(state, (_c = options === null || options === void 0 ? void 0 : options.scope) !== null && _c !== void 0 ? _c : "auto")
             .retain(VariableArgs_1.VariableArgs.of((_d = options) === null || _d === void 0 ? void 0 : _d.variables));
         this.stateValueChangeListener = (e) => {
@@ -76,6 +79,7 @@ class QueryResultHolder {
         if ((oldQueryArgs === null || oldQueryArgs === void 0 ? void 0 : oldQueryArgs.key) === newQueryArgs.key) {
             return;
         }
+        // Double check before release(entityManager can validate it too)
         if (!this.stateManager.entityManager.schema.isAcceptable(fetcher.fetchableType)) {
             throw new Error("Cannot accept that fetcher because it is not configured in the state manager");
         }

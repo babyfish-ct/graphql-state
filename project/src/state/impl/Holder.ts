@@ -20,6 +20,7 @@ export class StateValueHolder {
     
     constructor(
         private stateManager: StateManagerImpl<any>,
+        private scopePath: string,
         private localUpdater: Dispatch<SetStateAction<number>>
     ) {}
 
@@ -31,11 +32,12 @@ export class StateValueHolder {
         return value;
     }
 
-    set(state: State<any>, options?: StateAccessingOptions) {
+    set(state: State<any>, scopePath: string, options?: StateAccessingOptions) {
 
         const newOptionsJsonText = standardizedJsonText(options);
 
         if (this.stateValue?.stateInstance?.state[" $name"] === state[" $name"] && 
+            this.scopePath === scopePath &&
             this.previousOptionsJsonText === newOptionsJsonText
         ) {
             return;
@@ -43,10 +45,11 @@ export class StateValueHolder {
 
         this.release();
 
+        this.scopePath = scopePath;
         this.previousOptionsJsonText = newOptionsJsonText;
         this.stateValue = this
             .stateManager
-            .scope
+            .scope(scopePath)
             .instance(state, options?.scope ?? "auto")
             .retain(
                 VariableArgs.of((options as Partial<ParameterizedStateAccessingOptions<any>>)?.variables)
@@ -108,6 +111,7 @@ export class QueryResultHolder {
             return;
         }
         
+        // Double check before release(entityManager can validate it too)
         if (!this.stateManager.entityManager.schema.isAcceptable(fetcher.fetchableType)) {
             throw new Error("Cannot accept that fetcher because it is not configured in the state manager");
         }

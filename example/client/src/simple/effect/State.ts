@@ -3,7 +3,7 @@ import { makeStateFactory } from "graphql-state";
 const { createState, createComputedState } = makeStateFactory();
 
 export const windowSizeState1 = createComputedState<WindowSize>(
-    "windowSize1", 
+    "effect-demo-window-size1", 
     () => {
         return { width: window.innerWidth, height: window.innerHeight };
     }, 
@@ -19,7 +19,7 @@ export const windowSizeState1 = createComputedState<WindowSize>(
 );
 
 export const windowSizeState2 = createState<WindowSize>(
-    "windowSize2", 
+    "effect-demo-window-size2", 
     { 
         width: window.innerWidth, 
         height: window.innerHeight

@@ -4,9 +4,9 @@ import { ModelType } from "graphql-ts-client-api";
 import { FC, memo, useCallback, useEffect } from "react";
 import UUIDClass from "uuidjs";
 import { author$$, book$ } from "../__generated/fetchers";
-import { stateManager } from "../Environment";
 import { BookMultiSelect } from "../book/BookMultiSelect";
 import { INFORMATION_CLASS, PSEUDO_CODE_CLASS } from "../Css";
+import { useStateManager } from "graphql-state";
 
 const AUTHOR_EDIT_INFO =
     author$$
@@ -32,6 +32,8 @@ export const AuthorDialog: FC<{
         })
     }, [form, value]);
 
+    const stateManager = useStateManager();
+
     const onOk = useCallback(async () => {
         const input = await form.validateFields();
         const info: ModelType<typeof AUTHOR_EDIT_INFO> = {
@@ -44,7 +46,7 @@ export const AuthorDialog: FC<{
         }
         stateManager.save(AUTHOR_EDIT_INFO, info);
         onClose(info);
-    }, [form, onClose]);
+    }, [form, onClose, stateManager]);
 
     const onCancel = useCallback(() => {
         onClose();

@@ -14,9 +14,7 @@ import { UndoManagerImpl } from "./UndoManagerImpl";
 
 export class StateManagerImpl<TSchema extends SchemaType> implements StateManager<TSchema> {
 
-    private readonly _rootScopedStateManager = ScopedStateManager.createRoot(this);
-
-    private _scopedStateManager?: ScopedStateManager;
+    private _rootScope = new ScopedStateManager(this);
 
     private _stateValueChangeListeners = new Set<StateValueChangeListener>();
 
@@ -118,41 +116,8 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
         }
     }
 
-    registerScope(name: string): ScopedStateManager {
-        if (this._scopedStateManager !== undefined) {
-            return this._scopedStateManager.child(name);
-        } else {
-            if (name !== "") {
-                throw new Error('The name of root scope must be ""');
-            }
-            const rootScope = this._rootScopedStateManager;
-            this._scopedStateManager = rootScope;
-            return rootScope;
-        }
-    }
-
-    unregisterScope(scopedStateManager: ScopedStateManager) {
-        
-        /*
-         * The argument "scopedStateManager" may not be this._scopedStateManager
-         * because unmounting logic of useEffect is executed by wrong order: Parent first, child later. 
-         */
-        for (let scope = this._scopedStateManager; scope !== undefined; scope = scope.parent) {
-            if (scope.path === scopedStateManager.path) {
-                this._scopedStateManager = scope.parent;
-                scope.dispose();
-                return;
-            }
-        }
-        throw new Error('Failed to unregster because the argument "scopedStateManager" is not an existing scope');
-    }
-
-    get scope(): ScopedStateManager {
-        const result = this._scopedStateManager;
-        if (result === undefined) {
-            throw new Error("No scope");
-        }
-        return result;
+    scope(path: string): ScopedStateManager {
+        return this._rootScope.subScope(path);
     }
 
     transaction<TResult>(callback: (ts: TransactionStatus) => TResult): TResult {

@@ -8,13 +8,14 @@ import { StateManagerImpl } from "./StateManagerImpl";
 import { StateValue } from "./StateValue";
 export declare class StateValueHolder {
     private stateManager;
+    private scopePath;
     private localUpdater;
     private stateValue?;
     private previousOptionsJsonText?;
     private stateValueChangeListener?;
-    constructor(stateManager: StateManagerImpl<any>, localUpdater: Dispatch<SetStateAction<number>>);
+    constructor(stateManager: StateManagerImpl<any>, scopePath: string, localUpdater: Dispatch<SetStateAction<number>>);
     get(): StateValue;
-    set(state: State<any>, options?: StateAccessingOptions): void;
+    set(state: State<any>, scopePath: string, options?: StateAccessingOptions): void;
     release(): void;
 }
 export declare class QueryResultHolder {

@@ -60,7 +60,7 @@ function createNameFilterAssociationProperties<
     }
 };
 
-export function createStateManager(useAssocaitionOptimization: boolean): StateManager<Schema> {
+export function createStateManager(withCustomerOptimization: boolean): StateManager<Schema> {
 
     const cfg = newTypedConfiguration()
 
@@ -85,7 +85,7 @@ export function createStateManager(useAssocaitionOptimization: boolean): StateMa
         }))
     ;
 
-    if (useAssocaitionOptimization) {
+    if (withCustomerOptimization) {
         cfg
         .rootAssociationProperties("findBooksStores", createNameFilterAssociationProperties())
         .rootAssociationProperties("findBooks", createNameFilterAssociationProperties())
@@ -96,7 +96,7 @@ export function createStateManager(useAssocaitionOptimization: boolean): StateMa
     }
 
     const stateManager = cfg.buildStateManager();
-    
+
     stateManager.addEntityEvictListener(e => { publishEntityLog(e) });
     stateManager.addEntityChangeListener(e => { publishEntityLog(e) });
 
