@@ -1,5 +1,5 @@
 import { ObjectFetcher } from "graphql-ts-client-api";
-import { VariableArgs } from "../../entities/VariableArgs";
+import { VariableArgs } from "./Args";
 import { InternalComputedContext } from "./InternalComputedContext";
 import { StateInstance } from "./StateInstance";
 import { Loadable, StateValue } from "./StateValue";
@@ -14,7 +14,7 @@ export class ComputedStateValue extends StateValue {
 
     private _ctx?: InternalComputedContext;
 
-    private currentAsyncRequestId = 0;
+    private _currentAsyncRequestId = 0;
 
     constructor(
         stateInstance: StateInstance,
@@ -23,7 +23,7 @@ export class ComputedStateValue extends StateValue {
     ) {
         super(stateInstance, args, disposer);
         this._loadable = {
-            loading: this.isAsync
+            loading: this.isAsync,
         };
     }
 
@@ -98,6 +98,7 @@ export class ComputedStateValue extends StateValue {
         publicContext.self = getSelfFormContext.bind(ctx);
         publicContext.object = objectFormContext.bind(ctx);
         publicContext.objects = objectsFormContext.bind(ctx);
+        publicContext.query = queryFormContext.bind(ctx);
         return publicContext;
     }
 
@@ -120,11 +121,11 @@ export class ComputedStateValue extends StateValue {
 
     private afterCompute(result: any): any {
         if (this.isAsync) {
-            const asyncRequestId = ++this.currentAsyncRequestId;
+            const asyncRequestId = ++this._currentAsyncRequestId;
             this.retain(); // Self holding during Async computing
             return (result as Promise<any>)
                 .then(data => {
-                    if (this.currentAsyncRequestId === asyncRequestId) {
+                    if (this._currentAsyncRequestId === asyncRequestId) {
                         this._loadable = {
                             data,
                             loading: false
@@ -133,7 +134,7 @@ export class ComputedStateValue extends StateValue {
                     return data;
                 })
                 .catch(error => {
-                    if (this.currentAsyncRequestId === asyncRequestId) {
+                    if (this._currentAsyncRequestId === asyncRequestId) {
                         this._loadable = {
                             error,
                             loading: false
@@ -143,7 +144,7 @@ export class ComputedStateValue extends StateValue {
                 })
                 .finally(() => {
                     try {
-                        if (this.currentAsyncRequestId === asyncRequestId) {
+                        if (this._currentAsyncRequestId === asyncRequestId) {
                             this.stateInstance.scopedStateManager.stateManager.publishStateValueChangeEvent({
                                 stateValue: this,
                                 changedType: "ASYNC_STATE_CHANGE"
@@ -172,12 +173,17 @@ function getSelfFormContext(options: any): any {
     return ctx.getSelf(options);
 }
 
-function objectFormContext(fetcher: ObjectFetcher<string, object, object>, id: any, variables?: any): any {
+function objectFormContext(fetcher: ObjectFetcher<string, object, object>, id: any, variables?: any): Promise<any> {
     const ctx = this as InternalComputedContext;
     return ctx.object(fetcher, id, variables);
 }
 
-function objectsFormContext(fetcher: ObjectFetcher<string, object, object>, ids: ReadonlyArray<any>, variables?: any): any {
+function objectsFormContext(fetcher: ObjectFetcher<string, object, object>, ids: ReadonlyArray<any>, variables?: any): Promise<any> {
     const ctx = this as InternalComputedContext;
     return ctx.objects(fetcher, ids, variables);
+}
+
+function queryFormContext(fetcher: ObjectFetcher<"Query", object, object>, variables?: any): Promise<any> {
+    const ctx = this as InternalComputedContext;
+    return ctx.query(fetcher, variables);
 }

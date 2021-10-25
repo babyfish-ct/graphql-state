@@ -7,9 +7,9 @@ class ComputedStateValue extends StateValue_1.StateValue {
     constructor(stateInstance, args, disposer) {
         super(stateInstance, args, disposer);
         this._invalid = true;
-        this.currentAsyncRequestId = 0;
+        this._currentAsyncRequestId = 0;
         this._loadable = {
-            loading: this.isAsync
+            loading: this.isAsync,
         };
     }
     invalidate() {
@@ -77,6 +77,7 @@ class ComputedStateValue extends StateValue_1.StateValue {
         publicContext.self = getSelfFormContext.bind(ctx);
         publicContext.object = objectFormContext.bind(ctx);
         publicContext.objects = objectsFormContext.bind(ctx);
+        publicContext.query = queryFormContext.bind(ctx);
         return publicContext;
     }
     get isAsync() {
@@ -96,11 +97,11 @@ class ComputedStateValue extends StateValue_1.StateValue {
     }
     afterCompute(result) {
         if (this.isAsync) {
-            const asyncRequestId = ++this.currentAsyncRequestId;
+            const asyncRequestId = ++this._currentAsyncRequestId;
             this.retain(); // Self holding during Async computing
             return result
                 .then(data => {
-                if (this.currentAsyncRequestId === asyncRequestId) {
+                if (this._currentAsyncRequestId === asyncRequestId) {
                     this._loadable = {
                         data,
                         loading: false
@@ -109,7 +110,7 @@ class ComputedStateValue extends StateValue_1.StateValue {
                 return data;
             })
                 .catch(error => {
-                if (this.currentAsyncRequestId === asyncRequestId) {
+                if (this._currentAsyncRequestId === asyncRequestId) {
                     this._loadable = {
                         error,
                         loading: false
@@ -119,7 +120,7 @@ class ComputedStateValue extends StateValue_1.StateValue {
             })
                 .finally(() => {
                 try {
-                    if (this.currentAsyncRequestId === asyncRequestId) {
+                    if (this._currentAsyncRequestId === asyncRequestId) {
                         this.stateInstance.scopedStateManager.stateManager.publishStateValueChangeEvent({
                             stateValue: this,
                             changedType: "ASYNC_STATE_CHANGE"
@@ -154,4 +155,8 @@ function objectFormContext(fetcher, id, variables) {
 function objectsFormContext(fetcher, ids, variables) {
     const ctx = this;
     return ctx.objects(fetcher, ids, variables);
+}
+function queryFormContext(fetcher, variables) {
+    const ctx = this;
+    return ctx.query(fetcher, variables);
 }

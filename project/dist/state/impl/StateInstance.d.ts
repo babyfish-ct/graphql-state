@@ -1,5 +1,5 @@
-import { VariableArgs } from "../../entities/VariableArgs";
 import { State } from "../State";
+import { VariableArgs } from "./Args";
 import { ScopedStateManager } from "./ScopedStateManager";
 import { StateValue } from "./StateValue";
 export declare class StateInstance {

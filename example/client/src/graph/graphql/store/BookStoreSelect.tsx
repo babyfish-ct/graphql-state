@@ -1,8 +1,8 @@
 import { css } from "@emotion/css";
 import { Select, Spin } from "antd";
 import { FC, memo, useCallback } from "react";
-import { bookStore$$, query$ } from "../__generated/fetchers";
-import { useQuery } from "graphql-state";
+import { useStateValue } from "graphql-state";
+import { bookStoreOptionListState } from "../State";
 
 export const BookStoreSelect: FC<{
     value?: string,
@@ -10,14 +10,11 @@ export const BookStoreSelect: FC<{
     optional?: boolean
 }> = memo(({value, onChange, optional}) => {
 
-    const { data, loading, error } = useQuery(
-        query$.findBooksStores(
-            bookStore$$,
-            options => options.alias("options")
-        ),
-        { asyncStyle: "ASYNC_OBJECT" }
+    const { data: stores, loading, error } = useStateValue(
+        bookStoreOptionListState, 
+        {asyncStyle: "async-object"}
     );
-
+    
     const onSelectChange = useCallback((value: string) => {
         if (onChange !== undefined) {
             onChange(value === "" ? undefined : value);
@@ -30,15 +27,15 @@ export const BookStoreSelect: FC<{
             { loading && <><Spin/>Loading options...</> }
             <>
                 {
-                    data && <Select value={value ?? ""} onChange={onSelectChange}>
+                    stores && <Select value={value ?? ""} onChange={onSelectChange}>
                         { 
                             optional && <Select.Option value="">
                                 <span className={css({fontStyle: "italic", fontWeight: "bold"})}>--Unspecified--</span>
                             </Select.Option>
                         }
                         {
-                            data.options.map(option =>
-                                <Select.Option key={option.id} value={option.id}>{option.name}</Select.Option>
+                            stores.map(store =>
+                                <Select.Option key={store.id} value={store.id}>{store.name}</Select.Option>
                             )
                         }
                     </Select>

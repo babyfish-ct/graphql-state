@@ -49,17 +49,17 @@ export function newTypedConfiguration(): Configuration<Schema> {
 export type Schema = {
     readonly query: {
         readonly " $associationTypes": {
-            readonly findBooksStores: "BookStore", 
+            readonly findBookStores: "BookStore", 
             readonly findBooks: "Book", 
             readonly findAuthors: "Author"
         };
         readonly " $associationArgs": {
-            readonly findBooksStores: QueryArgs["findBooksStores"], 
+            readonly findBookStores: QueryArgs["findBookStores"], 
             readonly findBooks: QueryArgs["findBooks"], 
             readonly findAuthors: QueryArgs["findAuthors"]
         };
         readonly " $associationTargetTypes": {
-            readonly findBooksStores: BookStoreScalarType, 
+            readonly findBookStores: BookStoreScalarType, 
             readonly findBooks: BookScalarType, 
             readonly findAuthors: AuthorScalarType
         };

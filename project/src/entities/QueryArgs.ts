@@ -1,5 +1,5 @@
 import { ObjectFetcher } from "graphql-ts-client-api";
-import { standardizedVariables } from "../state/impl/Variables";
+import { OptionArgs } from "../state/impl/Args";
 import { RuntimeShape, toRuntimeShape } from "./RuntimeShape";
 
 export class QueryArgs {
@@ -9,13 +9,13 @@ export class QueryArgs {
     private constructor(
         readonly shape: RuntimeShape,
         readonly fetcher: ObjectFetcher<string, object, object>,
-        readonly ids?: ReadonlyArray<any>,
-        readonly variables?: any
+        readonly ids: ReadonlyArray<any> | undefined,
+        readonly optionsArgs?: OptionArgs | undefined
     ) {
-        if (variables === undefined) {
+        if (optionsArgs === undefined) {
             this._key = shape.toString();
         } else {
-            this._key = `${shape.toString()}:${JSON.stringify(variables)}`;
+            this._key = `${shape.toString()}:${optionsArgs.key}`;
         }
     }
 
@@ -26,19 +26,18 @@ export class QueryArgs {
     static create(
         fetcher: ObjectFetcher<string, object, object>,
         ids?: ReadonlyArray<any>,
-        variables?: any
+        optionArgs?: OptionArgs
     ): QueryArgs {
         if (fetcher.fetchableType.name === 'Query' && ids !== undefined) {
             throw new Error("Generic query does not support id");
         } else if (fetcher.fetchableType.name !== 'Query' && ids === undefined) {
             throw new Error("Id is required for object query");
         }
-        const vs = standardizedVariables(variables);
         return new QueryArgs(
-            toRuntimeShape(fetcher, variables), 
+            toRuntimeShape(fetcher, optionArgs?.variableArgs?.variables), 
             fetcher, 
-            ids, 
-            vs
+            ids,
+            optionArgs
         );
     }
 
@@ -46,7 +45,7 @@ export class QueryArgs {
         if (this.ids === undefined) {
             throw new Error(`The function 'missed' is not supported because the current query args is used for object query`);
         }
-        return new QueryArgs(this.shape, this.fetcher, ids, this.variables);
+        return new QueryArgs(this.shape, this.fetcher, ids, this.optionsArgs);
     }
 
     contains(args: QueryArgs): boolean {

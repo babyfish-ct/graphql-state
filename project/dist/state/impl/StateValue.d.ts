@@ -1,4 +1,4 @@
-import { VariableArgs } from "../../entities/VariableArgs";
+import { VariableArgs } from "./Args";
 import { StateInstance } from "./StateInstance";
 export declare abstract class StateValue {
     readonly stateInstance: StateInstance;
@@ -11,7 +11,7 @@ export declare abstract class StateValue {
     private _createdMillis;
     constructor(stateInstance: StateInstance, args: VariableArgs | undefined, disposer: () => void);
     abstract get result(): any;
-    abstract get loadable(): any;
+    abstract get loadable(): Loadable;
     retain(): this;
     release(maxDelayMillis: number): void;
     protected abstract createMountContext(): any;

@@ -19,7 +19,7 @@ export const AuthorList: FC = memo(() => {
     const [name, setName] = useState<string>();
     const [bookName, setBookName] = useState<string>();
 
-    const { data, loading } = useQuery(
+    const { data, loading, refetch } = useQuery(
         query$.findAuthors(
             authorConnection$.edges(
                 authorEdge$.node(
@@ -29,7 +29,7 @@ export const AuthorList: FC = memo(() => {
             options => options.alias("authorConnection")
         ),
         {
-            asyncStyle: "ASYNC_OBJECT",
+            asyncStyle: "async-object",
             variables: { name, bookName }
         }
     );
@@ -126,7 +126,7 @@ export const AuthorList: FC = memo(() => {
                         <Input value={bookName} onChange={onBookNameChange} placeholder="Input name to filter books of each row..."/>
                     </Col>
                     <Col>
-                        <Button>Refresh</Button>
+                        <Button onClick={refetch}>Refresh</Button>
                     </Col>
                 </Row>
                 { loading && <div><Spin/>Loading authors...</div> }

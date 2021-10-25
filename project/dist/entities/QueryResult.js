@@ -10,17 +10,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QueryResult = void 0;
+const Args_1 = require("../state/impl/Args");
 const QueryService_1 = require("./QueryService");
 const Record_1 = require("./Record");
-const VariableArgs_1 = require("./VariableArgs");
 class QueryResult {
     constructor(entityManager, queryArgs, disposer) {
         this.entityManager = entityManager;
         this.queryArgs = queryArgs;
         this.disposer = disposer;
         this._refCount = 0;
-        this._loadable = { loading: true };
         this._invalid = true;
+        this._refetched = false;
         this._currentAsyncRequestId = 0;
         this._disposeTimerId = undefined;
         this._createdMillis = new Date().getTime();
@@ -28,6 +28,11 @@ class QueryResult {
         this._changeListener = this.onEntityChange.bind(this);
         entityManager.addEvictListener(undefined, this._evictListener);
         entityManager.addChangeListener(undefined, this._changeListener);
+        this._bindedRefetch = this._refetch.bind(this);
+        this._loadable = {
+            loading: true,
+            refetch: this._bindedRefetch
+        };
     }
     retain() {
         this._refCount++;
@@ -52,8 +57,9 @@ class QueryResult {
     }
     get promise() {
         if (this._invalid) {
-            this._promise = this.query();
+            this._promise = this.query(this._refetched);
             this._invalid = false;
+            this._refetched = false;
         }
         return this._promise;
     }
@@ -61,12 +67,17 @@ class QueryResult {
         this.promise;
         return this._loadable;
     }
-    query() {
+    query(refetch) {
         return __awaiter(this, void 0, void 0, function* () {
-            const rawResult = new QueryService_1.QueryService(this.entityManager).query(this.queryArgs);
+            const rawResult = new QueryService_1.QueryService(this.entityManager)
+                .query(this.queryArgs, !refetch, this.mode === "cache-and-network");
             if (rawResult.type === 'cached') {
                 this.refreshDependencies(rawResult.data);
-                this._loadable = { loading: false, data: rawResult.data };
+                this._loadable = {
+                    loading: false,
+                    data: rawResult.data,
+                    refetch: this._bindedRefetch
+                };
                 this.entityManager.stateManager.publishQueryResultChangeEvent({
                     queryResult: this,
                     changedType: "ASYNC_STATE_CHANGE"
@@ -88,15 +99,18 @@ class QueryResult {
                     this.refreshDependencies(data);
                     this._loadable = {
                         data,
-                        loading: false
+                        loading: false,
+                        refetch: this._bindedRefetch
                     };
                 }
+                return data;
             }
             catch (ex) {
                 if (this._currentAsyncRequestId === asyncRequestId) {
                     this._loadable = {
                         loading: false,
-                        error: ex
+                        error: ex,
+                        refetch: this._bindedRefetch
                     };
                 }
                 throw ex;
@@ -143,10 +157,22 @@ class QueryResult {
         }
     }
     dispose() {
-        console.log("dispose", this.queryArgs.variables);
+        var _a;
+        console.log("dispose", (_a = this.queryArgs.optionsArgs) === null || _a === void 0 ? void 0 : _a.options);
         this.entityManager.removeEvictListener(undefined, this._evictListener);
         this.entityManager.removeChangeListener(undefined, this._changeListener);
         this.disposer();
+    }
+    _refetch() {
+        if (this.mode === "cache-only") {
+            throw new Error(`cannot refetch the cache-only resource`);
+        }
+        this.invalidate();
+        this._refetched = true;
+    }
+    get mode() {
+        var _a, _b, _c, _d;
+        return (_d = (_c = (_b = (_a = this.queryArgs) === null || _a === void 0 ? void 0 : _a.optionsArgs) === null || _b === void 0 ? void 0 : _b.options) === null || _c === void 0 ? void 0 : _c.mode) !== null && _d !== void 0 ? _d : "cache-and-network";
     }
 }
 exports.QueryResult = QueryResult;
@@ -219,7 +245,7 @@ class TypeDependency {
         this.fieldKeyIdMutlipMap = new Map();
     }
     addObjectId(field, id) {
-        const key = VariableArgs_1.VariableArgs.fieldKey(field.name, field.args);
+        const key = Args_1.VariableArgs.fieldKey(field.name, field.args);
         let ids = this.fieldKeyIdMutlipMap.get(key);
         if (ids === undefined) {
             ids = new Set();
@@ -239,7 +265,7 @@ class TypeDependency {
         for (const entityKey of e.evictedKeys) {
             const key = typeof entityKey === "string" ?
                 entityKey :
-                VariableArgs_1.VariableArgs.fieldKey(entityKey.name, VariableArgs_1.VariableArgs.of(entityKey.variables));
+                Args_1.VariableArgs.fieldKey(entityKey.name, Args_1.VariableArgs.of(entityKey.variables));
             if (this.fieldKeyIdMutlipMap.has(key) === true) {
                 return true;
             }
@@ -251,7 +277,7 @@ class TypeDependency {
         for (const entityKey of e.changedKeys) {
             const key = typeof entityKey === "string" ?
                 entityKey :
-                VariableArgs_1.VariableArgs.fieldKey(entityKey.name, VariableArgs_1.VariableArgs.of(entityKey.variables));
+                Args_1.VariableArgs.fieldKey(entityKey.name, Args_1.VariableArgs.of(entityKey.variables));
             if (((_a = this.fieldKeyIdMutlipMap.get(key)) === null || _a === void 0 ? void 0 : _a.has(e.id)) === true) {
                 return true;
             }

@@ -1,4 +1,4 @@
-import { VariableArgs } from "../../entities/VariableArgs";
+import { VariableArgs } from "./Args";
 import { StateInstance } from "./StateInstance";
 import { Loadable, StateValue } from "./StateValue";
 

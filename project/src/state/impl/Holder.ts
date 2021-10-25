@@ -3,18 +3,17 @@ import { Dispatch, SetStateAction } from "react";
 import { MutationResult } from "../../entities/MutationResult";
 import { QueryArgs } from "../../entities/QueryArgs";
 import { QueryResult } from "../../entities/QueryResult";
-import { VariableArgs } from "../../entities/VariableArgs";
 import { ParameterizedStateAccessingOptions, State, StateAccessingOptions } from "../State";
-import { MutationOptions } from "../StateHook";
+import { MutationOptions, QueryOptions } from "../StateHook";
 import { QueryResultChangeEvent, StateManagerImpl, StateValueChangeEvent, StateValueChangeListener } from "./StateManagerImpl";
 import { StateValue } from "./StateValue";
-import { standardizedVariables } from "./Variables";
+import { OptionArgs, VariableArgs } from "./Args";
 
 export class StateValueHolder {
 
     private stateValue?: StateValue;
 
-    private previousOptionsJsonText?: string;
+    private previousOptionArgs?: OptionArgs;
 
     private stateValueChangeListener?: StateValueChangeListener;
     
@@ -34,11 +33,11 @@ export class StateValueHolder {
 
     set(state: State<any>, scopePath: string, options?: StateAccessingOptions) {
 
-        const newOptionsJsonText = standardizedJsonText(options);
+        const optionArgs = OptionArgs.of(options);
 
         if (this.stateValue?.stateInstance?.state[" $name"] === state[" $name"] && 
             this.scopePath === scopePath &&
-            this.previousOptionsJsonText === newOptionsJsonText
+            this.previousOptionArgs?.key === optionArgs?.key
         ) {
             return;
         }
@@ -46,7 +45,7 @@ export class StateValueHolder {
         this.release();
 
         this.scopePath = scopePath;
-        this.previousOptionsJsonText = newOptionsJsonText;
+        this.previousOptionArgs = optionArgs;
         this.stateValue = this
             .stateManager
             .scope(scopePath)
@@ -74,7 +73,7 @@ export class StateValueHolder {
             const value = this.stateValue;
             if (value !== undefined) {
                 this.stateValue = undefined;
-                this.previousOptionsJsonText = undefined;
+                this.previousOptionArgs = undefined;
                 value.stateInstance.release(value.args);
             }
         }
@@ -103,10 +102,11 @@ export class QueryResultHolder {
     set(
         fetcher: ObjectFetcher<string, object, object>,
         ids?: ReadonlyArray<any>,
-        variables?: any    
+        options?: QueryOptions<any, any>    
     ) {
         const oldQueryArgs = this.queryResult?.queryArgs;
-        const newQueryArgs = QueryArgs.create(fetcher, ids, variables);
+        const newQueryArgs = QueryArgs.create(fetcher, ids, OptionArgs.of(options));
+
         if (oldQueryArgs?.key === newQueryArgs.key) {
             return;
         }
@@ -150,12 +150,12 @@ export class MutationResultHolder{
 
     private previousFetcher?: ObjectFetcher<"Mutation", any, any>;
 
-    private previousVariables?: any;
-
     private previousFetcherJson?: string;
 
-    private previousVariablesJson?: string;
-    
+    private previousVariables?: any;
+
+    private previousVariablesArgs?: VariableArgs;
+
     constructor(
         private stateManager: StateManagerImpl<any>,
         private localUpdater: Dispatch<SetStateAction<number>>
@@ -184,39 +184,34 @@ export class MutationResultHolder{
     }
 
     private isSameFetcher(fetcher: ObjectFetcher<"Mutation", any, any>): boolean {
+        
         if (this.previousFetcher === fetcher) {
             return true;
         }
+        
         const json = fetcher.toJSON();
         if (this.previousFetcherJson === json) {
             return true;
         }
+        
         this.previousFetcher = fetcher;
         this.previousFetcherJson = json;
         return false;
     }
 
-    private isSameVariables(variables?: any): boolean {
+    private isSameVariables(variables: any): boolean {
+        
         if (this.previousVariables === variables) {
             return true;
         }
-        const json = standardizedJsonText(variables);
-        if (this.previousVariablesJson === json) {
+        
+        const args = VariableArgs.of(variables);
+        if (this.previousVariablesArgs?.key === args?.key) {
             return true;
         }
+
         this.previousVariables = variables;
-        this.previousVariablesJson = json;
+        this.previousVariablesArgs = args;
         return false;
     }
-}
-
-function standardizedJsonText(obj: any): string | undefined {
-    if (obj === undefined || obj === null) {
-        return undefined;
-    }
-    if (typeof obj === "object" && !Array.isArray(obj)) {
-        const vs = standardizedVariables(obj);
-        return vs !== undefined ? JSON.stringify(vs) : undefined;
-    }
-    return JSON.stringify(obj);
 }

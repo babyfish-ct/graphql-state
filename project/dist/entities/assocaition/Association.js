@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Association = void 0;
 const SpaceSavingMap_1 = require("../../state/impl/SpaceSavingMap");
-const VariableArgs_1 = require("../VariableArgs");
+const Args_1 = require("../../state/impl/Args");
 const AssociationConnectionValue_1 = require("./AssociationConnectionValue");
 const AssociationListValue_1 = require("./AssociationListValue");
 const AssociationReferenceValue_1 = require("./AssociationReferenceValue");
@@ -31,7 +31,7 @@ class Association {
         if (includeMoreStrictArgs) {
             const keys = [];
             this.valueMap.forEachValue(value => {
-                if (VariableArgs_1.VariableArgs.contains(value.args, args)) {
+                if (Args_1.VariableArgs.contains(value.args, args)) {
                     ctx.unset(this.record, this.field.name, value.args);
                     value.dispose(entityManager);
                     keys.push(args === null || args === void 0 ? void 0 : args.key);
@@ -57,7 +57,7 @@ class Association {
         }
         let result = false;
         this.valueMap.forEachValue(value => {
-            if (VariableArgs_1.VariableArgs.contains(value.args, args)) {
+            if (Args_1.VariableArgs.contains(value.args, args)) {
                 if (value.contains(target)) {
                     result = true;
                     return false;
@@ -78,7 +78,7 @@ class Association {
                 if (possibleRecords.length === 0) {
                     return;
                 }
-                if (VariableArgs_1.VariableArgs.contains(mostStringentArgs, value.args)) {
+                if (Args_1.VariableArgs.contains(mostStringentArgs, value.args)) {
                     value.link(entityManager, possibleRecords);
                 }
                 else {
@@ -117,7 +117,7 @@ class Association {
                 if (possibleRecords.length === 0) {
                     return;
                 }
-                if (VariableArgs_1.VariableArgs.contains(value.args, leastStringentArgs)) {
+                if (Args_1.VariableArgs.contains(value.args, leastStringentArgs)) {
                     value.unlink(entityManager, possibleRecords);
                 }
                 else {
@@ -154,7 +154,7 @@ class Association {
     appendTo(map) {
         const idFieldName = this.field.targetType.idField.name;
         this.valueMap.forEachValue(value => {
-            map.set(VariableArgs_1.VariableArgs.fieldKey(this.field.name, value.args), value.getAsObject());
+            map.set(Args_1.VariableArgs.fieldKey(this.field.name, value.args), value.getAsObject());
         });
     }
     dispose(entityManager) {

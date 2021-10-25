@@ -3,7 +3,7 @@ import { Dispatch, SetStateAction } from "react";
 import { MutationResult } from "../../entities/MutationResult";
 import { QueryResult } from "../../entities/QueryResult";
 import { State, StateAccessingOptions } from "../State";
-import { MutationOptions } from "../StateHook";
+import { MutationOptions, QueryOptions } from "../StateHook";
 import { StateManagerImpl } from "./StateManagerImpl";
 import { StateValue } from "./StateValue";
 export declare class StateValueHolder {
@@ -11,7 +11,7 @@ export declare class StateValueHolder {
     private scopePath;
     private localUpdater;
     private stateValue?;
-    private previousOptionsJsonText?;
+    private previousOptionArgs?;
     private stateValueChangeListener?;
     constructor(stateManager: StateManagerImpl<any>, scopePath: string, localUpdater: Dispatch<SetStateAction<number>>);
     get(): StateValue;
@@ -25,7 +25,7 @@ export declare class QueryResultHolder {
     private queryResultChangeListener?;
     constructor(stateManager: StateManagerImpl<any>, localUpdater: Dispatch<SetStateAction<number>>);
     get(): QueryResult;
-    set(fetcher: ObjectFetcher<string, object, object>, ids?: ReadonlyArray<any>, variables?: any): void;
+    set(fetcher: ObjectFetcher<string, object, object>, ids?: ReadonlyArray<any>, options?: QueryOptions<any, any>): void;
     release(): void;
 }
 export declare class MutationResultHolder {
@@ -33,9 +33,9 @@ export declare class MutationResultHolder {
     private localUpdater;
     private mutationResult?;
     private previousFetcher?;
-    private previousVariables?;
     private previousFetcherJson?;
-    private previousVariablesJson?;
+    private previousVariables?;
+    private previousVariablesArgs?;
     constructor(stateManager: StateManagerImpl<any>, localUpdater: Dispatch<SetStateAction<number>>);
     get(): MutationResult;
     set(fetcher: ObjectFetcher<"Mutation", any, any>, options?: MutationOptions<any, any>): void;

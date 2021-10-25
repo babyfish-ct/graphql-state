@@ -2,7 +2,7 @@ import { TypeMetadata } from "../../meta/impl/TypeMetdata";
 import { EntityChangeEvent, EntityEvictEvent, EntityKey } from "../EntityEvent";
 import { EntityManager } from "../EntityManager";
 import { Record, ScalarRowImpl } from "../Record";
-import { VariableArgs } from "../VariableArgs";
+import { VariableArgs } from "../../state/impl/Args";
 import { Association } from "./Association";
 import { ObjectConnection, RecordConnection } from "./AssociationConnectionValue";
 

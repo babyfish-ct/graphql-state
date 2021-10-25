@@ -21,13 +21,13 @@ export const BookStoreList = memo(() => {
     const [name, setName] = useState<string>();
     const [bookName, setBookName] = useState<string>();
 
-    const { data, loading } = useQuery(
-        query$.findBooksStores(
+    const { data, loading, refetch } = useQuery(
+        query$.findBookStores(
             BOOK_STORE_ROW, 
             options => options.alias("stores")
         ),
         {
-            asyncStyle: "ASYNC_OBJECT",
+            asyncStyle: "async-object",
             variables: { name, bookName }
         }
     );
@@ -123,7 +123,7 @@ export const BookStoreList = memo(() => {
                         <Input value={bookName} onChange={onBookNameChange} placeholder="Input name to filter books of each row..."/>
                     </Col>
                     <Col>
-                        <Button>Refresh</Button>
+                        <Button onClick={refetch}>Refresh</Button>
                     </Col>
                 </Row>
                 { loading && <div><Spin/>Loading book stores...</div>}

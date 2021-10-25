@@ -2,7 +2,7 @@ import { FieldMetadata } from "../../meta/impl/FieldMetadata";
 import { SpaceSavingMap } from "../../state/impl/SpaceSavingMap";
 import { EntityManager } from "../EntityManager";
 import { Record } from "../Record";
-import { VariableArgs } from "../VariableArgs";
+import { VariableArgs } from "../../state/impl/Args";
 import { AssociationValue } from "./AssocaitionValue";
 import { AssociationConnectionValue, RecordConnection } from "./AssociationConnectionValue";
 import { AssociationListValue } from "./AssociationListValue";

@@ -1,12 +1,12 @@
 import { ScalarRow } from "../meta/Configuration";
 import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
+import { VariableArgs } from "../state/impl/Args";
 import { SpaceSavingMap } from "../state/impl/SpaceSavingMap";
 import { Association } from "./assocaition/Association";
 import { RecordConnection } from "./assocaition/AssociationConnectionValue";
 import { BackReferences } from "./BackReferences";
 import { EntityManager } from "./EntityManager";
-import { VariableArgs } from "./VariableArgs";
 
 export class Record {
 

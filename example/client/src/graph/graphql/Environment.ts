@@ -87,7 +87,7 @@ export function createStateManager(withCustomerOptimization: boolean): StateMana
 
     if (withCustomerOptimization) {
         cfg
-        .rootAssociationProperties("findBooksStores", createNameFilterAssociationProperties())
+        .rootAssociationProperties("findBookStores", createNameFilterAssociationProperties())
         .rootAssociationProperties("findBooks", createNameFilterAssociationProperties())
         .rootAssociationProperties("findAuthors", createNameFilterAssociationProperties())
         .associationProperties("BookStore", "books", createNameFilterAssociationProperties())

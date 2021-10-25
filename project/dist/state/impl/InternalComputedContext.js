@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InternalComputedContext = void 0;
 const QueryArgs_1 = require("../../entities/QueryArgs");
-const VariableArgs_1 = require("../../entities/VariableArgs");
+const Args_1 = require("./Args");
 const ComputedStateValue_1 = require("./ComputedStateValue");
 class InternalComputedContext {
     constructor(parent, currentStateValue) {
@@ -56,7 +56,7 @@ class InternalComputedContext {
     }
     getSelf(options) {
         var _a, _b;
-        const args = VariableArgs_1.VariableArgs.of((_a = options) === null || _a === void 0 ? void 0 : _a.variables);
+        const args = Args_1.VariableArgs.of((_a = options) === null || _a === void 0 ? void 0 : _a.variables);
         if (((_b = this.currentStateValue.args) === null || _b === void 0 ? void 0 : _b.key) === (args === null || args === void 0 ? void 0 : args.key)) {
             throw new Error("Cannot get the current state with same variables in the computing implementation, please support another variables");
         }
@@ -67,7 +67,7 @@ class InternalComputedContext {
         if (this.closed) {
             throw new Error("ComputedContext has been closed");
         }
-        const args = VariableArgs_1.VariableArgs.of((_a = options) === null || _a === void 0 ? void 0 : _a.variables);
+        const args = Args_1.VariableArgs.of((_a = options) === null || _a === void 0 ? void 0 : _a.variables);
         const stateInstance = this.scope.instance(state, (_b = options === null || options === void 0 ? void 0 : options.scope) !== null && _b !== void 0 ? _b : "auto");
         const stateValue = stateInstance.retain(args);
         let result;
@@ -94,24 +94,41 @@ class InternalComputedContext {
             return stateValue.result;
         }
     }
-    object(fetcher, id, variables) {
-        return this.objects(fetcher, [id], variables)[0];
+    object(fetcher, id, options) {
+        return this.objects(fetcher, [id], options)[0];
     }
-    objects(fetcher, ids, variables) {
+    objects(fetcher, ids, options) {
+        return this.queryImpl(fetcher, ids, options);
+    }
+    query(fetcher, options) {
+        return this.queryImpl(fetcher, undefined, options);
+    }
+    queryImpl(fetcher, ids, options) {
         if (this.closed) {
             throw new Error("ComputedContext has been closed");
         }
+        if (fetcher.fetchableType.name === "Query") {
+            if (ids !== undefined) {
+                throw new Error('Internal bug: Cannot specify is for generic query');
+            }
+        }
+        else {
+            if (ids === undefined) {
+                throw new Error('Internal bug: Object query requires "ids"');
+            }
+        }
         const entityManager = this.scope.stateManager.entityManager;
-        const queryResult = entityManager.retain(QueryArgs_1.QueryArgs.create(fetcher, ids, variables));
-        let result;
+        const queryResult = entityManager.retain(QueryArgs_1.QueryArgs.create(fetcher, undefined, Args_1.OptionArgs.of(options)));
+        let promise;
         try {
-            result = queryResult.promise;
+            promise = queryResult.promise;
         }
         catch (ex) {
             entityManager.release(queryResult.queryArgs);
+            throw ex;
         }
         this.queryResultDependencies.add(queryResult);
-        return result;
+        return promise;
     }
     onStateValueChange(e) {
         if (e.changedType === "RESULT_CHANGE" && this.stateValueDependencies.has(e.stateValue)) {

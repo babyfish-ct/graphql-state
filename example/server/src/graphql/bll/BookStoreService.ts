@@ -11,7 +11,7 @@ import { compare } from '../../common/Comparator';
 export class BookStoreSerice {
 
     @Query(() => [BookStore])
-    async findBooksStores(
+    async findBookStores(
         @Arg("name", () => String, {nullable: true}) name?: string | null
     ): Promise<BookStore[]> {
 

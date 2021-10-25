@@ -5,6 +5,7 @@ import { RemoteDataService } from "../data/RemoteDataService";
 import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { StateManagerImpl } from "../state/impl/StateManagerImpl";
+import { QueryMode } from "../state/StateHook";
 import { AssociationValue } from "./assocaition/AssocaitionValue";
 import { EntityEvictEvent } from "./EntityEvent";
 import { ModificationContext } from "./ModificationContext";

@@ -1,39 +1,38 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QueryArgs = void 0;
-const Variables_1 = require("../state/impl/Variables");
 const RuntimeShape_1 = require("./RuntimeShape");
 class QueryArgs {
-    constructor(shape, fetcher, ids, variables) {
+    constructor(shape, fetcher, ids, optionsArgs) {
         this.shape = shape;
         this.fetcher = fetcher;
         this.ids = ids;
-        this.variables = variables;
-        if (variables === undefined) {
+        this.optionsArgs = optionsArgs;
+        if (optionsArgs === undefined) {
             this._key = shape.toString();
         }
         else {
-            this._key = `${shape.toString()}:${JSON.stringify(variables)}`;
+            this._key = `${shape.toString()}:${optionsArgs.key}`;
         }
     }
     get key() {
         return this._key;
     }
-    static create(fetcher, ids, variables) {
+    static create(fetcher, ids, optionArgs) {
+        var _a;
         if (fetcher.fetchableType.name === 'Query' && ids !== undefined) {
             throw new Error("Generic query does not support id");
         }
         else if (fetcher.fetchableType.name !== 'Query' && ids === undefined) {
             throw new Error("Id is required for object query");
         }
-        const vs = Variables_1.standardizedVariables(variables);
-        return new QueryArgs(RuntimeShape_1.toRuntimeShape(fetcher, variables), fetcher, ids, vs);
+        return new QueryArgs(RuntimeShape_1.toRuntimeShape(fetcher, (_a = optionArgs === null || optionArgs === void 0 ? void 0 : optionArgs.variableArgs) === null || _a === void 0 ? void 0 : _a.variables), fetcher, ids, optionArgs);
     }
     newArgs(ids) {
         if (this.ids === undefined) {
             throw new Error(`The function 'missed' is not supported because the current query args is used for object query`);
         }
-        return new QueryArgs(this.shape, this.fetcher, ids, this.variables);
+        return new QueryArgs(this.shape, this.fetcher, ids, this.optionsArgs);
     }
     contains(args) {
         if (this === args) {

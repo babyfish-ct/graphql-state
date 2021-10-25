@@ -1,5 +1,5 @@
-import { VariableArgs } from "../../entities/VariableArgs";
 import { ComputedStateCreationOptions, StateUnmoutHandler, WritableStateCreationOptions } from "../State";
+import { VariableArgs } from "./Args";
 import { StateInstance } from "./StateInstance";
 
 export abstract class StateValue {
@@ -27,7 +27,7 @@ export abstract class StateValue {
 
     abstract get result(): any;
 
-    abstract get loadable(): any;
+    abstract get loadable(): Loadable;
 
     retain(): this {
         if (this._refCount++ === 0) {

@@ -9,21 +9,28 @@ export declare class QueryResult {
     private _promise?;
     private _loadable;
     private _invalid;
+    private _refetched;
     private _evictListener;
     private _changeListener;
     private _currentAsyncRequestId;
     private _dependencies?;
     private _disposeTimerId?;
     private _createdMillis;
+    private _bindedRefetch;
     constructor(entityManager: EntityManager, queryArgs: QueryArgs, disposer: () => void);
     retain(): this;
     release(maxDelayMillis: number): void;
     get promise(): Promise<any>;
-    get loadable(): Loadable;
+    get loadable(): QueryLoadable<any>;
     private query;
     private refreshDependencies;
     private onEntityEvict;
     private onEntityChange;
     private invalidate;
     private dispose;
+    private _refetch;
+    private get mode();
+}
+export interface QueryLoadable<T> extends Loadable<T> {
+    refetch: () => void;
 }

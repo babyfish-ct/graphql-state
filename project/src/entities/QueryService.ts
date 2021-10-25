@@ -10,34 +10,45 @@ export class QueryService {
 
     constructor(private entityManager: EntityManager) {}
 
-    query(args: QueryArgs): RawQueryResult<any> {
+    query(args: QueryArgs, useCache: boolean, useDataService: boolean): RawQueryResult<any> {
         if (args.ids === undefined) {
-            return this.graph(args);
+            return this.graph(args, useCache, useDataService);
         }
-        return this.objects(args);
+        return this.objects(args, useCache, useDataService);
     }
 
-    private graph(args: QueryArgs): RawQueryResult<any> {
+    private graph(args: QueryArgs, useCache: boolean, useDataService: boolean): RawQueryResult<any> {
 
-        try {
+        if (useCache) {
+            try {
+                return {
+                    type: "cached",
+                    data: this.findObject(QUERY_OBJECT_ID, args.shape)
+                }
+            } catch (ex) {
+                if (!ex[" $canNotFoundFromCache"]) {
+                    throw ex;
+                }
+                const reason = ex["reason"];
+                if (useDataService) {
+                    console.debug(reason);
+                } else {
+                    throw new Error(reason);
+                }
+            }
+        }
+
+        if (useDataService) {
             return {
-                type: "cached",
-                data: this.findObject(QUERY_OBJECT_ID, args.shape)
-            }
-        } catch (ex) {
-            if (!ex[" $canNotFoundFromCache"]) {
-                throw ex;
-            }
-            console.log(ex["reason"]);
+                type: "deferred",
+                promise: this.entityManager.dataService.query(args)
+            };
         }
 
-        return {
-            type: "deferred",
-            promise: this.entityManager.dataService.query(args)
-        };
+        throw new Error('Internal bug: neither "useCache" nor "useDataService" is set');
     }
 
-    private objects(args: QueryArgs): RawQueryResult<ReadonlyArray<any>> {
+    private objects(args: QueryArgs, useCache: boolean, useDataService: boolean): RawQueryResult<ReadonlyArray<any>> {
         const ids = args.ids!;
         if (ids.length === 0) {
             return {
@@ -46,7 +57,12 @@ export class QueryService {
             }
         }
         
-        const map = this.findObjects(ids, args.shape);
+        let map = new Map<any, any>();
+        if (useCache) {
+            map = this.findObjects(ids, args.shape);
+        } else {
+            map = new Map<any, any>();
+        }
         const missedIds: any[] = [];
         for (const id of ids) {
             if (!map.has(id)) {
@@ -60,10 +76,14 @@ export class QueryService {
             }
         }
 
-        return {
-            type: "deferred",
-            promise: this.loadAndMerge(map, args, missedIds)
-        };
+        if (useDataService) {
+            return {
+                type: "deferred",
+                promise: this.loadAndMerge(map, args, missedIds)
+            };
+        }
+
+        throw new Error('Internal bug: neither "useCache" nor "useDataService" is set');
     }
 
     private findObjects(

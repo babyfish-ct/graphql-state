@@ -16,31 +16,42 @@ class QueryService {
     constructor(entityManager) {
         this.entityManager = entityManager;
     }
-    query(args) {
+    query(args, useCache, useDataService) {
         if (args.ids === undefined) {
-            return this.graph(args);
+            return this.graph(args, useCache, useDataService);
         }
-        return this.objects(args);
+        return this.objects(args, useCache, useDataService);
     }
-    graph(args) {
-        try {
+    graph(args, useCache, useDataService) {
+        if (useCache) {
+            try {
+                return {
+                    type: "cached",
+                    data: this.findObject(Record_1.QUERY_OBJECT_ID, args.shape)
+                };
+            }
+            catch (ex) {
+                if (!ex[" $canNotFoundFromCache"]) {
+                    throw ex;
+                }
+                const reason = ex["reason"];
+                if (useDataService) {
+                    console.debug(reason);
+                }
+                else {
+                    throw new Error(reason);
+                }
+            }
+        }
+        if (useDataService) {
             return {
-                type: "cached",
-                data: this.findObject(Record_1.QUERY_OBJECT_ID, args.shape)
+                type: "deferred",
+                promise: this.entityManager.dataService.query(args)
             };
         }
-        catch (ex) {
-            if (!ex[" $canNotFoundFromCache"]) {
-                throw ex;
-            }
-            console.log(ex["reason"]);
-        }
-        return {
-            type: "deferred",
-            promise: this.entityManager.dataService.query(args)
-        };
+        throw new Error('Internal bug: neither "useCache" nor "useDataService" is set');
     }
-    objects(args) {
+    objects(args, useCache, useDataService) {
         const ids = args.ids;
         if (ids.length === 0) {
             return {
@@ -48,7 +59,13 @@ class QueryService {
                 data: []
             };
         }
-        const map = this.findObjects(ids, args.shape);
+        let map = new Map();
+        if (useCache) {
+            map = this.findObjects(ids, args.shape);
+        }
+        else {
+            map = new Map();
+        }
         const missedIds = [];
         for (const id of ids) {
             if (!map.has(id)) {
@@ -61,10 +78,13 @@ class QueryService {
                 data: Array.from(map.values())
             };
         }
-        return {
-            type: "deferred",
-            promise: this.loadAndMerge(map, args, missedIds)
-        };
+        if (useDataService) {
+            return {
+                type: "deferred",
+                promise: this.loadAndMerge(map, args, missedIds)
+            };
+        }
+        throw new Error('Internal bug: neither "useCache" nor "useDataService" is set');
     }
     findObjects(ids, shape) {
         const map = new Map();

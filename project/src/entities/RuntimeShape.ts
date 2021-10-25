@@ -1,5 +1,5 @@
 import { Fetcher, FetcherField, ParameterRef } from "graphql-ts-client-api";
-import { VariableArgs } from "./VariableArgs";
+import { VariableArgs } from "../state/impl/Args";
 
 /*
  * RuntimeShape = Fetcher + Variables

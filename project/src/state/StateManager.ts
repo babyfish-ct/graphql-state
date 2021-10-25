@@ -1,7 +1,6 @@
-import { FetchableType, Fetcher, ObjectFetcher } from "graphql-ts-client-api";
+import { ObjectFetcher } from "graphql-ts-client-api";
 import { EntityChangeEvent } from "..";
 import { EntityEvictEvent } from "../entities/EntityEvent";
-import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { SchemaType } from "../meta/SchemaType";
 
 export interface StateManager<TSchema extends SchemaType> {

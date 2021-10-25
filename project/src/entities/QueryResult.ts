@@ -1,13 +1,14 @@
 import { EntityChangeEvent } from "..";
 import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
+import { VariableArgs } from "../state/impl/Args";
 import { Loadable } from "../state/impl/StateValue";
+import { QueryMode } from "../state/StateHook";
 import { EntityEvictEvent } from "./EntityEvent";
 import { EntityManager } from "./EntityManager";
 import { QueryArgs } from "./QueryArgs";
 import { QueryService } from "./QueryService";
 import { QUERY_OBJECT_ID } from "./Record";
 import { RuntimeShape, RuntimeShapeField } from "./RuntimeShape";
-import { VariableArgs } from "./VariableArgs";
 
 export class QueryResult {
     
@@ -15,9 +16,11 @@ export class QueryResult {
 
     private _promise?: Promise<any>;
 
-    private _loadable: Loadable = { loading: true };
+    private _loadable: QueryLoadable<any>;
 
     private _invalid = true;
+
+    private _refetched = false;
 
     private _evictListener: (e: EntityEvictEvent) => void;
 
@@ -31,6 +34,8 @@ export class QueryResult {
 
     private _createdMillis = new Date().getTime();
 
+    private _bindedRefetch: () => void;
+
     constructor(
         readonly entityManager: EntityManager,
         readonly queryArgs: QueryArgs,
@@ -40,6 +45,11 @@ export class QueryResult {
         this._changeListener = this.onEntityChange.bind(this);
         entityManager.addEvictListener(undefined, this._evictListener);
         entityManager.addChangeListener(undefined, this._changeListener);
+        this._bindedRefetch = this._refetch.bind(this);
+        this._loadable = {
+            loading: true,
+            refetch: this._bindedRefetch
+        }
     }
 
     retain(): this {
@@ -67,24 +77,31 @@ export class QueryResult {
 
     get promise(): Promise<any> {
         if (this._invalid) {
-            this._promise = this.query();
+            this._promise = this.query(this._refetched);
             this._invalid = false;
+            this._refetched = false;
         }
         return this._promise!;
     }
 
-    get loadable(): Loadable {
+    get loadable(): QueryLoadable<any> {
         this.promise;
         return this._loadable;
     }
 
-    private async query(): Promise<any> {
+    private async query(refetch: boolean): Promise<any> {
         
-        const rawResult = new QueryService(this.entityManager).query(this.queryArgs);
+        const rawResult = 
+            new QueryService(this.entityManager)
+            .query(this.queryArgs, !refetch, this.mode === "cache-and-network");
 
         if (rawResult.type === 'cached') {
             this.refreshDependencies(rawResult.data);
-            this._loadable = { loading: false, data: rawResult.data };
+            this._loadable = { 
+                loading: false, 
+                data: rawResult.data, 
+                refetch: this._bindedRefetch 
+            };
             this.entityManager.stateManager.publishQueryResultChangeEvent({
                 queryResult: this,
                 changedType: "ASYNC_STATE_CHANGE"
@@ -109,14 +126,17 @@ export class QueryResult {
                 this.refreshDependencies(data);
                 this._loadable = {
                     data,
-                    loading: false
+                    loading: false,
+                    refetch: this._bindedRefetch 
                 }
             }
+            return data;
         } catch (ex) {
             if (this._currentAsyncRequestId === asyncRequestId) {
                 this._loadable = {
                     loading: false,
-                    error: ex
+                    error: ex,
+                    refetch: this._bindedRefetch 
                 }
             }
             throw ex;
@@ -163,10 +183,22 @@ export class QueryResult {
     }
 
     private dispose() {
-        console.log("dispose", this.queryArgs.variables);
+        console.log("dispose", this.queryArgs.optionsArgs?.options);
         this.entityManager.removeEvictListener(undefined, this._evictListener);
         this.entityManager.removeChangeListener(undefined, this._changeListener);
         this.disposer();
+    }
+
+    private _refetch() {
+        if (this.mode === "cache-only") {
+            throw new Error(`cannot refetch the cache-only resource`);
+        }
+        this.invalidate();
+        this._refetched = true;
+    }
+
+    private get mode(): QueryMode {
+        return (this.queryArgs?.optionsArgs?.options?.mode as QueryMode | undefined) ?? "cache-and-network";
     }
 }
 
@@ -282,4 +314,9 @@ class TypeDependency {
         }
         return false;
     }
+}
+
+export interface QueryLoadable<T> extends Loadable<T> {
+
+    refetch: () => void;
 }

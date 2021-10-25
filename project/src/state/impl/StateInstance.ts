@@ -1,5 +1,5 @@
-import { VariableArgs } from "../../entities/VariableArgs";
 import { State } from "../State";
+import { VariableArgs } from "./Args";
 import { ComputedStateValue } from "./ComputedStateValue";
 import { ScopedStateManager } from "./ScopedStateManager";
 import { SpaceSavingMap } from "./SpaceSavingMap";

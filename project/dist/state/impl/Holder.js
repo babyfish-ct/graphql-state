@@ -3,8 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MutationResultHolder = exports.QueryResultHolder = exports.StateValueHolder = void 0;
 const MutationResult_1 = require("../../entities/MutationResult");
 const QueryArgs_1 = require("../../entities/QueryArgs");
-const VariableArgs_1 = require("../../entities/VariableArgs");
-const Variables_1 = require("./Variables");
+const Args_1 = require("./Args");
 class StateValueHolder {
     constructor(stateManager, scopePath, localUpdater) {
         this.stateManager = stateManager;
@@ -19,21 +18,21 @@ class StateValueHolder {
         return value;
     }
     set(state, scopePath, options) {
-        var _a, _b, _c, _d;
-        const newOptionsJsonText = standardizedJsonText(options);
+        var _a, _b, _c, _d, _e;
+        const optionArgs = Args_1.OptionArgs.of(options);
         if (((_b = (_a = this.stateValue) === null || _a === void 0 ? void 0 : _a.stateInstance) === null || _b === void 0 ? void 0 : _b.state[" $name"]) === state[" $name"] &&
             this.scopePath === scopePath &&
-            this.previousOptionsJsonText === newOptionsJsonText) {
+            ((_c = this.previousOptionArgs) === null || _c === void 0 ? void 0 : _c.key) === (optionArgs === null || optionArgs === void 0 ? void 0 : optionArgs.key)) {
             return;
         }
         this.release();
         this.scopePath = scopePath;
-        this.previousOptionsJsonText = newOptionsJsonText;
+        this.previousOptionArgs = optionArgs;
         this.stateValue = this
             .stateManager
             .scope(scopePath)
-            .instance(state, (_c = options === null || options === void 0 ? void 0 : options.scope) !== null && _c !== void 0 ? _c : "auto")
-            .retain(VariableArgs_1.VariableArgs.of((_d = options) === null || _d === void 0 ? void 0 : _d.variables));
+            .instance(state, (_d = options === null || options === void 0 ? void 0 : options.scope) !== null && _d !== void 0 ? _d : "auto")
+            .retain(Args_1.VariableArgs.of((_e = options) === null || _e === void 0 ? void 0 : _e.variables));
         this.stateValueChangeListener = (e) => {
             if (e.stateValue === this.stateValue) {
                 this.localUpdater(old => old + 1); // Change a local state to update react component
@@ -53,7 +52,7 @@ class StateValueHolder {
             const value = this.stateValue;
             if (value !== undefined) {
                 this.stateValue = undefined;
-                this.previousOptionsJsonText = undefined;
+                this.previousOptionArgs = undefined;
                 value.stateInstance.release(value.args);
             }
         }
@@ -72,10 +71,10 @@ class QueryResultHolder {
         }
         return result;
     }
-    set(fetcher, ids, variables) {
+    set(fetcher, ids, options) {
         var _a;
         const oldQueryArgs = (_a = this.queryResult) === null || _a === void 0 ? void 0 : _a.queryArgs;
-        const newQueryArgs = QueryArgs_1.QueryArgs.create(fetcher, ids, variables);
+        const newQueryArgs = QueryArgs_1.QueryArgs.create(fetcher, ids, Args_1.OptionArgs.of(options));
         if ((oldQueryArgs === null || oldQueryArgs === void 0 ? void 0 : oldQueryArgs.key) === newQueryArgs.key) {
             return;
         }
@@ -149,26 +148,17 @@ class MutationResultHolder {
         return false;
     }
     isSameVariables(variables) {
+        var _a;
         if (this.previousVariables === variables) {
             return true;
         }
-        const json = standardizedJsonText(variables);
-        if (this.previousVariablesJson === json) {
+        const args = Args_1.VariableArgs.of(variables);
+        if (((_a = this.previousVariablesArgs) === null || _a === void 0 ? void 0 : _a.key) === (args === null || args === void 0 ? void 0 : args.key)) {
             return true;
         }
         this.previousVariables = variables;
-        this.previousVariablesJson = json;
+        this.previousVariablesArgs = args;
         return false;
     }
 }
 exports.MutationResultHolder = MutationResultHolder;
-function standardizedJsonText(obj) {
-    if (obj === undefined || obj === null) {
-        return undefined;
-    }
-    if (typeof obj === "object" && !Array.isArray(obj)) {
-        const vs = Variables_1.standardizedVariables(obj);
-        return vs !== undefined ? JSON.stringify(vs) : undefined;
-    }
-    return JSON.stringify(obj);
-}

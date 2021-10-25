@@ -1,4 +1,4 @@
-import { VariableArgs } from "../../entities/VariableArgs";
+import { VariableArgs } from "./Args";
 import { InternalComputedContext } from "./InternalComputedContext";
 import { StateInstance } from "./StateInstance";
 import { Loadable, StateValue } from "./StateValue";
@@ -7,7 +7,7 @@ export declare class ComputedStateValue extends StateValue {
     private _loadable;
     private _invalid;
     private _ctx?;
-    private currentAsyncRequestId;
+    private _currentAsyncRequestId;
     constructor(stateInstance: StateInstance, args: VariableArgs | undefined, disposer: () => void);
     invalidate(): void;
     get result(): any;

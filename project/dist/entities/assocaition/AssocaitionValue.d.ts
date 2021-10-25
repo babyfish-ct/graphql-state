@@ -1,7 +1,7 @@
 import { EntityChangeEvent, EntityEvictEvent } from "../EntityEvent";
 import { EntityManager } from "../EntityManager";
 import { Record } from "../Record";
-import { VariableArgs } from "../VariableArgs";
+import { VariableArgs } from "../../state/impl/Args";
 import { Association } from "./Association";
 import { ObjectConnection, RecordConnection } from "./AssociationConnectionValue";
 export declare abstract class AssociationValue {

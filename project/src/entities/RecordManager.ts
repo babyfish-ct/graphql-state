@@ -1,10 +1,10 @@
 import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
+import { VariableArgs } from "../state/impl/Args";
 import { EntityManager } from "./EntityManager";
 import { QUERY_OBJECT_ID, Record } from "./Record";
 import { RecordRef } from "./RecordRef";
 import { RuntimeShape } from "./RuntimeShape";
-import { VariableArgs } from "./VariableArgs";
 
 export class RecordManager {
 

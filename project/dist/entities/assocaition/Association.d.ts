@@ -1,7 +1,7 @@
 import { FieldMetadata } from "../../meta/impl/FieldMetadata";
 import { EntityManager } from "../EntityManager";
 import { Record } from "../Record";
-import { VariableArgs } from "../VariableArgs";
+import { VariableArgs } from "../../state/impl/Args";
 import { RecordConnection } from "./AssociationConnectionValue";
 export declare class Association {
     readonly record: Record;

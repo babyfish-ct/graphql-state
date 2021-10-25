@@ -35,7 +35,10 @@ export class RemoteDataService extends AbstractDataService {
         if (network === undefined) {
             throw new Error(`Cannot execute remote data loading because network is not configured`);
         }
-        return network.execute(args.fetcher as ObjectFetcher<'Query' | 'Mutation', any, any>, args.variables);
+        return network.execute(
+            args.fetcher as ObjectFetcher<'Query' | 'Mutation', any, any>, 
+            args.optionsArgs?.variableArgs?.variables
+        );
     }
 
     onExecuted(args: QueryArgs, data: any) {

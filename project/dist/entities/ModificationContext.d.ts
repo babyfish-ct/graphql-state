@@ -1,7 +1,7 @@
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
+import { VariableArgs } from "../state/impl/Args";
 import { EntityChangeEvent, EntityEvictEvent } from "./EntityEvent";
 import { Record } from "./Record";
-import { VariableArgs } from "./VariableArgs";
 export declare class ModificationContext {
     private linkToQuery;
     private publishEvictEvent;

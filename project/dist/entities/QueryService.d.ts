@@ -3,7 +3,7 @@ import { QueryArgs } from "./QueryArgs";
 export declare class QueryService {
     private entityManager;
     constructor(entityManager: EntityManager);
-    query(args: QueryArgs): RawQueryResult<any>;
+    query(args: QueryArgs, useCache: boolean, useDataService: boolean): RawQueryResult<any>;
     private graph;
     private objects;
     private findObjects;

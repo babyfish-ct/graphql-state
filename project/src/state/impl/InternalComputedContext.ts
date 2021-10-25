@@ -1,8 +1,9 @@
 import { ObjectFetcher } from "graphql-ts-client-api";
 import { QueryArgs } from "../../entities/QueryArgs";
 import { QueryResult } from "../../entities/QueryResult";
-import { VariableArgs } from "../../entities/VariableArgs";
 import { ParameterizedStateAccessingOptions, State, StateAccessingOptions } from "../State";
+import { QueryOptions } from "../StateHook";
+import { OptionArgs, VariableArgs } from "./Args";
 import { ComputedStateValue } from "./ComputedStateValue";
 import { ScopedStateManager } from "./ScopedStateManager";
 import { QueryResultChangeEvent, QueryResultChangeListener, StateValueChangeEvent, StateValueChangeListener } from "./StateManagerImpl";
@@ -113,27 +114,55 @@ export class InternalComputedContext {
         }
     }
 
-    object(fetcher: ObjectFetcher<string, object, object>, id: any, variables?: any): Promise<any> {
-        return this.objects(fetcher, [id], variables)[0];
+    object(fetcher: ObjectFetcher<string, object, object>, id: any, options?: QueryOptions<any, any>): Promise<any> {
+        return this.objects(fetcher, [id], options)[0];
     }
 
-    objects(fetcher: ObjectFetcher<string, object, object>, ids: ReadonlyArray<any>, variables?: any): Promise<ReadonlyArray<any>> {
+    objects(fetcher: ObjectFetcher<string, object, object>, ids: ReadonlyArray<any>, options?: QueryOptions<any, any>): Promise<ReadonlyArray<any>> {
+        return this.queryImpl(fetcher, ids, options);
+    }
+
+    query(
+        fetcher: ObjectFetcher<"Query", object, object>, 
+        options?: QueryOptions<any, any>
+    ): Promise<any> {
+        return this.queryImpl(fetcher, undefined, options);
+    }
+
+    private queryImpl(
+        fetcher: ObjectFetcher<string, object, object>, 
+        ids: ReadonlyArray<string> | undefined, 
+        options?: QueryOptions<any, any>
+    ): Promise<any> {
         
         if (this.closed) {
             throw new Error("ComputedContext has been closed");
         }
 
+        if (fetcher.fetchableType.name === "Query") {
+            if (ids !== undefined) {
+                throw new Error('Internal bug: Cannot specify is for generic query');
+            }
+        } else {
+            if (ids === undefined) {
+                throw new Error('Internal bug: Object query requires "ids"');
+            }
+        }
+
         const entityManager = this.scope.stateManager.entityManager;
-        const queryResult = entityManager.retain(QueryArgs.create(fetcher, ids, variables));
-        let result: any;
+        const queryResult = entityManager.retain(
+            QueryArgs.create(fetcher, undefined, OptionArgs.of(options))
+        );
+        let promise: Promise<any>;
         try {
-            result = queryResult.promise;
+            promise = queryResult.promise;
         } catch (ex) {
             entityManager.release(queryResult.queryArgs);
+            throw ex;
         }
 
         this.queryResultDependencies.add(queryResult);
-        return result;
+        return promise;
     }
 
     private onStateValueChange(e: StateValueChangeEvent) {

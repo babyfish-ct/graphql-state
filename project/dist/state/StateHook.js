@@ -23,17 +23,17 @@ function useStateValue(state, options) {
         }
         const loadable = stateValue.loadable;
         const asyncStyle = (_a = options) === null || _a === void 0 ? void 0 : _a.asyncStyle;
-        if (asyncStyle === "ASYNC_OBJECT") {
+        if (asyncStyle === "async-object") {
             return loadable;
         }
         if (loadable.loading) {
-            throw stateValue.result; // throws promise, <Suspense/> will catch it
+            throw stateValue.result; // throws promise, <suspense/> will catch it
         }
         if (loadable.error) {
             throw loadable.error;
         }
-        if (asyncStyle === "REFRESHABLE_SUSPENSE") {
-            return [loadable.data];
+        if (asyncStyle === "refetchable-suspense") {
+            return [loadable.data, loadable.refetch];
         }
         return loadable.data;
     }
@@ -56,20 +56,20 @@ function useStateAccessor(state, options) {
 }
 exports.useStateAccessor = useStateAccessor;
 function useQuery(fetcher, options) {
-    const queryResultHolder = useInternalQueryResultHolder(fetcher, undefined, options === null || options === void 0 ? void 0 : options.variables);
+    const queryResultHolder = useInternalQueryResultHolder(fetcher, undefined, options);
     try {
         const queryResult = queryResultHolder.get();
-        if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "ASYNC_OBJECT") {
+        if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "async-object") {
             return queryResult.loadable;
         }
         if (queryResult.loadable.loading) {
-            throw queryResult.promise; // throws promise, <Suspense/> will catch it
+            throw queryResult.promise; // throws promise, <suspense/> will catch it
         }
         if (queryResult.loadable.error) {
             throw queryResult.loadable.error;
         }
-        if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "REFRESHABLE_SUSPENSE") {
-            return [queryResult.loadable.data];
+        if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "refetchable-suspense") {
+            return [queryResult.loadable.data, queryResult.loadable.refetch];
         }
         return queryResult.loadable.data;
     }
@@ -94,20 +94,20 @@ function makeManagedObjectHooks() {
 exports.makeManagedObjectHooks = makeManagedObjectHooks;
 class ManagedObjectHooksImpl {
     useObject(fetcher, id, options) {
-        const queryResultHolder = useInternalQueryResultHolder(fetcher, [id], options === null || options === void 0 ? void 0 : options.variables);
+        const queryResultHolder = useInternalQueryResultHolder(fetcher, [id], options);
         try {
             const queryResult = queryResultHolder.get();
-            if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "ASYNC_OBJECT") {
+            if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "async-object") {
                 return queryResult.loadable;
             }
             if (queryResult.loadable.loading) {
-                throw queryResult.promise; // throws promise, <Suspense/> will catch it
+                throw queryResult.promise; // throws promise, <suspense/> will catch it
             }
             if (queryResult.loadable.error) {
                 throw queryResult.loadable.error;
             }
-            if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "REFRESHABLE_SUSPENSE") {
-                return [queryResult.loadable.data];
+            if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "refetchable-suspense") {
+                return [queryResult.loadable.data, queryResult.loadable.refetch];
             }
             return queryResult.loadable.data;
         }
@@ -117,20 +117,20 @@ class ManagedObjectHooksImpl {
         }
     }
     useObjects(fetcher, ids, options) {
-        const queryResultHolder = useInternalQueryResultHolder(fetcher, ids, options === null || options === void 0 ? void 0 : options.variables);
+        const queryResultHolder = useInternalQueryResultHolder(fetcher, ids, options);
         try {
             const queryResult = queryResultHolder.get();
-            if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "ASYNC_OBJECT") {
+            if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "async-object") {
                 return queryResult.loadable;
             }
             if (queryResult.loadable.loading) {
-                throw queryResult.promise; // throws promise, <Suspense/> will catch it
+                throw queryResult.promise; // throws promise, <suspense/> will catch it
             }
             if (queryResult.loadable.error) {
                 throw queryResult.loadable.error;
             }
-            if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "REFRESHABLE_SUSPENSE") {
-                return [queryResult.loadable.data];
+            if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "refetchable-suspense") {
+                return [queryResult.loadable.data, queryResult.loadable.refetch];
             }
             return queryResult.loadable.data;
         }
@@ -155,13 +155,13 @@ function useInternalStateValueHolder(state, options) {
     }, [stateValueHolder]);
     return stateValueHolder;
 }
-function useInternalQueryResultHolder(fetcher, ids, variables) {
+function useInternalQueryResultHolder(fetcher, ids, options) {
     const stateManager = useStateManager();
     const [, setQueryResultVersion] = react_1.useState(0);
     const queryResultHolder = react_1.useMemo(() => {
         return new Holder_1.QueryResultHolder(stateManager, setQueryResultVersion);
     }, [stateManager, setQueryResultVersion]);
-    queryResultHolder.set(fetcher, ids, variables);
+    queryResultHolder.set(fetcher, ids, options);
     react_1.useEffect(() => {
         return () => {
             queryResultHolder.release();

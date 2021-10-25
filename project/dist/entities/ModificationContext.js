@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ModificationContext = void 0;
-const VariableArgs_1 = require("./VariableArgs");
+const Args_1 = require("../state/impl/Args");
 class ModificationContext {
     constructor(linkToQuery, publishEvictEvent, publishChangeEvent) {
         this.linkToQuery = linkToQuery;
@@ -51,7 +51,7 @@ class ModificationContext {
         }
         if (oldValue !== newValue) {
             const pair = this.pair(record, true, true);
-            const key = VariableArgs_1.VariableArgs.fieldKey(fieldName, args);
+            const key = Args_1.VariableArgs.fieldKey(fieldName, args);
             (_a = pair.oldObj) === null || _a === void 0 ? void 0 : _a.set(key, oldValue);
             (_b = pair.newObj) === null || _b === void 0 ? void 0 : _b.set(key, newValue);
         }
@@ -62,7 +62,7 @@ class ModificationContext {
             throw new Error("Internal bug: the changed name cannot be id");
         }
         const pair = this.pair(record, true, true);
-        const key = VariableArgs_1.VariableArgs.fieldKey(fieldName, args);
+        const key = Args_1.VariableArgs.fieldKey(fieldName, args);
         (_a = pair.newObj) === null || _a === void 0 ? void 0 : _a.delete(key);
     }
     pair(record, initializeOldObj, useNewObj) {
@@ -163,13 +163,13 @@ class EntityEvictEventImpl {
     has(evictedKey) {
         const key = typeof evictedKey === "string" ?
             evictedKey :
-            VariableArgs_1.VariableArgs.fieldKey(evictedKey.name, VariableArgs_1.VariableArgs.of(evictedKey.variables));
+            Args_1.VariableArgs.fieldKey(evictedKey.name, Args_1.VariableArgs.of(evictedKey.variables));
         return this.oldValueMap.has(key);
     }
     evictedValue(evictedKey) {
         const key = typeof evictedKey === "string" ?
             evictedKey :
-            VariableArgs_1.VariableArgs.fieldKey(evictedKey.name, VariableArgs_1.VariableArgs.of(evictedKey.variables));
+            Args_1.VariableArgs.fieldKey(evictedKey.name, Args_1.VariableArgs.of(evictedKey.variables));
         const value = this.oldValueMap.get(key);
         if (value === undefined && !this.oldValueMap.has(key)) {
             throw new Error(`No evicted key ${key}`);
@@ -202,14 +202,14 @@ class EntityChangeEventImpl {
         var _a, _b;
         const key = typeof changedKey === "string" ?
             changedKey :
-            VariableArgs_1.VariableArgs.fieldKey(changedKey.name, VariableArgs_1.VariableArgs.of(changedKey.variables));
+            Args_1.VariableArgs.fieldKey(changedKey.name, Args_1.VariableArgs.of(changedKey.variables));
         return ((_a = this.oldValueMap) === null || _a === void 0 ? void 0 : _a.has(key)) === true || ((_b = this.newValueMap) === null || _b === void 0 ? void 0 : _b.has(key)) === true;
     }
     oldValue(changedKey) {
         var _a;
         const key = typeof changedKey === 'string' ?
             changedKey :
-            VariableArgs_1.VariableArgs.fieldKey(changedKey.name, VariableArgs_1.VariableArgs.of(changedKey.variables));
+            Args_1.VariableArgs.fieldKey(changedKey.name, Args_1.VariableArgs.of(changedKey.variables));
         const oldValue = (_a = this.oldValueMap) === null || _a === void 0 ? void 0 : _a.get(key);
         if (oldValue === undefined) {
             if (this.oldValueMap === undefined || !this.oldValueMap.has(key)) {
@@ -222,7 +222,7 @@ class EntityChangeEventImpl {
         var _a;
         const key = typeof changedKey === 'string' ?
             changedKey :
-            VariableArgs_1.VariableArgs.fieldKey(changedKey.name, VariableArgs_1.VariableArgs.of(changedKey.variables));
+            Args_1.VariableArgs.fieldKey(changedKey.name, Args_1.VariableArgs.of(changedKey.variables));
         const oldValue = (_a = this.newValueMap) === null || _a === void 0 ? void 0 : _a.get(key);
         if (oldValue === undefined) {
             if (this.newValueMap === undefined || !this.newValueMap.has(key)) {

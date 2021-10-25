@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.toRuntimeShape0 = exports.toRuntimeShape = void 0;
 const graphql_ts_client_api_1 = require("graphql-ts-client-api");
-const VariableArgs_1 = require("./VariableArgs");
+const Args_1 = require("../state/impl/Args");
 function toRuntimeShape(fetcher, variables) {
     return toRuntimeShape0("", fetcher, variables);
 }
@@ -52,7 +52,7 @@ function addField(parentPath, fieldName, field, runtimeShapeFieldMap, fetcherVar
     }
     runtimeShapeFieldMap.set(fieldName, {
         name: fieldName,
-        args: VariableArgs_1.VariableArgs.of(variables),
+        args: Args_1.VariableArgs.of(variables),
         alias,
         directives,
         childShape,

@@ -1,5 +1,5 @@
 import { Fetcher } from "graphql-ts-client-api";
-import { VariableArgs } from "./VariableArgs";
+import { VariableArgs } from "../state/impl/Args";
 export interface RuntimeShape {
     readonly typeName: string;
     readonly fieldMap: ReadonlyMap<string, RuntimeShapeField>;

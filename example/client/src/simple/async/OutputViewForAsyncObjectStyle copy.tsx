@@ -10,7 +10,7 @@ import { Spin } from "antd";
  */
 export const OutputViewForAsyncObjectStyle: FC = memo(() => {
 
-    const {data, loading } = useStateValue(totalState, { asyncStyle: "ASYNC_OBJECT"});
+    const {data, loading } = useStateValue(totalState, { asyncStyle: "async-object"});
 
     return (
         <ComponentDecorator name="OutputViewForAsyncValueStyle">
