@@ -147,15 +147,35 @@ function valueNode(value: any): ReactNode {
             return "[]";
         }
         return (
-            <ul>
+            <ol className={COMPOSITE_VALUE_CLASS}>
                 {value.map((element, index) => <li key={index}>{valueNode(element)}</li>)}
+            </ol>
+        );
+    }
+    if (typeof value === "object") {
+        const pairs: Array<{readonly key: string, readonly value: any}> = [];
+        for (const key in value) {
+            pairs.push({key, value: value[key]});
+        }
+        if (pairs.length === 0) {
+            return "{}";
+        }
+        return (
+            <ul className={COMPOSITE_VALUE_CLASS}>
+                {
+                    pairs.map(pair => 
+                        <li key={pair.key}>
+                            {pair.key}: {valueNode(pair.value)}
+                        </li>
+                    )
+                }
             </ul>
         );
     }
-    if (value === undefined || value === null) {
+    if (value === undefined) {
         return "undefined";
     }
-    return JSON.stringify(value);
+    return `${value}`;
 }
 
 const DETAIL_TABLE_CSS = css({
@@ -178,6 +198,11 @@ const DETAIL_TABLE_CSS = css({
 const LABEL_CLASS = css({
     fontWeight: "bold",
     textAlign: "right"
+});
+
+const COMPOSITE_VALUE_CLASS = css({
+    padding: "1rem",
+    border: "dotted 1px gray"
 });
 
 const NO_TOP_BODER: CSSProperties = {

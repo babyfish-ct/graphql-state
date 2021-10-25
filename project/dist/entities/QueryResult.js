@@ -155,51 +155,47 @@ class Dependencies {
         this.map = new Map();
     }
     accept(schema, shape, obj) {
-        var _a, _b, _c, _d, _e;
-        const baseTypeName = shape.typeName;
-        const type = schema.typeMap.get(baseTypeName);
-        if (type === undefined) {
-            throw new Error(`Illegal type "${baseTypeName}"`);
+        var _a, _b, _c;
+        const typeMetadata = schema.typeMap.get(shape.typeName);
+        if (typeMetadata === undefined) {
+            throw new Error(`Illegal runtime shape type "${shape.typeName}"`);
         }
-        const typeDependency = this.typeDependency(baseTypeName);
-        if (typeDependency.isQuery) {
-            const id = Record_1.QUERY_OBJECT_ID;
-            for (const [, field] of shape.fieldMap) {
-                this
-                    .typeDependency((_a = field.declaringTypeName) !== null && _a !== void 0 ? _a : baseTypeName)
-                    .addObjectId(field, id);
-            }
+        const idFieldName = typeMetadata.idField.name;
+        let id;
+        if (shape.typeName === "Query") {
+            id = Record_1.QUERY_OBJECT_ID;
         }
         else {
-            const idFieldName = type.idField.name;
             const idShapedField = shape.fieldMap.get(idFieldName);
             if (idShapedField === undefined) {
-                throw new Error(`Cannot accept the runtime shape whose type is "${type.name}" without id`);
+                throw new Error(`Cannot accept the runtime shape whose type is "${shape.typeName}" without id`);
             }
-            const id = obj[(_b = idShapedField.alias) !== null && _b !== void 0 ? _b : idShapedField.name];
-            for (const [, field] of shape.fieldMap) {
-                this
-                    .typeDependency((_c = field.declaringTypeName) !== null && _c !== void 0 ? _c : baseTypeName)
-                    .addObjectId(field, id);
-            }
+            id = obj[(_a = idShapedField.alias) !== null && _a !== void 0 ? _a : idShapedField.name];
         }
         for (const [fieldName, field] of shape.fieldMap) {
-            if (field.childShape !== undefined) {
-                const value = obj[(_d = field.alias) !== null && _d !== void 0 ? _d : fieldName];
-                if (value !== undefined) {
-                    const category = (_e = type.fieldMap.get(field.name)) === null || _e === void 0 ? void 0 : _e.category;
-                    if (category === "LIST") {
-                        for (const element of value) {
-                            this.accept(schema, field.childShape, element);
+            if (fieldName !== idFieldName) {
+                const fieldMetadata = typeMetadata.fieldMap.get(fieldName);
+                if (fieldMetadata === undefined) {
+                    throw new Error(`Illegal runtime shape field "${shape.typeName}.${fieldName}"`);
+                }
+                this.typeDependency(fieldMetadata.declaringType.name).addObjectId(field, id);
+                if (field.childShape !== undefined) {
+                    const value = obj[(_b = field.alias) !== null && _b !== void 0 ? _b : fieldName];
+                    if (value !== undefined) {
+                        const category = (_c = typeMetadata.fieldMap.get(field.name)) === null || _c === void 0 ? void 0 : _c.category;
+                        if (category === "LIST") {
+                            for (const element of value) {
+                                this.accept(schema, field.childShape, element);
+                            }
                         }
-                    }
-                    else if (category === "CONNECTION") {
-                        for (const edge of value.edges) {
-                            this.accept(schema, field.nodeShape, edge.node);
+                        else if (category === "CONNECTION") {
+                            for (const edge of value.edges) {
+                                this.accept(schema, field.nodeShape, edge.node);
+                            }
                         }
-                    }
-                    else {
-                        this.accept(schema, field.childShape, value);
+                        else {
+                            this.accept(schema, field.childShape, value);
+                        }
                     }
                 }
             }
@@ -212,16 +208,15 @@ class Dependencies {
     typeDependency(typeName) {
         let typeDependency = this.map.get(typeName);
         if (typeDependency === undefined) {
-            typeDependency = new TypeDependency(typeName);
+            typeDependency = new TypeDependency();
             this.map.set(typeName, typeDependency);
         }
         return typeDependency;
     }
 }
 class TypeDependency {
-    constructor(typeName) {
+    constructor() {
         this.fieldKeyIdMutlipMap = new Map();
-        this.isQuery = typeName === "Query";
     }
     addObjectId(field, id) {
         const key = VariableArgs_1.VariableArgs.fieldKey(field.name, field.args);

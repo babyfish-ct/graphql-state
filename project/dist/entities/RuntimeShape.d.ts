@@ -10,7 +10,6 @@ export interface RuntimeShapeField {
     readonly args?: VariableArgs;
     readonly alias?: string;
     readonly directives?: any;
-    readonly declaringTypeName?: string;
     readonly childShape?: RuntimeShape;
     readonly nodeShape?: RuntimeShape;
 }

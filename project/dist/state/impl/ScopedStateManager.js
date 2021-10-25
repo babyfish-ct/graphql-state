@@ -50,12 +50,10 @@ class ScopedStateManager {
                 this._childMap = childMap = new Map();
             }
             childMap.set(name, child = new ScopedStateManager(this, name));
-            console.log(childMap);
         }
         return child;
     }
     instance(state, scope) {
-        console.log(`Get ${state[" $name"]} from ${this.path}`);
         const instance = this.getInstance(state, scope);
         if (instance !== undefined) {
             return instance;
@@ -74,7 +72,6 @@ class ScopedStateManager {
     }
     createInstance(state, scope) {
         var _a, _b;
-        console.log("Create local state................");
         if (scope !== "local" && this._parent) {
             return this._parent.createInstance(state, scope);
         }

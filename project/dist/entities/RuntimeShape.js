@@ -12,18 +12,18 @@ function toRuntimeShape0(parentPath, fetcher, variables) {
     fieldNames.sort();
     const runtimeShapeFieldMap = new Map();
     for (const fieldName of fieldNames) {
-        addField(parentPath, fieldName, fetcher.fieldMap.get(fieldName), fetcher.fetchableType.name, fetcher.fetchableType.name, runtimeShapeFieldMap, variables);
+        addField(parentPath, fieldName, fetcher.fieldMap.get(fieldName), runtimeShapeFieldMap, variables);
     }
     return new RuntimeShapeImpl(fetcher.fetchableType.name, runtimeShapeFieldMap);
 }
 exports.toRuntimeShape0 = toRuntimeShape0;
-function addField(parentPath, fieldName, field, baseTypeName, derivedTypeName, runtimeShapeFieldMap, fetcherVaribles) {
+function addField(parentPath, fieldName, field, runtimeShapeFieldMap, fetcherVaribles) {
     var _a, _b, _c, _d, _e, _f;
     if (fieldName.startsWith("...")) {
         if (field.childFetchers !== undefined) {
             for (const childFetcher of field.childFetchers) {
                 for (const [subFieldName, subField] of childFetcher.fieldMap) {
-                    addField(parentPath, subFieldName, subField, baseTypeName, childFetcher.fetchableType.name, runtimeShapeFieldMap, fetcherVaribles);
+                    addField(parentPath, subFieldName, subField, runtimeShapeFieldMap, fetcherVaribles);
                 }
             }
         }
@@ -39,7 +39,6 @@ function addField(parentPath, fieldName, field, baseTypeName, derivedTypeName, r
     }
     const alias = (_a = field.fieldOptionsValue) === null || _a === void 0 ? void 0 : _a.alias;
     const directives = standardizedDirectives(field, fetcherVaribles);
-    const declaringTypeName = derivedTypeName === baseTypeName ? undefined : derivedTypeName;
     const childFetcher = field.childFetchers !== undefined ? field.childFetchers[0] : undefined;
     const childShape = childFetcher !== undefined ?
         toRuntimeShape0(`${parentPath}${fieldName}/`, childFetcher, fetcherVaribles) :
@@ -56,7 +55,6 @@ function addField(parentPath, fieldName, field, baseTypeName, derivedTypeName, r
         args: VariableArgs_1.VariableArgs.of(variables),
         alias,
         directives,
-        declaringTypeName,
         childShape,
         nodeShape
     });
@@ -129,12 +127,12 @@ class RuntimeShapeImpl {
     }
 }
 function fieldString(field) {
-    var _a, _b, _c;
+    var _a, _b;
     return `(${field.name},${(_b = (_a = field.args) === null || _a === void 0 ? void 0 : _a.key) !== null && _b !== void 0 ? _b : ""},${field.alias !== undefined ?
         field.alias :
         ""},${field.directives !== undefined ?
         JSON.stringify(field.directives) :
-        ""},${(_c = field.declaringTypeName) !== null && _c !== void 0 ? _c : ""},${field.childShape !== undefined ?
+        ""},${field.childShape !== undefined ?
         field.childShape.toString() :
         ""})`;
 }

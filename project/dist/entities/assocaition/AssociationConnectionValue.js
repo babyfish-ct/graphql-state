@@ -7,7 +7,7 @@ const util_1 = require("./util");
 class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
     getAsObject() {
         if (this.connection === undefined) {
-            return { edges: [] };
+            return undefined;
         }
         return Object.assign(Object.assign({}, this.connection), { edges: this.connection.edges.map(edge => {
                 return Object.assign(Object.assign({}, edge), { node: Record_1.objectWithOnlyId(edge.node) });
@@ -18,17 +18,18 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
         return (_a = this.connection) !== null && _a !== void 0 ? _a : { edges: [] };
     }
     set(entityManager, value) {
+        const connection = value !== null && value !== void 0 ? value : { edges: [] };
         const association = this.association;
-        this.validate(value);
-        if (this.valueEquals(value)) {
+        this.validate(connection);
+        if (this.valueEquals(connection)) {
             return;
         }
         const oldValueForTriggger = this.getAsObject();
         const oldIndexMap = this.indexMap;
         const newIndexMap = new Map();
         const newEdges = [];
-        for (let i = 0; i < value.edges.length; i++) {
-            const edge = value.edges[i];
+        for (let i = 0; i < connection.edges.length; i++) {
+            const edge = connection.edges[i];
             const newNode = entityManager.saveId(association.field.targetType.name, edge.node.id);
             if (!newIndexMap.has(newNode.id)) {
                 newEdges.push({ node: newNode, cursor: edge.cursor });
@@ -42,7 +43,7 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
                 }
             }
         }
-        this.connection = Object.assign(Object.assign({}, value), { edges: newEdges });
+        this.connection = Object.assign(Object.assign({}, connection), { edges: newEdges });
         this.indexMap = newIndexMap.size !== 0 ? newIndexMap : undefined;
         for (const newEdge of newEdges) {
             if ((oldIndexMap === null || oldIndexMap === void 0 ? void 0 : oldIndexMap.has(newEdge.node.id)) !== true) {

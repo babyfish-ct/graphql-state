@@ -4,7 +4,7 @@ import { AssociationValue } from "./AssocaitionValue";
 export declare class AssociationConnectionValue extends AssociationValue {
     private connection?;
     private indexMap?;
-    getAsObject(): ObjectConnection;
+    getAsObject(): ObjectConnection | undefined;
     get(): RecordConnection;
     set(entityManager: EntityManager, value: ObjectConnection): void;
     link(entityManager: EntityManager, targets: ReadonlyArray<Record>): void;

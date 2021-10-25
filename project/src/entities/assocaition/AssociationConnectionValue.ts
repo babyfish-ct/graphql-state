@@ -11,9 +11,9 @@ export class AssociationConnectionValue extends AssociationValue {
 
     private indexMap?: Map<any, number>;
 
-    getAsObject(): ObjectConnection {
+    getAsObject(): ObjectConnection | undefined {
         if (this.connection === undefined) {
-            return { edges: [] };
+            return undefined;
         }
         return {
             ...this.connection,
@@ -34,10 +34,11 @@ export class AssociationConnectionValue extends AssociationValue {
         entityManager: EntityManager, 
         value: ObjectConnection
     ) {
+        const connection = value ?? { edges: [] }
         const association = this.association;
 
-        this.validate(value);
-        if (this.valueEquals(value)) {
+        this.validate(connection);
+        if (this.valueEquals(connection)) {
             return;
         }
         const oldValueForTriggger = this.getAsObject();
@@ -46,8 +47,8 @@ export class AssociationConnectionValue extends AssociationValue {
 
         const newIndexMap = new Map<any, number>();
         const newEdges: Array<RecordEdge> = [];
-        for (let i = 0; i < value.edges.length; i++) {
-            const edge = value.edges[i];
+        for (let i = 0; i < connection.edges.length; i++) {
+            const edge = connection.edges[i];
             const newNode = entityManager.saveId(association.field.targetType!.name, edge.node.id);
             if (!newIndexMap.has(newNode.id)) {
                 newEdges.push({node: newNode, cursor: edge.cursor});
@@ -64,7 +65,7 @@ export class AssociationConnectionValue extends AssociationValue {
         }
         
         this.connection = {
-            ...value,
+            ...connection,
             edges: newEdges
         };
         this.indexMap = newIndexMap.size !== 0 ? newIndexMap : undefined;

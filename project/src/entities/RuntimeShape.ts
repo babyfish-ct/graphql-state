@@ -15,7 +15,6 @@ export interface RuntimeShapeField {
     readonly args?: VariableArgs;
     readonly alias?: string;
     readonly directives?: any;
-    readonly declaringTypeName?: string;
     readonly childShape?: RuntimeShape;
     readonly nodeShape?: RuntimeShape;
 }
@@ -43,8 +42,6 @@ export function toRuntimeShape0(
             parentPath, 
             fieldName, 
             fetcher.fieldMap.get(fieldName)!, 
-            fetcher.fetchableType.name,
-            fetcher.fetchableType.name,
             runtimeShapeFieldMap, 
             variables
         );
@@ -59,8 +56,6 @@ function addField(
     parentPath: string,
     fieldName: string,
     field: FetcherField,
-    baseTypeName: string,
-    derivedTypeName: string,
     runtimeShapeFieldMap: Map<string, RuntimeShapeField>,
     fetcherVaribles: any
 ) {
@@ -72,8 +67,6 @@ function addField(
                         parentPath, 
                         subFieldName, 
                         subField, 
-                        baseTypeName,
-                        childFetcher.fetchableType.name,
                         runtimeShapeFieldMap, 
                         fetcherVaribles
                     );
@@ -93,7 +86,6 @@ function addField(
 
     const alias = field.fieldOptionsValue?.alias;
     const directives = standardizedDirectives(field, fetcherVaribles);
-    const declaringTypeName = derivedTypeName === baseTypeName ? undefined : derivedTypeName;
     const childFetcher = field.childFetchers !== undefined ? field.childFetchers[0] : undefined;
     const childShape = 
         childFetcher !== undefined ?
@@ -114,7 +106,6 @@ function addField(
             args: VariableArgs.of(variables),
             alias,
             directives,
-            declaringTypeName,
             childShape,
             nodeShape
         }
@@ -214,8 +205,6 @@ function fieldString(field: RuntimeShapeField): string {
         field.directives !== undefined ?
         JSON.stringify(field.directives) :
         ""
-    },${
-        field.declaringTypeName ?? ""
     },${
         field.childShape !== undefined ?
         field.childShape.toString() :

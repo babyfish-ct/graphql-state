@@ -10,8 +10,8 @@ export class AssociationListValue extends AssociationValue {
 
     private indexMap?: Map<any, number>;
 
-    getAsObject(): ReadonlyArray<any> {
-        return this.elements?.map(objectWithOnlyId) ?? [];
+    getAsObject(): ReadonlyArray<any> | undefined {
+        return this.elements?.map(objectWithOnlyId);
     }
 
     get(): ReadonlyArray<Record> {
@@ -22,8 +22,9 @@ export class AssociationListValue extends AssociationValue {
         entityManager: EntityManager, 
         value: ReadonlyArray<any>
     ) {
-        this.validate(value);
-        if (this.valueEquals(value)) {
+        const list = value ?? [];
+        this.validate(list);
+        if (this.valueEquals(list)) {
             return;
         }
         const oldValueForTriggger = this.getAsObject();
@@ -32,11 +33,11 @@ export class AssociationListValue extends AssociationValue {
         const association = this.association;
         const newIndexMap = new Map<any, number>();
         const newElements: Array<Record> = [];
-        if (Array.isArray(value)) {
+        if (Array.isArray(list)) {
             const idFieldName = association.field.targetType!.idField.name;
             const position = association.field.associationProperties!.position;
-            for (let i = 0; i < value.length; i++) {
-                const item = value[i];
+            for (let i = 0; i < list.length; i++) {
+                const item = list[i];
                 if (item === undefined || item === null) {
                     throw new Error(`Cannot add undfined/null element into ${association.field.fullName}`);
                 }

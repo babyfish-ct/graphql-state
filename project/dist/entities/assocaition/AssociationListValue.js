@@ -6,16 +6,17 @@ const AssocaitionValue_1 = require("./AssocaitionValue");
 const util_1 = require("./util");
 class AssociationListValue extends AssocaitionValue_1.AssociationValue {
     getAsObject() {
-        var _a, _b;
-        return (_b = (_a = this.elements) === null || _a === void 0 ? void 0 : _a.map(Record_1.objectWithOnlyId)) !== null && _b !== void 0 ? _b : [];
+        var _a;
+        return (_a = this.elements) === null || _a === void 0 ? void 0 : _a.map(Record_1.objectWithOnlyId);
     }
     get() {
         var _a;
         return (_a = this.elements) !== null && _a !== void 0 ? _a : [];
     }
     set(entityManager, value) {
-        this.validate(value);
-        if (this.valueEquals(value)) {
+        const list = value !== null && value !== void 0 ? value : [];
+        this.validate(list);
+        if (this.valueEquals(list)) {
             return;
         }
         const oldValueForTriggger = this.getAsObject();
@@ -23,11 +24,11 @@ class AssociationListValue extends AssocaitionValue_1.AssociationValue {
         const association = this.association;
         const newIndexMap = new Map();
         const newElements = [];
-        if (Array.isArray(value)) {
+        if (Array.isArray(list)) {
             const idFieldName = association.field.targetType.idField.name;
             const position = association.field.associationProperties.position;
-            for (let i = 0; i < value.length; i++) {
-                const item = value[i];
+            for (let i = 0; i < list.length; i++) {
+                const item = list[i];
                 if (item === undefined || item === null) {
                     throw new Error(`Cannot add undfined/null element into ${association.field.fullName}`);
                 }
