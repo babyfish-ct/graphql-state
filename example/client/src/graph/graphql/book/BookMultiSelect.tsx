@@ -13,8 +13,6 @@ export const BookMultiSelect: FC<{
         { asyncStyle: "async-object" }
     );
 
-    console.log(error);
-
     return (
         <>
             { error && <div>Failed to load options</div> }
