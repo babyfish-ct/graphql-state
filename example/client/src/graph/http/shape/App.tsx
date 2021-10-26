@@ -7,6 +7,7 @@ import { MiddleShape } from "./MiddleShape";
 import { Col, Row, Spin } from "antd";
 import { publishRequestLog, publishResponseLog } from "../../../common/HttpLog";
 import { HttpLogList } from "../../../common/HttpLogList";
+import { Filter } from "./Filter";
 
 const stateManager = 
     newTypedConfiguration()
@@ -31,25 +32,25 @@ const stateManager =
 
 export const App: FC = memo(() => {
     return (
-        
-            <StateManagerProvider stateManager={stateManager}>
-                <h1 style={{padding: "1rem"}}>
-                    For multiple queries with the same variables but different shapes, 
-                    those with smaller shapes will not send out HTTP requests, 
-                    they will borrow the HTTP request of the query with the largest shape.
-                </h1>
-                <Row gutter={10}>
-                    <Col span={12}>
-                        <Suspense fallback={<div><Spin/>Loading...</div>}>
-                            <SmallestShape/>
-                            <BiggestShape/>
-                            <MiddleShape/>
-                        </Suspense>
-                    </Col>
-                    <Col span={12}>
-                        <HttpLogList/>
-                    </Col>
-                </Row>
-            </StateManagerProvider>
+        <StateManagerProvider stateManager={stateManager}>
+            <h1 style={{padding: "1rem"}}>
+                For multiple queries with the same variables but different shapes, 
+                queries with smaller shapes will not send out HTTP requests, 
+                they will borrow the HTTP request of the query with the largest shape.
+            </h1>
+            <Row gutter={10}>
+                <Col span={12}>
+                    <Filter/>
+                    <Suspense fallback={<div><Spin/>Loading...</div>}>
+                        <SmallestShape/>
+                        <BiggestShape/>
+                        <MiddleShape/>
+                    </Suspense>
+                </Col>
+                <Col span={12}>
+                    <HttpLogList/>
+                </Col>
+            </Row>
+        </StateManagerProvider>
     );
 });
