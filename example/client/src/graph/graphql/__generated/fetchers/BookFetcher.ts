@@ -177,7 +177,6 @@ export interface BookArgs {
     }
 }
 export interface BookScalarType {
-    readonly id: string;
     readonly name: string;
 }
 

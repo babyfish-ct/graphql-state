@@ -126,7 +126,6 @@ export const author$$ =
 ;
 
 export interface AuthorScalarType {
-    readonly id: string;
     readonly name: string;
 }
 

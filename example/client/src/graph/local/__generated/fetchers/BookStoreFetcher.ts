@@ -126,7 +126,6 @@ export const bookStore$$ =
 ;
 
 export interface BookStoreScalarType {
-    readonly id: string;
     readonly name: string;
 }
 

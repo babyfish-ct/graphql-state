@@ -24,7 +24,7 @@ class EntityManager {
         }
         const mutationType = schema.typeMap.get("Mutation");
         if (mutationType !== undefined) {
-            this._mutationRecord = this.saveId("Mutation", Record_1.MUATION_OBJECT_ID);
+            this.saveId("Mutation", Record_1.MUATION_OBJECT_ID);
         }
     }
     recordManager(typeName) {

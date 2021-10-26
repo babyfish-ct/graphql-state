@@ -21,7 +21,6 @@ export declare class EntityManager {
     private _changeListenerMap;
     private _ctx?;
     private _queryRecord?;
-    private _mutationRecord?;
     private _associationValueObservers;
     private _bidirectionalAssociationManagementSuspending;
     constructor(stateManager: StateManagerImpl<any>, schema: SchemaMetadata);

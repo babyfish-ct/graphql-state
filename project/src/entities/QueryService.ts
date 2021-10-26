@@ -155,39 +155,49 @@ interface DeferredResult<T> {
 function mapRecord(
     type: TypeMetadata,
     record: Record | undefined, 
-    runtimeSchape: RuntimeShape
+    shape: RuntimeShape
 ): any {
     if (record === undefined) {
         return undefined;
     }
-    const idFieldName = type.idField.name;
-    const entity = { [idFieldName]: record.id };
-    for (const [, field] of runtimeSchape.fieldMap) {
-        if (field.childShape !== undefined) {
-            const fieldMetadata = type.fieldMap.get(field.name);
+    let entity: { [key: string]: any };
+    if (type.name === "Query") {
+        entity = { [type.idField.name]: QUERY_OBJECT_ID };
+    } else {
+        const idShapeField = shape.fieldMap.get(type.idField.name);
+        if (idShapeField === undefined) {
+            throw new Error(`Cannot map the record whose type is ${type.name} because its id is included in the shape`);
+        }
+        entity = { [idShapeField.alias ?? idShapeField.name]: record.id };
+    }
+    for (const [, shapeField] of shape.fieldMap) {
+        if (shapeField.childShape !== undefined) {
+            const fieldMetadata = type.fieldMap.get(shapeField.name);
             if (fieldMetadata === undefined) {
-                throw new Error(`Cannot find the method for field "${type.name}.${field.name}"`);
+                throw new Error(
+                    `Cannot map the record whose type is ${type.name} because the shape field "${shapeField.name}" is not a concurrent field`
+                );
             }
-            const association = record.getAssociation(fieldMetadata, field.args);
-            if (association === undefined && !record.hasAssociation(fieldMetadata, field.args)) {
+            const association = record.getAssociation(fieldMetadata, shapeField.args);
+            if (association === undefined && !record.hasAssociation(fieldMetadata, shapeField.args)) {
                 canNotFoundFromCache(
                     `Cannot find the associaton field '${
                         fieldMetadata.fullName
                     }${
-                        `:${field.args?.key}` ?? ""
+                        `:${shapeField.args?.key}` ?? ""
                     }' for object whose id is '${record.id}'`);
             }
-            entity[field.alias ?? field.name] = mapAssociation(
+            entity[shapeField.alias ?? shapeField.name] = mapAssociation(
                 fieldMetadata, 
                 association, 
-                fieldMetadata.category === "CONNECTION" ? field.nodeShape! : field.childShape!
+                fieldMetadata.category === "CONNECTION" ? shapeField.nodeShape! : shapeField.childShape!
             );
-        } else if (field.name !== idFieldName) {
-            const scalar = record.getSalar(field.name);
-            if (scalar === undefined && !record.hasScalar(field.name)) {
-                canNotFoundFromCache(`Cannot find the scalar field '${field.name}' for object whose id is '${record.id}'`);
+        } else if (shapeField.name !== type.idField.name) {
+            const scalar = record.getSalar(shapeField.name);
+            if (scalar === undefined && !record.hasScalar(shapeField.name)) {
+                canNotFoundFromCache(`Cannot find the scalar field '${shapeField.name}' for object whose id is '${record.id}'`);
             }
-            entity[field.alias ?? field.name] = scalar;
+            entity[shapeField.alias ?? shapeField.name] = scalar;
         }
     }
     return entity;

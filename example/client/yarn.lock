@@ -5608,18 +5608,17 @@ graceful-fs@^4.1.11, graceful-fs@^4.1.15, graceful-fs@^4.1.2, graceful-fs@^4.1.6
   version "0.0.0"
   uid ""
 
-graphql-ts-client-api@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.0.0.tgz#4029a751daa69c97afb3a09255d0f55b572e38e7"
-  integrity sha512-qLC8FDBH2M/7YwbkLrKCW5hEn/d7rqA5seZIlMMBrcpfuIM9BmT3lbEaUyUGmgnSrxBYqIG7AQ5pfLTXtwPhPg==
+graphql-ts-client-api@^3.0.3:
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.0.3.tgz#d945a20feff664a154aade75ceb68cf55005cfa2"
+  integrity sha512-Mh7QRlj8/UB3YpaEY67b7hjC44JZQ7VdGQsZBxuhIdPIsaRe1YoI0AvzPZ4rkBG4XKotkp3DK+aC8oZf9eBT1w==
   dependencies:
-    immer "^9.0.5"
     ts-md5 "^1.2.9"
 
-graphql-ts-client-codegen@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.0.0.tgz#6ba83ef029d0da33960a69959cda7867ddcd1474"
-  integrity sha512-0ohAnOJP1w/r9BtcBajHlfsSoAp4CosO/EnBA6gW3QHRtHrCLZkw1fOnRfww+RftHnl3p1B9S/owob1qEUEkpg==
+graphql-ts-client-codegen@^3.0.3:
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.0.3.tgz#0e14b13d6654df6e90275729026720c5598cf937"
+  integrity sha512-MBVU4QTxgjb2PXlSKD64EqyQvqSvDaNSN+/1r42fQcUs6+eE0Khw6UGH/+QwQZGMKrPsmut2lLM5U1MZguVK9A==
   dependencies:
     "@types/node" "^15.12.2"
     "@types/node-fetch" "^2.5.10"
@@ -5975,7 +5974,7 @@ immer@8.0.1:
   resolved "https://registry.yarnpkg.com/immer/-/immer-8.0.1.tgz#9c73db683e2b3975c424fb0572af5889877ae656"
   integrity sha512-aqXhGP7//Gui2+UrEtvxZxSquQVXTpZ7KDxfCcKAF3Vysvw0CViVaW9RZ1j1xlIYqaaaipBoqdqeibkc18PNvA==
 
-immer@^9.0.5, immer@^9.0.6:
+immer@^9.0.6:
   version "9.0.6"
   resolved "https://registry.yarnpkg.com/immer/-/immer-9.0.6.tgz#7a96bf2674d06c8143e327cbf73539388ddf1a73"
   integrity sha512-G95ivKpy+EvVAnAab4fVa4YGYn24J1SpEktnJX7JJ45Bd7xqME/SCplFzYFmTbrkwZbQ4xJK1xMTUYBkN6pWsQ==
@@ -11412,10 +11411,15 @@ typedarray@^0.0.6:
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
   integrity sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c=
 
-typescript@^4.1.2, typescript@^4.3.2:
+typescript@^4.1.2:
   version "4.4.3"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.4.3.tgz#bdc5407caa2b109efd4f82fe130656f977a29324"
   integrity sha512-4xfscpisVgqqDfPaJo5vkd+Qd/ItkoagnHpufr+i2QCHBsNYp+G7UAoyFl8aPtx879u38wPV65rZ8qbGZijalA==
+
+typescript@^4.3.2:
+  version "4.4.4"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.4.4.tgz#2cd01a1a1f160704d3101fd5a58ff0f9fcb8030c"
+  integrity sha512-DqGhF5IKoBl8WNf8C1gu8q0xZSInh9j1kJJMqT3a94w1JzVaBU4EXOSMrz9yDqMT0xt3selp83fuFMQ0uzv6qA==
 
 unicode-canonical-property-names-ecmascript@^1.0.4:
   version "1.0.4"

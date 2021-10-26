@@ -2,7 +2,7 @@ import { ObjectFetcher } from "graphql-ts-client-api";
 import { QueryArgs } from "../../entities/QueryArgs";
 import { QueryResult } from "../../entities/QueryResult";
 import { ParameterizedStateAccessingOptions, State, StateAccessingOptions } from "../State";
-import { QueryOptions } from "../StateHook";
+import { ObjectQueryOptions, ObjectStyles, QueryOptions } from "../StateHook";
 import { OptionArgs, VariableArgs } from "./Args";
 import { ComputedStateValue } from "./ComputedStateValue";
 import { ScopedStateManager } from "./ScopedStateManager";
@@ -114,12 +114,28 @@ export class InternalComputedContext {
         }
     }
 
-    object(fetcher: ObjectFetcher<string, object, object>, id: any, options?: QueryOptions<any, any>): Promise<any> {
+    object(fetcher: ObjectFetcher<string, object, object>, id: any, options?: ObjectQueryOptions<any, any, any>): Promise<any> {
         return this.objects(fetcher, [id], options)[0];
     }
 
-    objects(fetcher: ObjectFetcher<string, object, object>, ids: ReadonlyArray<any>, options?: QueryOptions<any, any>): Promise<ReadonlyArray<any>> {
-        return this.queryImpl(fetcher, ids, options);
+    async objects(
+        fetcher: ObjectFetcher<string, object, object>, 
+        ids: ReadonlyArray<any>, 
+        options?: ObjectQueryOptions<any, any, any>
+    ): Promise<ReadonlyArray<any>> {
+        const arr = (await this.queryImpl(fetcher, ids, options)) as ReadonlyArray<any>;
+        if (ids.length !== arr.length) {
+            throw new Error('Internal bug: The returned object count must equal to the length of "ids"');
+        }
+        const objectStyle: ObjectStyles = options?.objectStyle ?? "required";
+        if (objectStyle === "required") {
+            for (let i = 0; i < ids.length; i++) {
+                if (arr[i] === undefined) {
+                    throw new Error(`There is no object whose type is "${fetcher.fetchableType.name}" and id is "${ids[i]}"`);
+                }
+            }
+        }
+        return arr;
     }
 
     query(

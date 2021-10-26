@@ -29,7 +29,7 @@ class GraphQLNetwork {
             }
             writer.text(fetcher.toString());
             writer.text(fetcher.toFragmentString());
-            const response = graphql_ts_client_api_1.util.removeNullValues(yield this.fetch(writer.toString(), variables !== null && variables !== void 0 ? variables : {}));
+            const response = graphql_ts_client_api_1.util.exceptNullValues(yield this.fetch(writer.toString(), variables !== null && variables !== void 0 ? variables : {}));
             if (response.errors) {
                 throw new Error(response.errors);
             }

@@ -148,7 +148,7 @@ export interface ComputedContext<TSchema extends SchemaType> {
     >(
         fetcher: Fetcher<TName, T, TVaraibles>,
         id: TSchema["entities"][TName][" $id"],
-        variables?: TVaraibles
+        options?: TVaraibles
     ): Promise<T | undefined>;
 
     objects<

@@ -32,8 +32,6 @@ export class EntityManager {
 
     private _queryRecord?: Record;
 
-    private _mutationRecord?: Record;
-
     private _associationValueObservers = new Set<AssociationValue>();
 
     private _bidirectionalAssociationManagementSuspending = false;
@@ -49,7 +47,7 @@ export class EntityManager {
         }
         const mutationType = schema.typeMap.get("Mutation");
         if (mutationType !== undefined) {
-            this._mutationRecord = this.saveId("Mutation", MUATION_OBJECT_ID);
+            this.saveId("Mutation", MUATION_OBJECT_ID);
         }
     }
 

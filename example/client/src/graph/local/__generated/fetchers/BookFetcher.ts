@@ -148,7 +148,6 @@ export const book$$ =
 ;
 
 export interface BookScalarType {
-    readonly id: string;
     readonly name: string;
 }
 

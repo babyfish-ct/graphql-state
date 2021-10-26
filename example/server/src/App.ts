@@ -33,7 +33,7 @@ express()
             }
         })
     )
-    .listen(8080, () => {
-        console.log("\n\n\nGraphQL server is started, please access http://localhost:8080/graphql");
+    .listen(8081, () => {
+        console.log("\n\n\nGraphQL server is started, please access http://localhost:8081/graphql");
     });
  

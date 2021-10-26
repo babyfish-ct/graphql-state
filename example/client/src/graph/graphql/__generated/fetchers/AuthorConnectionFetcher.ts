@@ -108,7 +108,11 @@ export const authorConnection$: AuthorConnectionFetcher<{}, {}> =
                     name: "edges", 
                     targetTypeName: "AuthorEdge"
                 }, 
-                "pageInfo"
+                {
+                    category: "SCALAR", 
+                    name: "pageInfo", 
+                    targetTypeName: "PageInfo"
+                }
             ]
         ), 
         undefined

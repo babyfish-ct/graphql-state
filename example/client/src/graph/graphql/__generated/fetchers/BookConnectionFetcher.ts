@@ -108,7 +108,11 @@ export const bookConnection$: BookConnectionFetcher<{}, {}> =
                     name: "edges", 
                     targetTypeName: "BookEdge"
                 }, 
-                "pageInfo"
+                {
+                    category: "SCALAR", 
+                    name: "pageInfo", 
+                    targetTypeName: "PageInfo"
+                }
             ]
         ), 
         undefined

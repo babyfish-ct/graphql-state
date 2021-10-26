@@ -155,7 +155,6 @@ export interface AuthorArgs {
     }
 }
 export interface AuthorScalarType {
-    readonly id: string;
     readonly name: string;
 }
 

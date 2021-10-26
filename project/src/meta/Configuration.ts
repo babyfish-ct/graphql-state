@@ -143,7 +143,7 @@ export class GraphQLNetwork {
         writer.text(fetcher.toString());
         writer.text(fetcher.toFragmentString());
 
-        const response = util.removeNullValues(await this.fetch(writer.toString(), variables ?? {}));
+        const response = util.exceptNullValues(await this.fetch(writer.toString(), variables ?? {}));
         if (response.errors) {
             throw new Error(response.errors);
         }

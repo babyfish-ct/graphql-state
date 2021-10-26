@@ -69,7 +69,7 @@ export function createStateManager(withCustomerOptimization: boolean): StateMana
 
         .network(new GraphQLNetwork(async(body, variables) => {
             const id = publishRequestLog(body, variables);
-            const response = await fetch('http://localhost:8080/graphql', {
+            const response = await fetch('http://localhost:8081/graphql', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
