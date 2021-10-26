@@ -1,10 +1,11 @@
 import { css } from "@emotion/css";
 import { Timeline, Card, Button, Collapse } from "antd";
 import { EntityChangeEvent, EntityEvictEvent, useStateAccessor } from "graphql-state";
-import { FC, memo, ReactNode, useCallback } from "react";
+import { FC, memo, useCallback } from "react";
 import { entityLogListState } from "./EntityLog";
-import { format } from "./util";
+import { format } from "../../../common/util";
 import { CSSProperties } from "react";
+import { RawValueView } from "../../../common/RawValueView";
 
 export const EntityLogList: FC = memo(() => {
 
@@ -71,6 +72,10 @@ const EntityEvictDetail: FC<{
                     <td className={LABEL_CLASS}>Object ID:</td>
                     <td>{event.id}</td>
                 </tr>
+                <tr>
+                    <td className={LABEL_CLASS}>Event Type:</td>
+                    <td>{event.evictedType === 'row' ? "evict object": "evict fields"}</td>
+                </tr>
             </thead>
             {
                 event.evictedKeys.map((evictedKey,index) => {
@@ -85,7 +90,9 @@ const EntityEvictDetail: FC<{
                         </tr>
                         <tr>
                             <td className={LABEL_CLASS} style={NO_TOP_BODER}>New Value:</td>
-                            <td>{valueNode(event.evictedValue(evictedKey))}</td>
+                            <td>
+                                <RawValueView value={event.evictedValue(evictedKey)}/>
+                            </td>
                         </tr>
                     </tbody>
                     }
@@ -109,6 +116,10 @@ const EntityChangeDetail: FC<{
                     <td className={LABEL_CLASS}>Object ID:</td>
                     <td>{event.id}</td>
                 </tr>
+                <tr>
+                    <td className={LABEL_CLASS}>Event Type:</td>
+                    <td>{event.changedType}</td>
+                </tr>
             </thead>
             {
                 event.changedKeys.map((changedKey,index) => {
@@ -124,13 +135,17 @@ const EntityChangeDetail: FC<{
                         {
                             event.changedType !== "insert" && <tr>
                                 <td className={LABEL_CLASS} style={NO_HORIZONTAL_BODER}>Old Value:</td>
-                                <td>{valueNode(event.oldValue(changedKey))}</td>
+                                <td>
+                                    <RawValueView value={event.oldValue(changedKey)}/>
+                                </td>
                             </tr>
                         }
                         {
                             event.changedType !== "delete" && <tr>
                                 <td className={LABEL_CLASS} style={NO_TOP_BODER}>New Value:</td>
-                                <td>{valueNode(event.newValue(changedKey))}</td>
+                                <td>
+                                    <RawValueView value={event.newValue(changedKey)}/>
+                                </td>
                             </tr>
                         }
                     </tbody>
@@ -140,43 +155,6 @@ const EntityChangeDetail: FC<{
         </table>
     );
 });
-
-function valueNode(value: any): ReactNode {
-    if (Array.isArray(value)) {
-        if (value.length === 0) {
-            return "[]";
-        }
-        return (
-            <ol className={COMPOSITE_VALUE_CLASS}>
-                {value.map((element, index) => <li key={index}>{valueNode(element)}</li>)}
-            </ol>
-        );
-    }
-    if (typeof value === "object") {
-        const pairs: Array<{readonly key: string, readonly value: any}> = [];
-        for (const key in value) {
-            pairs.push({key, value: value[key]});
-        }
-        if (pairs.length === 0) {
-            return "{}";
-        }
-        return (
-            <ul className={COMPOSITE_VALUE_CLASS}>
-                {
-                    pairs.map(pair => 
-                        <li key={pair.key}>
-                            {pair.key}: {valueNode(pair.value)}
-                        </li>
-                    )
-                }
-            </ul>
-        );
-    }
-    if (value === undefined) {
-        return "undefined";
-    }
-    return `${value}`;
-}
 
 const DETAIL_TABLE_CSS = css({
     borderCollapse: "collapse",
@@ -198,11 +176,6 @@ const DETAIL_TABLE_CSS = css({
 const LABEL_CLASS = css({
     fontWeight: "bold",
     textAlign: "right"
-});
-
-const COMPOSITE_VALUE_CLASS = css({
-    padding: "1rem",
-    border: "dotted 1px gray"
 });
 
 const NO_TOP_BODER: CSSProperties = {

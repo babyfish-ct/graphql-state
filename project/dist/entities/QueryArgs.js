@@ -45,7 +45,7 @@ exports.QueryArgs = QueryArgs;
 function containsIds(a, b) {
     if (a === undefined || b === undefined) {
         if (a !== b) {
-            throw new Error("Internal bug: containsShape accept defined ids and undefined ids");
+            throw new Error("Internal bug: containsIds accept defined ids and undefined ids");
         }
         return true;
     }

@@ -10,9 +10,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AbstractDataRequest = void 0;
+const util_1 = require("./util");
 class AbstractDataRequest {
-    constructor(dataService, _args) {
-        this.dataService = dataService;
+    constructor(_dataService, _args) {
+        this._dataService = _dataService;
         this._args = _args;
         this.joinedResolvers = [];
     }
@@ -20,34 +21,36 @@ class AbstractDataRequest {
         return __awaiter(this, void 0, void 0, function* () {
             let data;
             try {
-                data = yield this.dataService.onExecute(this.args);
+                data = yield this._dataService.onExecute(this.args);
                 if (typeof data !== 'object' || data === null) {
                     throw new Error("The remote loader must return an object");
                 }
-                this.dataService.onExecuted(this.args, data);
             }
             catch (ex) {
                 this.reject(ex);
                 return;
             }
             finally {
-                this.dataService.onComplete(this.args);
+                this._dataService.onComplete(this.args);
             }
             this.resolve(data);
         });
     }
-    newPromise() {
+    newPromise(args) {
         return new Promise((resolve, reject) => {
-            this.joinedResolvers.push({ resolve, reject });
+            this.joinedResolvers.push({ args, resolve, reject });
         });
     }
     get args() {
         return this._args;
     }
     resolve(data) {
+        const filter = new util_1.ObjectFilter(this._dataService.entityManager.schema, data, this._args.ids, this._args.shape);
         for (const resolver of this.joinedResolvers) {
             try {
-                resolver.resolve(data);
+                const filtered = filter.get(resolver.args.ids);
+                let reshaped = this.reshape(filtered, resolver.args);
+                resolver.resolve(reshaped);
             }
             catch (ex) {
                 console.warn(ex);
@@ -63,6 +66,12 @@ class AbstractDataRequest {
                 console.warn(ex);
             }
         }
+    }
+    reshape(data, args) {
+        if (this._args.shape.toString() === args.shape.toString()) {
+            return data;
+        }
+        return util_1.reshapeObject(this._dataService.entityManager.schema, data, args.shape);
     }
 }
 exports.AbstractDataRequest = AbstractDataRequest;

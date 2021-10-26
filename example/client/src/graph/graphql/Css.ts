@@ -21,14 +21,3 @@ export const DELETING_ROW_CLASS = css({
     textDecoration: "line-through",
     backgroundColor: "lightgray"
 });
-
-export const LOG_LABEL_CLASS = css({
-    fontWeight: "bold"
-});
-
-export const LOG_VALUE_CLASS = css({
-    borderLeft: "solid 3px gray",
-    marginLeft: "3rem",
-    paddingLeft: "1rem",
-    backgroundColor: "#ffe"
-});

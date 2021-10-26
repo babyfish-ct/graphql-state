@@ -1,9 +1,8 @@
 import { makeStateFactory } from "graphql-state";
-import { Schema } from "../../__generated_graphql_schema__/TypedConfiguration";
 import { produce } from "immer";
 
 let idSequence = 0;
-const { createState } = makeStateFactory<Schema>();
+const { createState } = makeStateFactory();
 
 export interface HttpLog {
     readonly id: number;

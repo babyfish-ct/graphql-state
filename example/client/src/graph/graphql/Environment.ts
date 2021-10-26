@@ -3,7 +3,7 @@ import { PositionType } from "graphql-state";
 import { Schema } from "../__generated_graphql_schema__/TypedConfiguration";
 import { newTypedConfiguration } from "../__generated_graphql_schema__";
 import { publishEntityLog } from "./log/EntityLog";
-import { publishRequestLog, publishResponseLog } from "./log/HttpLog";
+import { publishRequestLog, publishResponseLog } from "../../common/HttpLog";
 
 function createNameFilterAssociationProperties<
     TScalarType extends { readonly name: string }, 

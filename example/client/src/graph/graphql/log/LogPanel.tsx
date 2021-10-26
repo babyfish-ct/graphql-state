@@ -1,7 +1,7 @@
 import { Col, Row } from "antd";
 import { FC, memo } from "react";
+import { HttpLogList } from "../../../common/HttpLogList";
 import { EntityLogList } from "./EntityLogList";
-import { HttpLogList } from "./HttpLogList";
 
 export const LogPanel: FC = memo(() => {
     return (

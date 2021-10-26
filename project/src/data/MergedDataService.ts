@@ -35,7 +35,7 @@ export class MergedDataService extends AbstractDataService {
             this.deferredQueryRequests.push(deferredRequest);
             this.willSubmitQueryRequests();
         }
-        return deferredRequest.newPromise();
+        return deferredRequest.newPromise(args);
     }
 
     private willSubmitQueryRequests() {
@@ -63,7 +63,7 @@ export class MergedDataService extends AbstractDataService {
         } else {
             deferredRequest.merge(args.ids!);
         }
-        return deferredRequest.newPromise();
+        return deferredRequest.newPromise(args);
     }
 
     private willSubmitObjectRequests() {
@@ -84,10 +84,6 @@ export class MergedDataService extends AbstractDataService {
 
     onExecute(args: QueryArgs): Promise<any> {
         return this.next.query(args);
-    }
-
-    onExecuted(args: QueryArgs, data: any) {
-        this.next.onExecuted(args, data);
     }
 
     onComplete(args: QueryArgs) {

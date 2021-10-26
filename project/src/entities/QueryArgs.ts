@@ -59,7 +59,7 @@ export class QueryArgs {
 function containsIds(a?: ReadonlyArray<any>, b?: ReadonlyArray<any>): boolean {
     if (a === undefined || b === undefined) {
         if (a !== b) {
-            throw new Error("Internal bug: containsShape accept defined ids and undefined ids");
+            throw new Error("Internal bug: containsIds accept defined ids and undefined ids");
         }
         return true;
     }

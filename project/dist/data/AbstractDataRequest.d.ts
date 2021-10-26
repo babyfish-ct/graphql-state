@@ -1,13 +1,14 @@
 import { QueryArgs } from "../entities/QueryArgs";
 import { AbstractDataService } from "./AbstractDataService";
 export declare abstract class AbstractDataRequest {
-    private dataService;
+    protected _dataService: AbstractDataService;
     protected _args: QueryArgs;
     private joinedResolvers;
-    constructor(dataService: AbstractDataService, _args: QueryArgs);
+    constructor(_dataService: AbstractDataService, _args: QueryArgs);
     execute(): Promise<void>;
-    newPromise(): Promise<any>;
+    newPromise(args: QueryArgs): Promise<any>;
     get args(): QueryArgs;
     private resolve;
     private reject;
+    private reshape;
 }

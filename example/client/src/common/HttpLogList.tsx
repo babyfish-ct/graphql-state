@@ -1,7 +1,7 @@
+import { css } from "@emotion/css";
 import { Timeline, Card, Button, Collapse, Spin } from "antd";
 import { useStateAccessor } from "graphql-state";
 import { FC, memo, useCallback } from "react";
-import { LOG_LABEL_CLASS, LOG_VALUE_CLASS } from "../Css";
 import { httpLogListState } from "./HttpLog";
 import { format } from "./util";
 
@@ -53,4 +53,15 @@ export const HttpLogList: FC = memo(() => {
             </Timeline>
         </Card>
     );
+});
+
+export const LOG_LABEL_CLASS = css({
+    fontWeight: "bold"
+});
+
+export const LOG_VALUE_CLASS = css({
+    borderLeft: "solid 3px gray",
+    marginLeft: "3rem",
+    paddingLeft: "1rem",
+    backgroundColor: "#ffe"
 });

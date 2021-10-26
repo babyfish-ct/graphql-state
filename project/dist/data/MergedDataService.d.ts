@@ -15,6 +15,5 @@ export declare class MergedDataService extends AbstractDataService {
     private willSubmitObjectRequests;
     private submitObjectRequests;
     onExecute(args: QueryArgs): Promise<any>;
-    onExecuted(args: QueryArgs, data: any): void;
     onComplete(args: QueryArgs): void;
 }

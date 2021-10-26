@@ -28,7 +28,7 @@ class MergedDataService extends AbstractDataService_1.AbstractDataService {
             this.deferredQueryRequests.push(deferredRequest);
             this.willSubmitQueryRequests();
         }
-        return deferredRequest.newPromise();
+        return deferredRequest.newPromise(args);
     }
     willSubmitQueryRequests() {
         if (this.querySubmitTimmrId === undefined) {
@@ -54,7 +54,7 @@ class MergedDataService extends AbstractDataService_1.AbstractDataService {
         else {
             deferredRequest.merge(args.ids);
         }
-        return deferredRequest.newPromise();
+        return deferredRequest.newPromise(args);
     }
     willSubmitObjectRequests() {
         if (this.objectSubmitTimerId === undefined) {
@@ -72,9 +72,6 @@ class MergedDataService extends AbstractDataService_1.AbstractDataService {
     }
     onExecute(args) {
         return this.next.query(args);
-    }
-    onExecuted(args, data) {
-        this.next.onExecuted(args, data);
     }
     onComplete(args) {
         this.next.onComplete(args);
