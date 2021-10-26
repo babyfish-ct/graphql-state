@@ -28,12 +28,14 @@ export class RemoteDataService extends AbstractDataService {
         if (network === undefined) {
             throw new Error(`Cannot execute remote data loading because network is not configured`);
         }
-        return util.exceptNullValues(
+        const data = util.exceptNullValues(
             await network.execute(
                 args.fetcher as ObjectFetcher<'Query' | 'Mutation', any, any>, 
                 args.optionsArgs?.variableArgs?.variables
             )
         );
+        this.entityManager.save(args.shape, data);
+        return data;
     }
 
     onComplete(args: QueryArgs) {

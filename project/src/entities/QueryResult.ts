@@ -77,7 +77,7 @@ export class QueryResult {
 
     get promise(): Promise<any> {
         if (this._invalid) {
-            this._promise = this.query(this._refetched);
+            this._promise = this.query();
             this._invalid = false;
             this._refetched = false;
         }
@@ -89,11 +89,11 @@ export class QueryResult {
         return this._loadable;
     }
 
-    private async query(refetch: boolean): Promise<any> {
+    private async query(): Promise<any> {
         
         const rawResult = 
             new QueryService(this.entityManager)
-            .query(this.queryArgs, !refetch, this.mode === "cache-and-network");
+            .query(this.queryArgs, !this._refetched, this.mode === "cache-and-network");
 
         if (rawResult.type === 'cached') {
             this.refreshDependencies(rawResult.data);

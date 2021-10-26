@@ -42,7 +42,9 @@ class RemoteDataService extends AbstractDataService_1.AbstractDataService {
             if (network === undefined) {
                 throw new Error(`Cannot execute remote data loading because network is not configured`);
             }
-            return graphql_ts_client_api_1.util.exceptNullValues(yield network.execute(args.fetcher, (_b = (_a = args.optionsArgs) === null || _a === void 0 ? void 0 : _a.variableArgs) === null || _b === void 0 ? void 0 : _b.variables));
+            const data = graphql_ts_client_api_1.util.exceptNullValues(yield network.execute(args.fetcher, (_b = (_a = args.optionsArgs) === null || _a === void 0 ? void 0 : _a.variableArgs) === null || _b === void 0 ? void 0 : _b.variables));
+            this.entityManager.save(args.shape, data);
+            return data;
         });
     }
     onComplete(args) {

@@ -57,7 +57,7 @@ class QueryResult {
     }
     get promise() {
         if (this._invalid) {
-            this._promise = this.query(this._refetched);
+            this._promise = this.query();
             this._invalid = false;
             this._refetched = false;
         }
@@ -67,10 +67,10 @@ class QueryResult {
         this.promise;
         return this._loadable;
     }
-    query(refetch) {
+    query() {
         return __awaiter(this, void 0, void 0, function* () {
             const rawResult = new QueryService_1.QueryService(this.entityManager)
-                .query(this.queryArgs, !refetch, this.mode === "cache-and-network");
+                .query(this.queryArgs, !this._refetched, this.mode === "cache-and-network");
             if (rawResult.type === 'cached') {
                 this.refreshDependencies(rawResult.data);
                 this._loadable = {
