@@ -18,11 +18,19 @@ class StateValueHolder {
         return value;
     }
     set(state, scopePath, options) {
-        var _a, _b, _c, _d, _e;
+        var _a, _b, _c, _d, _e, _f;
         const optionArgs = Args_1.OptionArgs.of(options);
         if (((_b = (_a = this.stateValue) === null || _a === void 0 ? void 0 : _a.stateInstance) === null || _b === void 0 ? void 0 : _b.state[" $name"]) === state[" $name"] &&
             this.scopePath === scopePath &&
             ((_c = this.previousOptionArgs) === null || _c === void 0 ? void 0 : _c.key) === (optionArgs === null || optionArgs === void 0 ? void 0 : optionArgs.key)) {
+            return;
+        }
+        if ((_d = this.stateValue) === null || _d === void 0 ? void 0 : _d.loadable.loading) { // Peak clipping
+            this.deferred = {
+                state,
+                scopePath,
+                options
+            };
             return;
         }
         this.release();
@@ -31,11 +39,16 @@ class StateValueHolder {
         this.stateValue = this
             .stateManager
             .scope(scopePath)
-            .instance(state, (_d = options === null || options === void 0 ? void 0 : options.scope) !== null && _d !== void 0 ? _d : "auto")
-            .retain(Args_1.VariableArgs.of((_e = options) === null || _e === void 0 ? void 0 : _e.variables));
+            .instance(state, (_e = options === null || options === void 0 ? void 0 : options.scope) !== null && _e !== void 0 ? _e : "auto")
+            .retain(Args_1.VariableArgs.of((_f = options) === null || _f === void 0 ? void 0 : _f.variables));
         this.stateValueChangeListener = (e) => {
             if (e.stateValue === this.stateValue) {
+                const deferred = this.deferred;
                 this.localUpdater(old => old + 1); // Change a local state to update react component
+                if (deferred !== undefined && !this.stateValue.loadable.loading) {
+                    this.deferred = undefined;
+                    this.set(deferred.state, deferred.scopePath, deferred.options);
+                }
             }
         };
         this.stateManager.addStateValueChangeListener(this.stateValueChangeListener);
@@ -72,10 +85,14 @@ class QueryResultHolder {
         return result;
     }
     set(fetcher, ids, options) {
-        var _a;
+        var _a, _b;
         const oldQueryArgs = (_a = this.queryResult) === null || _a === void 0 ? void 0 : _a.queryArgs;
         const newQueryArgs = QueryArgs_1.QueryArgs.create(fetcher, ids, Args_1.OptionArgs.of(options));
         if ((oldQueryArgs === null || oldQueryArgs === void 0 ? void 0 : oldQueryArgs.key) === newQueryArgs.key) {
+            return;
+        }
+        if ((_b = this.queryResult) === null || _b === void 0 ? void 0 : _b.loadable.loading) { //Peak clipping
+            this.deferred = { fetcher, ids, options };
             return;
         }
         // Double check before release(entityManager can validate it too)
@@ -86,7 +103,12 @@ class QueryResultHolder {
         this.queryResult = this.stateManager.entityManager.retain(newQueryArgs);
         this.queryResultChangeListener = (e) => {
             if (e.queryResult === this.queryResult) {
+                const deferred = this.deferred;
                 this.localUpdater(old => old + 1); // Change a local state to update react component
+                if (deferred !== undefined && !this.queryResult.loadable.loading) {
+                    this.deferred = undefined;
+                    this.set(deferred.fetcher, deferred.ids, deferred.options);
+                }
             }
         };
         this.stateManager.addQueryResultChangeListener(this.queryResultChangeListener);

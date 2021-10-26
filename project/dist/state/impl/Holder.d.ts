@@ -13,6 +13,7 @@ export declare class StateValueHolder {
     private stateValue?;
     private previousOptionArgs?;
     private stateValueChangeListener?;
+    private deferred?;
     constructor(stateManager: StateManagerImpl<any>, scopePath: string, localUpdater: Dispatch<SetStateAction<number>>);
     get(): StateValue;
     set(state: State<any>, scopePath: string, options?: StateAccessingOptions): void;
@@ -23,6 +24,7 @@ export declare class QueryResultHolder {
     private localUpdater;
     private queryResult?;
     private queryResultChangeListener?;
+    private deferred?;
     constructor(stateManager: StateManagerImpl<any>, localUpdater: Dispatch<SetStateAction<number>>);
     get(): QueryResult;
     set(fetcher: ObjectFetcher<string, object, object>, ids?: ReadonlyArray<any>, options?: QueryOptions<any, any>): void;

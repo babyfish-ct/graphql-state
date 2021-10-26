@@ -16,6 +16,12 @@ export class StateValueHolder {
     private previousOptionArgs?: OptionArgs;
 
     private stateValueChangeListener?: StateValueChangeListener;
+
+    private deferred?: {
+        readonly state: State<any>;
+        readonly scopePath: string;
+        readonly options?: StateAccessingOptions
+    };
     
     constructor(
         private stateManager: StateManagerImpl<any>,
@@ -41,6 +47,15 @@ export class StateValueHolder {
             return;
         }
 
+        if (this.stateValue?.loadable.loading) { // Peak clipping
+            this.deferred = {
+                state,
+                scopePath,
+                options
+            };
+            return;
+        }
+
         this.release();
 
         this.scopePath = scopePath;
@@ -55,7 +70,12 @@ export class StateValueHolder {
 
         this.stateValueChangeListener = (e: StateValueChangeEvent) => {
             if (e.stateValue === this.stateValue) {
+                const deferred = this.deferred;
                 this.localUpdater(old => old + 1); // Change a local state to update react component
+                if (deferred !== undefined && !this.stateValue.loadable.loading) {
+                    this.deferred = undefined;
+                    this.set(deferred.state, deferred.scopePath, deferred.options);
+                }
             }
         };
         this.stateManager.addStateValueChangeListener(this.stateValueChangeListener);
@@ -85,6 +105,12 @@ export class QueryResultHolder {
 
     private queryResultChangeListener?: (e: QueryResultChangeEvent) => void;
 
+    private deferred?: {
+        readonly fetcher: ObjectFetcher<string, object, object>;
+        readonly ids?: ReadonlyArray<any>;
+        readonly options?: QueryOptions<any, any>;
+    };
+
     constructor(
         private stateManager: StateManagerImpl<any>,
         private localUpdater: Dispatch<SetStateAction<number>>
@@ -101,12 +127,17 @@ export class QueryResultHolder {
     set(
         fetcher: ObjectFetcher<string, object, object>,
         ids?: ReadonlyArray<any>,
-        options?: QueryOptions<any, any>    
+        options?: QueryOptions<any, any>
     ) {
         const oldQueryArgs = this.queryResult?.queryArgs;
         const newQueryArgs = QueryArgs.create(fetcher, ids, OptionArgs.of(options));
 
         if (oldQueryArgs?.key === newQueryArgs.key) {
+            return;
+        }
+
+        if (this.queryResult?.loadable.loading) { //Peak clipping
+            this.deferred = { fetcher, ids, options }; 
             return;
         }
         
@@ -119,7 +150,12 @@ export class QueryResultHolder {
         this.queryResult = this.stateManager.entityManager.retain(newQueryArgs);
         this.queryResultChangeListener = (e: QueryResultChangeEvent) => {
             if (e.queryResult === this.queryResult) {
+                const deferred = this.deferred;
                 this.localUpdater(old => old + 1); // Change a local state to update react component
+                if (deferred !== undefined && !this.queryResult.loadable.loading) {
+                    this.deferred = undefined;
+                    this.set(deferred.fetcher, deferred.ids, deferred.options);
+                }
             }
         };
         
