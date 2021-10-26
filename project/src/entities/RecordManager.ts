@@ -71,6 +71,9 @@ export class RecordManager {
                 throw new Error(`Cannot save the object whose type is "${shape.typeName}" without id`);
             }
             id = obj[idShapeField.alias ?? idShapeField.name];
+            if (id === undefined || id === null) {
+                throw new Error(`Cannot save the object whose type is "${shape.typeName}" without id`);
+            }
         }
         const fieldMap = this.type.fieldMap;
         for (const [, shapeField] of shape.fieldMap) { 
@@ -80,7 +83,10 @@ export class RecordManager {
                     throw new Error(`Cannot set the non-existing field "${shapeField.name}" for type "${this.type.name}"`);
                 }
                 const manager = this.fieldManagerMap.get(shapeField.name) ?? this;
-                const value = obj[shapeField.alias ?? shapeField.name];
+                let value = obj[shapeField.alias ?? shapeField.name];
+                if (value === null) {
+                    value = undefined;
+                }
                 manager.set(
                     id, 
                     field, 

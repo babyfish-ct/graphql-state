@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MutationResult = void 0;
+const graphql_ts_client_api_1 = require("graphql-ts-client-api");
 class MutationResult {
     constructor(stateManager, localUpdater, fetcher, variables) {
         this.localUpdater = localUpdater;
@@ -40,7 +41,7 @@ class MutationResult {
             };
             this.localUpdater(old => old + 1);
             try {
-                const data = yield this._network.execute(this.fetcher, variables !== null && variables !== void 0 ? variables : this.variables);
+                const data = graphql_ts_client_api_1.util.exceptNullValues(yield this._network.execute(this.fetcher, variables !== null && variables !== void 0 ? variables : this.variables));
                 if (this._currentAsyncRequestId === aysncRequestId) {
                     this._loadable = {
                         loading: false,

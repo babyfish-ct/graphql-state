@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RemoteDataService = void 0;
+const graphql_ts_client_api_1 = require("graphql-ts-client-api");
 const AbstractDataRequest_1 = require("./AbstractDataRequest");
 const AbstractDataService_1 = require("./AbstractDataService");
 class RemoteDataService extends AbstractDataService_1.AbstractDataService {
@@ -42,11 +43,13 @@ class RemoteDataService extends AbstractDataService_1.AbstractDataService {
     }
     onExecute(args) {
         var _a, _b;
-        const network = this.entityManager.stateManager.network;
-        if (network === undefined) {
-            throw new Error(`Cannot execute remote data loading because network is not configured`);
-        }
-        return network.execute(args.fetcher, (_b = (_a = args.optionsArgs) === null || _a === void 0 ? void 0 : _a.variableArgs) === null || _b === void 0 ? void 0 : _b.variables);
+        return __awaiter(this, void 0, void 0, function* () {
+            const network = this.entityManager.stateManager.network;
+            if (network === undefined) {
+                throw new Error(`Cannot execute remote data loading because network is not configured`);
+            }
+            return graphql_ts_client_api_1.util.exceptNullValues(yield network.execute(args.fetcher, (_b = (_a = args.optionsArgs) === null || _a === void 0 ? void 0 : _a.variableArgs) === null || _b === void 0 ? void 0 : _b.variables));
+        });
     }
     onExecuted(args, data) {
         const entityManager = this.entityManager;
@@ -60,7 +63,7 @@ class RemoteDataService extends AbstractDataService_1.AbstractDataService {
             entityManager.modify(() => {
                 for (const id of ids) {
                     const obj = objMap.get(id);
-                    if (obj !== undefined) {
+                    if (obj !== undefined && obj !== null) {
                         entityManager.save(shape, obj);
                     }
                     else {

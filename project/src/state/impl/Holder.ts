@@ -32,7 +32,6 @@ export class StateValueHolder {
     }
 
     set(state: State<any>, scopePath: string, options?: StateAccessingOptions) {
-
         const optionArgs = OptionArgs.of(options);
 
         if (this.stateValue?.stateInstance?.state[" $name"] === state[" $name"] && 

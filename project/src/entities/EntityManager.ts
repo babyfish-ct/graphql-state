@@ -129,7 +129,7 @@ export class EntityManager {
                         recordManager.delete(id);
                     }
                 }
-            } else if (idOrArray !== undefined && idOrArray !== undefined) {
+            } else if (idOrArray !== undefined && idOrArray !== null) {
                 recordManager.delete(idOrArray);
             }
         });

@@ -1,4 +1,4 @@
-import { ObjectFetcher, TextWriter, util } from "graphql-ts-client-api";
+import { ObjectFetcher, TextWriter } from "graphql-ts-client-api";
 import { StateManager } from "../state/StateManager";
 import { SchemaType } from "./SchemaType";
 
@@ -143,7 +143,7 @@ export class GraphQLNetwork {
         writer.text(fetcher.toString());
         writer.text(fetcher.toFragmentString());
 
-        const response = util.exceptNullValues(await this.fetch(writer.toString(), variables ?? {}));
+        const response = await this.fetch(writer.toString(), variables ?? {});
         if (response.errors) {
             throw new Error(response.errors);
         }

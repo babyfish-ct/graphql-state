@@ -95,7 +95,7 @@ class EntityManager {
                     }
                 }
             }
-            else if (idOrArray !== undefined && idOrArray !== undefined) {
+            else if (idOrArray !== undefined && idOrArray !== null) {
                 recordManager.delete(idOrArray);
             }
         });

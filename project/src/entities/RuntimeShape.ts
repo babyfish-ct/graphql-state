@@ -1,4 +1,4 @@
-import { Fetcher, FetcherField, ParameterRef } from "graphql-ts-client-api";
+import { Fetcher, FetcherField } from "graphql-ts-client-api";
 import { VariableArgs } from "../state/impl/Args";
 
 /*
@@ -150,7 +150,7 @@ function resolveParameterRefs(
     if (variables !== undefined && variables !== null) {
         for (const name in variables) {
             let value = variables[name];
-            if (value instanceof ParameterRef) {
+            if (value[" $__instanceOfParameterRef"]) {
                 value = fetcherVariables !== undefined ? fetcherVariables[value.name] : undefined;
             }
             if (value !== undefined && value !== null) {

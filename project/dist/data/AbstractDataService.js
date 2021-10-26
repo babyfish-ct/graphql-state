@@ -20,12 +20,12 @@ class AbstractDataService {
         const idFieldAlias = (_b = (_a = shape.fieldMap.get(idFieldName)) === null || _a === void 0 ? void 0 : _a.alias) !== null && _b !== void 0 ? _b : idFieldName;
         const objMap = new Map();
         for (const obj of objs) {
-            objMap.set(obj[idFieldAlias], obj);
+            objMap.set(obj[idFieldAlias], obj !== null ? obj : undefined);
         }
         return objMap;
     }
     standardizedResult(data, args, reshapeObject = false) {
-        if (data === undefined) {
+        if (data === undefined || data === null) {
             return undefined;
         }
         if (args.ids !== undefined) {
@@ -39,7 +39,7 @@ class AbstractDataService {
     }
     reshapeObject(obj, shape) {
         var _a, _b;
-        if (obj === undefined) {
+        if (obj === undefined || obj === null) {
             return undefined;
         }
         if (Array.isArray(obj)) {
@@ -49,7 +49,10 @@ class AbstractDataService {
         const result = {};
         for (const [, field] of shape.fieldMap) {
             const name = (_a = field.alias) !== null && _a !== void 0 ? _a : field.name;
-            const value = obj[name];
+            let value = obj[name];
+            if (value === null) {
+                value = undefined;
+            }
             if (((_b = type.fieldMap.get(name)) === null || _b === void 0 ? void 0 : _b.category) === 'CONNECTION') {
                 result[name] = this.reshapeConnnection(value, field.childShape);
             }

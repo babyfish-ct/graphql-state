@@ -18,7 +18,6 @@ export class QueryService {
     }
 
     private graph(args: QueryArgs, useCache: boolean, useDataService: boolean): RawQueryResult<any> {
-
         if (useCache) {
             try {
                 return {

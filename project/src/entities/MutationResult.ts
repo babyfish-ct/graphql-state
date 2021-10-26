@@ -1,4 +1,4 @@
-import { ObjectFetcher } from "graphql-ts-client-api";
+import { ObjectFetcher, util } from "graphql-ts-client-api";
 import { Dispatch, SetStateAction } from "react";
 import { Network } from "../meta/Configuration";
 import { StateManagerImpl } from "../state/impl/StateManagerImpl";
@@ -51,7 +51,9 @@ export class MutationResult {
         };
         this.localUpdater(old => old + 1);
         try {
-            const data = await this._network.execute(this.fetcher, variables ?? this.variables);
+            const data = util.exceptNullValues(
+                await this._network.execute(this.fetcher, variables ?? this.variables)
+            );
             if (this._currentAsyncRequestId === aysncRequestId) {
                 this._loadable = {
                     loading: false,

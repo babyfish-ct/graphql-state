@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.toRuntimeShape0 = exports.toRuntimeShape = void 0;
-const graphql_ts_client_api_1 = require("graphql-ts-client-api");
 const Args_1 = require("../state/impl/Args");
 function toRuntimeShape(fetcher, variables) {
     return toRuntimeShape0("", fetcher, variables);
@@ -90,7 +89,7 @@ function resolveParameterRefs(variables, fetcherVariables) {
     if (variables !== undefined && variables !== null) {
         for (const name in variables) {
             let value = variables[name];
-            if (value instanceof graphql_ts_client_api_1.ParameterRef) {
+            if (value[" $__instanceOfParameterRef"]) {
                 value = fetcherVariables !== undefined ? fetcherVariables[value.name] : undefined;
             }
             if (value !== undefined && value !== null) {

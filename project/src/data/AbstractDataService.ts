@@ -1,3 +1,4 @@
+import { util } from "graphql-ts-client-api";
 import { EntityManager } from "../entities/EntityManager";
 import { QueryArgs } from "../entities/QueryArgs";
 import { RuntimeShape } from "../entities/RuntimeShape";
@@ -22,13 +23,13 @@ export abstract class AbstractDataService {
         const idFieldAlias = shape.fieldMap.get(idFieldName)?.alias ?? idFieldName;
         const objMap = new Map<any, any>();
         for (const obj of objs) {
-            objMap.set(obj[idFieldAlias], obj);
+            objMap.set(obj[idFieldAlias], obj !== null ? obj : undefined);
         }
         return objMap;
     }
 
     protected standardizedResult(data: any, args: QueryArgs, reshapeObject: boolean = false): any {
-        if (data === undefined) {
+        if (data === undefined || data === null) {
             return undefined;
         }
         if (args.ids !== undefined) {
@@ -42,7 +43,7 @@ export abstract class AbstractDataService {
     }
 
     private reshapeObject(obj: any, shape: RuntimeShape): any {
-        if (obj === undefined) {
+        if (obj === undefined || obj === null) {
             return undefined;
         }
         if (Array.isArray(obj)) {
@@ -52,7 +53,10 @@ export abstract class AbstractDataService {
         const result: any = {};
         for (const [, field] of shape.fieldMap) {
             const name = field.alias ?? field.name;
-            const value = obj[name];
+            let value = obj[name];
+            if (value === null) {
+                value = undefined;
+            }
             if (type.fieldMap.get(name)?.category === 'CONNECTION') {
                 result[name] = this.reshapeConnnection(value, field.childShape!);
             } else if (field.childShape !== undefined) {

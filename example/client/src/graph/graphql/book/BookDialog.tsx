@@ -40,7 +40,6 @@ export const BookDialog: FC<{
         ),
         {
             onSuccess: data => {
-                console.log(JSON.stringify(data.mergeBook));
                 stateManager.save(BOOK_EDIT_INFO, data.mergeBook);
             }
         }
