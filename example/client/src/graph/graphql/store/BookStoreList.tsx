@@ -2,11 +2,11 @@ import { ChangeEvent, memo, useCallback, useState } from "react";
 import { Button, Input, Space, Spin, Table, Tag, Modal, Row, Col } from "antd";
 import { ComponentDecorator } from "../../../common/ComponentDecorator";
 import { useQuery, useStateManager } from "graphql-state";
-import { book$$, bookStore$$, mutation$, query$ } from "../__generated/fetchers";
+import { book$$, bookStore$$, mutation$, query$ } from "../../__generated_graphql_schema__/fetchers";
 import { ModelType, ParameterRef } from "graphql-ts-client-api";
 import { DELETE_CONFIRM_CLASS, DELETING_ROW_CLASS, INFORMATION_CLASS } from "../Css";
 import { BookStoreDialog } from "./BookStoreDialog";
-import { useMutation } from "graphql-state/dist/state/StateHook";
+import { useMutation } from "graphql-state";
 
 const BOOK_STORE_ROW =
     bookStore$$

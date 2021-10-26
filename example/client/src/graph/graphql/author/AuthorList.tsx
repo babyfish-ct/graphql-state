@@ -5,7 +5,7 @@ import { ChangeEvent, FC, memo, useCallback, useState } from "react";
 import { ComponentDecorator } from "../../../common/ComponentDecorator";
 import { AuthorDialog } from "../author/AuthorDialog";
 import { DELETE_CONFIRM_CLASS, DELETING_ROW_CLASS, INFORMATION_CLASS } from "../Css";
-import { book$$, author$$, query$, authorConnection$, authorEdge$, mutation$ } from "../__generated/fetchers";
+import { book$$, author$$, query$, authorConnection$, authorEdge$, mutation$ } from "../../__generated_graphql_schema__/fetchers";
 
 const AUTHOR_ROW =
     author$$

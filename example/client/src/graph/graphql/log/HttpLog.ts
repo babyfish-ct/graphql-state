@@ -1,5 +1,5 @@
 import { makeStateFactory } from "graphql-state";
-import { Schema } from "../__generated/TypedConfiguration";
+import { Schema } from "../../__generated_graphql_schema__/TypedConfiguration";
 import { produce } from "immer";
 
 let idSequence = 0;

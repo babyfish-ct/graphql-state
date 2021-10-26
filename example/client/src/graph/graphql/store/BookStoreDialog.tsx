@@ -3,10 +3,10 @@ import { useForm } from "antd/lib/form/Form";
 import { ModelType } from "graphql-ts-client-api";
 import { FC, memo, useCallback, useEffect } from "react";
 import UUIDClass from "uuidjs";
-import { book$, bookStore$$, mutation$ } from "../__generated/fetchers";
+import { book$, bookStore$$, mutation$ } from "../../__generated_graphql_schema__/fetchers";
+import { BookStoreInput } from "../../__generated_graphql_schema__/inputs";
 import { BookMultiSelect } from "../book/BookMultiSelect";
 import { INFORMATION_CLASS, PSEUDO_CODE_CLASS } from "../Css";
-import { BookStoreInput } from "../__generated/inputs";
 import { useMutation, useStateManager } from "graphql-state";
 
 const BOOK_STORE_EDIT_INFO =

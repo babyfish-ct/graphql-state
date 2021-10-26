@@ -1,9 +1,9 @@
 import { GraphQLNetwork, ScalarRow, ParameterizedAssociationProperties, StateManager } from "graphql-state";
-import { PositionType } from "graphql-state/dist/meta/Configuration";
-import { Schema } from "./__generated/TypedConfiguration";
+import { PositionType } from "graphql-state";
+import { Schema } from "../__generated_graphql_schema__/TypedConfiguration";
+import { newTypedConfiguration } from "../__generated_graphql_schema__";
 import { publishEntityLog } from "./log/EntityLog";
 import { publishRequestLog, publishResponseLog } from "./log/HttpLog";
-import { newTypedConfiguration } from "./__generated";
 
 function createNameFilterAssociationProperties<
     TScalarType extends { readonly name: string }, 

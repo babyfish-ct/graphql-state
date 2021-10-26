@@ -1,6 +1,6 @@
 import { FC, memo } from "react";
 import { Select } from "antd";
-import { book$$, query$ } from "../__generated/fetchers";
+import { book$$, query$ } from "../../__generated_local_schema__/fetchers";
 import { useQuery } from "graphql-state";
 
 export const BookMultiSelect: FC<{

@@ -1,4 +1,4 @@
-import { newTypedConfiguration } from "./__generated";
+import { newTypedConfiguration } from "../__generated_local_schema__";
 import { initializeDefaultData } from "./InitializeDefaultData";
 
 export function createStateManager() { 

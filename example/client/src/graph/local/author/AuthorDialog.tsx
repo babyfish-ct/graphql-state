@@ -3,7 +3,7 @@ import { useForm } from "antd/lib/form/Form";
 import { ModelType } from "graphql-ts-client-api";
 import { FC, memo, useCallback, useEffect } from "react";
 import UUIDClass from "uuidjs";
-import { author$$, book$ } from "../__generated/fetchers";
+import { author$$, book$ } from "../../__generated_local_schema__/fetchers";
 import { BookMultiSelect } from "../book/BookMultiSelect";
 import { INFORMATION_CLASS, PSEUDO_CODE_CLASS } from "../Css";
 import { useStateManager } from "graphql-state";

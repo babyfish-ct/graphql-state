@@ -5,6 +5,6 @@ const generator = new GraphQLStateGenerator({
     schemaLoader: async() => {
       return loadRemoteSchema("http://localhost:8081/graphql");
     },
-    targetDir: path.join(__dirname, "../../src/graph/graphql/__generated")
+    targetDir: path.join(__dirname, "../../src/graph/__generated_graphql_schema__")
 });
 generator.generate();

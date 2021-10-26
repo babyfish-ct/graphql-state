@@ -14,6 +14,7 @@ export {
     useMutation, 
     makeManagedObjectHooks 
 } from './state/StateHook';
+export { PositionType } from './meta/Configuration'
 export { newConfiguration } from './meta/impl/ConfigurationImpl';
 export { StateManager } from './state/StateManager';
 export { makeStateFactory } from './state/State';

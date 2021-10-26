@@ -5,6 +5,6 @@ const generator = new GraphQLStateGenerator({
     schemaLoader: async() => {
       return loadLocalSchema("scripts/local/schema.sdl");
     },
-    targetDir: path.join(__dirname, "../../src/graph/local/__generated")
+    targetDir: path.join(__dirname, "../../src/graph/__generated_local_schema__")
 });
 generator.generate();
