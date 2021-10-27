@@ -1,4 +1,5 @@
 import { Fetcher, FetcherField } from "graphql-ts-client-api";
+import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 import { VariableArgs } from "../state/impl/Args";
 
 /*

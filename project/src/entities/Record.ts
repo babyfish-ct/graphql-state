@@ -18,20 +18,21 @@ export class Record {
 
     private row?: ScalarRow<any>;
 
-    constructor(readonly type: TypeMetadata, readonly id: any, private deleted: boolean = false) {
-        if (type.name === 'Query') {
+    constructor(
+        readonly staticType: TypeMetadata,
+        readonly runtimeType: TypeMetadata, 
+        readonly id: any, 
+        private deleted: boolean = false
+    ) {
+        if (staticType.name === 'Mutation') {
+            throw new Error(`Cannot create record for type 'Mutation'`);
+        }
+        if (staticType.name === 'Query') {
             if (id !== QUERY_OBJECT_ID) {
                 throw new Error(`The id of query object must be '${QUERY_OBJECT_ID}'`);
             }
             if (deleted) {
                 throw new Error(`The object of special type 'Query' cannot be deleted`);
-            }
-        } else if (type.name === 'Mutation') {
-            if (id !== MUATION_OBJECT_ID) {
-                throw new Error(`The id of mutation object must be '${QUERY_OBJECT_ID}'`);
-            }
-            if (deleted) {
-                throw new Error(`The object of special type 'Mutation' cannot be deleted`);
             }
         }
     }
@@ -62,8 +63,8 @@ export class Record {
         args: VariableArgs | undefined,
         value: any
     ) {
-        if (field.declaringType !== this.type) {
-            throw new Error(`'${field.fullName}' is not field of the type '${this.type.name}' of current record`);
+        if (field.declaringType !== this.staticType) {
+            throw new Error(`'${field.fullName}' is not field of the type '${this.staticType.name}' of current record`);
         }
         if (field?.isAssociation) {
             this
@@ -78,9 +79,9 @@ export class Record {
             if (args?.variables !== undefined) {
                 throw new Error('scalar fields does not support variables');
             }
-            if (field === this.type.idField) {
+            if (field === this.staticType.idField) {
                 if (value !== this.id) {
-                    throw new Error(`Cannot chanage "${this.type.idField.fullName} because its id field"`);
+                    throw new Error(`Cannot chanage "${this.staticType.idField.fullName} because its id field"`);
                 }
             } else {
                 const oldValue = this.scalarMap.get(field.name);
@@ -131,8 +132,8 @@ export class Record {
         args: VariableArgs | undefined,
         includeMoreStrictArgs: boolean = false
     ) {
-        if (field.declaringType !== this.type) {
-            throw new Error(`'${field.fullName}' is not field of the type '${this.type.name}' of current record`);
+        if (field.declaringType !== this.staticType) {
+            throw new Error(`'${field.fullName}' is not field of the type '${this.staticType.name}' of current record`);
         }
         if (field.isAssociation) {
             this.associationMap.get(field)?.evict(entityManager, args, includeMoreStrictArgs);
@@ -146,7 +147,7 @@ export class Record {
         if (this.deleted) {
             return;
         }
-        if (this.type.name === 'Query') {
+        if (this.staticType.name === 'Query') {
             throw new Error(`The object of special type 'Query' cannot be deleted`);
         }
         this.scalarMap.clear();
@@ -160,8 +161,12 @@ export class Record {
         this.deleted = true;
     }
 
-    undelete() {
-        this.deleted = false;
+    undelete(): boolean {
+        if (this.deleted) {
+            this.deleted = false;
+            return true;
+        }
+        return false;
     }
 
     toRow(): ScalarRow<any> {
@@ -198,13 +203,11 @@ export class Record {
 
 export const QUERY_OBJECT_ID = "____QUERY_OBJECT____";
 
-export const MUATION_OBJECT_ID = "____MUTATION_OBJECT____";
-
 export function objectWithOnlyId(record: Record | undefined): any {
     if (record === undefined) {
         return undefined;
     }
-    return record.type.createObject(record.id);
+    return record.staticType.createObject(record.id);
 }
 
 export class ScalarRowImpl implements ScalarRow<any> {

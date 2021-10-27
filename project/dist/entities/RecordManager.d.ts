@@ -12,8 +12,9 @@ export declare class RecordManager {
     constructor(entityManager: EntityManager, type: TypeMetadata);
     initializeOtherManagers(): void;
     findRefById(id: any): RecordRef | undefined;
-    saveId(id: any): Record;
-    save(shape: RuntimeShape, obj: any): void;
+    saveId(id: any, runtimeType: TypeMetadata): Record;
+    private insertId;
+    save(shape: RuntimeShape, obj: any, runtimeTypeOrName: TypeMetadata | string): void;
     delete(id: any): void;
     evict(id: any): void;
     forEach(visitor: (record: Record) => boolean | void): void;

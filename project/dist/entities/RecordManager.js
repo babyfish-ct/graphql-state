@@ -26,23 +26,40 @@ class RecordManager {
         }
         return record.isDeleted ? {} : { value: record };
     }
-    saveId(id) {
-        var _a;
-        const ctx = this.entityManager.modificationContext;
+    saveId(id, runtimeType) {
         let record = this.recordMap.get(id);
         if (record !== undefined) {
-            record.undelete();
+            if (record.runtimeType === runtimeType) {
+                if (record.undelete()) {
+                    this.entityManager.modificationContext.insert(record);
+                }
+                return record;
+            }
+            this.entityManager.delete(record.runtimeType.name, record.id);
         }
-        else {
-            record = new Record_1.Record(this.type, id);
-            this.recordMap.set(id, record);
-            ctx.insert(record);
-        }
-        (_a = this.superManager) === null || _a === void 0 ? void 0 : _a.saveId(id);
+        record = this.insertId(id, runtimeType);
+        this.entityManager.modificationContext.insert(record);
         return record;
     }
-    save(shape, obj) {
+    insertId(id, runtimeType) {
+        var _a;
+        const record = new Record_1.Record(this.type, runtimeType, id);
+        this.recordMap.set(id, record);
+        (_a = this.superManager) === null || _a === void 0 ? void 0 : _a.insertId(id, runtimeType);
+        return record;
+    }
+    save(shape, obj, runtimeTypeOrName) {
         var _a, _b, _c;
+        const runtimeType = typeof runtimeTypeOrName === "string" ? (this.type.name === runtimeTypeOrName ?
+            this.type :
+            this.entityManager.schema.typeMap.get(runtimeTypeOrName)) :
+            runtimeTypeOrName;
+        if (runtimeType === undefined) {
+            throw new Error(`Cannot save obj with illegal type "${runtimeTypeOrName}""`);
+        }
+        if (!this.type.isAssignableFrom(runtimeType)) {
+            throw new Error(`Cannot save obj with illegal type "${runtimeType.name}" because that type is not derived type of "${this.type.name}"`);
+        }
         if (typeof obj !== "object" || Array.isArray(obj)) {
             throw new Error("obj can only be plain object");
         }
@@ -63,10 +80,9 @@ class RecordManager {
                 throw new Error(`Cannot save the object whose type is "${shape.typeName}" without id`);
             }
         }
-        const fieldMap = this.type.fieldMap;
         for (const [, shapeField] of shape.fieldMap) {
             if (shapeField.name !== idFieldName) {
-                const field = fieldMap.get(shapeField.name);
+                const field = runtimeType.fieldMap.get(shapeField.name);
                 if (field === undefined) {
                     throw new Error(`Cannot set the non-existing field "${shapeField.name}" for type "${this.type.name}"`);
                 }
@@ -75,30 +91,26 @@ class RecordManager {
                 if (value === null) {
                     value = undefined;
                 }
-                manager.set(id, field, shapeField.args, value);
-                if (value !== undefined && shapeField.childShape !== undefined) {
+                manager.set(id, runtimeType, field, shapeField.args, value);
+                if (value !== undefined && field.isAssociation && shapeField.childShape !== undefined) {
                     switch (field.category) {
                         case "REFERENCE":
                             this
                                 .entityManager
-                                .recordManager(shapeField.childShape.typeName)
                                 .save(shapeField.childShape, value);
                             break;
                         case "LIST":
                             if (Array.isArray(value)) {
-                                const associationRecordManager = this.entityManager.recordManager(shapeField.childShape.typeName);
                                 for (const element of value) {
-                                    associationRecordManager.save(shapeField.childShape, element);
+                                    this.entityManager.save(shapeField.childShape, element);
                                 }
                             }
                             break;
                         case "CONNECTION":
                             const edges = value.edges;
                             if (Array.isArray(edges)) {
-                                const nodeShape = shapeField.nodeShape;
-                                const associationRecordManager = this.entityManager.recordManager(nodeShape.typeName);
                                 for (const edge of edges) {
-                                    associationRecordManager.save(nodeShape, edge.node);
+                                    this.entityManager.save(shapeField.nodeShape, edge.node);
                                 }
                             }
                             break;
@@ -135,8 +147,8 @@ class RecordManager {
             }
         }
     }
-    set(id, field, args, value) {
-        const record = this.saveId(id);
+    set(id, runtimeType, field, args, value) {
+        const record = this.saveId(id, runtimeType);
         record.set(this.entityManager, field, args, value);
     }
 }

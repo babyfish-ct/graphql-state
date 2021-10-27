@@ -10,6 +10,7 @@ class ModificationContext {
         this.objPairMap = new Map();
     }
     close() {
+        let i = 0;
         do {
             const pairMap = this.objPairMap;
             this.objPairMap = new Map();
@@ -28,25 +29,25 @@ class ModificationContext {
         } while (this.objPairMap.size !== 0);
     }
     insert(record) {
-        if (record.type.superType === undefined) {
-            const pair = this.pair(record, false, true);
+        if (record.staticType === record.runtimeType) {
+            this.pair(record, false, true);
         }
     }
     delete(record) {
-        if (record.type.superType === undefined) {
+        if (record.staticType === record.runtimeType) {
             const pair = this.pair(record, true, false);
             pair.deleted = true;
         }
     }
     evict(record) {
-        if (record.type.superType === undefined) {
+        if (record.staticType === record.runtimeType) {
             const pair = this.pair(record, true, false);
             pair.deleted = false;
         }
     }
     set(record, fieldName, args, oldValue, newValue) {
         var _a, _b;
-        if (fieldName === record.type.idField.name) {
+        if (fieldName === record.staticType.idField.name) {
             throw new Error("Internal bug: the changed name cannot be id");
         }
         if (oldValue !== newValue) {
@@ -58,7 +59,7 @@ class ModificationContext {
     }
     unset(record, fieldName, args) {
         var _a;
-        if (fieldName === record.type.idField.name) {
+        if (fieldName === record.staticType.idField.name) {
             throw new Error("Internal bug: the changed name cannot be id");
         }
         const pair = this.pair(record, true, true);
@@ -66,7 +67,7 @@ class ModificationContext {
         (_a = pair.newObj) === null || _a === void 0 ? void 0 : _a.delete(key);
     }
     pair(record, initializeOldObj, useNewObj) {
-        const key = record.type;
+        const key = record.staticType;
         let subMap = this.objPairMap.get(key);
         if (subMap === undefined) {
             subMap = new Map();

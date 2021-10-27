@@ -22,10 +22,6 @@ class EntityManager {
         if (queryType !== undefined) {
             this._queryRecord = this.saveId("Query", Record_1.QUERY_OBJECT_ID);
         }
-        const mutationType = schema.typeMap.get("Mutation");
-        if (mutationType !== undefined) {
-            this.saveId("Mutation", Record_1.MUATION_OBJECT_ID);
-        }
     }
     recordManager(typeName) {
         const type = this.schema.typeMap.get(typeName);
@@ -71,14 +67,16 @@ class EntityManager {
     }
     save(shape, objOrArray) {
         this.modify(() => {
-            const recordManager = this.recordManager(shape.typeName);
+            var _a, _b;
             if (Array.isArray(objOrArray)) {
                 for (const obj of objOrArray) {
-                    recordManager.save(shape, obj);
+                    const typeName = (_a = obj["__typename"]) !== null && _a !== void 0 ? _a : shape.typeName;
+                    this.recordManager(typeName).save(shape, obj, typeName);
                 }
             }
             else if (objOrArray !== undefined && objOrArray !== null) {
-                recordManager.save(shape, objOrArray);
+                const typeName = (_b = objOrArray["__typename"]) !== null && _b !== void 0 ? _b : shape.typeName;
+                this.recordManager(typeName).save(shape, objOrArray, typeName);
             }
         });
     }
@@ -102,7 +100,11 @@ class EntityManager {
     }
     saveId(typeName, id) {
         return this.modify(() => {
-            return this.recordManager(typeName).saveId(id);
+            const type = this.schema.typeMap.get(typeName);
+            if (type === undefined) {
+                throw new Error(`Cannot save object id for illegal type "${typeName}"`);
+            }
+            return this.recordManager(typeName).saveId(id, type);
         });
     }
     retain(args) {
@@ -178,7 +180,7 @@ class EntityManager {
         const qr = this._queryRecord;
         if (qr !== undefined) {
             const record = this.saveId(type.name, id);
-            for (const [, field] of qr.type.fieldMap) {
+            for (const [, field] of qr.staticType.fieldMap) {
                 if (field.targetType !== undefined && field.targetType.isAssignableFrom(type)) {
                     qr.link(this, field, record);
                 }

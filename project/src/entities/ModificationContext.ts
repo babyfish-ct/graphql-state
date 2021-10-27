@@ -14,6 +14,7 @@ export class ModificationContext {
     ) {}
 
     close() {
+        let i = 0;
         do {
             const pairMap = this.objPairMap;
             this.objPairMap = new Map<TypeMetadata, Map<any, ObjectPair>>();
@@ -27,34 +28,33 @@ export class ModificationContext {
             for (const [type, subMap] of pairMap) {
                 for (const [id, pair] of subMap) {
                     this.publishEvents(type, id, pair);
-                    
                 }
             }
         } while (this.objPairMap.size !== 0);
     }
 
     insert(record: Record) {
-        if (record.type.superType === undefined) {
-            const pair = this.pair(record, false, true);
+        if (record.staticType === record.runtimeType) {
+            this.pair(record, false, true);
         }
     }
 
     delete(record: Record) {
-        if (record.type.superType === undefined) {
+        if (record.staticType === record.runtimeType) {
             const pair = this.pair(record, true, false);
             pair.deleted = true;
         }
     }
 
     evict(record: Record) {
-        if (record.type.superType === undefined) {
+        if (record.staticType === record.runtimeType) {
             const pair = this.pair(record, true, false);
             pair.deleted = false;
         }
     }
 
     set(record: Record, fieldName: string, args: VariableArgs | undefined, oldValue: any, newValue: any) {
-        if (fieldName === record.type.idField.name) {
+        if (fieldName === record.staticType.idField.name) {
             throw new Error("Internal bug: the changed name cannot be id");
         }
         if (oldValue !== newValue) {
@@ -66,7 +66,7 @@ export class ModificationContext {
     }
 
     unset(record: Record, fieldName: string, args: VariableArgs | undefined) {
-        if (fieldName === record.type.idField.name) {
+        if (fieldName === record.staticType.idField.name) {
             throw new Error("Internal bug: the changed name cannot be id");
         }
         const pair = this.pair(record, true, true);
@@ -75,7 +75,7 @@ export class ModificationContext {
     }
 
     private pair(record: Record, initializeOldObj: boolean, useNewObj: boolean): ObjectPair {
-        const key = record.type;
+        const key = record.staticType;
         let subMap = this.objPairMap.get(key);
         if (subMap === undefined) {
             subMap = new Map<string, any>();

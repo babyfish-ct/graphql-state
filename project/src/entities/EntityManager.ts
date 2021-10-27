@@ -5,13 +5,12 @@ import { RemoteDataService } from "../data/RemoteDataService";
 import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { StateManagerImpl } from "../state/impl/StateManagerImpl";
-import { QueryMode } from "../state/StateHook";
 import { AssociationValue } from "./assocaition/AssocaitionValue";
 import { EntityEvictEvent } from "./EntityEvent";
 import { ModificationContext } from "./ModificationContext";
 import { QueryArgs } from "./QueryArgs";
 import { QueryResult } from "./QueryResult";
-import { MUATION_OBJECT_ID, QUERY_OBJECT_ID, Record } from "./Record";
+import { QUERY_OBJECT_ID, Record } from "./Record";
 import { RecordManager } from "./RecordManager";
 import { RecordRef } from "./RecordRef";
 import { RuntimeShape } from "./RuntimeShape";
@@ -44,10 +43,6 @@ export class EntityManager {
         const queryType = schema.typeMap.get("Query");
         if (queryType !== undefined) {
             this._queryRecord = this.saveId("Query", QUERY_OBJECT_ID);
-        }
-        const mutationType = schema.typeMap.get("Mutation");
-        if (mutationType !== undefined) {
-            this.saveId("Mutation", MUATION_OBJECT_ID);
         }
     }
 
@@ -103,13 +98,14 @@ export class EntityManager {
         objOrArray: object | readonly object[]
     ): void {
         this.modify(() => {
-            const recordManager = this.recordManager(shape.typeName);
             if (Array.isArray(objOrArray)) {
                 for (const obj of objOrArray) {
-                    recordManager.save(shape, obj);
+                    const typeName = obj["__typename"] ?? shape.typeName;
+                    this.recordManager(typeName).save(shape, obj, typeName);
                 }
             } else if (objOrArray !== undefined && objOrArray !== null) {
-                recordManager.save(shape, objOrArray);
+                const typeName = objOrArray["__typename"] ?? shape.typeName;
+                this.recordManager(typeName).save(shape, objOrArray, typeName);
             }
         });
     }
@@ -137,7 +133,11 @@ export class EntityManager {
 
     saveId(typeName: string, id: any): Record {
         return this.modify(() => {
-            return this.recordManager(typeName).saveId(id);
+            const type = this.schema.typeMap.get(typeName);
+            if (type === undefined) {
+                throw new Error(`Cannot save object id for illegal type "${typeName}"`);
+            }
+            return this.recordManager(typeName).saveId(id, type);
         });
     }
 
@@ -221,7 +221,7 @@ export class EntityManager {
         const qr = this._queryRecord;
         if (qr !== undefined) {
             const record = this.saveId(type.name, id);
-            for (const [, field] of qr.type.fieldMap) {
+            for (const [, field] of qr.staticType.fieldMap) {
                 if (field.targetType !== undefined && field.targetType.isAssignableFrom(type)) {
                     qr.link(this, field, record);
                 }

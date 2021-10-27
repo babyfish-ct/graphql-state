@@ -1,31 +1,27 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ScalarRowImpl = exports.objectWithOnlyId = exports.MUATION_OBJECT_ID = exports.QUERY_OBJECT_ID = exports.Record = void 0;
+exports.ScalarRowImpl = exports.objectWithOnlyId = exports.QUERY_OBJECT_ID = exports.Record = void 0;
 const SpaceSavingMap_1 = require("../state/impl/SpaceSavingMap");
 const Association_1 = require("./assocaition/Association");
 const BackReferences_1 = require("./BackReferences");
 class Record {
-    constructor(type, id, deleted = false) {
-        this.type = type;
+    constructor(staticType, runtimeType, id, deleted = false) {
+        this.staticType = staticType;
+        this.runtimeType = runtimeType;
         this.id = id;
         this.deleted = deleted;
         this.scalarMap = new Map();
         this.associationMap = new SpaceSavingMap_1.SpaceSavingMap();
         this.backReferences = new BackReferences_1.BackReferences();
-        if (type.name === 'Query') {
+        if (staticType.name === 'Mutation') {
+            throw new Error(`Cannot create record for type 'Mutation'`);
+        }
+        if (staticType.name === 'Query') {
             if (id !== exports.QUERY_OBJECT_ID) {
                 throw new Error(`The id of query object must be '${exports.QUERY_OBJECT_ID}'`);
             }
             if (deleted) {
                 throw new Error(`The object of special type 'Query' cannot be deleted`);
-            }
-        }
-        else if (type.name === 'Mutation') {
-            if (id !== exports.MUATION_OBJECT_ID) {
-                throw new Error(`The id of mutation object must be '${exports.QUERY_OBJECT_ID}'`);
-            }
-            if (deleted) {
-                throw new Error(`The object of special type 'Mutation' cannot be deleted`);
             }
         }
     }
@@ -47,8 +43,8 @@ class Record {
         return (_a = this.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.get(args);
     }
     set(entityManager, field, args, value) {
-        if (field.declaringType !== this.type) {
-            throw new Error(`'${field.fullName}' is not field of the type '${this.type.name}' of current record`);
+        if (field.declaringType !== this.staticType) {
+            throw new Error(`'${field.fullName}' is not field of the type '${this.staticType.name}' of current record`);
         }
         if (field === null || field === void 0 ? void 0 : field.isAssociation) {
             this
@@ -60,9 +56,9 @@ class Record {
             if ((args === null || args === void 0 ? void 0 : args.variables) !== undefined) {
                 throw new Error('scalar fields does not support variables');
             }
-            if (field === this.type.idField) {
+            if (field === this.staticType.idField) {
                 if (value !== this.id) {
-                    throw new Error(`Cannot chanage "${this.type.idField.fullName} because its id field"`);
+                    throw new Error(`Cannot chanage "${this.staticType.idField.fullName} because its id field"`);
                 }
             }
             else {
@@ -88,8 +84,8 @@ class Record {
     }
     evict(entityManager, field, args, includeMoreStrictArgs = false) {
         var _a;
-        if (field.declaringType !== this.type) {
-            throw new Error(`'${field.fullName}' is not field of the type '${this.type.name}' of current record`);
+        if (field.declaringType !== this.staticType) {
+            throw new Error(`'${field.fullName}' is not field of the type '${this.staticType.name}' of current record`);
         }
         if (field.isAssociation) {
             (_a = this.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.evict(entityManager, args, includeMoreStrictArgs);
@@ -103,7 +99,7 @@ class Record {
         if (this.deleted) {
             return;
         }
-        if (this.type.name === 'Query') {
+        if (this.staticType.name === 'Query') {
             throw new Error(`The object of special type 'Query' cannot be deleted`);
         }
         this.scalarMap.clear();
@@ -115,7 +111,11 @@ class Record {
         this.deleted = true;
     }
     undelete() {
-        this.deleted = false;
+        if (this.deleted) {
+            this.deleted = false;
+            return true;
+        }
+        return false;
     }
     toRow() {
         let row = this.row;
@@ -147,12 +147,11 @@ class Record {
 }
 exports.Record = Record;
 exports.QUERY_OBJECT_ID = "____QUERY_OBJECT____";
-exports.MUATION_OBJECT_ID = "____MUTATION_OBJECT____";
 function objectWithOnlyId(record) {
     if (record === undefined) {
         return undefined;
     }
-    return record.type.createObject(record.id);
+    return record.staticType.createObject(record.id);
 }
 exports.objectWithOnlyId = objectWithOnlyId;
 class ScalarRowImpl {
