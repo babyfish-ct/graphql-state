@@ -2,6 +2,7 @@ import { Configuration, newConfiguration } from 'graphql-state';
 import {
     query$,
     bookStore$,
+    any$,
     book$,
     author$,
     bookConnection$,
@@ -35,6 +36,7 @@ export function newTypedConfiguration(): Configuration<Schema> {
     return newConfiguration<Schema>(
         query$, 
         bookStore$, 
+        any$, 
         book$, 
         author$, 
         bookConnection$, 
@@ -51,12 +53,14 @@ export type Schema = {
         readonly " $associationTypes": {
             readonly findBookStores: "BookStore", 
             readonly findBooks: "Book", 
-            readonly findAuthors: "Author"
+            readonly findAuthors: "Author", 
+            readonly entities: "Any"
         };
         readonly " $associationArgs": {
             readonly findBookStores: QueryArgs["findBookStores"], 
             readonly findBooks: QueryArgs["findBooks"], 
-            readonly findAuthors: QueryArgs["findAuthors"]
+            readonly findAuthors: QueryArgs["findAuthors"], 
+            readonly entities: QueryArgs["entities"]
         };
         readonly " $associationTargetTypes": {
             readonly findBookStores: BookStoreScalarType, 

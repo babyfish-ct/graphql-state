@@ -2,7 +2,7 @@ import { EntityChangeEvent } from "..";
 import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 import { VariableArgs } from "../state/impl/Args";
 import { Loadable } from "../state/impl/StateValue";
-import { QueryMode } from "../state/StateHook";
+import { ObjectQueryOptions, ObjectStyles, QueryMode } from "../state/StateHook";
 import { EntityEvictEvent } from "./EntityEvent";
 import { EntityManager } from "./EntityManager";
 import { QueryArgs } from "./QueryArgs";
@@ -20,7 +20,7 @@ export class QueryResult {
 
     private _invalid = true;
 
-    private _refetched = false;
+    private _refetching = false;
 
     private _evictListener: (e: EntityEvictEvent) => void;
 
@@ -77,9 +77,8 @@ export class QueryResult {
 
     get promise(): Promise<any> {
         if (this._invalid) {
-            this._promise = this.query();
             this._invalid = false;
-            this._refetched = false;
+            this._promise = this.execute();
         }
         return this._promise!;
     }
@@ -89,24 +88,33 @@ export class QueryResult {
         return this._loadable;
     }
 
+    private async execute(): Promise<any> {
+        try {
+            return await this.query();
+        } finally {
+            this._refetching = false;
+        }
+    } 
+
     private async query(): Promise<any> {
-        
+
         const rawResult = 
             new QueryService(this.entityManager)
-            .query(this.queryArgs, !this._refetched, this.mode === "cache-and-network");
+            .query(this.queryArgs, !this._refetching, this.mode === "cache-and-network");
 
         if (rawResult.type === 'cached') {
-            this.refreshDependencies(rawResult.data);
+            const data = this.validateData(rawResult.data);
+            this.refreshDependencies(data);
             this._loadable = { 
                 loading: false, 
-                data: rawResult.data, 
+                data: data, 
                 refetch: this._bindedRefetch 
             };
             this.entityManager.stateManager.publishQueryResultChangeEvent({
                 queryResult: this,
                 changedType: "ASYNC_STATE_CHANGE"
             });
-            return rawResult.data;
+            return data;
         }
 
         if (!this._loadable.loading) {
@@ -121,7 +129,7 @@ export class QueryResult {
         this.retain(); // Self holding during Async computing
 
         try {
-            const data = await rawResult.promise;
+            const data = this.validateData(await rawResult.promise);
             if (this._currentAsyncRequestId === asyncRequestId) {
                 this.refreshDependencies(data);
                 this._loadable = {
@@ -194,11 +202,32 @@ export class QueryResult {
             throw new Error(`cannot refetch the cache-only resource`);
         }
         this.invalidate();
-        this._refetched = true;
+        this._refetching = true;
     }
 
     private get mode(): QueryMode {
         return (this.queryArgs?.optionsArgs?.options?.mode as QueryMode | undefined) ?? "cache-and-network";
+    }
+
+    private validateData(data: any): any {
+        if (this.queryArgs.ids !== undefined) {
+            const objectStyle: ObjectStyles = 
+                (
+                    this.queryArgs.optionsArgs?.options as ObjectQueryOptions<any, any, any> | undefined
+                )?.objectStyle 
+                ?? "required";
+            if (objectStyle === "required") {
+                const arr = data as ReadonlyArray<any>;
+                for (let i = 0; i < arr.length; i++) {
+                    if (arr[i] === undefined) {
+                        throw new Error(
+                            `Cannot find object whose type is "${this.queryArgs.shape.typeName}" and id is "${this.queryArgs.ids[i]}"`
+                        );
+                    }
+                }
+            }
+        }
+        return data;
     }
 }
 

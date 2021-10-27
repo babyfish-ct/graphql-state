@@ -1,10 +1,10 @@
 import { GraphQLNetwork, StateManagerProvider } from "graphql-state";
-import { FC, memo, Suspense } from "react";
+import { FC, memo } from "react";
 import { newTypedConfiguration } from "../../__generated_graphql_schema__";
 import { BiggestShape } from "./BiggestShape";
 import { SmallestShape } from "./SmallestShape";
 import { MiddleShape } from "./MiddleShape";
-import { Col, Row, Spin } from "antd";
+import { Col, Row } from "antd";
 import { publishRequestLog, publishResponseLog } from "../../../common/HttpLog";
 import { HttpLogList } from "../../../common/HttpLogList";
 import { Filter } from "./Filter";
@@ -41,11 +41,9 @@ export const App: FC = memo(() => {
             <Row gutter={10}>
                 <Col span={12}>
                     <Filter/>
-                    <Suspense fallback={<div><Spin/>Loading...</div>}>
-                        <SmallestShape/>
-                        <BiggestShape/>
-                        <MiddleShape/>
-                    </Suspense>
+                    <SmallestShape/>
+                    <BiggestShape/>
+                    <MiddleShape/>
                 </Col>
                 <Col span={12}>
                     <HttpLogList/>

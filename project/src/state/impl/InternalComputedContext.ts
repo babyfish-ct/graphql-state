@@ -115,27 +115,15 @@ export class InternalComputedContext {
     }
 
     object(fetcher: ObjectFetcher<string, object, object>, id: any, options?: ObjectQueryOptions<any, any, any>): Promise<any> {
-        return this.objects(fetcher, [id], options)[0];
+        return this.queryImpl(fetcher, [id], options)[0];
     }
 
-    async objects(
+    objects(
         fetcher: ObjectFetcher<string, object, object>, 
         ids: ReadonlyArray<any>, 
         options?: ObjectQueryOptions<any, any, any>
     ): Promise<ReadonlyArray<any>> {
-        const arr = (await this.queryImpl(fetcher, ids, options)) as ReadonlyArray<any>;
-        if (ids.length !== arr.length) {
-            throw new Error('Internal bug: The returned object count must equal to the length of "ids"');
-        }
-        const objectStyle: ObjectStyles = options?.objectStyle ?? "required";
-        if (objectStyle === "required") {
-            for (let i = 0; i < ids.length; i++) {
-                if (arr[i] === undefined) {
-                    throw new Error(`There is no object whose type is "${fetcher.fetchableType.name}" and id is "${ids[i]}"`);
-                }
-            }
-        }
-        return arr;
+        return this.queryImpl(fetcher, ids, options);
     }
 
     query(

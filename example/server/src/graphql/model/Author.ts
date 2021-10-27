@@ -6,18 +6,16 @@ import { TAuthor } from '../../dal/AuthorTable';
 import { bookAuthorMappingTable } from '../../dal/BookAuthorMappingTable';
 import { PageInfo } from './PageInfo';
 import { compare } from '../../common/Comparator';
+import { Any } from './Any';
 
-@ObjectType()
-export class Author {
-
-    @Field(() => String)
-    readonly id: string;
+@ObjectType({implements: Any})
+export class Author extends Any {
 
     @Field(() => String)
     readonly name: string;
 
     constructor(row: TAuthor) {
-        this.id = row.id;
+        super(row.id);
         this.name = row.name;
     }
 

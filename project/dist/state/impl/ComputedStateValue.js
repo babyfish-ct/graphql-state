@@ -30,10 +30,10 @@ class ComputedStateValue extends StateValue_1.StateValue {
     }
     compute(parentContext) {
         if (this._invalid) {
+            this._invalid = false;
             this.beforeCompute();
             const result = this.compute0(parentContext);
             this._result = this.afterCompute(result);
-            this._invalid = false;
         }
         return this._result;
     }

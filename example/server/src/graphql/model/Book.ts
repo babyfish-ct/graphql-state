@@ -8,12 +8,10 @@ import { bookAuthorMappingTable } from '../../dal/BookAuthorMappingTable';
 import { authorTable } from '../../dal/AuthorTable';
 import { PageInfo } from './PageInfo';
 import { compare } from '../../common/Comparator';
+import { Any } from './Any';
 
-@ObjectType()
-export class Book {
-
-    @Field(() => String)
-    readonly id: string;
+@ObjectType({implements: Any})
+export class Book extends Any {
 
     @Field(() => String)
     readonly name: string;
@@ -21,7 +19,7 @@ export class Book {
     readonly storeId?: string;
 
     constructor(row: TBook) {
-        this.id = row.id;
+        super(row.id);
         this.name = row.name;
         this.storeId = row.storeId;
     }

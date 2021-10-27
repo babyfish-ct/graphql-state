@@ -1,10 +1,12 @@
-import { FetchableType } from "graphql-ts-client-api";
+import { FetchableType, Fetcher } from "graphql-ts-client-api";
 import { FieldMetadata } from "./FieldMetadata";
 import { TypeMetadata } from "./TypeMetdata";
 
 export class SchemaMetadata {
 
     private _acceptableFetchableTypes = new Set<FetchableType<string>>();
+
+    private _rootFetcherMap = new Map<string, Fetcher<string, object, object>>();
 
     private _typeMap = new Map<string, TypeMetadata>();
 
@@ -16,16 +18,25 @@ export class SchemaMetadata {
         return this._typeMap;
     }
 
-    addFetchableType(fetchableType: FetchableType<string>) {
+    addFetcher(fetcher: Fetcher<string, object, object>) {
+        const fetchableType = fetcher.fetchableType;
         if (this._typeMap.has(fetchableType.name)) {
             throw new Error(`The type "${fetchableType.name}" is already exists`);
         }
+        if (fetcher.fieldMap.size !== 0) {
+            throw new Error(`The fetcher is not empty`);
+        }
         this._acceptableFetchableTypes.add(fetchableType);
+        this._rootFetcherMap.set(fetcher.fetchableType.name, fetcher);
         this._typeMap.set(fetchableType.name, new TypeMetadata(this, fetchableType));
     }
 
     isAcceptable(fetchableType: FetchableType<string>): boolean {
         return this._acceptableFetchableTypes.has(fetchableType);
+    }
+
+    fetcher(typeName: string): Fetcher<string, object, object> | undefined {
+        return this._rootFetcherMap.get(typeName);
     }
 
     freeze(): this {

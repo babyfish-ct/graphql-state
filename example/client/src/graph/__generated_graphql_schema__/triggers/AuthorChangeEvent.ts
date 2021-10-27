@@ -8,7 +8,7 @@ export interface AuthorEvictEvent {
 
     readonly typeName: ImplementationType<"Author">;
 
-     readonly id: string;
+    readonly id: string;
 
     readonly evictedType: "row" | "fields";
 
@@ -27,7 +27,7 @@ export interface AuthorChangeEvent {
 
     readonly typeName: ImplementationType<"Author">;
 
-     readonly id: string;
+    readonly id: string;
 
     readonly changedType: "insert" | "update" | "delete";
 

@@ -1,6 +1,7 @@
 import type { AcceptableVariables, UnresolvedVariables, FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
 import { ObjectFetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
 import type { WithTypeName, ImplementationType } from '../CommonTypes';
+import { any$ } from './AnyFetcher';
 
 /*
  * Any instance of this interface is immutable,
@@ -123,12 +124,8 @@ export const author$: AuthorFetcher<{}, {}> =
         createFetchableType(
             "Author", 
             "OBJECT", 
-            [], 
+            [any$.fetchableType], 
             [
-                {
-                    category: "ID", 
-                    name: "id"
-                }, 
                 "name", 
                 {
                     category: "LIST", 
@@ -154,6 +151,7 @@ export interface AuthorArgs {
         readonly name?: string
     }
 }
+
 export interface AuthorScalarType {
     readonly name: string;
 }

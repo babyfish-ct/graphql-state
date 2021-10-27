@@ -1,5 +1,5 @@
 import {EntityEvictEvent, EntityChangeEvent, makeStateFactory} from "graphql-state";
-import { Schema } from "../../__generated_graphql_schema__/TypedConfiguration";
+import { Schema } from "../../__generated_graphql_schema__";
 
 let idSequence = 0;
 const { createState } = makeStateFactory<Schema>();

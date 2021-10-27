@@ -7,9 +7,9 @@ import { FieldMetadata } from "./FieldMetadata";
 import { SchemaMetadata } from "./SchemaMetadata";
 
 export function newConfiguration<TSchema extends SchemaType>(
-    ...fetchers: Fetcher<any, {}, {}>[]
+    ...fetchers: Fetcher<string, object, object>[]
 ): Configuration<TSchema> {
-    return new ConfigurationImpl<TSchema>(fetchers.map(fetcher => fetcher.fetchableType));
+    return new ConfigurationImpl<TSchema>(fetchers);
 }
 
 class ConfigurationImpl<TSchema extends SchemaType> implements Configuration<TSchema> {
@@ -18,9 +18,9 @@ class ConfigurationImpl<TSchema extends SchemaType> implements Configuration<TSc
 
     private _network?: Network;
 
-    constructor(fetchableTypes: ReadonlyArray<FetchableType<string>>) {
-        for (const fetchableType of fetchableTypes) {
-            this._schema.addFetchableType(fetchableType);
+    constructor(fetchers: ReadonlyArray<Fetcher<string, object, object>>) {
+        for (const fetcher of fetchers) {
+            this._schema.addFetcher(fetcher);
         }
     }
 

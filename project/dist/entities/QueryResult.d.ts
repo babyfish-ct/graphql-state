@@ -9,7 +9,7 @@ export declare class QueryResult {
     private _promise?;
     private _loadable;
     private _invalid;
-    private _refetched;
+    private _refetching;
     private _evictListener;
     private _changeListener;
     private _currentAsyncRequestId;
@@ -22,6 +22,7 @@ export declare class QueryResult {
     release(maxDelayMillis: number): void;
     get promise(): Promise<any>;
     get loadable(): QueryLoadable<any>;
+    private execute;
     private query;
     private refreshDependencies;
     private onEntityEvict;
@@ -30,6 +31,7 @@ export declare class QueryResult {
     private dispose;
     private _refetch;
     private get mode();
+    private validateData;
 }
 export interface QueryLoadable<T> extends Loadable<T> {
     refetch: () => void;

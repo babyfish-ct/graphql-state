@@ -8,7 +8,7 @@ export interface BookStoreEvictEvent {
 
     readonly typeName: ImplementationType<"BookStore">;
 
-     readonly id: string;
+    readonly id: string;
 
     readonly evictedType: "row" | "fields";
 
@@ -27,7 +27,7 @@ export interface BookStoreChangeEvent {
 
     readonly typeName: ImplementationType<"BookStore">;
 
-     readonly id: string;
+    readonly id: string;
 
     readonly changedType: "insert" | "update" | "delete";
 

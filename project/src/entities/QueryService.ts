@@ -14,7 +14,7 @@ export class QueryService {
         if (args.ids === undefined) {
             return this.graph(args, useCache, useDataService);
         }
-        return this.objects(args, useCache, useDataService);
+        return this.objects(args, useCache, useDataService) as any;
     }
 
     private graph(args: QueryArgs, useCache: boolean, useDataService: boolean): RawQueryResult<any> {

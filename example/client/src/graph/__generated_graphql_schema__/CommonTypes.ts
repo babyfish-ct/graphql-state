@@ -29,6 +29,7 @@
  *     ;
  */
 export type ImplementationType<T> = 
+    T extends 'Any' ? 'Any' | ImplementationType<'BookStore'> | ImplementationType<'Book'> | ImplementationType<'Author'> :
     T
 ;
 /**
@@ -102,6 +103,18 @@ export function upcastTypes(typeName: string): string[] {
 
 function upcastTypes0(typeName: string, output: string[]) {
     switch (typeName){
+        case 'BookStore':
+            output.push('BookStore');
+            upcastTypes0('Any', output);
+            break;
+        case 'Book':
+            output.push('Book');
+            upcastTypes0('Any', output);
+            break;
+        case 'Author':
+            output.push('Author');
+            upcastTypes0('Any', output);
+            break;
         default:
             output.push(typeName);
             break;
@@ -175,6 +188,12 @@ export function downcastTypes(typeName: string): string[] {
 
 function downcastTypes0(typeName: string, output: string[]) {
     switch (typeName){
+        case 'Any':
+            output.push('Any');
+            downcastTypes0('BookStore', output);
+            downcastTypes0('Book', output);
+            downcastTypes0('Author', output);
+            break;
         default:
             output.push(typeName);
             break;

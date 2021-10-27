@@ -13,7 +13,7 @@ function valueNode(value: any): ReactNode {
             return "[]";
         }
         return (
-            <ol className={COMPOSITE_VALUE_CLASS}>
+            <ol className={LIST_CSS}>
                 {value.map((element, index) => <li key={index}>{valueNode(element)}</li>)}
             </ol>
         );
@@ -27,7 +27,7 @@ function valueNode(value: any): ReactNode {
             return "{}";
         }
         return (
-            <ul className={COMPOSITE_VALUE_CLASS}>
+            <ul className={OBJECT_CSS}>
                 {
                     pairs.map(pair => 
                         <li key={pair.key}>
@@ -44,7 +44,14 @@ function valueNode(value: any): ReactNode {
     return `${value}`;
 }
 
-const COMPOSITE_VALUE_CLASS = css({
+const LIST_CSS = css({
     padding: "2px 2px 2px 1rem",
-    border: "dotted 1px gray"
+    border: "dotted 2px gray"
 });
+
+const OBJECT_CSS = css({
+    padding: "2px 2px 2px 1rem",
+    border: "dotted 1px gray",
+    listStyleType: "disc"
+});
+

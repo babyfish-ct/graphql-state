@@ -41,7 +41,7 @@ export const SiderView: FC = memo(() => {
                 </Menu.SubMenu>
                 <Menu.Item key="restServer">Rest server</Menu.Item>
                 <Menu.SubMenu key="httpOpitimizator" title="HTTP Opitmizator">
-                    <Menu.Item key="fragments">Fragments</Menu.Item>
+                    <Menu.Item key="object">Objects</Menu.Item>
                     <Menu.Item key="shapes">Shapes</Menu.Item>
                     <Menu.Item key="pendingQueries">Pending queries</Menu.Item>
                 </Menu.SubMenu>

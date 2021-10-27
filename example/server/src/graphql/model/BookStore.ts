@@ -4,18 +4,16 @@ import { bookTable } from '../../dal/BookTable';
 import { TBookStore } from '../../dal/BookStoreTable';
 import { Book } from './Book';
 import { compare } from '../../common/Comparator';
+import { Any } from './Any';
 
-@ObjectType()
-export class BookStore {
-
-    @Field(() => String)
-    readonly id: string;
+@ObjectType({implements: Any})
+export class BookStore extends Any {
 
     @Field(() => String)
     readonly name: string;
 
     constructor(row: TBookStore) {
-        this.id = row.id;
+        super(row.id);
         this.name = row.name;
     }
 

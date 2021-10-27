@@ -48,10 +48,10 @@ export class ComputedStateValue extends StateValue {
 
     compute(parentContext?: InternalComputedContext): any {
         if (this._invalid) {
+            this._invalid = false;
             this.beforeCompute();
             const result = this.compute0(parentContext);
             this._result = this.afterCompute(result);
-            this._invalid = false;
         }
         return this._result;
     }

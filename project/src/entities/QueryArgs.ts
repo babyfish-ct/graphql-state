@@ -12,10 +12,16 @@ export class QueryArgs {
         readonly ids: ReadonlyArray<any> | undefined,
         readonly optionsArgs?: OptionArgs | undefined
     ) {
-        if (optionsArgs === undefined) {
+        if (ids === undefined && optionsArgs === undefined) {
             this._key = shape.toString();
         } else {
-            this._key = `${shape.toString()}:${optionsArgs.key}`;
+            this._key = `${
+                shape.toString()
+            }:${
+                optionsArgs?.key ?? ""
+            }:${
+                ids !== undefined ? JSON.stringify(ids) : ""
+            }`;
         }
     }
 

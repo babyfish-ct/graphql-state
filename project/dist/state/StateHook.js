@@ -98,7 +98,7 @@ class ManagedObjectHooksImpl {
         try {
             const queryResult = queryResultHolder.get();
             if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "async-object") {
-                return queryResult.loadable;
+                return Object.assign(Object.assign({}, queryResult.loadable), { data: queryResult.loadable.data !== undefined ? queryResult.loadable.data[0] : undefined });
             }
             if (queryResult.loadable.loading) {
                 throw queryResult.promise; // throws promise, <suspense/> will catch it
@@ -107,9 +107,9 @@ class ManagedObjectHooksImpl {
                 throw queryResult.loadable.error;
             }
             if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "refetchable-suspense") {
-                return [queryResult.loadable.data, queryResult.loadable.refetch];
+                return [queryResult.loadable.data[0], queryResult.loadable.refetch];
             }
-            return queryResult.loadable.data;
+            return queryResult.loadable.data[0];
         }
         catch (ex) {
             queryResultHolder.release();

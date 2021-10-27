@@ -1,7 +1,7 @@
 import { StateManager } from "graphql-state";
 import UUIDClass from "uuidjs";
 import { author$, author$$, book$, book$$, bookStore$, bookStore$$, query$ } from "../__generated_local_schema__/fetchers";
-import { Schema } from "../__generated_local_schema__/TypedConfiguration";
+import { Schema } from "../__generated_local_schema__";
 
 export function initializeDefaultData(stateManager: StateManager<Schema>) {
 

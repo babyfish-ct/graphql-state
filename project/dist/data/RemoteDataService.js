@@ -14,9 +14,39 @@ const graphql_ts_client_api_1 = require("graphql-ts-client-api");
 const AbstractDataRequest_1 = require("./AbstractDataRequest");
 const AbstractDataService_1 = require("./AbstractDataService");
 class RemoteDataService extends AbstractDataService_1.AbstractDataService {
-    constructor() {
-        super(...arguments);
+    constructor(entityManager) {
+        super(entityManager);
         this.pendingRequestMap = new Map();
+        const queryFetcher = entityManager.schema.fetcher("Query");
+        if (queryFetcher !== undefined) {
+            const entitiesField = queryFetcher.fetchableType.fields.get("entities");
+            if (entitiesField !== undefined) {
+                if (entitiesField.category !== "LIST") {
+                    throw new Error(`"Query.entities" must returns list`);
+                }
+                const nodeFetcher = this.entityManager.schema.fetcher(entitiesField.targetTypeName);
+                if (nodeFetcher === undefined) {
+                    throw new Error(`Internal bug: No fetcher for the returned type of "Query.entities"`);
+                }
+                if (entitiesField.argGraphQLTypeMap.size !== 2) {
+                    throw new Error(`"Query.entities" should contains 2 arguments named "typeName" and "ids"`);
+                }
+                const typeNameType = entitiesField.argGraphQLTypeMap.get("typeName");
+                const idsType = entitiesField.argGraphQLTypeMap.get("ids");
+                if (typeNameType === undefined || idsType === undefined) {
+                    throw new Error(`"Query.entities" should contains 2 arguments named "typeName" and "ids"`);
+                }
+                if (typeNameType !== "String!") {
+                    throw new Error(`The type of the argument "typeName" of "Query.entities" must be "String!"`);
+                }
+                if (!idsType.endsWith("!]!")) {
+                    throw new Error(`The type of the argument "ids" of "Query.entities" must be non-null list with non-null elements`);
+                }
+                this.objectFetcherCreator = (fetcher) => {
+                    return queryFetcher.entities(nodeFetcher.on(fetcher));
+                };
+            }
+        }
     }
     query(args) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -36,19 +66,31 @@ class RemoteDataService extends AbstractDataService_1.AbstractDataService {
         });
     }
     onExecute(args) {
-        var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
-            const network = this.entityManager.stateManager.network;
-            if (network === undefined) {
-                throw new Error(`Cannot execute remote data loading because network is not configured`);
-            }
-            const data = graphql_ts_client_api_1.util.exceptNullValues(yield network.execute(args.fetcher, (_b = (_a = args.optionsArgs) === null || _a === void 0 ? void 0 : _a.variableArgs) === null || _b === void 0 ? void 0 : _b.variables));
+            let data = graphql_ts_client_api_1.util.exceptNullValues(yield this.executeNetworkQuery(args));
             this.entityManager.save(args.shape, data);
             return data;
         });
     }
     onComplete(args) {
         this.pendingRequestMap.delete(args.key);
+    }
+    executeNetworkQuery(args) {
+        var _a, _b, _c;
+        return __awaiter(this, void 0, void 0, function* () {
+            const network = this.entityManager.stateManager.network;
+            if (network === undefined) {
+                throw new Error(`Cannot execute remote data loading because network is not configured`);
+            }
+            if (args.ids === undefined) {
+                return yield network.execute(args.fetcher, (_b = (_a = args.optionsArgs) === null || _a === void 0 ? void 0 : _a.variableArgs) === null || _b === void 0 ? void 0 : _b.variables);
+            }
+            if (this.objectFetcherCreator === undefined) {
+                throw new Error(`The object(s) query is not supported because there is no field "Query.entities"`);
+            }
+            const data = yield network.execute(this.objectFetcherCreator(args.fetcher), Object.assign(Object.assign({}, (_c = args.optionsArgs) === null || _c === void 0 ? void 0 : _c.variableArgs), { typeName: args.fetcher.fetchableType.name, ids: args.ids }));
+            return data.entities;
+        });
     }
 }
 exports.RemoteDataService = RemoteDataService;

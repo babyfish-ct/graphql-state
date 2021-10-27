@@ -4,15 +4,16 @@ exports.QueryArgs = void 0;
 const RuntimeShape_1 = require("./RuntimeShape");
 class QueryArgs {
     constructor(shape, fetcher, ids, optionsArgs) {
+        var _a;
         this.shape = shape;
         this.fetcher = fetcher;
         this.ids = ids;
         this.optionsArgs = optionsArgs;
-        if (optionsArgs === undefined) {
+        if (ids === undefined && optionsArgs === undefined) {
             this._key = shape.toString();
         }
         else {
-            this._key = `${shape.toString()}:${optionsArgs.key}`;
+            this._key = `${shape.toString()}:${(_a = optionsArgs === null || optionsArgs === void 0 ? void 0 : optionsArgs.key) !== null && _a !== void 0 ? _a : ""}:${ids !== undefined ? JSON.stringify(ids) : ""}`;
         }
     }
     get key() {

@@ -1,3 +1,4 @@
+import { Spin } from "antd";
 import { useQuery, useStateValue } from "graphql-state";
 import { FC, memo } from "react";
 import { ComponentDecorator } from "../../../common/ComponentDecorator";
@@ -9,7 +10,7 @@ export const MiddleShape: FC = memo(() => {
     
     const name = useStateValue(bookNameState);
 
-    const conn = useQuery(
+    const { data, loading } = useQuery(
         query$.findBooks(
             bookConnection$.edges(
                 bookEdge$.node(
@@ -21,13 +22,15 @@ export const MiddleShape: FC = memo(() => {
             )
         ),
         {
-            variables: { name }
+            variables: { name },
+            asyncStyle: "async-object"
         }
     );
 
     return (
         <ComponentDecorator name="MiddleShape">
-            <RawValueView value={conn}/>
+            { loading && <div><Spin/>Loading...</div>}
+            { !loading && data && <RawValueView value={data}/> }
         </ComponentDecorator>
     );
 });

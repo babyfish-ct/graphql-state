@@ -10,7 +10,7 @@ import {
     authorEdge$, 
     author$$ 
 } from "../__generated_graphql_schema__/fetchers";
-import { Schema } from "../__generated_graphql_schema__/TypedConfiguration";
+import { Schema } from "../__generated_graphql_schema__";
 
 const { createAsyncState } = makeStateFactory<Schema>();
 

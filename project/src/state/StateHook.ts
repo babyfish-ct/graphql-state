@@ -263,7 +263,10 @@ class ManagedObjectHooksImpl<TSchema extends SchemaType> implements ManagedObjec
         try {
             const queryResult = queryResultHolder.get();
             if (options?.asyncStyle === "async-object") {
-                return queryResult.loadable as AsyncReturnType<
+                return { 
+                    ...queryResult.loadable,
+                    data: queryResult.loadable.data !== undefined ? queryResult.loadable.data[0] : undefined
+                } as AsyncReturnType<
                     ObjectReference<T, TObjectStyle>,
                     TAsyncStyle
                 >;
@@ -275,12 +278,12 @@ class ManagedObjectHooksImpl<TSchema extends SchemaType> implements ManagedObjec
                 throw queryResult.loadable.error;
             }
             if (options?.asyncStyle === "refetchable-suspense") {
-                return [queryResult.loadable.data, queryResult.loadable.refetch] as AsyncReturnType<
+                return [queryResult.loadable.data[0], queryResult.loadable.refetch] as AsyncReturnType<
                     ObjectReference<T, TObjectStyle>,
                     TAsyncStyle
                 >;
             }
-            return queryResult.loadable.data as AsyncReturnType<
+            return queryResult.loadable.data[0] as AsyncReturnType<
                 ObjectReference<T, TObjectStyle>,
                 TAsyncStyle
             >;

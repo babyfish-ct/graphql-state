@@ -167,6 +167,7 @@ class EntityManager {
         (_a = this._changeListenerMap.get(typeName)) === null || _a === void 0 ? void 0 : _a.delete(listener);
     }
     publishEntityChangeEvent(e) {
+        console.log(e);
         for (const observer of this._associationValueObservers) {
             observer.onEntityChange(this, e);
         }

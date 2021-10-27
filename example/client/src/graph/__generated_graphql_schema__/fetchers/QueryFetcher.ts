@@ -141,6 +141,49 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
         ), 
         TVariables & XVariables & UnresolvedVariables<XArgs, QueryArgs['findAuthors']> & XDirectiveVariables
     >;
+
+
+    entities<
+        X extends object, 
+        XVariables extends object, 
+        XAlias extends string = "entities", 
+        XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+        XDirectiveVariables extends object = {}
+    >(
+        child: ObjectFetcher<'Any', X, XVariables>, 
+        optionsConfigurer?: (
+            options: FieldOptions<"entities", {}, {}>
+        ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
+    ): QueryFetcher<
+        T & (
+            XDirectives extends { readonly include: any } | { readonly skip: any } ? 
+                {readonly [key in XAlias]?: readonly X[]} : 
+                {readonly [key in XAlias]: readonly X[]}
+        ), 
+        TVariables & XVariables & QueryArgs["entities"] & XDirectiveVariables
+    >;
+
+    entities<
+        XArgs extends AcceptableVariables<QueryArgs['entities']>, 
+        X extends object, 
+        XVariables extends object, 
+        XAlias extends string = "entities", 
+        XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+        XDirectiveVariables extends object = {}
+    >(
+        args: XArgs, 
+        child: ObjectFetcher<'Any', X, XVariables>, 
+        optionsConfigurer?: (
+            options: FieldOptions<"entities", {}, {}>
+        ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
+    ): QueryFetcher<
+        T & (
+            XDirectives extends { readonly include: any } | { readonly skip: any } ? 
+                {readonly [key in XAlias]?: readonly X[]} : 
+                {readonly [key in XAlias]: readonly X[]}
+        ), 
+        TVariables & XVariables & UnresolvedVariables<XArgs, QueryArgs['entities']> & XDirectiveVariables
+    >;
 }
 
 export const query$: QueryFetcher<{}, {}> = 
@@ -183,6 +226,15 @@ export const query$: QueryFetcher<{}, {}> =
                     connectionTypeName: "AuthorConnection", 
                     edgeTypeName: "AuthorEdge", 
                     targetTypeName: "Author"
+                }, 
+                {
+                    category: "LIST", 
+                    name: "entities", 
+                    argGraphQLTypeMap: {
+                        ids: '[String!]!', 
+                        typeName: 'String!'
+                    }, 
+                    targetTypeName: "Any"
                 }
             ]
         ), 
@@ -210,5 +262,52 @@ export interface QueryArgs {
         readonly after?: string, 
         readonly first?: number, 
         readonly name?: string
+    }, 
+
+    readonly entities: {
+        readonly ids: readonly string[], 
+        readonly typeName: string
     }
+}
+
+export interface QueryScalarType {
+}
+
+export interface QueryFlatType extends QueryScalarType {
+    readonly findBookStores: readonly {
+        readonly id: string
+    }[];
+    readonly findBooks: {
+        readonly totalCount: number, 
+        readonly edges: readonly {
+            readonly node: {
+                readonly id: string
+            }, 
+            readonly cursor: string
+        }[], 
+        readonly pageInfo: {
+            readonly hasNextPage: boolean, 
+            readonly hasPreviousPage: boolean, 
+            readonly startCursor: string, 
+            readonly endCursor: string
+        }
+    };
+    readonly findAuthors: {
+        readonly totalCount: number, 
+        readonly edges: readonly {
+            readonly node: {
+                readonly id: string
+            }, 
+            readonly cursor: string
+        }[], 
+        readonly pageInfo: {
+            readonly hasNextPage: boolean, 
+            readonly hasPreviousPage: boolean, 
+            readonly startCursor: string, 
+            readonly endCursor: string
+        }
+    };
+    readonly entities: readonly {
+        readonly id: string
+    }[];
 }

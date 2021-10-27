@@ -4,14 +4,14 @@ exports.newConfiguration = void 0;
 const StateManagerImpl_1 = require("../../state/impl/StateManagerImpl");
 const SchemaMetadata_1 = require("./SchemaMetadata");
 function newConfiguration(...fetchers) {
-    return new ConfigurationImpl(fetchers.map(fetcher => fetcher.fetchableType));
+    return new ConfigurationImpl(fetchers);
 }
 exports.newConfiguration = newConfiguration;
 class ConfigurationImpl {
-    constructor(fetchableTypes) {
+    constructor(fetchers) {
         this._schema = new SchemaMetadata_1.SchemaMetadata();
-        for (const fetchableType of fetchableTypes) {
-            this._schema.addFetchableType(fetchableType);
+        for (const fetcher of fetchers) {
+            this._schema.addFetcher(fetcher);
         }
     }
     rootAssociationProperties(fieldName, properties) {

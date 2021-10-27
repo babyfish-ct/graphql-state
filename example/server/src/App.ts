@@ -11,9 +11,11 @@ import { graphqlHTTP } from 'express-graphql';
 import { BookStoreSerice } from "./graphql/bll/BookStoreService";
 import { BookSerice } from "./graphql/bll/BookService";
 import { AuthorService } from "./graphql/bll/AuthorService";
+import { EntityService } from "./graphql/bll/EntityService";
  
 const schema = buildSchemaSync({
     resolvers: [
+        EntityService,
         BookStoreSerice,
         BookSerice,
         AuthorService
