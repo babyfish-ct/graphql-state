@@ -54,7 +54,7 @@ export class ModificationContext {
     }
 
     set(record: Record, fieldName: string, args: VariableArgs | undefined, oldValue: any, newValue: any) {
-        if (fieldName === record.staticType.idField.name) {
+        if (fieldName === record.runtimeType.idField.name) {
             throw new Error("Internal bug: the changed name cannot be id");
         }
         if (oldValue !== newValue) {
@@ -66,7 +66,7 @@ export class ModificationContext {
     }
 
     unset(record: Record, fieldName: string, args: VariableArgs | undefined) {
-        if (fieldName === record.staticType.idField.name) {
+        if (fieldName === record.runtimeType.idField.name) {
             throw new Error("Internal bug: the changed name cannot be id");
         }
         const pair = this.pair(record, true, true);
@@ -75,7 +75,7 @@ export class ModificationContext {
     }
 
     private pair(record: Record, initializeOldObj: boolean, useNewObj: boolean): ObjectPair {
-        const key = record.staticType;
+        const key = record.runtimeType;
         let subMap = this.objPairMap.get(key);
         if (subMap === undefined) {
             subMap = new Map<string, any>();
