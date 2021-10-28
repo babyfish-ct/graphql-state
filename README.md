@@ -88,8 +88,9 @@ This is the first version 0.0.0, and there is still some work to be done in the 
 ### Short-term goal
 1. GC for built-in cache database **(Emergency)**
 2. Doucment **(Emergency)**
-3. Cascade deleting for non-null many-to-assocaition
-4. Preload async state
+3. Pagination support(connection is supported but pagination is not supported now)
+4. Cascade deleting for non-null many-to-assocaition
+5. Preload async state
 
 ### Long-term goal
 1. Transaction, save point, undo/redo 
