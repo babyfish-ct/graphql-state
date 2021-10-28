@@ -20,6 +20,7 @@ export declare class StateManagerImpl<TSchema extends SchemaType> implements Sta
     get undoManager(): UndoManagerImpl;
     save<T extends object, TVariables extends object = {}>(fetcher: ObjectFetcher<string, T, any>, obj: T, variables?: TVariables): void;
     delete<TName extends keyof TSchema["entities"] & string>(typeName: TName, idOrArray: TSchema["entities"][TName][" $id"] | ReadonlyArray<TSchema["entities"][TName][" $id"] | undefined> | undefined): void;
+    evict<TName extends keyof TSchema["entities"] & string>(typeName: TName, idOrArray?: TSchema["entities"][TName][" $id"] | ReadonlyArray<TSchema["entities"][TName][" $id"] | undefined> | undefined): void;
     addEntityEvictListener(listener: (e: EntityEvictEvent) => void): void;
     removeEntityEvictListener(listener: (e: EntityEvictEvent) => void): void;
     addEntityEvictListeners(listeners: {

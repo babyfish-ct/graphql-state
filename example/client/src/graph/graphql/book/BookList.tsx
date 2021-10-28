@@ -6,6 +6,7 @@ import { ComponentDecorator } from "../../../common/ComponentDecorator";
 import { BookDialog } from "../book/BookDialog";
 import { DELETE_CONFIRM_CLASS, DELETING_ROW_CLASS, INFORMATION_CLASS } from "../Css";
 import { book$$, bookConnection$, bookEdge$, bookStore$$, mutation$, query$, author$$ } from "../../__generated_graphql_schema__/fetchers";
+import { Schema } from "../../__generated_graphql_schema__";
 
 const BOOK_ROW =
     book$$
@@ -37,7 +38,7 @@ export const BookList: FC = memo(() => {
         }
     );
 
-    const stateManager = useStateManager();
+    const stateManager = useStateManager<Schema>();
 
     const [remove, {loading: removing}] = useMutation(
         mutation$.deleteBook(),

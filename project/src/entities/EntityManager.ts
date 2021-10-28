@@ -113,7 +113,7 @@ export class EntityManager {
     delete(
         typeName: string, 
         idOrArray: any
-    ) {
+    ): void {
         if (typeName === 'Query') {
             throw new Error(`The typeof deleted object cannot be the special type 'Query'`);
         }
@@ -127,6 +127,28 @@ export class EntityManager {
                 }
             } else if (idOrArray !== undefined && idOrArray !== null) {
                 recordManager.delete(idOrArray);
+            }
+        });
+    }
+
+    evict(
+        typeName: string,
+        idOrArray: any
+    ): void {
+        this.modify(() => {
+            if (typeName === "Query") {
+                this.recordManager("Query").evict(QUERY_OBJECT_ID);
+            } else {
+                const recordManager = this.recordManager(typeName);
+                if (Array.isArray(idOrArray)) {
+                    for (const id of idOrArray) {
+                        if (id !== undefined && id !== null) {
+                            recordManager.delete(id);
+                        }
+                    }
+                } else if (idOrArray !== undefined && idOrArray !== null) {
+                    recordManager.evict(idOrArray);
+                }
             }
         });
     }

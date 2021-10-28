@@ -98,6 +98,26 @@ class EntityManager {
             }
         });
     }
+    evict(typeName, idOrArray) {
+        this.modify(() => {
+            if (typeName === "Query") {
+                this.recordManager("Query").evict(Record_1.QUERY_OBJECT_ID);
+            }
+            else {
+                const recordManager = this.recordManager(typeName);
+                if (Array.isArray(idOrArray)) {
+                    for (const id of idOrArray) {
+                        if (id !== undefined && id !== null) {
+                            recordManager.delete(id);
+                        }
+                    }
+                }
+                else if (idOrArray !== undefined && idOrArray !== null) {
+                    recordManager.evict(idOrArray);
+                }
+            }
+        });
+    }
     saveId(typeName, id) {
         return this.modify(() => {
             const type = this.schema.typeMap.get(typeName);
@@ -167,7 +187,6 @@ class EntityManager {
         (_a = this._changeListenerMap.get(typeName)) === null || _a === void 0 ? void 0 : _a.delete(listener);
     }
     publishEntityChangeEvent(e) {
-        console.log(e);
         for (const observer of this._associationValueObservers) {
             observer.onEntityChange(this, e);
         }

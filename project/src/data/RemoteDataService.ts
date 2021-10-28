@@ -6,6 +6,8 @@ import { AbstractDataService } from "./AbstractDataService";
 
 export class RemoteDataService extends AbstractDataService {
 
+    private pendingRequestMap = new Map<string, PendingRequest>();
+
     private objectFetcherCreator?: (
         fetcher: Fetcher<string, object, object>
     ) => ObjectFetcher<"Query", object, object>;
@@ -48,11 +50,10 @@ export class RemoteDataService extends AbstractDataService {
         }
     }
 
-    private pendingRequestMap = new Map<string, PendingRequest>();
-
     async query(args: QueryArgs): Promise<void> {
         let pendingRequest: PendingRequest | undefined = undefined;
         for (const [, request] of this.pendingRequestMap) {
+            console.log("try merge");
             if (request.args.contains(args)) {
                 pendingRequest = request;
                 break;

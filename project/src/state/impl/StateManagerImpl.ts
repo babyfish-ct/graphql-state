@@ -48,6 +48,13 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
         this.entityManager.delete(typeName, idOrArray);
     }
 
+    evict<TName extends keyof TSchema["entities"] & string>(
+        typeName: TName, 
+        idOrArray?: TSchema["entities"][TName][" $id"] | ReadonlyArray<TSchema["entities"][TName][" $id"] | undefined> | undefined
+    ) {
+        this.entityManager.evict(typeName, idOrArray);
+    }
+
     addEntityEvictListener(listener: (e: EntityEvictEvent) => void): void {
         this.entityManager.addEvictListener(undefined, listener);
     }

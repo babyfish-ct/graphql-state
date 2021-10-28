@@ -6,6 +6,7 @@ import { ComponentDecorator } from "../../../common/ComponentDecorator";
 import { AuthorDialog } from "../author/AuthorDialog";
 import { DELETE_CONFIRM_CLASS, DELETING_ROW_CLASS, INFORMATION_CLASS } from "../Css";
 import { book$$, author$$, query$, authorConnection$, authorEdge$, mutation$ } from "../../__generated_graphql_schema__/fetchers";
+import { Schema } from "../../__generated_graphql_schema__";
 
 const AUTHOR_ROW =
     author$$
@@ -34,7 +35,7 @@ export const AuthorList: FC = memo(() => {
         }
     );
 
-    const stateManager = useStateManager();
+    const stateManager = useStateManager<Schema>();
     
     const [remove, {loading: removing}] = useMutation(
         mutation$.deleteAuthor(),

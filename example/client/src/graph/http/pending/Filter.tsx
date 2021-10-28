@@ -9,8 +9,7 @@ export const Filter: FC = memo(() => {
     const name = useStateAccessor(bookNameState);
     
     const onNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-        name(value !== "" ? value : undefined);
+        name(e.target.value);
     }, [name]);
 
     return (

@@ -7,8 +7,10 @@ import { App as EffectApp } from '../simple/effect/App';
 import { App as ScopeApp } from '../simple/scope/App';
 import { App as LocalDataApp } from '../graph/local/App';
 import { App as GraphQLServerApp } from  '../graph/graphql/App';
+import { App as PeakClippingApp } from '../graph/http/peak/App';
 import { App as ObjectApp } from '../graph/http/object/App';
 import { App as ShapeApp } from '../graph/http/shape/App';
+import { App as PendingApp } from '../graph/http/pending/App';
 
 export const ContentView: FC = memo(() =>{
     return (
@@ -31,8 +33,10 @@ export const ContentView: FC = memo(() =>{
                     <GraphQLServerApp withCustomerOptimization={true}/>
                 }
             />
-            <Route path="/graphState/httpOpitimizator/object" component={ObjectApp}/>
-            <Route path="/graphState/httpOpitimizator/shapes" component={ShapeApp}/>
+            <Route path="/graphState/httpOpitimizator/peakClipping" component={PeakClippingApp}/>
+            <Route path="/graphState/httpOpitimizator/objectBaseOnId" component={ObjectApp}/>
+            <Route path="/graphState/httpOpitimizator/mergeDifferentShapes" component={ShapeApp}/>
+            <Route path="/graphState/httpOpitimizator/reusePendingQueries" component={PendingApp}/>
         </Switch>
     );
 });

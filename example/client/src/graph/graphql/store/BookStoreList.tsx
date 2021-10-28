@@ -7,6 +7,7 @@ import { ModelType, ParameterRef } from "graphql-ts-client-api";
 import { DELETE_CONFIRM_CLASS, DELETING_ROW_CLASS, INFORMATION_CLASS } from "../Css";
 import { BookStoreDialog } from "./BookStoreDialog";
 import { useMutation } from "graphql-state";
+import { Schema } from "../../__generated_graphql_schema__";
 
 const BOOK_STORE_ROW =
     bookStore$$
@@ -32,7 +33,7 @@ export const BookStoreList = memo(() => {
         }
     );
 
-    const stateManager = useStateManager();
+    const stateManager = useStateManager<Schema>();
     
     const [remove, {loading: removing}] = useMutation(
         mutation$.deleteBookStore(),

@@ -203,6 +203,7 @@ export const query$: QueryFetcher<{}, {}> =
                     category: "CONNECTION", 
                     name: "findBooks", 
                     argGraphQLTypeMap: {
+                        delayMillis: 'Int', 
                         before: 'String', 
                         last: 'Int', 
                         after: 'String', 
@@ -249,6 +250,7 @@ export interface QueryArgs {
     }, 
 
     readonly findBooks: {
+        readonly delayMillis?: number, 
         readonly before?: string, 
         readonly last?: number, 
         readonly after?: string, 

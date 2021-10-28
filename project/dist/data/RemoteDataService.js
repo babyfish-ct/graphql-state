@@ -52,9 +52,14 @@ class RemoteDataService extends AbstractDataService_1.AbstractDataService {
         return __awaiter(this, void 0, void 0, function* () {
             let pendingRequest = undefined;
             for (const [, request] of this.pendingRequestMap) {
+                console.log("try merge");
                 if (request.args.contains(args)) {
                     pendingRequest = request;
+                    console.log("merge success");
                     break;
+                }
+                else {
+                    console.log("merge faield", request.args.key, args.key);
                 }
             }
             if (pendingRequest === undefined) {

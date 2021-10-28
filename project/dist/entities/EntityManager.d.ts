@@ -30,6 +30,7 @@ export declare class EntityManager {
     modify<T>(action: () => T): T;
     save(shape: RuntimeShape, objOrArray: object | readonly object[]): void;
     delete(typeName: string, idOrArray: any): void;
+    evict(typeName: string, idOrArray: any): void;
     saveId(typeName: string, id: any): Record;
     retain(args: QueryArgs): QueryResult;
     release(args: QueryArgs): void;

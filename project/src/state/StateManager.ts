@@ -31,6 +31,20 @@ export interface StateManager<TSchema extends SchemaType> {
         ids: ReadonlyArray<TSchema["entities"][TName][" $id"] | undefined> | undefined
     ): void;
 
+    evict(typeName: "Query"): void;
+
+    evict<TName extends keyof TSchema["entities"] & string>(
+        typeName: TName, 
+        id: TSchema["entities"][TName][" $id"] | undefined
+    ): void;
+
+    evict<
+        TName extends keyof TSchema["entities"] & string
+    >(
+        typeName: TName, 
+        ids: ReadonlyArray<TSchema["entities"][TName][" $id"] | undefined> | undefined
+    ): void;
+
     addEntityEvictListener(listener: (e: EntityEvictEvent) => void): void;
 
     removeEntityEvictListener(listener: (e: EntityEvictEvent) => void): void;

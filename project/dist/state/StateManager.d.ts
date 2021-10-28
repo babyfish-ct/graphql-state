@@ -9,6 +9,9 @@ export interface StateManager<TSchema extends SchemaType> {
     save<TName extends keyof TSchema["entities"] & string, T extends object, TVariables extends object = {}>(fetcher: ObjectFetcher<TName, T, any>, objs: readonly T[], variables?: TVariables): void;
     delete<TName extends keyof TSchema["entities"] & string>(typeName: TName, id: TSchema["entities"][TName][" $id"] | undefined): void;
     delete<TName extends keyof TSchema["entities"] & string>(typeName: TName, ids: ReadonlyArray<TSchema["entities"][TName][" $id"] | undefined> | undefined): void;
+    evict(typeName: "Query"): void;
+    evict<TName extends keyof TSchema["entities"] & string>(typeName: TName, id: TSchema["entities"][TName][" $id"] | undefined): void;
+    evict<TName extends keyof TSchema["entities"] & string>(typeName: TName, ids: ReadonlyArray<TSchema["entities"][TName][" $id"] | undefined> | undefined): void;
     addEntityEvictListener(listener: (e: EntityEvictEvent) => void): void;
     removeEntityEvictListener(listener: (e: EntityEvictEvent) => void): void;
     addEntityEvictListeners(listeners: {

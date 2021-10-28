@@ -3,6 +3,7 @@ import { useQuery, useStateManager } from "graphql-state";
 import { ModelType } from "graphql-ts-client-api";
 import { FC, memo, useCallback, useState } from "react";
 import { ComponentDecorator } from "../../../common/ComponentDecorator";
+import { Schema } from "../../__generated_local_schema__";
 import { book$$, bookStore$$, query$ } from "../../__generated_local_schema__/fetchers";
 import { DELETE_CONFIRM_CLASS, INFORMATION_CLASS } from "../Css";
 import { BookStoreDialog } from "./BookStoreDialog";
@@ -25,7 +26,7 @@ export const BookStoreList: FC = memo(() => {
     const [dialog, setDialog] = useState<"NEW" | "EDIT">();
     const [editing, setEditing] = useState<ModelType<typeof BOOK_STORE_ROW>>();
 
-    const stateManager = useStateManager();
+    const stateManager = useStateManager<Schema>();
 
     const onDelete = useCallback((row: ModelType<typeof BOOK_STORE_ROW>) => {
         Modal.confirm({

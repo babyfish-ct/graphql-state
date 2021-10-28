@@ -17,13 +17,14 @@ export class BookSerice {
         @Arg("first", () => Int, {nullable: true}) first?: number | null,
         @Arg("after", () => String, {nullable: true}) after?: string | null,
         @Arg("last", () => Int, {nullable: true}) last?: number | null,
-        @Arg("before", () => String, {nullable: true}) before?: string | null
+        @Arg("before", () => String, {nullable: true}) before?: string | null,
+        @Arg("delayMillis", () => Int, {nullable: true}) delayMillis?: number | null
     ): Promise<BookConnection> {
 
         /*
          * Mock the network delay
          */
-        await delay(1000);
+        await delay(delayMillis ?? 1000);
 
         const lowercaseName = name?.toLocaleLowerCase();
         const predicate: Predicate<TBook> | undefined = 
