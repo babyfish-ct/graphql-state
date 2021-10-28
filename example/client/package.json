@@ -12,7 +12,7 @@
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
     "antd": "^4.16.13",
-    "graphql-state": "link:../../project",
+    "graphql-state": "^0.0.0",
     "graphql-ts-client-api": "^3.0.4",
     "immer": "^9.0.6",
     "react": "link:../../project/node_modules/react",
