@@ -1,30 +1,15 @@
 import { Col, Row, Spin } from "antd";
-import { GraphQLNetwork, StateManagerProvider } from "graphql-state";
+import { StateManagerProvider } from "graphql-state";
 import { FC, memo, Suspense } from "react";
-import { publishRequestLog, publishResponseLog } from "../../../common/HttpLog";
-import { HttpLogList } from "../../../common/HttpLogList";
+import { HttpLogList } from "../../common/HttpLogList";
+import { createGraphQLNetwork } from "../../common/Networks";
 import { newTypedConfiguration } from "../../__generated_graphql_schema__";
 import { MultipleBookReferences } from "./MultipleBookReferences";
 import { SingleBookReference } from "./SingleBookReference";
 
 const stateManager = 
     newTypedConfiguration()
-    .network(new GraphQLNetwork(async(body, variables) => {
-        const id = publishRequestLog(body, variables);
-        const response = await fetch('http://localhost:8081/graphql', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                query: body,
-                variables,
-            }),
-        }); 
-        const json = await response.json();
-        publishResponseLog(id, json);
-        return json;
-    }))
+    .network(createGraphQLNetwork())
     .buildStateManager()
 ;
 

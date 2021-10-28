@@ -11,8 +11,11 @@ exports.StateManagerProvider = react_1.memo(({ stateManager, children }) => {
         throw new Error(`<StateManagerProvider/> is not allowed to be nested`);
     }
     const finallyUsedStateManager = (_a = stateManager) !== null && _a !== void 0 ? _a : new StateManagerImpl_1.StateManagerImpl();
+    // Use this to debug before chrome extension to visualize the data is supported in the future
+    window.__STATE_MANAGER__ = finallyUsedStateManager;
     react_1.useEffect(() => {
         return () => {
+            window.__STATE_MANAGER__ = undefined;
             finallyUsedStateManager.dispose();
         };
     }, [finallyUsedStateManager]);

@@ -76,7 +76,7 @@ function addField(
         }
         return;
     }
-    const variables = resolveParameterRefs(field.args, fetcherVaribles);
+    const variables = resolveParameterRefs(field.args, fetcherVaribles, field.argGraphQLTypes);
     if (field.argGraphQLTypes !== undefined) {
         for (const [name, type] of field.argGraphQLTypes) {
             if (type.endsWith("!") && (variables === undefined || variables[name] === undefined)) {
@@ -141,7 +141,8 @@ function standardizedDirectives(
 
 function resolveParameterRefs(
     variables: any, 
-    fetcherVariables: any
+    fetcherVariables: any,
+    argGraphQLTypes?: ReadonlyMap<string, string>
 ): any {
     if (variables === undefined || variables === null) {
         return undefined;
@@ -154,7 +155,9 @@ function resolveParameterRefs(
             if (value[" $__instanceOfParameterRef"]) {
                 value = fetcherVariables !== undefined ? fetcherVariables[value.name] : undefined;
             }
-            if (value !== undefined && value !== null) {
+            if (value !== undefined && value !== null && 
+                (value !== "" || argGraphQLTypes?.get(name)?.endsWith("!") !== false)
+            ) {
                 names.push(name);
                 resolved[name] = value;
             }

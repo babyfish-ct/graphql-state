@@ -1,32 +1,17 @@
-import { GraphQLNetwork, StateManagerProvider } from "graphql-state";
+import { StateManagerProvider } from "graphql-state";
 import { FC, memo } from "react";
 import { newTypedConfiguration } from "../../__generated_graphql_schema__";
 import { BiggestShape } from "./BiggestShape";
 import { SmallestShape } from "./SmallestShape";
 import { MiddleShape } from "./MiddleShape";
 import { Col, Row } from "antd";
-import { publishRequestLog, publishResponseLog } from "../../../common/HttpLog";
-import { HttpLogList } from "../../../common/HttpLogList";
+import { HttpLogList } from "../../common/HttpLogList";
 import { Filter } from "./Filter";
+import { createGraphQLNetwork } from "../../common/Networks";
 
 const stateManager = 
     newTypedConfiguration()
-    .network(new GraphQLNetwork(async(body, variables) => {
-        const id = publishRequestLog(body, variables);
-        const response = await fetch('http://localhost:8081/graphql', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                query: body,
-                variables,
-            }),
-        }); 
-        const json = await response.json();
-        publishResponseLog(id, json);
-        return json;
-    }))
+    .network(createGraphQLNetwork())
     .buildStateManager()
 ;
 

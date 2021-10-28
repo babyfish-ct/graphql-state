@@ -28,7 +28,7 @@ function addField(parentPath, fieldName, field, runtimeShapeFieldMap, fetcherVar
         }
         return;
     }
-    const variables = resolveParameterRefs(field.args, fetcherVaribles);
+    const variables = resolveParameterRefs(field.args, fetcherVaribles, field.argGraphQLTypes);
     if (field.argGraphQLTypes !== undefined) {
         for (const [name, type] of field.argGraphQLTypes) {
             if (type.endsWith("!") && (variables === undefined || variables[name] === undefined)) {
@@ -80,7 +80,8 @@ function standardizedDirectives(field, fetcherVaribles) {
     }
     return result;
 }
-function resolveParameterRefs(variables, fetcherVariables) {
+function resolveParameterRefs(variables, fetcherVariables, argGraphQLTypes) {
+    var _a;
     if (variables === undefined || variables === null) {
         return undefined;
     }
@@ -92,7 +93,8 @@ function resolveParameterRefs(variables, fetcherVariables) {
             if (value[" $__instanceOfParameterRef"]) {
                 value = fetcherVariables !== undefined ? fetcherVariables[value.name] : undefined;
             }
-            if (value !== undefined && value !== null) {
+            if (value !== undefined && value !== null &&
+                (value !== "" || ((_a = argGraphQLTypes === null || argGraphQLTypes === void 0 ? void 0 : argGraphQLTypes.get(name)) === null || _a === void 0 ? void 0 : _a.endsWith("!")) !== false)) {
                 names.push(name);
                 resolved[name] = value;
             }

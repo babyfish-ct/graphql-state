@@ -191,7 +191,6 @@ export class QueryResult {
     }
 
     private dispose() {
-        console.log("dispose", this.queryArgs.optionsArgs?.options);
         this.entityManager.removeEvictListener(undefined, this._evictListener);
         this.entityManager.removeChangeListener(undefined, this._changeListener);
         this.disposer();

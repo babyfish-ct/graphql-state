@@ -16,8 +16,12 @@ export const StateManagerProvider: FC<
 
     const finallyUsedStateManager = stateManager as StateManagerImpl<any> ?? new StateManagerImpl<any>();
 
+    // Use this to debug before chrome extension to visualize the data is supported in the future
+    (window as any).__STATE_MANAGER__ = finallyUsedStateManager;
+
     useEffect(() => {
         return () => {
+            (window as any).__STATE_MANAGER__ = undefined;
             finallyUsedStateManager.dispose();
         }
     }, [finallyUsedStateManager]);

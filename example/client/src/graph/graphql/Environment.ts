@@ -1,9 +1,9 @@
-import { GraphQLNetwork, ScalarRow, ParameterizedAssociationProperties, StateManager } from "graphql-state";
+import { ScalarRow, ParameterizedAssociationProperties, StateManager } from "graphql-state";
 import { PositionType } from "graphql-state";
 import { Schema } from "../__generated_graphql_schema__";
 import { newTypedConfiguration } from "../__generated_graphql_schema__";
 import { publishEntityLog } from "./log/EntityLog";
-import { publishRequestLog, publishResponseLog } from "../../common/HttpLog";
+import { createGraphQLNetwork } from "../common/Networks";
 
 function createNameFilterAssociationProperties<
     TScalarType extends { readonly name: string }, 
@@ -67,22 +67,7 @@ export function createStateManager(withCustomerOptimization: boolean): StateMana
         .bidirectionalAssociation("BookStore", "books", "store")
         .bidirectionalAssociation("Book", "authors", "books")
 
-        .network(new GraphQLNetwork(async(body, variables) => {
-            const id = publishRequestLog(body, variables);
-            const response = await fetch('http://localhost:8081/graphql', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    query: body,
-                    variables,
-                }),
-            }); 
-            const json = await response.json();
-            publishResponseLog(id, json);
-            return json;
-        }))
+        .network(createGraphQLNetwork())
     ;
 
     if (withCustomerOptimization) {

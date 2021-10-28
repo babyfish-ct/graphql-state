@@ -9,8 +9,6 @@ export const App: FC = memo(() => {
     
     const stateManager = createStateManager();
 
-    (window as any).localStateManager = stateManager;
-
     return (
         <StateManagerProvider stateManager={stateManager}>
             <BookStoreList/>

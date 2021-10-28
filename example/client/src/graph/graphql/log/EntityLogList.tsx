@@ -3,7 +3,7 @@ import { Timeline, Card, Button, Collapse } from "antd";
 import { EntityChangeEvent, EntityEvictEvent, useStateAccessor } from "graphql-state";
 import { FC, memo, useCallback } from "react";
 import { entityLogListState } from "./EntityLog";
-import { format } from "../../../common/util";
+import { format } from "../../common/util";
 import { CSSProperties } from "react";
 import { RawValueView } from "../../../common/RawValueView";
 

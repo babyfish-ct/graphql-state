@@ -12,7 +12,6 @@ export const App: FC<{
 }> = memo(({withCustomerOptimization}) => {
 
     const stateManager = createStateManager(withCustomerOptimization);
-    (window as any).graphqlStateManager = stateManager;
 
     return (
         <StateManagerProvider stateManager={stateManager}>

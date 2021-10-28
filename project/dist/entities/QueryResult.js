@@ -167,8 +167,6 @@ class QueryResult {
         }
     }
     dispose() {
-        var _a;
-        console.log("dispose", (_a = this.queryArgs.optionsArgs) === null || _a === void 0 ? void 0 : _a.options);
         this.entityManager.removeEvictListener(undefined, this._evictListener);
         this.entityManager.removeChangeListener(undefined, this._changeListener);
         this.disposer();
