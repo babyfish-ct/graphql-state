@@ -1,3 +1,4 @@
+import { css } from "@emotion/css";
 import { Menu } from "antd";
 import { FC, memo, useCallback, useMemo } from "react";
 import useLocation from "wouter/use-location";
@@ -34,10 +35,10 @@ export const SiderView: FC = memo(() => {
                 <Menu.Item key="scope">Scope</Menu.Item>
             </Menu.SubMenu>
             <Menu.SubMenu key="graphState" title="Graph state">
-                <Menu.Item key="localData">Local data</Menu.Item>
+                <Menu.Item key="localData" className={IMPORTANNT_CSS}>Local data</Menu.Item>
                 <Menu.SubMenu key="graphqlServer" title="GraphQL server">
-                    <Menu.Item key="unoptimized">Unoptimized</Menu.Item>
-                    <Menu.Item key="optimized">Optimized</Menu.Item>
+                    <Menu.Item key="unoptimized" className={IMPORTANNT_CSS}>Unoptimized</Menu.Item>
+                    <Menu.Item key="optimized" className={IMPORTANNT_CSS}>Optimized</Menu.Item>
                 </Menu.SubMenu>
                 <Menu.Item key="restServer">Rest server</Menu.Item>
                 <Menu.SubMenu key="httpOpitimizator" title="HTTP Opitmizator">
@@ -49,4 +50,9 @@ export const SiderView: FC = memo(() => {
             </Menu.SubMenu>
         </Menu>
     );
+});
+
+const IMPORTANNT_CSS = css({
+    fontWeight: "bold",
+    color: "darkblue"
 });
