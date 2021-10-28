@@ -11,7 +11,10 @@ class StateManagerImpl {
         this._rootScope = new ScopedStateManager_1.ScopedStateManager(this);
         this._stateValueChangeListeners = new Set();
         this._queryResultChangeListeners = new Set();
-        this.entityManager = new EntityManager_1.EntityManager(this, schema !== null && schema !== void 0 ? schema : new SchemaMetadata_1.SchemaMetadata());
+        this._entityManager = new EntityManager_1.EntityManager(this, schema !== null && schema !== void 0 ? schema : new SchemaMetadata_1.SchemaMetadata());
+    }
+    get entityManager() {
+        return this._entityManager;
     }
     get undoManager() {
         throw new Error();
@@ -112,6 +115,12 @@ class StateManagerImpl {
     }
     suspendBidirectionalAssociationManagement(action) {
         return this.entityManager.suspendBidirectionalAssociationManagement(action);
+    }
+    dispose() {
+        this._stateValueChangeListeners.clear();
+        this._queryResultChangeListeners.clear();
+        this._entityManager = new EntityManager_1.EntityManager(this, this._entityManager.schema);
+        this._rootScope.dispose();
     }
 }
 exports.StateManagerImpl = StateManagerImpl;

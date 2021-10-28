@@ -22,7 +22,7 @@ class StateValue {
     release(maxDelayMillis) {
         if (--this._refCount === 0) {
             if (maxDelayMillis <= 0) {
-                this.dispose();
+                this.dispose(true);
                 return;
             }
             const millis = Math.min(new Date().getTime() - this._createdMillis, maxDelayMillis);
@@ -31,14 +31,20 @@ class StateValue {
             }
             this._disposeTimerId = setTimeout(() => {
                 if (this._refCount === 0) {
-                    this.dispose();
+                    this.dispose(true);
                 }
             }, millis);
         }
     }
-    dispose() {
-        this.disposer();
-        this.umount();
+    dispose(executeExternalDisposer) {
+        try {
+            if (executeExternalDisposer) {
+                this.disposer();
+            }
+        }
+        finally {
+            this.umount();
+        }
     }
     mount() {
         var _a, _b;

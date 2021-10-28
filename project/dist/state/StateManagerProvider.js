@@ -5,7 +5,17 @@ const jsx_runtime_1 = require("react/jsx-runtime");
 const react_1 = require("react");
 const StateManagerImpl_1 = require("./impl/StateManagerImpl");
 exports.StateManagerProvider = react_1.memo(({ stateManager, children }) => {
-    return (jsx_runtime_1.jsx(exports.stateContext.Provider, Object.assign({ value: stateManager !== null && stateManager !== void 0 ? stateManager : defaultStateManager }, { children: children }), void 0));
+    var _a;
+    const externalStateManager = react_1.useContext(exports.stateContext);
+    if (externalStateManager !== undefined) {
+        throw new Error(`<StateManagerProvider/> is not allowed to be nested`);
+    }
+    const finallyUsedStateManager = (_a = stateManager) !== null && _a !== void 0 ? _a : new StateManagerImpl_1.StateManagerImpl();
+    react_1.useEffect(() => {
+        return () => {
+            finallyUsedStateManager.dispose();
+        };
+    }, [finallyUsedStateManager]);
+    return (jsx_runtime_1.jsx(exports.stateContext.Provider, Object.assign({ value: finallyUsedStateManager }, { children: children }), void 0));
 });
 exports.stateContext = react_1.createContext(undefined);
-const defaultStateManager = new StateManagerImpl_1.StateManagerImpl();

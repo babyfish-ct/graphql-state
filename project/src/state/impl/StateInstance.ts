@@ -28,7 +28,24 @@ export class StateInstance {
     }
 
     release(args: VariableArgs | undefined) {
-        const stateValue = this.valueMap.get(args?.key);
-        stateValue?.release(60000);
+        this.valueMap.get(args?.key)?.release(60000);
+    }
+
+    dispose() {
+        const values: StateValue[] = [];
+        this.valueMap.forEachValue(value => { values.push(value) });
+        let exception: any = undefined;
+        for (const value of values) {
+            try {
+                value.dispose(false);
+            } catch (ex) {
+                if (ex === undefined) {
+                    exception = ex;
+                }
+            }
+        }
+        if (exception !== undefined) {
+            throw exception;
+        }
     }
 }

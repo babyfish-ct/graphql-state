@@ -1,4 +1,4 @@
-import { FetchableType, Fetcher } from "graphql-ts-client-api";
+import { Fetcher } from "graphql-ts-client-api";
 import { StateManagerImpl } from "../../state/impl/StateManagerImpl";
 import { StateManager } from "../../state/StateManager";
 import { Configuration, Network } from "../Configuration";

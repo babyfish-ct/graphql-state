@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ScalarRowImpl = exports.objectWithOnlyId = exports.QUERY_OBJECT_ID = exports.Record = void 0;
+const Args_1 = require("../state/impl/Args");
 const SpaceSavingMap_1 = require("../state/impl/SpaceSavingMap");
 const Association_1 = require("./assocaition/Association");
 const BackReferences_1 = require("./BackReferences");
@@ -28,11 +29,11 @@ class Record {
     get isDeleted() {
         return this.deleted;
     }
-    hasScalar(fieldName) {
-        return this.scalarMap.has(fieldName);
+    hasScalar(fieldName, args) {
+        return this.scalarMap.has(Args_1.VariableArgs.fieldKey(fieldName, args));
     }
-    getSalar(fieldName) {
-        return this.scalarMap.get(fieldName);
+    getSalar(fieldName, args) {
+        return this.scalarMap.get(Args_1.VariableArgs.fieldKey(fieldName, args));
     }
     hasAssociation(field, args) {
         var _a;
@@ -47,25 +48,29 @@ class Record {
             throw new Error(`'${field.fullName}' is not field of the type '${this.staticType.name}' of current record`);
         }
         if (field === null || field === void 0 ? void 0 : field.isAssociation) {
+            if (field.category === "REFERENCE" && (args === null || args === void 0 ? void 0 : args.variables) !== undefined && this.runtimeType.name !== "Query") {
+                throw new Error('reference fields of entity object does not support variables');
+            }
             this
                 .associationMap
                 .computeIfAbsent(field, f => new Association_1.Association(this, f))
                 .set(entityManager, args, value);
         }
         else {
-            if ((args === null || args === void 0 ? void 0 : args.variables) !== undefined) {
-                throw new Error('scalar fields does not support variables');
+            if ((args === null || args === void 0 ? void 0 : args.variables) !== undefined && this.runtimeType.name !== "Query") {
+                throw new Error('scalar fields of entity object does not support variables');
             }
+            const fieldKey = Args_1.VariableArgs.fieldKey(field.name, args);
             if (field === this.staticType.idField) {
                 if (value !== this.id) {
                     throw new Error(`Cannot chanage "${this.staticType.idField.fullName} because its id field"`);
                 }
             }
             else {
-                const oldValue = this.scalarMap.get(field.name);
+                const oldValue = this.scalarMap.get(fieldKey);
                 if (oldValue !== value) {
-                    this.scalarMap.set(field.name, value);
-                    entityManager.modificationContext.set(this, field.name, args, oldValue, value);
+                    this.scalarMap.set(fieldKey, value);
+                    entityManager.modificationContext.set(this, fieldKey, args, oldValue, value);
                 }
             }
         }

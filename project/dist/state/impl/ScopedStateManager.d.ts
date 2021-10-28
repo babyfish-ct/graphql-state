@@ -17,4 +17,5 @@ export declare class ScopedStateManager {
     instance(state: State<any>, scope: StateAccessingScope): StateInstance;
     private getInstance;
     private createInstance;
+    dispose(): void;
 }

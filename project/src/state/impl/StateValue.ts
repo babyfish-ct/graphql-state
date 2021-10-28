@@ -39,7 +39,7 @@ export abstract class StateValue {
     release(maxDelayMillis: number) {
         if (--this._refCount === 0) {
             if (maxDelayMillis <= 0) {
-                this.dispose();
+                this.dispose(true);
                 return;
             }
             const millis = Math.min(new Date().getTime() - this._createdMillis, maxDelayMillis)
@@ -48,7 +48,7 @@ export abstract class StateValue {
             }
             this._disposeTimerId = setTimeout(() => {
                 if (this._refCount === 0) {
-                    this.dispose();
+                    this.dispose(true);
                 }
             }, millis);
         }
@@ -56,9 +56,14 @@ export abstract class StateValue {
 
     protected abstract createMountContext(): any;
 
-    private dispose() {
-        this.disposer();
-        this.umount();
+    dispose(executeExternalDisposer: boolean) {
+        try {
+            if (executeExternalDisposer) {
+                this.disposer();
+            }
+        } finally {
+            this.umount();
+        }
     }
 
     private mount() {

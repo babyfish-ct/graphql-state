@@ -55,11 +55,7 @@ class RemoteDataService extends AbstractDataService_1.AbstractDataService {
                 console.log("try merge");
                 if (request.args.contains(args)) {
                     pendingRequest = request;
-                    console.log("merge success");
                     break;
-                }
-                else {
-                    console.log("merge faield", request.args.key, args.key);
                 }
             }
             if (pendingRequest === undefined) {

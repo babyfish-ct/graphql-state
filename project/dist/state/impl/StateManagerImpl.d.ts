@@ -15,8 +15,9 @@ export declare class StateManagerImpl<TSchema extends SchemaType> implements Sta
     private _rootScope;
     private _stateValueChangeListeners;
     private _queryResultChangeListeners;
-    readonly entityManager: EntityManager;
+    private _entityManager;
     constructor(schema?: SchemaMetadata, network?: Network | undefined);
+    get entityManager(): EntityManager;
     get undoManager(): UndoManagerImpl;
     save<T extends object, TVariables extends object = {}>(fetcher: ObjectFetcher<string, T, any>, obj: T, variables?: TVariables): void;
     delete<TName extends keyof TSchema["entities"] & string>(typeName: TName, idOrArray: TSchema["entities"][TName][" $id"] | ReadonlyArray<TSchema["entities"][TName][" $id"] | undefined> | undefined): void;
@@ -46,6 +47,7 @@ export declare class StateManagerImpl<TSchema extends SchemaType> implements Sta
     removeQueryResultChangeListener(listener: QueryResultChangeListener): void;
     publishQueryResultChangeEvent(e: QueryResultChangeEvent): void;
     suspendBidirectionalAssociationManagement<T>(action: () => T): T;
+    dispose(): void;
 }
 export declare type StateValueChangeListener = (e: StateValueChangeEvent) => void;
 export interface StateValueChangeEvent {

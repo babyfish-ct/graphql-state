@@ -20,10 +20,14 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
 
     private _queryResultChangeListeners = new Set<QueryResultChangeListener>();
 
-    readonly entityManager: EntityManager;
+    private _entityManager: EntityManager;
 
     constructor(schema?: SchemaMetadata, readonly network?: Network) {
-        this.entityManager = new EntityManager(this, schema ?? new SchemaMetadata());
+        this._entityManager = new EntityManager(this, schema ?? new SchemaMetadata());
+    }
+
+    get entityManager(): EntityManager {
+        return this._entityManager;
     }
     
     get undoManager(): UndoManagerImpl {
@@ -171,6 +175,13 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
 
     suspendBidirectionalAssociationManagement<T>(action: () => T): T {
         return this.entityManager.suspendBidirectionalAssociationManagement(action);
+    }
+
+    dispose() {
+        this._stateValueChangeListeners.clear();
+        this._queryResultChangeListeners.clear();
+        this._entityManager = new EntityManager(this, this._entityManager.schema);
+        this._rootScope.dispose();
     }
 }
 

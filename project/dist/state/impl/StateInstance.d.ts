@@ -9,4 +9,5 @@ export declare class StateInstance {
     constructor(scopedStateManager: ScopedStateManager, state: State<any>);
     retain(args: VariableArgs | undefined): StateValue;
     release(args: VariableArgs | undefined): void;
+    dispose(): void;
 }

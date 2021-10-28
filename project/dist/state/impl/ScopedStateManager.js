@@ -83,5 +83,36 @@ class ScopedStateManager {
         this._instanceMap.set(state[" $name"], instance);
         return instance;
     }
+    dispose() {
+        var _a;
+        let exception = undefined;
+        if (this._childMap !== undefined) {
+            for (const child of (_a = this._childMap) === null || _a === void 0 ? void 0 : _a.values()) {
+                try {
+                    child.dispose();
+                }
+                catch (ex) {
+                    if (exception === undefined) {
+                        exception = ex;
+                    }
+                }
+            }
+            this._childMap = undefined;
+        }
+        for (const instance of this._instanceMap.values()) {
+            try {
+                instance.dispose();
+            }
+            catch (ex) {
+                if (exception === undefined) {
+                    exception = ex;
+                }
+            }
+        }
+        this._instanceMap.clear();
+        if (exception !== undefined) {
+            throw exception;
+        }
+    }
 }
 exports.ScopedStateManager = ScopedStateManager;

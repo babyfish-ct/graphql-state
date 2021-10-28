@@ -15,7 +15,7 @@ export declare abstract class StateValue {
     retain(): this;
     release(maxDelayMillis: number): void;
     protected abstract createMountContext(): any;
-    private dispose;
+    dispose(executeExternalDisposer: boolean): void;
     private mount;
     private umount;
     protected onMount(): void;

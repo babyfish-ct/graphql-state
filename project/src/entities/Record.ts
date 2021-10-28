@@ -41,12 +41,12 @@ export class Record {
         return this.deleted;
     }
 
-    hasScalar(fieldName: string): boolean {
-        return this.scalarMap.has(fieldName);
+    hasScalar(fieldName: string, args?: VariableArgs): boolean {
+        return this.scalarMap.has(VariableArgs.fieldKey(fieldName, args));
     }
 
-    getSalar(fieldName: string): any {
-        return this.scalarMap.get(fieldName);
+    getSalar(fieldName: string, args?: VariableArgs): any {
+        return this.scalarMap.get(VariableArgs.fieldKey(fieldName, args));
     }
 
     hasAssociation(field: FieldMetadata, args?: VariableArgs): boolean {
@@ -67,6 +67,9 @@ export class Record {
             throw new Error(`'${field.fullName}' is not field of the type '${this.staticType.name}' of current record`);
         }
         if (field?.isAssociation) {
+            if (field.category === "REFERENCE" && args?.variables !== undefined && this.runtimeType.name !== "Query") {
+                throw new Error('reference fields of entity object does not support variables');
+            }
             this
             .associationMap
             .computeIfAbsent(field, f => new Association(this, f))
@@ -76,18 +79,19 @@ export class Record {
                 value
             );
         } else {
-            if (args?.variables !== undefined) {
-                throw new Error('scalar fields does not support variables');
+            if (args?.variables !== undefined && this.runtimeType.name !== "Query") {
+                throw new Error('scalar fields of entity object does not support variables');
             }
+            const fieldKey = VariableArgs.fieldKey(field.name, args);
             if (field === this.staticType.idField) {
                 if (value !== this.id) {
                     throw new Error(`Cannot chanage "${this.staticType.idField.fullName} because its id field"`);
                 }
             } else {
-                const oldValue = this.scalarMap.get(field.name);
+                const oldValue = this.scalarMap.get(fieldKey);
                 if (oldValue !== value) {
-                    this.scalarMap.set(field.name, value);
-                    entityManager.modificationContext.set(this, field.name, args, oldValue, value);
+                    this.scalarMap.set(fieldKey, value);
+                    entityManager.modificationContext.set(this, fieldKey, args, oldValue, value);
                 }
             }
         }

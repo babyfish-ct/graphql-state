@@ -17,8 +17,26 @@ class StateInstance {
         return stateValue.retain();
     }
     release(args) {
-        const stateValue = this.valueMap.get(args === null || args === void 0 ? void 0 : args.key);
-        stateValue === null || stateValue === void 0 ? void 0 : stateValue.release(60000);
+        var _a;
+        (_a = this.valueMap.get(args === null || args === void 0 ? void 0 : args.key)) === null || _a === void 0 ? void 0 : _a.release(60000);
+    }
+    dispose() {
+        const values = [];
+        this.valueMap.forEachValue(value => { values.push(value); });
+        let exception = undefined;
+        for (const value of values) {
+            try {
+                value.dispose(false);
+            }
+            catch (ex) {
+                if (ex === undefined) {
+                    exception = ex;
+                }
+            }
+        }
+        if (exception !== undefined) {
+            throw exception;
+        }
     }
 }
 exports.StateInstance = StateInstance;
