@@ -22,7 +22,9 @@ export const MiddleShape: FC = memo(() => {
             )
         ),
         {
-            variables: { name },
+            variables: { 
+                name
+            },
             asyncStyle: "async-object"
         }
     );

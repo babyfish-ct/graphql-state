@@ -1,4 +1,4 @@
-import { Modal, Form, Input } from "antd";
+import { Modal, Form, Input, Collapse, Row, Col } from "antd";
 import { useForm } from "antd/lib/form/Form";
 import { ModelType } from "graphql-ts-client-api";
 import { FC, memo, useCallback, useEffect } from "react";
@@ -70,6 +70,7 @@ export const AuthorDialog: FC<{
                 </Form.Item>
                 {BOOKS_DESCRIPTION_ITEM}
             </Form>
+            {OK_DESCRIPTION}
         </Modal>
     );
 });
@@ -86,18 +87,42 @@ if (cached(addedBook.authors)) {
 
 const BOOKS_DESCRIPTION_ITEM = (
     <Form.Item label=" " colon={false}>
-        <div className={INFORMATION_CLASS}>
-            If you change this association "Author.books"
-            <ul>
-                <li>
-                    For each removed book, this behavior will be executed automatically
-                    <pre className={PSEUDO_CODE_CLASS}>{FOR_REMOVED_BOOK}</pre>
-                </li>
-                <li>
-                    For each add book, this behavior will be executed automatically
-                    <pre className={PSEUDO_CODE_CLASS}>{FOR_ADDED_BOOK}</pre>
-                </li>
-            </ul>
-        </div>
+        <Collapse ghost>
+            <Collapse.Panel key="title" header="Description of 'Author.books'">
+                <div className={INFORMATION_CLASS}>
+                    If you change this association "Author.books"
+                    <ul>
+                        <li>
+                            For each removed book, this behavior will be executed automatically
+                            <pre className={PSEUDO_CODE_CLASS}>{FOR_REMOVED_BOOK}</pre>
+                        </li>
+                        <li>
+                            For each add book, this behavior will be executed automatically
+                            <pre className={PSEUDO_CODE_CLASS}>{FOR_ADDED_BOOK}</pre>
+                        </li>
+                    </ul>
+                </div>
+            </Collapse.Panel>
+        </Collapse>
     </Form.Item>
+);
+
+const FOR_INSERTION = `
+Query.findAuthors.add(this);
+`;
+
+const OK_DESCRIPTION = (
+    <Row>
+        <Col flex={1}/>
+        <Col>
+            <Collapse ghost>
+                <Collapse.Panel key="title" header="Description of 'OK' button">
+                    <div className={INFORMATION_CLASS}>
+                        If this dialog is used to insert new object into cache
+                        <pre className={PSEUDO_CODE_CLASS}>{FOR_INSERTION}</pre>
+                    </div>
+                </Collapse.Panel>
+            </Collapse>
+        </Col>
+    </Row>
 );

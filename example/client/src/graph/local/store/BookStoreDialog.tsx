@@ -1,4 +1,4 @@
-import { Modal, Form, Input } from "antd";
+import { Modal, Form, Input, Collapse, Row, Col } from "antd";
 import { useForm } from "antd/lib/form/Form";
 import { ModelType } from "graphql-ts-client-api";
 import { FC, memo, useCallback, useEffect } from "react";
@@ -71,37 +71,67 @@ export const BookStoreDialog: FC<{
                 </Form.Item>
                 {BOOKS_DESCRIPTION_ITEM}
             </Form>
+            {OK_DESCRIPTION}
         </Modal>
     );
 });
 
 const FOR_REMOVED_BOOK = `
-removedBook.store = undefined;
+if (cached(removedBook.store)) {
+    removedBook.store = undefined;
+}
 `;
 
 const FOR_ADDED_BOOK = `
-addBook.store = this;
-
-const anotherStore = addedBook.store;
-if (anotherStore !== undefined && cached(annotherStore.books)) {
-    annotherStore.books.remove(addedBook);
+if (cached(addedBook.store)) {
+    addBook.store = this;
+} else {
+    for (const otherStore of cache.bookStores) {
+        if (otherStore !== this && cached(otherStore.books)) {
+            otherStore.books.remove(addedBook);
+        }
+    }
 }
 `;
 
 const BOOKS_DESCRIPTION_ITEM = (
     <Form.Item label=" " colon={false}>
-        <div className={INFORMATION_CLASS}>
-            If you change this association "Store.books"
-            <ul>
-                <li>
-                    For each removed book, this action will be executed automatically
-                    <pre className={PSEUDO_CODE_CLASS}>{FOR_REMOVED_BOOK}</pre>
-                </li>
-                <li>
-                    For each added book, this action will be executed automatically
-                    <pre  className={PSEUDO_CODE_CLASS}>{FOR_ADDED_BOOK}</pre>
-                </li>
-            </ul>
-        </div>
+        <Collapse ghost>
+            <Collapse.Panel key="title" header="Description of 'BookStore.books'">
+                <div className={INFORMATION_CLASS}>
+                    If you change this association "BookStore.books"
+                    <ul>
+                        <li>
+                            For each removed book, this action will be executed automatically
+                            <pre className={PSEUDO_CODE_CLASS}>{FOR_REMOVED_BOOK}</pre>
+                        </li>
+                        <li>
+                            For each added book, this action will be executed automatically
+                            <pre  className={PSEUDO_CODE_CLASS}>{FOR_ADDED_BOOK}</pre>
+                        </li>
+                    </ul>
+                </div>
+            </Collapse.Panel>
+        </Collapse>
     </Form.Item>
+);
+
+const FOR_INSERTION = `
+Query.findBookStores.add(this);
+`;
+
+const OK_DESCRIPTION = (
+    <Row>
+        <Col flex={1}/>
+        <Col>
+            <Collapse ghost>
+                <Collapse.Panel key="title" header="Description of 'OK' button">
+                    <div className={INFORMATION_CLASS}>
+                        If this dialog is used to insert new object into cache
+                        <pre className={PSEUDO_CODE_CLASS}>{FOR_INSERTION}</pre>
+                    </div>
+                </Collapse.Panel>
+            </Collapse>
+        </Col>
+    </Row>
 );

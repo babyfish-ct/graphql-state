@@ -1,5 +1,6 @@
 import { Spin } from "antd";
 import { useQuery, useStateValue } from "graphql-state";
+import { ParameterRef } from "graphql-ts-client-api";
 import { FC, memo } from "react";
 import { ComponentDecorator } from "../../../common/ComponentDecorator";
 import { RawValueView } from "../../../common/RawValueView";
@@ -19,13 +20,17 @@ export const BiggestShape: FC = memo(() => {
                         bookStore$$
                     )
                     .authors(
+                        { name: ParameterRef.of("authorName") },
                         author$$
                     )
                 )
             )
         ),
         {
-            variables: { name },
+            variables: { 
+                name,
+                authorName: undefined
+            },
             asyncStyle: "async-object"
         }
     );

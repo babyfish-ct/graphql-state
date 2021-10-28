@@ -11,6 +11,13 @@ export const App: FC = memo(() => {
 
     return (
         <StateManagerProvider stateManager={stateManager}>
+            <div style={{padding: "1rem"}}>
+                This is simplest demo about graph state.
+                <ul>
+                    <li>All the objects and associations are cached</li>
+                    <li>There are no assocaitions with filter variables</li>
+                </ul>
+            </div>
             <BookStoreList/>
             <BookList/>
             <AuthorList/>

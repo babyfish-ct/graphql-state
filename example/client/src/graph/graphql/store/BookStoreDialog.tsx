@@ -1,4 +1,4 @@
-import { Modal, Form, Input } from "antd";
+import { Modal, Form, Input, Collapse } from "antd";
 import { useForm } from "antd/lib/form/Form";
 import { ModelType } from "graphql-ts-client-api";
 import { FC, memo, useCallback, useEffect } from "react";
@@ -65,6 +65,7 @@ export const BookStoreDialog: FC<{
                 <Form.Item label="Name" name="name">
                     <Input autoComplete="off"/>
                 </Form.Item>
+                {NAME_DESCRIPTION_ITEM}
                 <Form.Item label="Books" name="bookIds">
                     <BookMultiSelect/>
                 </Form.Item>
@@ -74,36 +75,117 @@ export const BookStoreDialog: FC<{
     );
 });
 
+const FOR_NEW_NAME = `
+for (const parameterizedStores of 
+    cache.get(Query.findBookStores({...}))
+) {
+    // user optimizer or default optimizer
+    const optimizer = assocaitionProperties["Query.findBookStores"];
+
+    const dependencies = optimizer.dependencies(
+        parameterizedStores.variables
+    );
+
+    if (dependencies === undefined || dependencies.has("name)) {
+        const contains = optimizer.contains(this with newName);
+        if (contains === true) {
+            parameterizedStores.addIfAbsent(this);
+        } else (contains === false) {
+            parameterizedStores.removeIfExists(this);
+        } else {
+            cache.evict(parameterizedStores);
+            // Affected UI will reload data from server later
+        }
+    }
+}
+`;
+
+const NAME_DESCRIPTION_ITEM = (
+    <Form.Item label=" " colon={false}>
+        <Collapse ghost>
+            <Collapse.Panel key="title" header="Description of 'BookStore.name'">
+                <div className={INFORMATION_CLASS}>
+                    If you change this scalar field "BookStore.name" by any of the following ways
+                    <ul>
+                        <li>insert: undefined -&gt; newName</li>
+                        <li>update: oldName -&gt; newName</li>
+                    </ul>
+                    (delete will be handed by other rules)
+                    <pre className={PSEUDO_CODE_CLASS}>{FOR_NEW_NAME}</pre>
+                </div>
+            </Collapse.Panel>
+        </Collapse>
+    </Form.Item>
+);
+
 const FOR_REMOVED_BOOK = `
-removedBook.store = undefined;
+
+// Remove it from other similar assocaitons with parameters
+for (const parameterizedBooks of cache.get(this.books({...}))) {
+    parameterizedBooks.remove(removedBook);
+}
+
+// Change opposite endpoint if it's cached
+if (cached(removedBook.store)) {
+    removedBook.store = undefined;
+}
 `;
 
 const FOR_ADDED_BOOK = `
-addBook.store = this;
 
-const anotherStore = addedBook.store;
-if (anotherStore !== undefined && cached(annotherStore.books)) {
-    annotherStore.books.remove(addedBook);
+// Add it into similar assocaitons with parameters
+for (const parameterizedBooks of cache.get(this.books({...}))) {
+
+    // user optimizer or default optimizer
+    const optimizer = assocaitionProperties["BookStore.books"];
+
+    const contains = optimizer.contains(
+        parameterizedBooks.variables, 
+        addedBook
+    );
+    if (contains === true) {
+        parameterizedBooks.insert(..., addedBook);
+    } else if (contains === false) {
+        // do nothing
+    } else {
+        cahce.evict(parameterizedBooks);
+        // Affected UI will reload data from server later
+    }
 }
-if (anotherStore !== undefined && cached(annotherStore.books({name: ...}))) {
-    annotherStore.books({name: ...}).remove(addedBook);
+
+if (cached(addedBook.store)) {
+    // Change opposite endpoint if it's cached
+    addBook.store = this;
+} else {
+    // Remove it from assocaitions of any other BookStore
+    for (const otherStore of cache.bookStores) {
+        if (otherStore !== this) {
+            if (cached(otherStore.books({...}))) {
+                otherStore.books({...}).remove(addedBook);
+            }
+        }
+    }
 }
 `;
 
 const BOOKS_DESCRIPTION_ITEM = (
     <Form.Item label=" " colon={false}>
-        <div className={INFORMATION_CLASS}>
-            If you change this association "Store.books"
-            <ul>
-                <li>
-                    For each removed book, this action will be executed automatically
-                    <pre className={PSEUDO_CODE_CLASS}>{FOR_REMOVED_BOOK}</pre>
-                </li>
-                <li>
-                    For each added book, this action will be executed automatically
-                    <pre  className={PSEUDO_CODE_CLASS}>{FOR_ADDED_BOOK}</pre>
-                </li>
-            </ul>
-        </div>
+        <Collapse ghost>
+            <Collapse.Panel key="title" header="Description of 'BookStore.books'">
+                <div className={INFORMATION_CLASS}>
+                    If you change this association "BookStore.books"
+                    <ul>
+                        <li>
+                            For each removed book, this action will be executed automatically
+                            <pre className={PSEUDO_CODE_CLASS}>{FOR_REMOVED_BOOK}</pre>
+                        </li>
+                        <li>
+                            For each added book, this action will be executed automatically
+                            <pre  className={PSEUDO_CODE_CLASS}>{FOR_ADDED_BOOK}</pre>
+                        </li>
+                    </ul>
+                </div>
+            </Collapse.Panel>
+        </Collapse>
     </Form.Item>
 );

@@ -1,4 +1,4 @@
-import { Modal, Form, Input } from "antd";
+import { Modal, Form, Input, Collapse, Row, Col } from "antd";
 import { useForm } from "antd/lib/form/Form";
 import { ModelType } from "graphql-ts-client-api";
 import { FC, memo, useCallback, useEffect } from "react";
@@ -79,6 +79,7 @@ export const BookDialog: FC<{
                 </Form.Item>
                 {AUTHORS_DESCRIPTION_ITEM}
             </Form>
+            {OK_DESCRIPTION}
         </Modal>
     );
 });
@@ -95,19 +96,23 @@ if (newStore !== undefined && cached(newStore.books)) {
 
 const STORE_DESCRITPION_ITEM = (
     <Form.Item label=" " colon={false}>
-        <div className={INFORMATION_CLASS}>
-            If you change this association "Book.store"
-            <ul>
-                <li>
-                    For the old store, this action will be executed automatically
-                    <pre className={PSEUDO_CODE_CLASS}>{FOR_OLD_STORE}</pre>
-                </li>
-                <li>
-                    For the new store, this action will be executed automatically
-                    <pre className={PSEUDO_CODE_CLASS}>{FOR_NEW_STORE}</pre>
-                </li>
-            </ul>
-        </div>
+        <Collapse ghost>
+            <Collapse.Panel key="title" header="Description of 'Book.store'">
+                <div className={INFORMATION_CLASS}>
+                    If you change this association "Book.store"
+                    <ul>
+                        <li>
+                            For the old store, this action will be executed automatically
+                            <pre className={PSEUDO_CODE_CLASS}>{FOR_OLD_STORE}</pre>
+                        </li>
+                        <li>
+                            For the new store, this action will be executed automatically
+                            <pre className={PSEUDO_CODE_CLASS}>{FOR_NEW_STORE}</pre>
+                        </li>
+                    </ul>
+                </div>
+            </Collapse.Panel>
+        </Collapse>
     </Form.Item>
 );
 
@@ -123,18 +128,42 @@ if (cached(addedAuthor.books)) {
 
 const AUTHORS_DESCRIPTION_ITEM = (
     <Form.Item label=" " colon={false}>
-        <div className={INFORMATION_CLASS}>
-            If you change this association "Book.authors"
-            <ul>
-                <li>
-                    For each removed author, this action will be executed automatically
-                    <pre className={PSEUDO_CODE_CLASS}>{FOR_REMOVED_AUTHOR}</pre>
-                </li>
-                <li>
-                    For each added author, this action will be executed automatically
-                    <pre className={PSEUDO_CODE_CLASS}>{FOR_ADDED_AUTHOR}</pre>
-                </li>
-            </ul>
-        </div>
+        <Collapse ghost>
+            <Collapse.Panel key="title" header="Description of 'Book.store'">
+                <div className={INFORMATION_CLASS}>
+                    If you change this association "Book.authors"
+                    <ul>
+                        <li>
+                            For each removed author, this action will be executed automatically
+                            <pre className={PSEUDO_CODE_CLASS}>{FOR_REMOVED_AUTHOR}</pre>
+                        </li>
+                        <li>
+                            For each added author, this action will be executed automatically
+                            <pre className={PSEUDO_CODE_CLASS}>{FOR_ADDED_AUTHOR}</pre>
+                        </li>
+                    </ul>
+                </div>
+            </Collapse.Panel>
+        </Collapse>
     </Form.Item>
+);
+
+const FOR_INSERTION = `
+Query.findBooks.add(this);
+`;
+
+const OK_DESCRIPTION = (
+    <Row>
+        <Col flex={1}/>
+        <Col>
+            <Collapse ghost>
+                <Collapse.Panel key="title" header="Description of 'OK' button">
+                    <div className={INFORMATION_CLASS}>
+                        If this dialog is used to insert new object into cache
+                        <pre className={PSEUDO_CODE_CLASS}>{FOR_INSERTION}</pre>
+                    </div>
+                </Collapse.Panel>
+            </Collapse>
+        </Col>
+    </Row>
 );

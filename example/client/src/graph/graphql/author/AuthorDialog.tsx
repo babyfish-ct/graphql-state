@@ -1,4 +1,4 @@
-import { Modal, Form, Input } from "antd";
+import { Modal, Form, Input, Collapse } from "antd";
 import { useForm } from "antd/lib/form/Form";
 import { ModelType } from "graphql-ts-client-api";
 import { FC, memo, useCallback, useEffect } from "react";
@@ -64,6 +64,7 @@ export const AuthorDialog: FC<{
                 <Form.Item label="Name" name="name">
                     <Input autoComplete="off"/>
                 </Form.Item>
+                {NAME_DESCRIPTION_ITEM}
                 <Form.Item label="Books" name="bookIds">
                     <BookMultiSelect/>
                 </Form.Item>
@@ -73,30 +74,123 @@ export const AuthorDialog: FC<{
     );
 });
 
+
+const FOR_NEW_NAME = `
+for (const parameterizedAuthors of 
+    cache.get(Query.findAuthors({...}))
+) {
+    // user optimizer or default optimizer
+    const optimizer = assocaitionProperties["Query.findAuthors"];
+
+    const dependencies = optimizer.dependencies(
+        parameterizedAuthors.variables
+    );
+
+    if (dependencies === undefined || dependencies.has("name)) {
+        const contains = optimizer.contains(this with newName);
+        if (contains === true) {
+            parameterizedAuthors.addIfAbsent(this);
+        } else (contains === false) {
+            parameterizedAuthors.removeIfExists(this);
+        } else {
+            cache.evict(parameterizedAuthors);
+            // Affected UI will reload data from server later
+        }
+    }
+
+    for (const parameterizedAuthors of 
+        cache.get(Book::authors({...}))
+    ) {
+
+        // user optimizer or default optimizer
+        const optimizer = assocaitionProperties["Book.authors"];
+
+        const dependencies = optimizer.dependencies(
+            parameterizedAuthors.variables
+        );
+    
+        if (dependencies === undefined || dependencies.has("name)) {
+            cache.evict(parameterizedAuthors);
+            // Affected UI will reload data from server later
+        }
+    }
+}
+`;
+
+const NAME_DESCRIPTION_ITEM = (
+    <Form.Item label=" " colon={false}>
+        <Collapse ghost>
+            <Collapse.Panel key="title" header="Description of 'Book.name'">
+                <div className={INFORMATION_CLASS}>
+                    If you change this scalar field "BookStore.name" by any of the following ways
+                    <ul>
+                        <li>insert: undefined -&gt; newName</li>
+                        <li>update: oldName -&gt; newName</li>
+                    </ul>
+                    (delete will be handed by other rules)
+                    <pre className={PSEUDO_CODE_CLASS}>{FOR_NEW_NAME}</pre>
+                </div>
+            </Collapse.Panel>
+        </Collapse>
+    </Form.Item>
+);
+
 const FOR_REMOVED_BOOK = `
+
+// Remove it from similar assocaitons with parameters
+for (const parameterizedBooks of cache.get(this.books({...}))) {
+    parameterizedBooks.remove(removedBook);
+}
+
 if (cached(removeBook.authors)) {
     removeBook.authors.remove(this);
 }`;
 
 const FOR_ADDED_BOOK = `
-if (cached(addedBook.authors)) {
-    addedBook.authors.add(this);
+
+// Add it into similar assocaitons with parameters
+for (const parameterizedBooks of cache.get(this.books({...}))) {
+
+    // user optimizer or default optimizer
+    const optimizer = assocaitionProperties["Author.books"];
+
+    const contains = optimizer.contains(
+        parameterizedBooks.variables, 
+        addedBook
+    );
+    if (contains === true) {
+        parameterizedBooks.insert(..., addedBook);
+    } else if (contains === false) {
+        // do nothing
+    } else {
+        cahce.evict(parameterizedBooks);
+        // Affected UI will reload data from server later
+    }
+}
+
+// Change opposite endpoint if it's cached
+if (cached(addedBook.authors({...}))) {
+    addedBook.authors({...}).add(this);
 }`;
 
 const BOOKS_DESCRIPTION_ITEM = (
     <Form.Item label=" " colon={false}>
-        <div className={INFORMATION_CLASS}>
-            If you change this association "Author.books"
-            <ul>
-                <li>
-                    For each removed book, this behavior will be executed automatically
-                    <pre className={PSEUDO_CODE_CLASS}>{FOR_REMOVED_BOOK}</pre>
-                </li>
-                <li>
-                    For each add book, this behavior will be executed automatically
-                    <pre className={PSEUDO_CODE_CLASS}>{FOR_ADDED_BOOK}</pre>
-                </li>
-            </ul>
-        </div>
+        <Collapse ghost>
+            <Collapse.Panel key="title" header="Description of 'Author.books'">
+                <div className={INFORMATION_CLASS}>
+                    If you change this association "Author.books"
+                    <ul>
+                        <li>
+                            For each removed book, this behavior will be executed automatically
+                            <pre className={PSEUDO_CODE_CLASS}>{FOR_REMOVED_BOOK}</pre>
+                        </li>
+                        <li>
+                            For each add book, this behavior will be executed automatically
+                            <pre className={PSEUDO_CODE_CLASS}>{FOR_ADDED_BOOK}</pre>
+                        </li>
+                    </ul>
+                </div>
+            </Collapse.Panel>
+        </Collapse>
     </Form.Item>
 );

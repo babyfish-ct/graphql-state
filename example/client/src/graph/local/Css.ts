@@ -9,7 +9,8 @@ export const INFORMATION_CLASS = css({
     borderRadius: 4,
     color: "gray",
     fontSize: "12px",
-    backgroundColor: "#ffe"
+    backgroundColor: "#ffe",
+    textAlign: "left"
 });
 
 export const PSEUDO_CODE_CLASS = css({

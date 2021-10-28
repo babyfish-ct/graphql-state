@@ -14,9 +14,11 @@ export const Filter: FC = memo(() => {
 
     return (
         <ComponentDecorator name="Filter">
+            
             <Input value={name()} 
             onChange={onNameChange} 
             placeholder="Please input name to filter books..."/>
+            In order to observe the optimized effect, don’t edit too fast
         </ComponentDecorator>
     );
 });
