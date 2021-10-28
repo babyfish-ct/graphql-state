@@ -7,6 +7,7 @@ import { App as EffectApp } from '../simple/effect/App';
 import { App as ScopeApp } from '../simple/scope/App';
 import { App as LocalDataApp } from '../graph/local/App';
 import { App as GraphQLServerApp } from  '../graph/graphql/App';
+import { App as RestApp } from '../graph/rest/App';
 import { App as PeakClippingApp } from '../graph/http/peak/App';
 import { App as ObjectApp } from '../graph/http/object/App';
 import { App as ShapeApp } from '../graph/http/shape/App';
@@ -33,6 +34,7 @@ export const ContentView: FC = memo(() =>{
                     <GraphQLServerApp withCustomerOptimization={true}/>
                 }
             />
+            <Route path="/graphState/restServer" component={RestApp}/>
             <Route path="/graphState/httpOpitimizator/peakClipping" component={PeakClippingApp}/>
             <Route path="/graphState/httpOpitimizator/objectBaseOnId" component={ObjectApp}/>
             <Route path="/graphState/httpOpitimizator/mergeDifferentShapes" component={ShapeApp}/>
