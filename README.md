@@ -4,7 +4,7 @@
 
 ### 1. GraphQL style but not only GraphQL
    
-1. If the server is not implemented based on GraphQL, the client will simulate a GraphQL implementation based on REST requests(Not implemented in 0.0.0).
+1. If the server is not implemented based on GraphQL, the client will simulate a GraphQL implementation based on REST requests(Not implemented in 0.0.1).
 
 ### 2. No unnecessary re-rendering 
 
@@ -90,6 +90,7 @@ This is the first version 0.0.0, and there is still some work to be done in the 
 2. Pagination support(connection is supported but pagination is not supported now)
 3. Cascade deleting for non-null many-to-assocaition
 4. Preload async state
+5. Support RestNework for REST server
 
 ### Long-term goal
 1. Transaction, save point, undo/redo 
