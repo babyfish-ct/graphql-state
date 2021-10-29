@@ -31,9 +31,8 @@ export declare class EntityManager {
     recordManager(typeName: string): RecordManager;
     findRefById(typeName: string, id: any): RecordRef | undefined;
     get modificationContext(): ModificationContext;
-    modify<T>(action: () => T): T;
+    modify<T>(action: () => T, forGC?: boolean): T;
     save(shape: RuntimeShape, objOrArray: object | readonly object[]): void;
-    visit(shape: RuntimeShape, objOrArray: object | readonly object[], visitor: EntityFieldVisitor): void;
     delete(typeName: string, idOrArray: any): void;
     evict(typeName: string, idOrArray: any): void;
     saveId(typeName: string, id: any): Record;
@@ -53,5 +52,14 @@ export declare class EntityManager {
     suspendBidirectionalAssociationManagement<T>(action: () => T): T;
     gc(): void;
     private onGC;
+    visit(shape: RuntimeShape, objOrArray: object | readonly object[], visitor: EntityFieldVisitor): void;
+    private visitObj;
 }
 export declare type EntityFieldVisitor = (id: any, runtimeType: TypeMetadata, field: FieldMetadata, args: VariableArgs | undefined, value: any) => void | boolean;
+export declare type Garbage = Record | FieldGarbage;
+interface FieldGarbage {
+    readonly record: Record;
+    readonly field: FieldMetadata;
+    readonly args: VariableArgs | undefined;
+}
+export {};

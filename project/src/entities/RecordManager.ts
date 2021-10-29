@@ -1,7 +1,7 @@
 import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { VariableArgs } from "../state/impl/Args";
-import { EntityFieldVisitor, EntityManager } from "./EntityManager";
+import { EntityFieldVisitor, EntityManager, Garbage } from "./EntityManager";
 import { QUERY_OBJECT_ID, Record } from "./Record";
 import { RecordRef } from "./RecordRef";
 import { RuntimeShape } from "./RuntimeShape";
@@ -47,96 +47,11 @@ export class RecordManager {
         return record;
     }
 
-    private insertId(id: any, runtimeType: TypeMetadata): Record {
-        const record = new Record(this.type, runtimeType, id);
+    private insertId(id: any, runtimeType: TypeMetadata, deleted: boolean = false): Record {
+        const superRecord = this.superManager?.insertId(id, runtimeType);
+        const record = new Record(superRecord, this.type, runtimeType, id, deleted);
         this.recordMap.set(id, record);
-        this.superManager?.insertId(id, runtimeType);
         return record;
-    }
-
-    visit(
-        shape: RuntimeShape, 
-        obj: any, 
-        runtimeTypeOrName: TypeMetadata | string,
-        visitor: EntityFieldVisitor
-    ) {
-        const runtimeType = 
-            typeof runtimeTypeOrName === "string" ? (
-                this.type.name === runtimeTypeOrName ? 
-                this.type : 
-                this.entityManager.schema.typeMap.get(runtimeTypeOrName)
-            ) :
-            runtimeTypeOrName;
-        if (runtimeType === undefined) {
-            throw new Error(`Cannot visit obj with illegal type "${runtimeTypeOrName}""`);
-        }
-        if (!this.type.isAssignableFrom(runtimeType)) {
-            throw new Error(`Cannot visit obj with illegal type "${runtimeType.name}" because that type is not derived type of "${this.type.name}"`);
-        }
-        if (typeof obj !== "object" || Array.isArray(obj)) {
-            throw new Error("Cannot visit data that is not plain object");
-        }
-        let idFieldName: string | undefined;
-        let id: any;
-        if (shape.typeName === 'Query') {
-            idFieldName = undefined;
-            id = QUERY_OBJECT_ID;
-        } else {
-            idFieldName = this.type.idField.name;
-            const idShapeField = shape.fieldMap.get(idFieldName);
-            if (idShapeField === undefined) {
-                throw new Error(`Cannot visit the object whose type is "${shape.typeName}" without id`);
-            }
-            id = obj[idShapeField.alias ?? idShapeField.name];
-            if (id === undefined || id === null) {
-                throw new Error(`Cannot visit the object whose type is "${shape.typeName}" without id`);
-            }
-        }
-        for (const [, shapeField] of shape.fieldMap) { 
-            if (shapeField.name !== idFieldName) {
-                const field = runtimeType.fieldMap.get(shapeField.name);
-                if (field === undefined) {
-                    throw new Error(`Cannot visit the non-existing field "${shapeField.name}" for type "${this.type.name}"`);
-                }
-                let value = obj[shapeField.alias ?? shapeField.name];
-                if (value === null) {
-                    value = undefined;
-                }
-                if (visitor(
-                    id, 
-                    runtimeType,
-                    field, 
-                    shapeField.args,
-                    value ) === false
-                ) {
-                    return;
-                }
-                if (value !== undefined && field.isAssociation && shapeField.childShape !== undefined) {
-                    switch (field.category) {
-                        case "REFERENCE":
-                            this
-                            .entityManager
-                            .visit(shapeField.childShape, value, visitor);
-                            break;
-                        case "LIST":
-                            if (Array.isArray(value)) {
-                                for (const element of value) {
-                                    this.entityManager.visit(shapeField.childShape, element, visitor);
-                                }
-                            }
-                            break;
-                        case "CONNECTION":
-                            const edges = value.edges;
-                            if (Array.isArray(edges)) {
-                                for (const edge of edges) {
-                                    this.entityManager.visit(shapeField.nodeShape!, edge.node, visitor);
-                                }
-                            }
-                            break;
-                    }
-                }
-            }
-        }
     }
 
     delete(id: any) {
@@ -145,8 +60,7 @@ export class RecordManager {
             this.entityManager.modificationContext.delete(record);
             record.delete(this.entityManager);
         } else {
-            record = new Record(this.type, id, true);
-            this.recordMap.set(id, record);
+            this.insertId(id, this.type, true);
         }
         this.superManager?.delete(id);
     }
@@ -158,6 +72,7 @@ export class RecordManager {
             this.recordMap.delete(id);
             record.dispose(this.entityManager);
         }
+        this.superManager?.evict(id);
     }
 
     forEach(visitor: (record: Record) => boolean | void) {
@@ -179,9 +94,11 @@ export class RecordManager {
         record.set(this.entityManager, field, args, value);
     }
 
-    markGarableFlag() {
+    collectGarbages(output: Garbage[]) {
         for (const record of this.recordMap.values()) {
-            record.markGarbageFlag();
+            if (record.staticType === record.runtimeType) {
+                record.collectGarbages(output);
+            }
         }
     }
 }

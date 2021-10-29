@@ -1,3 +1,4 @@
+import { string } from "yargs";
 import { EntityChangeEvent } from "..";
 import { AbstractDataService } from "../data/AbstractDataService";
 import { MergedDataService } from "../data/MergedDataService";
@@ -76,14 +77,18 @@ export class EntityManager {
         return ctx;
     }
 
-    modify<T>(action: () => T): T {
+    modify<T>(action: () => T, forGC: boolean = false): T {
         if (this._ctx !== undefined) {
+            if (forGC) {
+                throw new Error("Internal bug: cannot mdoify for GC under exsitsing modification context");
+            }
             return action();
         } else {
             this._ctx = new ModificationContext(
                 this.linkToQuery.bind(this),
                 this.publishEvictChangeEvent.bind(this),
-                this.publishEntityChangeEvent.bind(this)
+                this.publishEntityChangeEvent.bind(this),
+                forGC
             );
             try {
                 return action();
@@ -113,22 +118,6 @@ export class EntityManager {
                 );
             })
         });
-    }
-
-    visit(
-        shape: RuntimeShape,
-        objOrArray: object | readonly object[],
-        visitor: EntityFieldVisitor
-    ): void {
-        if (Array.isArray(objOrArray)) {
-            for (const obj of objOrArray) {
-                const typeName = obj["__typename"] ?? shape.typeName;
-                this.recordManager(typeName).visit(shape, obj, typeName, visitor);
-            }
-        } else if (objOrArray !== undefined && objOrArray !== null) {
-            const typeName = objOrArray["__typename"] ?? shape.typeName;
-            this.recordManager(typeName).visit(shape, objOrArray, typeName, visitor);
-        }
     }
 
     delete(
@@ -191,7 +180,10 @@ export class EntityManager {
             if (!this.schema.isAcceptable(args.fetcher.fetchableType)) {
                 throw new Error("Cannot accept that fetcher because it is not configured in the state manager");
             }
-            result = new QueryResult(this, args, () => this._queryResultMap.delete(args.key));
+            result = new QueryResult(this, args, () => { 
+                this._queryResultMap.delete(args.key); 
+                this.gc();
+            });
             this._queryResultMap.set(args.key, result);
         }
         return result.retain();
@@ -199,7 +191,7 @@ export class EntityManager {
 
     release(args: QueryArgs) {
         const result = this._queryResultMap.get(args.key);
-        result?.release(5000);
+        result?.release(60000);
     }
 
     addEvictListener(typeName: string | undefined, listener: (e: EntityEvictEvent) => void): void {
@@ -312,11 +304,120 @@ export class EntityManager {
     }
 
     private onGC() {
-        for (const rm of this._recordManagerMap.values()) {
-            rm.markGarableFlag();
-        }
         for (const result of this._queryResultMap.values()) {
             result.gcVisit();
+        }
+        const garbages: Garbage[] = [];
+        for (const rm of this._recordManagerMap.values()) {
+            rm.collectGarbages(garbages);
+        }
+        if (garbages.length !== 0) {
+            this.modify(() => {
+                for (const garbage of garbages) {
+                    if (garbage instanceof Record) {
+                        this.evict(garbage.runtimeType.name, garbage.id);
+                    } else {
+                        garbage.record.evict(this, garbage.field, garbage.args);
+                    }
+                }
+            }, true);
+        }
+    }
+
+    visit(
+        shape: RuntimeShape,
+        objOrArray: object | readonly object[],
+        visitor: EntityFieldVisitor
+    ): void {
+        const type = this.schema.typeMap.get(shape.typeName);
+        if (type === undefined) {
+            throw new Error(`Illegal type name "${shape.typeName}" of shape`);
+        }
+        if (Array.isArray(objOrArray)) {
+            for (const obj of objOrArray) {
+                this.visitObj(shape, obj, type, visitor);
+            }
+        } else if (objOrArray !== undefined && objOrArray !== null) {
+            this.visitObj(shape, objOrArray, type, visitor);
+        }
+    }
+
+    private visitObj(
+        shape: RuntimeShape, 
+        obj: any, 
+        type: TypeMetadata,
+        visitor: EntityFieldVisitor
+    ) {
+        const runtimeTypeName = obj["__typename"] ?? type.name;
+        const runtimeType = runtimeTypeName === type.name ? type : this.schema.typeMap.get(runtimeTypeName);
+        if (runtimeType === undefined) {
+            throw new Error(`Illegal typed name "${runtimeTypeName}" of obj["__typename"]`);
+        }
+        if (!type.isAssignableFrom(runtimeType)) {
+            throw new Error(
+                `Cannot visit obj with illegal type "${runtimeType.name}" because that type is not derived type of "${type.name}"`);
+        }
+        if (typeof obj !== "object" || Array.isArray(obj)) {
+            throw new Error("Cannot visit data that is not plain object");
+        }
+        let idFieldName: string | undefined;
+        let id: any;
+        if (shape.typeName === 'Query') {
+            idFieldName = undefined;
+            id = QUERY_OBJECT_ID;
+        } else {
+            idFieldName = type.idField.name;
+            const idShapeField = shape.fieldMap.get(idFieldName);
+            if (idShapeField === undefined) {
+                throw new Error(`Cannot visit the object whose type is "${shape.typeName}" without id`);
+            }
+            id = obj[idShapeField.alias ?? idShapeField.name];
+            if (id === undefined || id === null) {
+                throw new Error(`Cannot visit the object whose type is "${shape.typeName}" without id`);
+            }
+        }
+        for (const [, shapeField] of shape.fieldMap) { 
+            if (shapeField.name !== idFieldName) {
+                const field = runtimeType.fieldMap.get(shapeField.name);
+                if (field === undefined) {
+                    throw new Error(`Cannot visit the non-existing field "${shapeField.name}" for type "${type.name}"`);
+                }
+                let value = obj[shapeField.alias ?? shapeField.name];
+                if (value === null) {
+                    value = undefined;
+                }
+                if (visitor(
+                    id, 
+                    runtimeType,
+                    field, 
+                    shapeField.args,
+                    value ) === false
+                ) {
+                    return;
+                }
+                if (value !== undefined && field.isAssociation && shapeField.childShape !== undefined) {
+                    switch (field.category) {
+                        case "REFERENCE":
+                            this.visit(shapeField.childShape, value, visitor);
+                            break;
+                        case "LIST":
+                            if (Array.isArray(value)) {
+                                for (const element of value) {
+                                    this.visit(shapeField.childShape, element, visitor);
+                                }
+                            }
+                            break;
+                        case "CONNECTION":
+                            const edges = value.edges;
+                            if (Array.isArray(edges)) {
+                                for (const edge of edges) {
+                                    this.visit(shapeField.nodeShape!, edge.node, visitor);
+                                }
+                            }
+                            break;
+                    }
+                }
+            }
         }
     }
 }
@@ -328,3 +429,11 @@ export type EntityFieldVisitor = (
     args: VariableArgs | undefined,
     value: any
 ) => void | boolean;
+
+export type Garbage = Record | FieldGarbage;
+
+interface FieldGarbage {
+    readonly record: Record;
+    readonly field: FieldMetadata;
+    readonly args: VariableArgs | undefined;
+}

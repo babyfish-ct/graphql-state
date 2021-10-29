@@ -33,6 +33,7 @@ export const EntityLogList: FC = memo(() => {
                                         {
                                             log.event.eventType === "evict" && <>
                                                 evict {log.event.typeName}
+                                                { log.event.causedByGC && " by GC" }
                                             </>
                                         }
                                         {
@@ -72,6 +73,13 @@ const EntityEvictDetail: FC<{
                     <td className={LABEL_CLASS}>Object ID:</td>
                     <td>{event.id}</td>
                 </tr>
+                { 
+                    event.causedByGC && 
+                    <tr>
+                        <td className={LABEL_CLASS}>By GC:</td>
+                        <td>true</td>
+                    </tr>
+                }
                 <tr>
                     <td className={LABEL_CLASS}>Event Type:</td>
                     <td>{event.evictedType === 'row' ? "evict object": "evict fields"}</td>

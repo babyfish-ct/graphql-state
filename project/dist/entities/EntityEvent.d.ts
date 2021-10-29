@@ -2,6 +2,7 @@ export interface EntityEvictEvent {
     readonly eventType: "evict";
     readonly typeName: string;
     readonly id: any;
+    readonly causedByGC: boolean;
     readonly evictedType: "row" | "fields";
     readonly evictedKeys: ReadonlyArray<EntityKey>;
     has(evictedKey: EntityKey): boolean;

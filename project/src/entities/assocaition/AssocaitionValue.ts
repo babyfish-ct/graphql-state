@@ -10,7 +10,7 @@ export abstract class AssociationValue {
 
     private dependencies?: ReadonlySet<string> | "all";
 
-    isGarbage = false;
+    gcVisited = false;
 
     constructor(
         entityManager: EntityManager,
@@ -105,11 +105,13 @@ export abstract class AssociationValue {
     }
 
     onEntityEvict(entityManager: EntityManager, e: EntityEvictEvent) {
-        const targetType = this.association.field.targetType!;
-        const actualType = entityManager.schema.typeMap.get(e.typeName)!;
-        if (targetType!.isAssignableFrom(actualType)) {
-            if (e.evictedType === 'row' || this.isTargetChanged(targetType, e.evictedKeys)) {
-                this.evict(entityManager);
+        if (!e.causedByGC) {
+            const targetType = this.association.field.targetType!;
+            const actualType = entityManager.schema.typeMap.get(e.typeName)!;
+            if (targetType!.isAssignableFrom(actualType)) {
+                if (e.evictedType === 'row' || this.isTargetChanged(targetType, e.evictedKeys)) {
+                    this.evict(entityManager);
+                }
             }
         }
     }

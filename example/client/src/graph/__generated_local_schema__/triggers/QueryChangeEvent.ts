@@ -8,6 +8,8 @@ export interface QueryEvictEvent {
 
     readonly typeName: ImplementationType<"Query">;
 
+    readonly causedByGC: boolean;
+
     readonly evictedType: "row" | "fields";
 
     readonly evictedKeys: ReadonlyArray<QueryEntityKey<any>>;

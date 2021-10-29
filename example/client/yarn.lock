@@ -5604,22 +5604,21 @@ graceful-fs@^4.1.11, graceful-fs@^4.1.15, graceful-fs@^4.1.2, graceful-fs@^4.1.6
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.6.tgz#ff040b2b0853b23c3d31027523706f1885d76bee"
   integrity sha512-nTnJ528pbqxYanhpDYsi4Rd8MAeaBA67+RZ10CM1m3bTAVFEDcd5AuA4a6W5YkGZ1iNXHzZz8T6TBKLeBuNriQ==
 
-graphql-state@^0.0.0:
+"graphql-state@link:../../project":
   version "0.0.0"
-  resolved "https://registry.yarnpkg.com/graphql-state/-/graphql-state-0.0.0.tgz#f7a604da4684c377487e81c72840e65b9f3491e2"
-  integrity sha512-SBgwAikklG6UG+JIgsicLibLP6e5Kpn36uzvefZfFsQG7W+Niko01zxA8toUJfIKKA3TL2zB/aH3GILdwul7Pg==
+  uid ""
 
-graphql-ts-client-api@^3.0.4:
-  version "3.0.4"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.0.4.tgz#7be2c833d5c301125de33cee9fbac88a2d52732c"
-  integrity sha512-WNim28Xa/1gWRSnkDAyG2yxEosRvqPumQz8ibmKN4AWIvW90T8oYC1DVkMZKS1P9M+QdSovsPpZoARIaNvIZkg==
+graphql-ts-client-api@^3.0.7:
+  version "3.0.7"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.0.7.tgz#c8ec79ad92b30c8a3ea925fa0c086c537630c5bb"
+  integrity sha512-e6gPfyBht++leVEFEoZjbEhri4zUcdXdejZKsUajdZ/y5eOY1eTnj2fp1KL/AE5OyurYhC3jAouIbboeqCCAFA==
   dependencies:
     ts-md5 "^1.2.9"
 
-graphql-ts-client-codegen@^3.0.4:
-  version "3.0.4"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.0.4.tgz#2974a6210d463248aaf6b0783bf59bdb34dd7297"
-  integrity sha512-ukFEK0zgCatnehs1/xbva2S1AmTjPdbd4YELgF5+ts4Hb1ezq+qUUdx3R5LnycKScN98Lr/zKSbr8QgcGThSIg==
+graphql-ts-client-codegen@^3.0.7:
+  version "3.0.7"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.0.7.tgz#8c471d8ec12aa00e819582afe522180deee9f6d9"
+  integrity sha512-LbpWxsgbZZOaPggoX40AaIzZmKS5bboR/l0b+y+u5KEKebaSijvVIl9ab4MEHd/JCHoRzlwj1dy2YDE6eK6yoA==
   dependencies:
     "@types/node" "^15.12.2"
     "@types/node-fetch" "^2.5.10"
@@ -5628,9 +5627,9 @@ graphql-ts-client-codegen@^3.0.4:
     typescript "^4.3.2"
 
 graphql@^15.5.1:
-  version "15.7.1"
-  resolved "https://registry.yarnpkg.com/graphql/-/graphql-15.7.1.tgz#c821a1741e04e2bc2c91e138f34c06a86c0464f1"
-  integrity sha512-x34S6gC0/peBZnlK60zCJox/d45A7p6At9oN9EPA3qhoIAlR4LNZmXRLkICBckwwTMJzVdA8cx3QIQZMOl606A==
+  version "15.7.2"
+  resolved "https://registry.yarnpkg.com/graphql/-/graphql-15.7.2.tgz#85ab0eeb83722977151b3feb4d631b5f2ab287ef"
+  integrity sha512-AnnKk7hFQFmU/2I9YSQf3xw44ctnSFCfp3zE0N6W174gqe9fWG/2rKaKxROK7CcI3XtERpjEKFqts8o319Kf7A==
 
 growly@^1.3.0:
   version "1.3.0"
@@ -9692,14 +9691,9 @@ react-dev-utils@^11.0.3:
     strip-ansi "6.0.0"
     text-table "0.2.0"
 
-react-dom@^17.0.2:
-  version "17.0.2"
-  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-17.0.2.tgz#ecffb6845e3ad8dbfcdc498f0d0a939736502c23"
-  integrity sha512-s4h96KtLDUQlsENhMn1ar8t2bEa+q/YAtj8pPPdIjPDGBDIVNsrD9aXNWqspUe6AzKCIG0C1HZZLqLV7qpOBGA==
-  dependencies:
-    loose-envify "^1.1.0"
-    object-assign "^4.1.1"
-    scheduler "^0.20.2"
+"react-dom@link:../../project/node_modules/react-dom":
+  version "0.0.0"
+  uid ""
 
 react-error-overlay@^6.0.9:
   version "6.0.9"
@@ -9787,13 +9781,9 @@ react-scripts@4.0.3:
   optionalDependencies:
     fsevents "^2.1.3"
 
-react@^17.0.2:
-  version "17.0.2"
-  resolved "https://registry.yarnpkg.com/react/-/react-17.0.2.tgz#d0b5cc516d29eb3eee383f75b62864cfb6800037"
-  integrity sha512-gnhPt75i/dq/z3/6q/0asP78D0u592D5L1pd7M8P+dck6Fu/jJeL6iVVK23fptSUZj8Vjf++7wXA8UNclGQcbA==
-  dependencies:
-    loose-envify "^1.1.0"
-    object-assign "^4.1.1"
+"react@link:../../project/node_modules/react":
+  version "0.0.0"
+  uid ""
 
 read-pkg-up@^2.0.0:
   version "2.0.0"

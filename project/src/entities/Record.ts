@@ -6,7 +6,7 @@ import { SpaceSavingMap } from "../state/impl/SpaceSavingMap";
 import { Association } from "./assocaition/Association";
 import { RecordConnection } from "./assocaition/AssociationConnectionValue";
 import { BackReferences } from "./BackReferences";
-import { EntityManager } from "./EntityManager";
+import { EntityManager, Garbage } from "./EntityManager";
 
 export class Record {
 
@@ -18,14 +18,31 @@ export class Record {
 
     private row?: ScalarRow<any>;
 
-    private isGarable: boolean;
+    private gcVisited = false;
+
+    private derivedRecord?: Record;
 
     constructor(
+        readonly superRecord: Record | undefined,
         readonly staticType: TypeMetadata,
         readonly runtimeType: TypeMetadata, 
         readonly id: any, 
         private deleted: boolean = false
     ) {
+        if (superRecord !== undefined) {
+            if (superRecord.derivedRecord !== undefined) {
+                throw new Error(
+                    `Internal bug: Both "${
+                        staticType.name
+                    }" and "${
+                        superRecord.derivedRecord.staticType.name
+                    }" extends "${
+                        superRecord.staticType.name
+                    }"`
+                );
+            }
+            superRecord.derivedRecord = this;
+        }
         if (staticType.name === 'Mutation') {
             throw new Error(`Cannot create record for type 'Mutation'`);
         }
@@ -150,11 +167,14 @@ export class Record {
     }
 
     delete(entityManager: EntityManager) {
+        if (this.staticType.name === 'Query') {
+            throw new Error(`The object of special type 'Query' cannot be deleted`);
+        }
         if (this.deleted) {
             return;
         }
-        if (this.staticType.name === 'Query') {
-            throw new Error(`The object of special type 'Query' cannot be deleted`);
+        for (let record: Record | undefined = this.derivedRecord; record !== undefined; record = record.derivedRecord) {
+            record.delete(entityManager);
         }
         this.scalarMap.clear();
         this.disposeAssocaitions(entityManager);
@@ -165,6 +185,9 @@ export class Record {
             );
         });
         this.deleted = true;
+        for (let record: Record | undefined = this.superRecord; record !== undefined; record = record.superRecord) {
+            record.delete(entityManager);
+        }
     }
 
     undelete(): boolean {
@@ -206,11 +229,29 @@ export class Record {
         this.associationMap.clear();
     }
 
-    markGarbageFlag() {
-        this.isGarable = true;
+    gcVisit(field: FieldMetadata, args: VariableArgs | undefined) {
+        this.gcVisited = true;
+        for (let record: Record | undefined = this.superRecord; record !== undefined; record = record.superRecord) {
+            record.gcVisited = true;
+        }
+        for (let record: Record | undefined = this.derivedRecord; record !== undefined; record = record.derivedRecord) {
+            record.gcVisited = true;
+        }
+        if (field.isAssociation) {
+            this.associationMap.get(field)?.gcVisit(args);
+        }
+    }
+
+    collectGarbages(output: Garbage[]) {
+        if (this.gcVisited) {
+            this.gcVisited = false;
+        } else {
+            output.push(this);
+            return;
+        }
         this.associationMap.forEachValue(association => {
-            association.markGarbageFlag();
-        })
+            association.collectGarbages(output);
+        }) 
     }
 }
 

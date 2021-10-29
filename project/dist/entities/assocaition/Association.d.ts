@@ -1,5 +1,5 @@
 import { FieldMetadata } from "../../meta/impl/FieldMetadata";
-import { EntityManager } from "../EntityManager";
+import { EntityManager, Garbage } from "../EntityManager";
 import { Record } from "../Record";
 import { VariableArgs } from "../../state/impl/Args";
 import { RecordConnection } from "./AssociationConnectionValue";
@@ -21,5 +21,6 @@ export declare class Association {
     dispose(entityManager: EntityManager): void;
     private value;
     private changeLinks;
-    markGarbageFlag(): void;
+    gcVisit(args: VariableArgs | undefined): void;
+    collectGarbages(output: Garbage[]): void;
 }

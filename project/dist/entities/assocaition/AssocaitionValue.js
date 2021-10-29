@@ -6,7 +6,7 @@ class AssociationValue {
     constructor(entityManager, association, args) {
         this.association = association;
         this.args = args;
-        this.isGarbage = false;
+        this.gcVisited = false;
         const deps = association.field.associationProperties.dependencies(args === null || args === void 0 ? void 0 : args.variables);
         if (deps === undefined || deps === null || deps.length !== 0) {
             this.dependencies = deps === undefined || deps === null ? "all" : new Set(deps);
@@ -55,11 +55,13 @@ class AssociationValue {
         }
     }
     onEntityEvict(entityManager, e) {
-        const targetType = this.association.field.targetType;
-        const actualType = entityManager.schema.typeMap.get(e.typeName);
-        if (targetType.isAssignableFrom(actualType)) {
-            if (e.evictedType === 'row' || this.isTargetChanged(targetType, e.evictedKeys)) {
-                this.evict(entityManager);
+        if (!e.causedByGC) {
+            const targetType = this.association.field.targetType;
+            const actualType = entityManager.schema.typeMap.get(e.typeName);
+            if (targetType.isAssignableFrom(actualType)) {
+                if (e.evictedType === 'row' || this.isTargetChanged(targetType, e.evictedKeys)) {
+                    this.evict(entityManager);
+                }
             }
         }
     }

@@ -3,10 +3,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ModificationContext = void 0;
 const Args_1 = require("../state/impl/Args");
 class ModificationContext {
-    constructor(linkToQuery, publishEvictEvent, publishChangeEvent) {
+    constructor(linkToQuery, publishEvictEvent, publishChangeEvent, forGC) {
         this.linkToQuery = linkToQuery;
         this.publishEvictEvent = publishEvictEvent;
         this.publishChangeEvent = publishChangeEvent;
+        this.forGC = forGC;
         this.objPairMap = new Map();
     }
     close() {
@@ -29,11 +30,17 @@ class ModificationContext {
         } while (this.objPairMap.size !== 0);
     }
     insert(record) {
+        if (this.forGC) {
+            throw new Error("Internal bug: insertion is not supported for GC");
+        }
         if (record.staticType === record.runtimeType) {
             this.pair(record, false, true);
         }
     }
     delete(record) {
+        if (this.forGC) {
+            throw new Error("Internal bug: deletion is not supported for GC");
+        }
         if (record.staticType === record.runtimeType) {
             const pair = this.pair(record, true, false);
             pair.deleted = true;
@@ -47,6 +54,9 @@ class ModificationContext {
     }
     set(record, fieldName, args, oldValue, newValue) {
         var _a, _b;
+        if (this.forGC) {
+            throw new Error("Internal bug: set is not supported for GC");
+        }
         if (fieldName === record.runtimeType.idField.name) {
             throw new Error("Internal bug: the changed name cannot be id");
         }
@@ -111,7 +121,7 @@ class ModificationContext {
                 this.publishChangeEvent(new EntityChangeEventImpl(type.name, id, Array.from(oldValueMap.keys()).map(parseEntityKey), oldValueMap, undefined));
             }
             else {
-                this.publishEvictEvent(new EntityEvictEventImpl(type.name, id, "row", Array.from(oldValueMap.keys()).map(parseEntityKey), oldValueMap));
+                this.publishEvictEvent(new EntityEvictEventImpl(type.name, id, this.forGC, "row", Array.from(oldValueMap.keys()).map(parseEntityKey), oldValueMap));
             }
         }
         else {
@@ -136,7 +146,7 @@ class ModificationContext {
                 }
             }
             if (evictedValueMap.size !== 0) {
-                this.publishEvictEvent(new EntityEvictEventImpl(type.name, id, "fields", Array.from(evictedValueMap.keys()).map(parseEntityKey), evictedValueMap));
+                this.publishEvictEvent(new EntityEvictEventImpl(type.name, id, this.forGC, "fields", Array.from(evictedValueMap.keys()).map(parseEntityKey), evictedValueMap));
             }
             if (oldValueMap.size !== 0 || newValueMap.size !== 0) {
                 this.publishChangeEvent(new EntityChangeEventImpl(type.name, id, Array.from((newValueMap !== null && newValueMap !== void 0 ? newValueMap : oldValueMap).keys()).map(parseEntityKey), oldValueMap.size !== 0 ? oldValueMap : undefined, newValueMap.size !== 0 ? newValueMap : undefined));
@@ -153,9 +163,10 @@ function parseEntityKey(key) {
     };
 }
 class EntityEvictEventImpl {
-    constructor(typeName, id, evictedType, evictedKeys, oldValueMap) {
+    constructor(typeName, id, causedByGC, evictedType, evictedKeys, oldValueMap) {
         this.typeName = typeName;
         this.id = id;
+        this.causedByGC = causedByGC;
         this.evictedType = evictedType;
         this.evictedKeys = evictedKeys;
         this.oldValueMap = oldValueMap;

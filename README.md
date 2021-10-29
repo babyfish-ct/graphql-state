@@ -77,7 +77,7 @@ Access http://localhost:3000
 
 ## Dependencies
 1. React, version >= 17.0.0
-2. [graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client), version >= 3.0.4
+2. [graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client), version >= 3.0.7
 
 [graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client) is another framework created by me a few months ago, it's TypeScript-DSL for GraphQL with full features.
 
@@ -86,12 +86,15 @@ Access http://localhost:3000
 This is the first version 0.0.0, and there is still some work to be done in the future.
 
 ### Short-term goal
-1. GC for built-in cache database **(Emergency)**
-2. Doucment **(Emergency)**
-3. Pagination support(connection is supported but pagination is not supported now)
-4. Cascade deleting for non-null many-to-assocaition
-5. Preload async state
+1. Doucment **(Emergency)**
+2. Pagination support(connection is supported but pagination is not supported now)
+3. Cascade deleting for non-null many-to-assocaition
+4. Preload async state
 
 ### Long-term goal
 1. Transaction, save point, undo/redo 
 2. Chrome extension for data visualization
+
+
+## Change Log
+0.0.1     GC for built-in cache database

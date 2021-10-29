@@ -1,6 +1,6 @@
 import { FieldMetadata } from "../../meta/impl/FieldMetadata";
 import { SpaceSavingMap } from "../../state/impl/SpaceSavingMap";
-import { EntityManager } from "../EntityManager";
+import { EntityManager, Garbage } from "../EntityManager";
 import { Record } from "../Record";
 import { VariableArgs } from "../../state/impl/Args";
 import { AssociationValue } from "./AssocaitionValue";
@@ -227,9 +227,20 @@ export class Association {
         }
     }
 
-    markGarbageFlag() {
+    gcVisit(args: VariableArgs | undefined) {
+        const value = this.valueMap.get(args?.key);
+        if (value !== undefined) {
+            value.gcVisited = true;
+        }
+    }
+
+    collectGarbages(output: Garbage[]) {
         this.valueMap.forEachValue(value => {
-            value.isGarbage = true;
-        });
+            if (value.gcVisited) {
+                value.gcVisited = false;
+            } else {
+                output.push({record: this.record, field: this.field, args: value.args });
+            }
+        })
     }
 }

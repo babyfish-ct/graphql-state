@@ -6,7 +6,8 @@ const SpaceSavingMap_1 = require("../state/impl/SpaceSavingMap");
 const Association_1 = require("./assocaition/Association");
 const BackReferences_1 = require("./BackReferences");
 class Record {
-    constructor(staticType, runtimeType, id, deleted = false) {
+    constructor(superRecord, staticType, runtimeType, id, deleted = false) {
+        this.superRecord = superRecord;
         this.staticType = staticType;
         this.runtimeType = runtimeType;
         this.id = id;
@@ -14,6 +15,13 @@ class Record {
         this.scalarMap = new Map();
         this.associationMap = new SpaceSavingMap_1.SpaceSavingMap();
         this.backReferences = new BackReferences_1.BackReferences();
+        this.gcVisited = false;
+        if (superRecord !== undefined) {
+            if (superRecord.derivedRecord !== undefined) {
+                throw new Error(`Internal bug: Both "${staticType.name}" and "${superRecord.derivedRecord.staticType.name}" extends "${superRecord.staticType.name}"`);
+            }
+            superRecord.derivedRecord = this;
+        }
         if (staticType.name === 'Mutation') {
             throw new Error(`Cannot create record for type 'Mutation'`);
         }
@@ -101,11 +109,14 @@ class Record {
         }
     }
     delete(entityManager) {
+        if (this.staticType.name === 'Query') {
+            throw new Error(`The object of special type 'Query' cannot be deleted`);
+        }
         if (this.deleted) {
             return;
         }
-        if (this.staticType.name === 'Query') {
-            throw new Error(`The object of special type 'Query' cannot be deleted`);
+        for (let record = this.derivedRecord; record !== undefined; record = record.derivedRecord) {
+            record.delete(entityManager);
         }
         this.scalarMap.clear();
         this.disposeAssocaitions(entityManager);
@@ -114,6 +125,9 @@ class Record {
             (_a = record.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.unlinkAll(entityManager, this);
         });
         this.deleted = true;
+        for (let record = this.superRecord; record !== undefined; record = record.superRecord) {
+            record.delete(entityManager);
+        }
     }
     undelete() {
         if (this.deleted) {
@@ -149,10 +163,29 @@ class Record {
         });
         this.associationMap.clear();
     }
-    markGarbageFlag() {
-        this.isGarable = true;
+    gcVisit(field, args) {
+        var _a;
+        this.gcVisited = true;
+        for (let record = this.superRecord; record !== undefined; record = record.superRecord) {
+            record.gcVisited = true;
+        }
+        for (let record = this.derivedRecord; record !== undefined; record = record.derivedRecord) {
+            record.gcVisited = true;
+        }
+        if (field.isAssociation) {
+            (_a = this.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.gcVisit(args);
+        }
+    }
+    collectGarbages(output) {
+        if (this.gcVisited) {
+            this.gcVisited = false;
+        }
+        else {
+            output.push(this);
+            return;
+        }
         this.associationMap.forEachValue(association => {
-            association.markGarbageFlag();
+            association.collectGarbages(output);
         });
     }
 }

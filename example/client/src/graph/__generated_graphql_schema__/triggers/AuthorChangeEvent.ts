@@ -10,6 +10,8 @@ export interface AuthorEvictEvent {
 
     readonly id: string;
 
+    readonly causedByGC: boolean;
+
     readonly evictedType: "row" | "fields";
 
     readonly evictedKeys: ReadonlyArray<AuthorEntityKey<any>>;

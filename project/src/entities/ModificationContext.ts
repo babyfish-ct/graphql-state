@@ -10,7 +10,8 @@ export class ModificationContext {
     constructor(
         private linkToQuery: (type: TypeMetadata, id: any) => void,
         private publishEvictEvent: (event: EntityEvictEvent) => void,
-        private publishChangeEvent: (event: EntityChangeEvent) => void
+        private publishChangeEvent: (event: EntityChangeEvent) => void,
+        private forGC: boolean
     ) {}
 
     close() {
@@ -34,12 +35,18 @@ export class ModificationContext {
     }
 
     insert(record: Record) {
+        if (this.forGC) {
+            throw new Error("Internal bug: insertion is not supported for GC");
+        }
         if (record.staticType === record.runtimeType) {
             this.pair(record, false, true);
         }
     }
 
     delete(record: Record) {
+        if (this.forGC) {
+            throw new Error("Internal bug: deletion is not supported for GC");
+        }
         if (record.staticType === record.runtimeType) {
             const pair = this.pair(record, true, false);
             pair.deleted = true;
@@ -54,6 +61,9 @@ export class ModificationContext {
     }
 
     set(record: Record, fieldName: string, args: VariableArgs | undefined, oldValue: any, newValue: any) {
+        if (this.forGC) {
+            throw new Error("Internal bug: set is not supported for GC");
+        }
         if (fieldName === record.runtimeType.idField.name) {
             throw new Error("Internal bug: the changed name cannot be id");
         }
@@ -131,6 +141,7 @@ export class ModificationContext {
                     new EntityEvictEventImpl(
                         type.name,
                         id,
+                        this.forGC,
                         "row",
                         Array.from(oldValueMap.keys()).map(parseEntityKey),
                         oldValueMap
@@ -162,6 +173,7 @@ export class ModificationContext {
                     new EntityEvictEventImpl(
                         type.name,
                         id,
+                        this.forGC,
                         "fields",
                         Array.from(evictedValueMap.keys()).map(parseEntityKey),
                         evictedValueMap
@@ -204,6 +216,7 @@ class EntityEvictEventImpl implements EntityEvictEvent {
     constructor(
         readonly typeName: string,
         readonly id: any,
+        readonly causedByGC: boolean,
         readonly evictedType: "row" | "fields",
         readonly evictedKeys: ReadonlyArray<EntityKey>,
         private oldValueMap: ReadonlyMap<string, any>

@@ -201,6 +201,16 @@ class QueryResult {
         const data = this.loadable.data;
         if (data !== undefined) {
             const shape = this.queryArgs.shape;
+            this.entityManager.visit(shape, data, (id, _, field, args, value) => {
+                var _a;
+                if (value === undefined) {
+                    return false;
+                }
+                const record = (_a = this.entityManager.findRefById(field.declaringType.name, id)) === null || _a === void 0 ? void 0 : _a.value;
+                if (record !== undefined) {
+                    record.gcVisit(field, args);
+                }
+            });
         }
     }
 }
@@ -288,8 +298,8 @@ class TypeDependency {
             this.isAffectedByChangeEvent(e);
     }
     isAffectedByEvictEvent(e) {
-        if (e.evictedType === "row") {
-            return true;
+        if (e.causedByGC || e.evictedType === "row") {
+            return;
         }
         for (const entityKey of e.evictedKeys) {
             const key = typeof entityKey === "string" ?

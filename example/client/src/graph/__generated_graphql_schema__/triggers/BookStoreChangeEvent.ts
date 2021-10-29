@@ -10,6 +10,8 @@ export interface BookStoreEvictEvent {
 
     readonly id: string;
 
+    readonly causedByGC: boolean;
+
     readonly evictedType: "row" | "fields";
 
     readonly evictedKeys: ReadonlyArray<BookStoreEntityKey<any>>;

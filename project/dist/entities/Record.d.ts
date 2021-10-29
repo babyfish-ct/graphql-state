@@ -4,8 +4,9 @@ import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { VariableArgs } from "../state/impl/Args";
 import { RecordConnection } from "./assocaition/AssociationConnectionValue";
 import { BackReferences } from "./BackReferences";
-import { EntityManager } from "./EntityManager";
+import { EntityManager, Garbage } from "./EntityManager";
 export declare class Record {
+    readonly superRecord: Record | undefined;
     readonly staticType: TypeMetadata;
     readonly runtimeType: TypeMetadata;
     readonly id: any;
@@ -14,8 +15,9 @@ export declare class Record {
     private associationMap;
     readonly backReferences: BackReferences;
     private row?;
-    private isGarable;
-    constructor(staticType: TypeMetadata, runtimeType: TypeMetadata, id: any, deleted?: boolean);
+    private gcVisited;
+    private derivedRecord?;
+    constructor(superRecord: Record | undefined, staticType: TypeMetadata, runtimeType: TypeMetadata, id: any, deleted?: boolean);
     get isDeleted(): boolean;
     hasScalar(fieldName: string, args?: VariableArgs): boolean;
     getSalar(fieldName: string, args?: VariableArgs): any;
@@ -32,7 +34,8 @@ export declare class Record {
     createMap(): Map<string, any>;
     dispose(entityManager: EntityManager): void;
     private disposeAssocaitions;
-    markGarbageFlag(): void;
+    gcVisit(field: FieldMetadata, args: VariableArgs | undefined): void;
+    collectGarbages(output: Garbage[]): void;
 }
 export declare const QUERY_OBJECT_ID = "____QUERY_OBJECT____";
 export declare function objectWithOnlyId(record: Record | undefined): any;

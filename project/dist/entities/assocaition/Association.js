@@ -186,9 +186,20 @@ class Association {
             this.linkChanging = false;
         }
     }
-    markGarbageFlag() {
+    gcVisit(args) {
+        const value = this.valueMap.get(args === null || args === void 0 ? void 0 : args.key);
+        if (value !== undefined) {
+            value.gcVisited = true;
+        }
+    }
+    collectGarbages(output) {
         this.valueMap.forEachValue(value => {
-            value.isGarbage = true;
+            if (value.gcVisited) {
+                value.gcVisited = false;
+            }
+            else {
+                output.push({ record: this.record, field: this.field, args: value.args });
+            }
         });
     }
 }
