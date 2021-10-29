@@ -32,6 +32,7 @@ export declare class QueryResult {
     private _refetch;
     private get mode();
     private validateData;
+    gcVisit(): void;
 }
 export interface QueryLoadable<T> extends Loadable<T> {
     refetch: () => void;

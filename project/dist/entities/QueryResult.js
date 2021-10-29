@@ -95,7 +95,7 @@ class QueryResult {
                 return data;
             }
             if (!this._loadable.loading) {
-                this._loadable = Object.assign(Object.assign({}, this._loadable), { loading: true });
+                this._loadable = { loading: true, refetch: this._loadable.refetch };
                 this.entityManager.stateManager.publishQueryResultChangeEvent({
                     queryResult: this,
                     changedType: "ASYNC_STATE_CHANGE"
@@ -196,6 +196,12 @@ class QueryResult {
             }
         }
         return data;
+    }
+    gcVisit() {
+        const data = this.loadable.data;
+        if (data !== undefined) {
+            const shape = this.queryArgs.shape;
+        }
     }
 }
 exports.QueryResult = QueryResult;

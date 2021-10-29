@@ -149,6 +149,12 @@ class Record {
         });
         this.associationMap.clear();
     }
+    markGarbageFlag() {
+        this.isGarable = true;
+        this.associationMap.forEachValue(association => {
+            association.markGarbageFlag();
+        });
+    }
 }
 exports.Record = Record;
 exports.QUERY_OBJECT_ID = "____QUERY_OBJECT____";

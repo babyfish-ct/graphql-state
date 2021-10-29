@@ -118,7 +118,7 @@ export class QueryResult {
         }
 
         if (!this._loadable.loading) {
-            this._loadable = { ...this._loadable, loading: true };
+            this._loadable = { loading: true, refetch: this._loadable.refetch };
             this.entityManager.stateManager.publishQueryResultChangeEvent({
                 queryResult: this,
                 changedType: "ASYNC_STATE_CHANGE"
@@ -227,6 +227,13 @@ export class QueryResult {
             }
         }
         return data;
+    }
+
+    gcVisit() {
+        const data = this.loadable.data;
+        if (data !== undefined) {
+            const shape = this.queryArgs.shape;
+        }
     }
 }
 

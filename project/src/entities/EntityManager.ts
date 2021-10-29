@@ -2,8 +2,10 @@ import { EntityChangeEvent } from "..";
 import { AbstractDataService } from "../data/AbstractDataService";
 import { MergedDataService } from "../data/MergedDataService";
 import { RemoteDataService } from "../data/RemoteDataService";
+import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
+import { VariableArgs } from "../state/impl/Args";
 import { StateManagerImpl } from "../state/impl/StateManagerImpl";
 import { AssociationValue } from "./assocaition/AssocaitionValue";
 import { EntityEvictEvent } from "./EntityEvent";
@@ -34,6 +36,8 @@ export class EntityManager {
     private _associationValueObservers = new Set<AssociationValue>();
 
     private _bidirectionalAssociationManagementSuspending = false;
+
+    private _gcTimerId?: NodeJS.Timeout;
     
     constructor(
         readonly stateManager: StateManagerImpl<any>,
@@ -98,16 +102,33 @@ export class EntityManager {
         objOrArray: object | readonly object[]
     ): void {
         this.modify(() => {
-            if (Array.isArray(objOrArray)) {
-                for (const obj of objOrArray) {
-                    const typeName = obj["__typename"] ?? shape.typeName;
-                    this.recordManager(typeName).save(shape, obj, typeName);
-                }
-            } else if (objOrArray !== undefined && objOrArray !== null) {
-                const typeName = objOrArray["__typename"] ?? shape.typeName;
-                this.recordManager(typeName).save(shape, objOrArray, typeName);
-            }
+            this.visit(shape, objOrArray, (id, runtimeType, field, args, value) => {
+                const manager = this.recordManager(field.declaringType.name);
+                manager.set(
+                    id, 
+                    runtimeType,
+                    field, 
+                    args,
+                    value
+                );
+            })
         });
+    }
+
+    visit(
+        shape: RuntimeShape,
+        objOrArray: object | readonly object[],
+        visitor: EntityFieldVisitor
+    ): void {
+        if (Array.isArray(objOrArray)) {
+            for (const obj of objOrArray) {
+                const typeName = obj["__typename"] ?? shape.typeName;
+                this.recordManager(typeName).visit(shape, obj, typeName, visitor);
+            }
+        } else if (objOrArray !== undefined && objOrArray !== null) {
+            const typeName = objOrArray["__typename"] ?? shape.typeName;
+            this.recordManager(typeName).visit(shape, objOrArray, typeName, visitor);
+        }
     }
 
     delete(
@@ -280,4 +301,30 @@ export class EntityManager {
             this._bidirectionalAssociationManagementSuspending = false;
         }
     }
+
+    gc() {
+        if (this._gcTimerId === undefined) {
+            this._gcTimerId = setTimeout(() => {
+                this._gcTimerId = undefined;
+                this.onGC();
+            }, 0);
+        }
+    }
+
+    private onGC() {
+        for (const rm of this._recordManagerMap.values()) {
+            rm.markGarableFlag();
+        }
+        for (const result of this._queryResultMap.values()) {
+            result.gcVisit();
+        }
+    }
 }
+
+export type EntityFieldVisitor = (
+    id: any, 
+    runtimeType: TypeMetadata,
+    field: FieldMetadata, 
+    args: VariableArgs | undefined,
+    value: any
+) => void | boolean;

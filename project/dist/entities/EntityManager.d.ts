@@ -1,6 +1,9 @@
 import { EntityChangeEvent } from "..";
 import { AbstractDataService } from "../data/AbstractDataService";
+import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
+import { TypeMetadata } from "../meta/impl/TypeMetdata";
+import { VariableArgs } from "../state/impl/Args";
 import { StateManagerImpl } from "../state/impl/StateManagerImpl";
 import { AssociationValue } from "./assocaition/AssocaitionValue";
 import { EntityEvictEvent } from "./EntityEvent";
@@ -23,12 +26,14 @@ export declare class EntityManager {
     private _queryRecord?;
     private _associationValueObservers;
     private _bidirectionalAssociationManagementSuspending;
+    private _gcTimerId?;
     constructor(stateManager: StateManagerImpl<any>, schema: SchemaMetadata);
     recordManager(typeName: string): RecordManager;
     findRefById(typeName: string, id: any): RecordRef | undefined;
     get modificationContext(): ModificationContext;
     modify<T>(action: () => T): T;
     save(shape: RuntimeShape, objOrArray: object | readonly object[]): void;
+    visit(shape: RuntimeShape, objOrArray: object | readonly object[], visitor: EntityFieldVisitor): void;
     delete(typeName: string, idOrArray: any): void;
     evict(typeName: string, idOrArray: any): void;
     saveId(typeName: string, id: any): Record;
@@ -46,4 +51,7 @@ export declare class EntityManager {
     forEach(typeName: string, visitor: (record: Record) => boolean | void): void;
     get isBidirectionalAssociationManagementSuspending(): boolean;
     suspendBidirectionalAssociationManagement<T>(action: () => T): T;
+    gc(): void;
+    private onGC;
 }
+export declare type EntityFieldVisitor = (id: any, runtimeType: TypeMetadata, field: FieldMetadata, args: VariableArgs | undefined, value: any) => void | boolean;

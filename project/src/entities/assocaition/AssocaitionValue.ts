@@ -10,6 +10,8 @@ export abstract class AssociationValue {
 
     private dependencies?: ReadonlySet<string> | "all";
 
+    isGarbage = false;
+
     constructor(
         entityManager: EntityManager,
         readonly association: Association,

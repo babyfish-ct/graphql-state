@@ -8,6 +8,7 @@ export declare abstract class AssociationValue {
     readonly association: Association;
     readonly args?: VariableArgs | undefined;
     private dependencies?;
+    isGarbage: boolean;
     constructor(entityManager: EntityManager, association: Association, args?: VariableArgs | undefined);
     abstract getAsObject(): any | ReadonlyArray<any> | ObjectConnection | undefined;
     abstract get(): Record | ReadonlyArray<Record> | RecordConnection | undefined;

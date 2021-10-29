@@ -21,4 +21,5 @@ export declare class Association {
     dispose(entityManager: EntityManager): void;
     private value;
     private changeLinks;
+    markGarbageFlag(): void;
 }

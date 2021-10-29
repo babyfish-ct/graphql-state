@@ -67,18 +67,24 @@ class EntityManager {
     }
     save(shape, objOrArray) {
         this.modify(() => {
-            var _a, _b;
-            if (Array.isArray(objOrArray)) {
-                for (const obj of objOrArray) {
-                    const typeName = (_a = obj["__typename"]) !== null && _a !== void 0 ? _a : shape.typeName;
-                    this.recordManager(typeName).save(shape, obj, typeName);
-                }
-            }
-            else if (objOrArray !== undefined && objOrArray !== null) {
-                const typeName = (_b = objOrArray["__typename"]) !== null && _b !== void 0 ? _b : shape.typeName;
-                this.recordManager(typeName).save(shape, objOrArray, typeName);
-            }
+            this.visit(shape, objOrArray, (id, runtimeType, field, args, value) => {
+                const manager = this.recordManager(field.declaringType.name);
+                manager.set(id, runtimeType, field, args, value);
+            });
         });
+    }
+    visit(shape, objOrArray, visitor) {
+        var _a, _b;
+        if (Array.isArray(objOrArray)) {
+            for (const obj of objOrArray) {
+                const typeName = (_a = obj["__typename"]) !== null && _a !== void 0 ? _a : shape.typeName;
+                this.recordManager(typeName).visit(shape, obj, typeName, visitor);
+            }
+        }
+        else if (objOrArray !== undefined && objOrArray !== null) {
+            const typeName = (_b = objOrArray["__typename"]) !== null && _b !== void 0 ? _b : shape.typeName;
+            this.recordManager(typeName).visit(shape, objOrArray, typeName, visitor);
+        }
     }
     delete(typeName, idOrArray) {
         if (typeName === 'Query') {
@@ -231,6 +237,22 @@ class EntityManager {
         }
         finally {
             this._bidirectionalAssociationManagementSuspending = false;
+        }
+    }
+    gc() {
+        if (this._gcTimerId === undefined) {
+            this._gcTimerId = setTimeout(() => {
+                this._gcTimerId = undefined;
+                this.onGC();
+            }, 0);
+        }
+    }
+    onGC() {
+        for (const rm of this._recordManagerMap.values()) {
+            rm.markGarableFlag();
+        }
+        for (const result of this._queryResultMap.values()) {
+            result.gcVisit();
         }
     }
 }

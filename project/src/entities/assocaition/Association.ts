@@ -226,4 +226,10 @@ export class Association {
             this.linkChanging = false;
         }
     }
+
+    markGarbageFlag() {
+        this.valueMap.forEachValue(value => {
+            value.isGarbage = true;
+        });
+    }
 }

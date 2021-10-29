@@ -6,6 +6,7 @@ class AssociationValue {
     constructor(entityManager, association, args) {
         this.association = association;
         this.args = args;
+        this.isGarbage = false;
         const deps = association.field.associationProperties.dependencies(args === null || args === void 0 ? void 0 : args.variables);
         if (deps === undefined || deps === null || deps.length !== 0) {
             this.dependencies = deps === undefined || deps === null ? "all" : new Set(deps);

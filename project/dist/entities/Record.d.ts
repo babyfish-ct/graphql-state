@@ -14,6 +14,7 @@ export declare class Record {
     private associationMap;
     readonly backReferences: BackReferences;
     private row?;
+    private isGarable;
     constructor(staticType: TypeMetadata, runtimeType: TypeMetadata, id: any, deleted?: boolean);
     get isDeleted(): boolean;
     hasScalar(fieldName: string, args?: VariableArgs): boolean;
@@ -31,6 +32,7 @@ export declare class Record {
     createMap(): Map<string, any>;
     dispose(entityManager: EntityManager): void;
     private disposeAssocaitions;
+    markGarbageFlag(): void;
 }
 export declare const QUERY_OBJECT_ID = "____QUERY_OBJECT____";
 export declare function objectWithOnlyId(record: Record | undefined): any;

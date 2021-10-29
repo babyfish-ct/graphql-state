@@ -18,6 +18,8 @@ export class Record {
 
     private row?: ScalarRow<any>;
 
+    private isGarable: boolean;
+
     constructor(
         readonly staticType: TypeMetadata,
         readonly runtimeType: TypeMetadata, 
@@ -202,6 +204,13 @@ export class Record {
             assocaition.dispose(entityManager); 
         });
         this.associationMap.clear();
+    }
+
+    markGarbageFlag() {
+        this.isGarable = true;
+        this.associationMap.forEachValue(association => {
+            association.markGarbageFlag();
+        })
     }
 }
 
