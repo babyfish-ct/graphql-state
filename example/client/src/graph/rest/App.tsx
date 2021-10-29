@@ -2,7 +2,7 @@ import { FC, memo } from "react";
 
 export const App:FC = memo(() => {
     return <div style={{padding: "1rem"}}>
-        <h1>Not implemented in 0.0.0, will come soon</h1>
+        <h1>Not implemented in current version, will come soon</h1>
         <h3>In the future</h3>
         <p>
             If the server is not implemented based on GraphQL, 
