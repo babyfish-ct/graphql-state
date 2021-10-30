@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.makeManagedObjectHooks = exports.useMutation = exports.useQuery = exports.useStateAccessor = exports.useStateValue = exports.useStateManager = void 0;
+exports.makeManagedObjectHooks = exports.useMutation = exports.usePaginationQuery = exports.useQuery = exports.useStateAccessor = exports.useStateValue = exports.useStateManager = void 0;
 const react_1 = require("react");
 const StateManagerProvider_1 = require("./StateManagerProvider");
 const Holder_1 = require("./impl/Holder");
@@ -79,6 +79,10 @@ function useQuery(fetcher, options) {
     }
 }
 exports.useQuery = useQuery;
+function usePaginationQuery(fetcher, options) {
+    return useQuery(fetcher, options);
+}
+exports.usePaginationQuery = usePaginationQuery;
 function useMutation(fetcher, options) {
     const stateManager = useStateManager();
     const [, setMutationResultVersion] = react_1.useState(0);

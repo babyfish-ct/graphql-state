@@ -4,10 +4,11 @@ import { MutationResult } from "../../entities/MutationResult";
 import { QueryArgs } from "../../entities/QueryArgs";
 import { QueryResult } from "../../entities/QueryResult";
 import { ParameterizedStateAccessingOptions, State, StateAccessingOptions } from "../State";
-import { MutationOptions, QueryOptions } from "../StateHook";
+import { MutationOptions, PaginationQueryOptions, QueryOptions } from "../StateHook";
 import { QueryResultChangeEvent, StateManagerImpl, StateValueChangeEvent, StateValueChangeListener } from "./StateManagerImpl";
 import { StateValue } from "./StateValue";
 import { OptionArgs, VariableArgs } from "./Args";
+import { PaginationFetcherProcessor } from "../../entities/PaginationFetcherProcessor";
 
 export class StateValueHolder {
 
@@ -129,6 +130,11 @@ export class QueryResultHolder {
         ids?: ReadonlyArray<any>,
         options?: QueryOptions<any, any>
     ) {
+        if ((options as PaginationQueryOptions<any, any> | undefined)?.initializedSize !== undefined) {
+            const paginationFetcher = new PaginationFetcherProcessor(this.stateManager.entityManager.schema)
+            .process(fetcher, "retain-all");
+            console.log(paginationFetcher.toString());
+        }
         const oldQueryArgs = this.queryResult?.queryArgs;
         const newQueryArgs = QueryArgs.create(fetcher, ids, OptionArgs.of(options));
 
@@ -177,6 +183,10 @@ export class QueryResultHolder {
             }
         }
     }
+}
+
+export class PaginationQueryResultHolder {
+    
 }
 
 export class MutationResultHolder{

@@ -2,7 +2,7 @@ import { EntityChangeEvent } from "..";
 import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 import { VariableArgs } from "../state/impl/Args";
 import { Loadable } from "../state/impl/StateValue";
-import { ObjectQueryOptions, ObjectStyles, QueryMode } from "../state/StateHook";
+import { ObjectQueryOptions, ObjectStyle, QueryMode } from "../state/StateHook";
 import { EntityEvictEvent } from "./EntityEvent";
 import { EntityManager } from "./EntityManager";
 import { QueryArgs } from "./QueryArgs";
@@ -210,7 +210,7 @@ export class QueryResult {
 
     private validateData(data: any): any {
         if (this.queryArgs.ids !== undefined) {
-            const objectStyle: ObjectStyles = 
+            const objectStyle: ObjectStyle = 
                 (
                     this.queryArgs.optionsArgs?.options as ObjectQueryOptions<any, any, any> | undefined
                 )?.objectStyle 

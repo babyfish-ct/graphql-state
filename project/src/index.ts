@@ -11,6 +11,7 @@ export {
     useStateValue, 
     useStateAccessor, 
     useQuery, 
+    usePaginationQuery,
     useMutation, 
     makeManagedObjectHooks 
 } from './state/StateHook';

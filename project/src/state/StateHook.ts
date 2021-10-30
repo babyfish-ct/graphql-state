@@ -39,12 +39,12 @@ export function useStateValue<T, TVariables>(
     options: ParameterizedStateAccessingOptions<TVariables>
 ): T;
 
-export function useStateValue<T, TAsyncStyle extends AsyncStyles = "suspense">(
+export function useStateValue<T, TAsyncStyle extends AsyncStyle = "suspense">(
     state: SingleAsyncState<T>,
     options?: StateAccessingOptions & AsyncOptions<TAsyncStyle>
 ): AsyncReturnType<T, TAsyncStyle>;
 
-export function useStateValue<T, TVariables, TAsyncStyle extends AsyncStyles = "suspense">(
+export function useStateValue<T, TVariables, TAsyncStyle extends AsyncStyle = "suspense">(
     state: ParameterizedAsyncState<T, TVariables>,
     options: ParameterizedStateAccessingOptions<TVariables> & AsyncOptions<TAsyncStyle>
 ): AsyncReturnType<T, TAsyncStyle>;
@@ -114,19 +114,9 @@ export interface StateAccessor<T> {
     (value: T): void;
 }
 
-export interface AsyncOptions<TAsyncStyle extends AsyncStyles = "suspense"> {
+export interface AsyncOptions<TAsyncStyle extends AsyncStyle = "suspense"> {
     readonly asyncStyle?: TAsyncStyle;
 }
-
-export type AsyncReturnType<T, TAsyncStyle extends AsyncStyles> =
-    TAsyncStyle extends "async-object" ?
-    UseStateAsyncValueHookResult<T> :
-    TAsyncStyle extends "refetchable-suspense" ?
-    [T, () => void] :
-    T
-;
-
-export type AsyncStyles = "suspense" | "refetchable-suspense" | "async-object";
 
 export interface UseStateAsyncValueHookResult<T> {
     readonly data: T;
@@ -135,10 +125,40 @@ export interface UseStateAsyncValueHookResult<T> {
     readonly refetch: () => void;
 }
 
+export type AsyncReturnType<T, TAsyncStyle extends AsyncStyle> =
+    TAsyncStyle extends "async-object" ?
+    UseStateAsyncValueHookResult<T> :
+    TAsyncStyle extends "refetchable-suspense" ?
+    [T, () => void] :
+    T
+;
+
+export type AsyncPaginationReturnType<T, TAsyncStyle extends AsyncStyle> =
+    (
+        TAsyncStyle extends "async-object" ? {
+            readonly loading: boolean,
+            readonly error: any
+        } : {
+        }
+    ) & 
+    { 
+        readonly data: T, 
+        readonly refetch: () => void,
+        readonly loadNext: () => void,
+        readonly loadPrevious: () => void,
+        readonly hasNext: boolean,
+        readonly hasPrevious: boolean,
+        readonly isLoadingNext: boolean,
+        readonly isLoadingPrevious: boolean
+    }
+;
+
+export type AsyncStyle = "suspense" | "refetchable-suspense" | "async-object";
+
 export function useQuery<
     T extends object,
     TVaraibles extends object,
-    TAsyncStyle extends AsyncStyles = "suspense"
+    TAsyncStyle extends AsyncStyle = "suspense"
 >(
     fetcher: ObjectFetcher<"Query", T, TVaraibles>,
     options?: QueryOptions<TVaraibles, TAsyncStyle>
@@ -163,6 +183,17 @@ export function useQuery<
         queryResultHolder.release();
         throw ex;
     }
+}
+
+export function usePaginationQuery<
+    T extends object,
+    TVaraibles extends object,
+    TAsyncStyle extends AsyncStyle = "suspense"
+>(
+    fetcher: ObjectFetcher<"Query", T, TVaraibles>,
+    options?: PaginationQueryOptions<TVaraibles, TAsyncStyle>,    
+): AsyncPaginationReturnType<T, TAsyncStyle> {
+    return useQuery(fetcher, options) as any;
 }
 
 export function useMutation<
@@ -190,8 +221,8 @@ export interface ManagedObjectHooks<TSchema extends SchemaType> {
         TName extends keyof TSchema["entities"] & string,
         T extends object,
         TVariables extends object,
-        TAsyncStyle extends AsyncStyles = "suspense",
-        TObjectStyle extends ObjectStyles = "required",
+        TAsyncStyle extends AsyncStyle = "suspense",
+        TObjectStyle extends ObjectStyle = "required",
     >(
         fetcher: Fetcher<string, T, TVariables>,
         id: TSchema["entities"][TName][" $id"],
@@ -205,8 +236,8 @@ export interface ManagedObjectHooks<TSchema extends SchemaType> {
         TName extends keyof TSchema["entities"] & string,
         T extends object,
         TVariables extends object,
-        TAsyncStyle extends AsyncStyles = "suspense",
-        TObjectStyle extends ObjectStyles = "required"
+        TAsyncStyle extends AsyncStyle = "suspense",
+        TObjectStyle extends ObjectStyle = "required"
     >(
         fetcher: Fetcher<string, T, TVariables>,
         ids: ReadonlyArray<TSchema["entities"][TName][" $id"]>,
@@ -217,9 +248,16 @@ export interface ManagedObjectHooks<TSchema extends SchemaType> {
     >;
 }
 
-export interface QueryOptions<TVariables extends object, TAsyncStyle extends AsyncStyles> extends AsyncOptions<TAsyncStyle> {
+export interface QueryOptions<TVariables extends object, TAsyncStyle extends AsyncStyle> extends AsyncOptions<TAsyncStyle> {
     readonly variables?: TVariables;
     readonly mode?: QueryMode;
+}
+
+export interface PaginationQueryOptions<TVariables extends object, TAsyncStyle extends AsyncStyle> 
+extends QueryOptions<TVariables, TAsyncStyle> {
+    readonly initializedSize: number;
+    readonly pageSize?: number;
+    readonly paginiationStyle?: PaginationStyle
 }
 
 export interface MutationOptions<T, TVariables extends object> {
@@ -231,17 +269,19 @@ export interface MutationOptions<T, TVariables extends object> {
 
 export type QueryMode = "cache-and-network" | "cache-only";
 
-export type ObjectStyles = "required" | "optional";
+export type ObjectStyle = "required" | "optional";
+
+export type PaginationStyle = "retain-all" | "retain-page";
 
 export interface ObjectQueryOptions<
     TVariables extends object, 
-    TAsyncStyle extends AsyncStyles, 
-    TObjectStyle extends ObjectStyles
+    TAsyncStyle extends AsyncStyle, 
+    TObjectStyle extends ObjectStyle
 > extends QueryOptions<TVariables, TAsyncStyle> {
     readonly objectStyle: TObjectStyle;
 }
 
-type ObjectReference<T, TObjectStyle extends ObjectStyles> = TObjectStyle extends "required" ? T : T | undefined;
+type ObjectReference<T, TObjectStyle extends ObjectStyle> = TObjectStyle extends "required" ? T : T | undefined;
 
 class ManagedObjectHooksImpl<TSchema extends SchemaType> implements ManagedObjectHooks<TSchema> {
 
@@ -249,8 +289,8 @@ class ManagedObjectHooksImpl<TSchema extends SchemaType> implements ManagedObjec
         TName extends keyof TSchema["entities"] & string,
         T extends object,
         TVariables extends object,
-        TAsyncStyle extends AsyncStyles = "suspense",
-        TObjectStyle extends ObjectStyles = "required"
+        TAsyncStyle extends AsyncStyle = "suspense",
+        TObjectStyle extends ObjectStyle = "required"
     >(
         fetcher: ObjectFetcher<string, T, TVariables>,
         id: TSchema["entities"][TName][" $id"],
@@ -297,8 +337,8 @@ class ManagedObjectHooksImpl<TSchema extends SchemaType> implements ManagedObjec
         TName extends keyof TSchema["entities"] & string,
         T extends object,
         TVariables extends object,
-        TAsyncStyle extends AsyncStyles = "suspense",
-        TObjectStyle extends ObjectStyles = "required"
+        TAsyncStyle extends AsyncStyle = "suspense",
+        TObjectStyle extends ObjectStyle = "required"
     >(
         fetcher: ObjectFetcher<string, T, TVariables>,
         ids: ReadonlyArray<TSchema["entities"][TName][" $id"]>,

@@ -1,9 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MutationResultHolder = exports.QueryResultHolder = exports.StateValueHolder = void 0;
+exports.MutationResultHolder = exports.PaginationQueryResultHolder = exports.QueryResultHolder = exports.StateValueHolder = void 0;
 const MutationResult_1 = require("../../entities/MutationResult");
 const QueryArgs_1 = require("../../entities/QueryArgs");
 const Args_1 = require("./Args");
+const PaginationFetcherProcessor_1 = require("../../entities/PaginationFetcherProcessor");
 class StateValueHolder {
     constructor(stateManager, scopePath, localUpdater) {
         this.stateManager = stateManager;
@@ -85,13 +86,18 @@ class QueryResultHolder {
         return result;
     }
     set(fetcher, ids, options) {
-        var _a, _b;
-        const oldQueryArgs = (_a = this.queryResult) === null || _a === void 0 ? void 0 : _a.queryArgs;
+        var _a, _b, _c;
+        if (((_a = options) === null || _a === void 0 ? void 0 : _a.initializedSize) !== undefined) {
+            const paginationFetcher = new PaginationFetcherProcessor_1.PaginationFetcherProcessor(this.stateManager.entityManager.schema)
+                .process(fetcher, "retain-all");
+            console.log(paginationFetcher.toString());
+        }
+        const oldQueryArgs = (_b = this.queryResult) === null || _b === void 0 ? void 0 : _b.queryArgs;
         const newQueryArgs = QueryArgs_1.QueryArgs.create(fetcher, ids, Args_1.OptionArgs.of(options));
         if ((oldQueryArgs === null || oldQueryArgs === void 0 ? void 0 : oldQueryArgs.key) === newQueryArgs.key) {
             return;
         }
-        if ((_b = this.queryResult) === null || _b === void 0 ? void 0 : _b.loadable.loading) { //Peak clipping
+        if ((_c = this.queryResult) === null || _c === void 0 ? void 0 : _c.loadable.loading) { //Peak clipping
             this.deferred = { fetcher, ids, options };
             return;
         }
@@ -131,6 +137,9 @@ class QueryResultHolder {
     }
 }
 exports.QueryResultHolder = QueryResultHolder;
+class PaginationQueryResultHolder {
+}
+exports.PaginationQueryResultHolder = PaginationQueryResultHolder;
 class MutationResultHolder {
     constructor(stateManager, localUpdater) {
         this.stateManager = stateManager;

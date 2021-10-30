@@ -30,6 +30,8 @@ export declare class QueryResultHolder {
     set(fetcher: ObjectFetcher<string, object, object>, ids?: ReadonlyArray<any>, options?: QueryOptions<any, any>): void;
     release(): void;
 }
+export declare class PaginationQueryResultHolder {
+}
 export declare class MutationResultHolder {
     private stateManager;
     private localUpdater;

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.StateScope = exports.StateManagerProvider = exports.makeStateFactory = exports.newConfiguration = exports.makeManagedObjectHooks = exports.useMutation = exports.useQuery = exports.useStateAccessor = exports.useStateValue = exports.useStateManager = exports.GraphQLNetwork = void 0;
+exports.StateScope = exports.StateManagerProvider = exports.makeStateFactory = exports.newConfiguration = exports.makeManagedObjectHooks = exports.useMutation = exports.usePaginationQuery = exports.useQuery = exports.useStateAccessor = exports.useStateValue = exports.useStateManager = exports.GraphQLNetwork = void 0;
 var Configuration_1 = require("./meta/Configuration");
 Object.defineProperty(exports, "GraphQLNetwork", { enumerable: true, get: function () { return Configuration_1.GraphQLNetwork; } });
 var StateHook_1 = require("./state/StateHook");
@@ -8,6 +8,7 @@ Object.defineProperty(exports, "useStateManager", { enumerable: true, get: funct
 Object.defineProperty(exports, "useStateValue", { enumerable: true, get: function () { return StateHook_1.useStateValue; } });
 Object.defineProperty(exports, "useStateAccessor", { enumerable: true, get: function () { return StateHook_1.useStateAccessor; } });
 Object.defineProperty(exports, "useQuery", { enumerable: true, get: function () { return StateHook_1.useQuery; } });
+Object.defineProperty(exports, "usePaginationQuery", { enumerable: true, get: function () { return StateHook_1.usePaginationQuery; } });
 Object.defineProperty(exports, "useMutation", { enumerable: true, get: function () { return StateHook_1.useMutation; } });
 Object.defineProperty(exports, "makeManagedObjectHooks", { enumerable: true, get: function () { return StateHook_1.makeManagedObjectHooks; } });
 var ConfigurationImpl_1 = require("./meta/impl/ConfigurationImpl");

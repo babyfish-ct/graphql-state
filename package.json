@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "graphql-ts-client-api": "^3.0.7"
+  }
+}

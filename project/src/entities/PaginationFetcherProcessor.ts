@@ -1,0 +1,151 @@
+import { Fetcher, FetcherField, ObjectFetcher, ParameterRef } from "graphql-ts-client-api"
+import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
+import { PaginationStyle } from "../state/StateHook";
+
+export class PaginationFetcherProcessor {
+
+    constructor(private schema: SchemaMetadata) {}
+    
+    process(
+        fetcher: ObjectFetcher<string, object, object>,
+        paginationStyle: PaginationStyle
+    ): ObjectFetcher<string, object, object> {
+        const [connName, connField] = this.findConnectionField(fetcher);
+        return this.adjustConnection(fetcher, connName, connField);
+    }
+
+    private findConnectionField(
+        fetcher: Fetcher<string, object, object>
+    ): [string, FetcherField] {
+        const fetchableFieldMap = fetcher.fetchableType.fields;
+        let connName: string | undefined = undefined;
+        let connField: FetcherField | undefined = undefined;
+        for (const [name, field] of fetcher.fieldMap) {
+            const fetchableField = fetchableFieldMap.get(name);
+            if (fetchableField?.category === "CONNECTION") {
+                if (connName !== undefined) {
+                    throw new Error(
+                        `Cannot parse pagiation query because there are two root connection fields of the fetcher: ` +
+                        `"${connName}" and "${name}"`
+                    );
+                }
+                connName = name;
+                connField = field;
+            }
+        }
+        if (connName === undefined || connField === undefined) {
+            throw new Error(
+                `Cannot parse pagiation query because there are no connection root fields of the fetcher`
+            );
+        }
+        for (const argName of CONN_ARG_NAMES) {
+            if (connField.argGraphQLTypes?.has(argName) !== true) {
+                throw new Error(`Cannot parse pagiation query because there is not argument "${argName}" of connection field "${connName}"`);
+            }
+            if (isArgumentSpecified(connField.args, argName)) {
+                throw new Error(`Cannot parse pagiation query, the argument "${argName}" of connection field "${connName}" cannot be specified`);
+            }
+        }
+        return [connName, connField];
+    }
+
+    private adjustConnection(
+        fetcher: ObjectFetcher<string, object, object>,
+        connName: string,
+        connField: FetcherField
+    ): ObjectFetcher<string, object, object> {
+        if (connField.childFetchers === undefined) {
+            throw new Error(`No child fetcher for connection`);
+        }
+        for (const childFetcher of connField.childFetchers) {
+            for (const name of childFetcher.fieldMap.keys()) {
+                if (name.startsWith("...")) {
+                    throw new Error("Fragment is forbidden in pageInfo");
+                }
+            }
+        }
+        return fetcher[connName](
+            { 
+                ...connField.args,
+                first: ParameterRef.of(GRAPHQL_STATE_FIRST),
+                after: ParameterRef.of(GRAPHQL_STATE_AFTER),
+                last: ParameterRef.of(GRAPHQL_STATE_LAST),
+                before: ParameterRef.of(GRAPHQL_STATE_BEFORE)
+            },
+            this.adjustPageInfo(connField.childFetchers[0])
+        );
+    }
+
+    private adjustPageInfo(
+        connFetcher: Fetcher<string, object, object>
+    ): Fetcher<string, object, object> {
+        const pageInfoFetchableField = connFetcher.fetchableType.fields.get("pageInfo");
+        if (pageInfoFetchableField === undefined) {
+            throw new Error(`No field "pageInfo" declared in "${connFetcher.fetchableType.name}"`);
+        }
+        if (pageInfoFetchableField.targetTypeName === undefined) {
+            throw new Error(`The field "pageInfo" of "${connFetcher.fetchableType.name}" cannot be simple scalar type`);
+        }
+        const pageInfoFetcher = this.schema.fetcher(pageInfoFetchableField.targetTypeName);
+        if (pageInfoFetcher === undefined) {
+            throw new Error(`No fetcher for "${pageInfoFetchableField.targetTypeName}" is added into schema`);
+        }
+        for (const argName of PAGE_ARG_NAMES) {
+            if (!pageInfoFetcher.fetchableType.fields.has(argName)) {
+                throw new Error(`There is no field "${argName}" declared in "${pageInfoFetchableField.targetTypeName}"`);
+            }
+            if (pageInfoFetcher.fetchableType.fields.get(argName)!.isFunction) {
+                throw new Error(`The field "${argName}" declared in "${pageInfoFetchableField.targetTypeName}" must be simple field`);
+            }
+        }
+        let pageInfoField = connFetcher.fieldMap.get("pageInfo");
+        if (pageInfoField === undefined || pageInfoField.childFetchers === undefined || pageInfoField.childFetchers.length === 0) {
+            return connFetcher["pageInfo"](
+                pageInfoFetcher["hasNextPage"]["hasPreviousPage"]["startCursor"]["endCursor"]
+            );
+        }
+        const pageArgFlags = [ false, false, false, false ];
+        for (const childFetcher of pageInfoField.childFetchers) {
+            for (const name of childFetcher.fieldMap.keys()) {
+                if (name.startsWith("...")) {
+                    throw new Error("Fragment is forbidden in pageInfo");
+                }
+                const index = PAGE_ARG_NAMES.indexOf(name);
+                if (index !== -1) {
+                    pageArgFlags[index] = true;
+                }
+            }
+        }
+        let existingPageInfoFetcher = pageInfoField.childFetchers[0];
+        for (let i = 0; i < PAGE_ARG_NAMES.length; i++) {
+            if (!pageArgFlags[i]) {
+                existingPageInfoFetcher = existingPageInfoFetcher[PAGE_ARG_NAMES[i]];
+            }
+        }
+        return connFetcher["pageInfo"](
+            existingPageInfoFetcher
+        );
+    }
+}
+
+export const GRAPHQL_STATE_FIRST = "graphql_state_first__";
+export const GRAPHQL_STATE_AFTER = "graphql_state_after__";
+export const GRAPHQL_STATE_LAST = "graphql_state_last__";
+export const GRAPHQL_STATE_BEFORE = "graphql_state_before__";
+
+function isArgumentSpecified(args: any, name: string) {
+    if (args !== undefined) {
+        const value = args[name];
+        if (value !== undefined) {
+            if (value[" $__instanceOfParameterRef"] && (value as ParameterRef<any>).name === name) {
+                return false;
+            }
+            return true;
+        }
+    }
+    return false;
+}
+
+const CONN_ARG_NAMES = ["first", "after", "last", "before"];
+
+const PAGE_ARG_NAMES = ["hasNextPage", "hasPreviousPage", "startCursor", "endCursor"];

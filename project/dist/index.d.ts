@@ -1,5 +1,5 @@
 export { Configuration, ScalarRow, ParameterizedAssociationProperties, UnparameterizedAssociationProperties, Network, GraphQLNetwork } from './meta/Configuration';
-export { useStateManager, useStateValue, useStateAccessor, useQuery, useMutation, makeManagedObjectHooks } from './state/StateHook';
+export { useStateManager, useStateValue, useStateAccessor, useQuery, usePaginationQuery, useMutation, makeManagedObjectHooks } from './state/StateHook';
 export { PositionType } from './meta/Configuration';
 export { newConfiguration } from './meta/impl/ConfigurationImpl';
 export { StateManager } from './state/StateManager';
