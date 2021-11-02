@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GRAPHQL_STATE_BEFORE = exports.GRAPHQL_STATE_LAST = exports.GRAPHQL_STATE_AFTER = exports.GRAPHQL_STATE_FIRST = exports.GRAPHQL_STATE_WINDOW_ID = exports.PaginationFetcherProcessor = void 0;
+exports.GRAPHQL_STATE_BEFORE = exports.GRAPHQL_STATE_LAST = exports.GRAPHQL_STATE_AFTER = exports.GRAPHQL_STATE_FIRST = exports.GRAPHQL_STATE_PAGINATION_INFO = exports.PaginationFetcherProcessor = void 0;
 const graphql_ts_client_api_1 = require("graphql-ts-client-api");
 class PaginationFetcherProcessor {
     constructor(schema) {
@@ -80,7 +80,7 @@ class PaginationFetcherProcessor {
     }
 }
 exports.PaginationFetcherProcessor = PaginationFetcherProcessor;
-exports.GRAPHQL_STATE_WINDOW_ID = "graphql_state_window_id__";
+exports.GRAPHQL_STATE_PAGINATION_INFO = "graphql_state_pagination_info__";
 exports.GRAPHQL_STATE_FIRST = "graphql_state_first__";
 exports.GRAPHQL_STATE_AFTER = "graphql_state_after__";
 exports.GRAPHQL_STATE_LAST = "graphql_state_last__";

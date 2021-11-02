@@ -56,7 +56,7 @@ export interface QueryOptions<TVariables extends object, TAsyncStyle extends Asy
 }
 export interface PaginationQueryOptions<TVariables extends object, TAsyncStyle extends AsyncStyle> extends QueryOptions<TVariables, TAsyncStyle> {
     readonly windowId: string;
-    readonly initializedSize: number;
+    readonly initialSize: number;
     readonly pageSize?: number;
     readonly paginiationStyle?: PaginationStyle;
 }

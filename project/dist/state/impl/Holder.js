@@ -88,10 +88,7 @@ class QueryResultHolder {
         var _a, _b;
         const oldQueryArgs = (_a = this.queryResult) === null || _a === void 0 ? void 0 : _a.queryArgs;
         const newQueryArgs = QueryArgs_1.QueryArgs.create(fetcher, windowId ?
-            {
-                windowId,
-                schema: this.stateManager.entityManager.schema
-            } :
+            this.stateManager.entityManager.schema :
             undefined, ids, Args_1.OptionArgs.of(options));
         if ((oldQueryArgs === null || oldQueryArgs === void 0 ? void 0 : oldQueryArgs.key) === newQueryArgs.key) {
             return;

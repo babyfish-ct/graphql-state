@@ -113,7 +113,7 @@ export class PaginationFetcherProcessor {
     }
 }
 
-export const GRAPHQL_STATE_WINDOW_ID = "graphql_state_window_id__";
+export const GRAPHQL_STATE_PAGINATION_INFO = "graphql_state_pagination_info__";
 export const GRAPHQL_STATE_FIRST = "graphql_state_first__";
 export const GRAPHQL_STATE_AFTER = "graphql_state_after__";
 export const GRAPHQL_STATE_LAST = "graphql_state_last__";

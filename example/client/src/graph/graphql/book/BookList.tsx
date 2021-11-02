@@ -36,7 +36,7 @@ export const BookList: FC = memo(() => {
             windowId: "bookList",
             asyncStyle: "async-object",
             variables: { name, authorName },
-            initializedSize: 2
+            initialSize: 2
         }
     );
 

@@ -1,7 +1,6 @@
 import { Fetcher, FetcherField } from "graphql-ts-client-api";
-import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 import { VariableArgs } from "../state/impl/Args";
-import { GRAPHQL_STATE_WINDOW_ID } from "./PaginationFetcherProcessor";
+import { GRAPHQL_STATE_PAGINATION_INFO } from "./PaginationFetcherProcessor";
 
 /*
  * RuntimeShape = Fetcher + Variables
@@ -93,7 +92,7 @@ function addField(
     if (paginationConnName === fieldName && fetcherVaribles !== undefined) {
         variables = {
             ...variables,
-            [GRAPHQL_STATE_WINDOW_ID]: fetcherVaribles[GRAPHQL_STATE_WINDOW_ID]
+            [GRAPHQL_STATE_PAGINATION_INFO]: fetcherVaribles[GRAPHQL_STATE_PAGINATION_INFO]
         };
     }
 

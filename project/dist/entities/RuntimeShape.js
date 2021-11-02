@@ -38,7 +38,7 @@ function addField(parentPath, fieldName, field, runtimeShapeFieldMap, pagination
         }
     }
     if (paginationConnName === fieldName && fetcherVaribles !== undefined) {
-        variables = Object.assign(Object.assign({}, variables), { [PaginationFetcherProcessor_1.GRAPHQL_STATE_WINDOW_ID]: fetcherVaribles[PaginationFetcherProcessor_1.GRAPHQL_STATE_WINDOW_ID] });
+        variables = Object.assign(Object.assign({}, variables), { [PaginationFetcherProcessor_1.GRAPHQL_STATE_PAGINATION_INFO]: fetcherVaribles[PaginationFetcherProcessor_1.GRAPHQL_STATE_PAGINATION_INFO] });
     }
     const alias = (_a = field.fieldOptionsValue) === null || _a === void 0 ? void 0 : _a.alias;
     const directives = standardizedDirectives(field, fetcherVaribles);

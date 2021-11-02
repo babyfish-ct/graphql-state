@@ -40,7 +40,7 @@ export class QueryService {
         if (useDataService) {
             return {
                 type: "deferred",
-                promise: this.entityManager.dataService.query(args.withoutWindowId())
+                promise: this.entityManager.dataService.query(args.withoutPaginationInfo())
             };
         }
 
@@ -131,7 +131,7 @@ export class QueryService {
         const idFieldAlias = shape.fieldMap.get(idFieldName)?.alias ?? idFieldName;
 
         const missedObjects = await this.entityManager.dataService.query(
-            args.newArgs(missedIds).withoutWindowId()
+            args.newArgs(missedIds).withoutPaginationInfo()
         );
         for (const missedObject of missedObjects) {
             objMap.set(missedObject[idFieldAlias], missedObject);

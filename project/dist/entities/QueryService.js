@@ -46,7 +46,7 @@ class QueryService {
         if (useDataService) {
             return {
                 type: "deferred",
-                promise: this.entityManager.dataService.query(args.withoutWindowId())
+                promise: this.entityManager.dataService.query(args.withoutPaginationInfo())
             };
         }
         throw new Error('Internal bug: neither "useCache" nor "useDataService" is set');
@@ -116,7 +116,7 @@ class QueryService {
             const shape = args.shape;
             const idFieldName = this.entityManager.schema.typeMap.get(shape.typeName).idField.name;
             const idFieldAlias = (_b = (_a = shape.fieldMap.get(idFieldName)) === null || _a === void 0 ? void 0 : _a.alias) !== null && _b !== void 0 ? _b : idFieldName;
-            const missedObjects = yield this.entityManager.dataService.query(args.newArgs(missedIds).withoutWindowId());
+            const missedObjects = yield this.entityManager.dataService.query(args.newArgs(missedIds).withoutPaginationInfo());
             for (const missedObject of missedObjects) {
                 objMap.set(missedObject[idFieldAlias], missedObject);
             }

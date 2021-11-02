@@ -68,7 +68,7 @@ class RemoteDataService extends AbstractDataService_1.AbstractDataService {
     onExecute(args) {
         return __awaiter(this, void 0, void 0, function* () {
             let data = graphql_ts_client_api_1.util.exceptNullValues(yield this.executeNetworkQuery(args));
-            this.entityManager.save(args.withWindowId().shape, data);
+            this.entityManager.save(args.withPaginationInfo().shape, data);
             return data;
         });
     }

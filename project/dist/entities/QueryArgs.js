@@ -13,8 +13,8 @@ class QueryArgs {
         this.ids = ids;
         this.optionArgs = optionArgs;
         const variables = (_a = optionArgs === null || optionArgs === void 0 ? void 0 : optionArgs.variableArgs) === null || _a === void 0 ? void 0 : _a.variables;
-        if (variables !== undefined && variables[PaginationFetcherProcessor_1.GRAPHQL_STATE_WINDOW_ID] !== undefined) {
-            this._hasWindowId = true;
+        if (variables !== undefined && variables[PaginationFetcherProcessor_1.GRAPHQL_STATE_PAGINATION_INFO] !== undefined) {
+            this._hasPaginationInfo = true;
         }
         if (ids === undefined && optionArgs === undefined) {
             this._key = shape.toString();
@@ -26,19 +26,26 @@ class QueryArgs {
     get key() {
         return this._key;
     }
-    static create(fetcher, pagination, ids, optionArgs) {
-        var _a, _b;
+    static create(fetcher, schemaForPagination, ids, optionArgs) {
+        var _a, _b, _c, _d;
         if (fetcher.fetchableType.name === 'Query' && ids !== undefined) {
             throw new Error("Generic query does not support id");
         }
         else if (fetcher.fetchableType.name !== 'Query' && ids === undefined) {
             throw new Error("id/ids is required for object query");
         }
-        if (pagination !== undefined) {
-            const [connName, paginationFetcher] = new PaginationFetcherProcessor_1.PaginationFetcherProcessor(pagination.schema).process(fetcher);
-            return new QueryArgs(RuntimeShape_1.toRuntimeShape(fetcher, connName, (_a = optionArgs === null || optionArgs === void 0 ? void 0 : optionArgs.variableArgs) === null || _a === void 0 ? void 0 : _a.variables), paginationFetcher, { windowId: pagination.windowId, connName }, ids, optionArgs).withWindowId();
+        if (schemaForPagination !== undefined) {
+            const [connName, paginationFetcher] = new PaginationFetcherProcessor_1.PaginationFetcherProcessor(schemaForPagination).process(fetcher);
+            const queryOptions = optionArgs.options;
+            return new QueryArgs(RuntimeShape_1.toRuntimeShape(fetcher, connName, (_a = optionArgs === null || optionArgs === void 0 ? void 0 : optionArgs.variableArgs) === null || _a === void 0 ? void 0 : _a.variables), paginationFetcher, {
+                windowId: queryOptions.windowId,
+                connName,
+                style: (_b = queryOptions.paginiationStyle) !== null && _b !== void 0 ? _b : "forward",
+                initialSize: queryOptions.initialSize,
+                pageSize: (_c = queryOptions.pageSize) !== null && _c !== void 0 ? _c : queryOptions.initialSize
+            }, ids, optionArgs).withPaginationInfo();
         }
-        return new QueryArgs(RuntimeShape_1.toRuntimeShape(fetcher, undefined, (_b = optionArgs === null || optionArgs === void 0 ? void 0 : optionArgs.variableArgs) === null || _b === void 0 ? void 0 : _b.variables), fetcher, undefined, ids, optionArgs);
+        return new QueryArgs(RuntimeShape_1.toRuntimeShape(fetcher, undefined, (_d = optionArgs === null || optionArgs === void 0 ? void 0 : optionArgs.variableArgs) === null || _d === void 0 ? void 0 : _d.variables), fetcher, undefined, ids, optionArgs);
     }
     newArgs(ids) {
         if (this.ids === undefined) {
@@ -60,30 +67,34 @@ class QueryArgs {
         const optionArgs = Args_1.OptionArgs.of(Object.assign(Object.assign({}, (_a = this.optionArgs) === null || _a === void 0 ? void 0 : _a.options), { variables: Object.assign(Object.assign({}, (_c = (_b = this.optionArgs) === null || _b === void 0 ? void 0 : _b.options) === null || _c === void 0 ? void 0 : _c.variables), deltaVariables) }));
         return new QueryArgs(RuntimeShape_1.toRuntimeShape(this.fetcher, (_d = this.pagination) === null || _d === void 0 ? void 0 : _d.connName, (_e = optionArgs === null || optionArgs === void 0 ? void 0 : optionArgs.variableArgs) === null || _e === void 0 ? void 0 : _e.variables), this.fetcher, this.pagination, this.ids, optionArgs);
     }
-    withWindowId() {
-        var _a;
-        if (this.pagination === undefined || this._hasWindowId) {
+    withPaginationInfo() {
+        if (this.pagination === undefined || this._hasPaginationInfo) {
             return this;
         }
-        let w = this._withWindowId;
+        let w = this._withPaginationInfo;
         if (w === undefined) {
-            this._withWindowId = w = this.variables({
-                [PaginationFetcherProcessor_1.GRAPHQL_STATE_WINDOW_ID]: (_a = this.pagination) === null || _a === void 0 ? void 0 : _a.windowId
+            this._withPaginationInfo = w = this.variables({
+                [PaginationFetcherProcessor_1.GRAPHQL_STATE_PAGINATION_INFO]: {
+                    windowId: this.pagination.windowId,
+                    style: this.pagination.style,
+                    initialSize: this.pagination.initialSize,
+                    pageSize: this.pagination.pageSize
+                }
             });
-            w._withoutWindowId = this;
+            w._withoutPaginationInfo = this;
         }
         return w;
     }
-    withoutWindowId() {
-        if (this.pagination === undefined || !this._hasWindowId) {
+    withoutPaginationInfo() {
+        if (this.pagination === undefined || !this._hasPaginationInfo) {
             return this;
         }
-        let wo = this._withoutWindowId;
+        let wo = this._withoutPaginationInfo;
         if (wo === undefined) {
-            this._withoutWindowId = wo = this.variables({
-                [PaginationFetcherProcessor_1.GRAPHQL_STATE_WINDOW_ID]: undefined
+            this._withoutPaginationInfo = wo = this.variables({
+                [PaginationFetcherProcessor_1.GRAPHQL_STATE_PAGINATION_INFO]: undefined
             });
-            wo._withWindowId = this;
+            wo._withPaginationInfo = this;
         }
         return wo;
     }

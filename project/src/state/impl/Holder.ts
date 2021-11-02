@@ -136,11 +136,8 @@ export class QueryResultHolder {
         const newQueryArgs = QueryArgs.create(
             fetcher, 
             windowId ? 
-            {
-                windowId,
-                schema: this.stateManager.entityManager.schema
-            } :
-            undefined, 
+            this.stateManager.entityManager.schema :
+            undefined,
             ids, 
             OptionArgs.of(options)
         );

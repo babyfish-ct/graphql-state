@@ -1,18 +1,19 @@
 import { ObjectFetcher } from "graphql-ts-client-api";
 import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 import { OptionArgs, VariableArgs } from "../state/impl/Args";
-import { GRAPHQL_STATE_WINDOW_ID, PaginationFetcherProcessor } from "./PaginationFetcherProcessor";
+import { PaginationQueryOptions, PaginationStyle } from "../state/StateHook";
+import { GRAPHQL_STATE_PAGINATION_INFO, PaginationFetcherProcessor } from "./PaginationFetcherProcessor";
 import { RuntimeShape, toRuntimeShape } from "./RuntimeShape";
 
 export class QueryArgs {
 
     private _key: string;
 
-    private _hasWindowId: boolean;
+    private _hasPaginationInfo: boolean;
 
-    private _withWindowId?: QueryArgs;
+    private _withPaginationInfo?: QueryArgs;
 
-    private _withoutWindowId?: QueryArgs;
+    private _withoutPaginationInfo?: QueryArgs;
 
     private constructor(
         readonly shape: RuntimeShape,
@@ -20,13 +21,16 @@ export class QueryArgs {
         readonly pagination: {
             readonly windowId: string,
             readonly connName: string,
+            readonly style: PaginationStyle,
+            readonly initialSize: number,
+            readonly pageSize: number
         } | undefined,
         readonly ids: ReadonlyArray<any> | undefined,
         readonly optionArgs: OptionArgs | undefined
     ) {
         const variables = optionArgs?.variableArgs?.variables;
-        if (variables !== undefined && variables[GRAPHQL_STATE_WINDOW_ID] !== undefined) {
-            this._hasWindowId = true;
+        if (variables !== undefined && variables[GRAPHQL_STATE_PAGINATION_INFO] !== undefined) {
+            this._hasPaginationInfo = true;
         }
         if (ids === undefined && optionArgs === undefined) {
             this._key = shape.toString();
@@ -47,10 +51,7 @@ export class QueryArgs {
 
     static create(
         fetcher: ObjectFetcher<string, object, object>,
-        pagination?: {
-            readonly windowId: string, 
-            readonly schema: SchemaMetadata
-        },
+        schemaForPagination?: SchemaMetadata,
         ids?: ReadonlyArray<any>,
         optionArgs?: OptionArgs
     ): QueryArgs {
@@ -61,17 +62,25 @@ export class QueryArgs {
             throw new Error("id/ids is required for object query");
         }
 
-        if (pagination !== undefined) {
+        if (schemaForPagination !== undefined) {
             const [connName, paginationFetcher] = new PaginationFetcherProcessor(
-                pagination.schema
+                schemaForPagination
             ).process(fetcher);
+            const queryOptions = optionArgs!.options as PaginationQueryOptions<any, any>;
+
             return new QueryArgs(
                 toRuntimeShape(fetcher, connName, optionArgs?.variableArgs?.variables), 
                 paginationFetcher, 
-                { windowId: pagination.windowId, connName },
+                { 
+                    windowId: queryOptions.windowId, 
+                    connName,
+                    style: queryOptions.paginiationStyle ?? "forward",
+                    initialSize: queryOptions.initialSize,
+                    pageSize: queryOptions.pageSize ?? queryOptions.initialSize
+                },
                 ids,
                 optionArgs,
-            ).withWindowId();
+            ).withPaginationInfo();
         }
 
         return new QueryArgs(
@@ -118,30 +127,35 @@ export class QueryArgs {
         )
     }
 
-    withWindowId(): QueryArgs {
-        if (this.pagination === undefined || this._hasWindowId) {
+    withPaginationInfo(): QueryArgs {
+        if (this.pagination === undefined || this._hasPaginationInfo) {
             return this;
         }
-        let w = this._withWindowId;
+        let w = this._withPaginationInfo;
         if (w === undefined) {
-            this._withWindowId = w = this.variables({
-                [GRAPHQL_STATE_WINDOW_ID]: this.pagination?.windowId
+            this._withPaginationInfo = w = this.variables({
+                [GRAPHQL_STATE_PAGINATION_INFO]: {
+                    windowId: this.pagination.windowId,
+                    style: this.pagination.style,
+                    initialSize: this.pagination.initialSize, 
+                    pageSize: this.pagination.pageSize
+                }
             });
-            w._withoutWindowId = this;
+            w._withoutPaginationInfo = this;
         }
         return w;
     }
 
-    withoutWindowId(): QueryArgs {
-        if (this.pagination === undefined || !this._hasWindowId) {
+    withoutPaginationInfo(): QueryArgs {
+        if (this.pagination === undefined || !this._hasPaginationInfo) {
             return this;
         }
-        let wo = this._withoutWindowId;
+        let wo = this._withoutPaginationInfo;
         if (wo === undefined) {
-            this._withoutWindowId = wo = this.variables({
-                [GRAPHQL_STATE_WINDOW_ID]: undefined
+            this._withoutPaginationInfo = wo = this.variables({
+                [GRAPHQL_STATE_PAGINATION_INFO]: undefined
             });
-            wo._withWindowId = this;
+            wo._withPaginationInfo = this;
         }
         return wo;
     }
