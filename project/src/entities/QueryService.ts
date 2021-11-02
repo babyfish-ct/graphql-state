@@ -8,7 +8,11 @@ import { RuntimeShape } from "./RuntimeShape";
 
 export class QueryService {
 
-    constructor(private entityManager: EntityManager) {}
+    constructor(
+        private entityManager: EntityManager,
+        private remoteArgsTransformer?: (args: QueryArgs) => QueryArgs
+    ) {
+    }
 
     query(args: QueryArgs, useCache: boolean, useDataService: boolean): RawQueryResult<any> {
         if (args.ids === undefined) {
@@ -40,7 +44,9 @@ export class QueryService {
         if (useDataService) {
             return {
                 type: "deferred",
-                promise: this.entityManager.dataService.query(args.withoutPaginationInfo())
+                promise: this.entityManager.dataService.query(
+                    this.tranformRemoteArgs(args.withoutPaginationInfo())
+                )
             };
         }
 
@@ -131,13 +137,22 @@ export class QueryService {
         const idFieldAlias = shape.fieldMap.get(idFieldName)?.alias ?? idFieldName;
 
         const missedObjects = await this.entityManager.dataService.query(
-            args.newArgs(missedIds).withoutPaginationInfo()
+            this.tranformRemoteArgs(
+                args.newArgs(missedIds).withoutPaginationInfo()
+            )
         );
         for (const missedObject of missedObjects) {
             objMap.set(missedObject[idFieldAlias], missedObject);
         }
 
         return args.ids!.map(id => objMap.get(id));
+    }
+
+    private tranformRemoteArgs(args: QueryArgs): QueryArgs {
+        if (this.remoteArgsTransformer === undefined) {
+            return args;
+        }
+        return this.remoteArgsTransformer(args);
     }
 }
 

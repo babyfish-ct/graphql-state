@@ -7,8 +7,9 @@ class PaginationFetcherProcessor {
         this.schema = schema;
     }
     process(fetcher) {
+        var _a;
         const [connName, connField] = this.findConnectionField(fetcher);
-        return [connName, this.adjustConnection(fetcher, connName, connField)];
+        return [connName, (_a = connField.fieldOptionsValue) === null || _a === void 0 ? void 0 : _a.alias, this.adjustConnection(fetcher, connName, connField)];
     }
     findConnectionField(fetcher) {
         var _a;

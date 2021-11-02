@@ -8,9 +8,9 @@ export class PaginationFetcherProcessor {
     
     process(
         fetcher: ObjectFetcher<string, object, object>
-    ): [string, ObjectFetcher<string, object, object>] {
+    ): [string, string | undefined, ObjectFetcher<string, object, object>] {
         const [connName, connField] = this.findConnectionField(fetcher);
-        return [connName, this.adjustConnection(fetcher, connName, connField)];
+        return [connName, connField.fieldOptionsValue?.alias, this.adjustConnection(fetcher, connName, connField)];
     }
 
     private findConnectionField(

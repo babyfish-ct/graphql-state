@@ -1,13 +1,14 @@
 import { Loadable } from "../state/impl/StateValue";
 import { EntityManager } from "./EntityManager";
 import { QueryArgs } from "./QueryArgs";
+import { QueryService } from "./QueryService";
 export declare class QueryResult {
     readonly entityManager: EntityManager;
     readonly queryArgs: QueryArgs;
     private disposer;
     private _refCount;
     private _promise?;
-    private _loadable;
+    protected _loadable: QueryLoadable<any>;
     private _invalid;
     private _refetching;
     private _evictListener;
@@ -33,6 +34,8 @@ export declare class QueryResult {
     private get mode();
     private validateData;
     gcVisit(): void;
+    protected createLoadable(loading: boolean, data: any, error: any, additionalValues?: any): QueryLoadable<any>;
+    protected createQueryService(): QueryService;
 }
 export interface QueryLoadable<T> extends Loadable<T> {
     refetch: () => void;

@@ -13,8 +13,9 @@ exports.QueryService = void 0;
 ;
 const Record_1 = require("./Record");
 class QueryService {
-    constructor(entityManager) {
+    constructor(entityManager, remoteArgsTransformer) {
         this.entityManager = entityManager;
+        this.remoteArgsTransformer = remoteArgsTransformer;
     }
     query(args, useCache, useDataService) {
         if (args.ids === undefined) {
@@ -46,7 +47,7 @@ class QueryService {
         if (useDataService) {
             return {
                 type: "deferred",
-                promise: this.entityManager.dataService.query(args.withoutPaginationInfo())
+                promise: this.entityManager.dataService.query(this.tranformRemoteArgs(args.withoutPaginationInfo()))
             };
         }
         throw new Error('Internal bug: neither "useCache" nor "useDataService" is set');
@@ -116,12 +117,18 @@ class QueryService {
             const shape = args.shape;
             const idFieldName = this.entityManager.schema.typeMap.get(shape.typeName).idField.name;
             const idFieldAlias = (_b = (_a = shape.fieldMap.get(idFieldName)) === null || _a === void 0 ? void 0 : _a.alias) !== null && _b !== void 0 ? _b : idFieldName;
-            const missedObjects = yield this.entityManager.dataService.query(args.newArgs(missedIds).withoutPaginationInfo());
+            const missedObjects = yield this.entityManager.dataService.query(this.tranformRemoteArgs(args.newArgs(missedIds).withoutPaginationInfo()));
             for (const missedObject of missedObjects) {
                 objMap.set(missedObject[idFieldAlias], missedObject);
             }
             return args.ids.map(id => objMap.get(id));
         });
+    }
+    tranformRemoteArgs(args) {
+        if (this.remoteArgsTransformer === undefined) {
+            return args;
+        }
+        return this.remoteArgsTransformer(args);
     }
 }
 exports.QueryService = QueryService;

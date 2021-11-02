@@ -23,7 +23,7 @@ export const BookList: FC = memo(() => {
     const [name, setName] = useState<string>();
     const [authorName, setAuthorName] = useState<string>();
 
-    const { data, loading, refetch } = usePaginationQuery(
+    const { data, loading, refetch, hasNext, loadNext, isLoadingNext } = usePaginationQuery(
         query$.findBooks(
             bookConnection$.edges(
                 bookEdge$.node(
@@ -155,7 +155,10 @@ export const BookList: FC = memo(() => {
                         <Table.Column title="Operations" render={renderOperations}/>
                     </Table>
                 }
-                <Button onClick={onAddClick}>Add Book</Button>
+                <Space>
+                    <Button onClick={loadNext} disabled={!hasNext} loading={isLoadingNext}>Load more</Button>
+                    <Button onClick={onAddClick}>Add Book...</Button>
+                </Space>
             </Space>
             {
                 dialog !== undefined &&

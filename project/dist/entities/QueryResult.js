@@ -29,10 +29,7 @@ class QueryResult {
         entityManager.addEvictListener(undefined, this._evictListener);
         entityManager.addChangeListener(undefined, this._changeListener);
         this._bindedRefetch = this._refetch.bind(this);
-        this._loadable = {
-            loading: true,
-            refetch: this._bindedRefetch
-        };
+        this._loadable = this.createLoadable(true, undefined, undefined);
     }
     retain() {
         this._refCount++;
@@ -78,16 +75,12 @@ class QueryResult {
     }
     query() {
         return __awaiter(this, void 0, void 0, function* () {
-            const rawResult = new QueryService_1.QueryService(this.entityManager)
+            const rawResult = this.createQueryService()
                 .query(this.queryArgs, !this._refetching, this.mode === "cache-and-network");
             if (rawResult.type === 'cached') {
                 const data = this.validateData(rawResult.data);
                 this.refreshDependencies(data);
-                this._loadable = {
-                    loading: false,
-                    data: data,
-                    refetch: this._bindedRefetch
-                };
+                this._loadable = this.createLoadable(false, data, undefined);
                 this.entityManager.stateManager.publishQueryResultChangeEvent({
                     queryResult: this,
                     changedType: "ASYNC_STATE_CHANGE"
@@ -95,7 +88,7 @@ class QueryResult {
                 return data;
             }
             if (!this._loadable.loading) {
-                this._loadable = { loading: true, refetch: this._loadable.refetch };
+                this._loadable = this.createLoadable(true, undefined, undefined);
                 this.entityManager.stateManager.publishQueryResultChangeEvent({
                     queryResult: this,
                     changedType: "ASYNC_STATE_CHANGE"
@@ -107,21 +100,13 @@ class QueryResult {
                 const data = this.validateData(yield rawResult.promise);
                 if (this._currentAsyncRequestId === asyncRequestId) {
                     this.refreshDependencies(data);
-                    this._loadable = {
-                        data,
-                        loading: false,
-                        refetch: this._bindedRefetch
-                    };
+                    this._loadable = this.createLoadable(false, data, undefined);
                 }
                 return data;
             }
             catch (ex) {
                 if (this._currentAsyncRequestId === asyncRequestId) {
-                    this._loadable = {
-                        loading: false,
-                        error: ex,
-                        refetch: this._bindedRefetch
-                    };
+                    this._loadable = this.createLoadable(false, undefined, ex);
                 }
                 throw ex;
             }
@@ -212,6 +197,14 @@ class QueryResult {
                 }
             });
         }
+    }
+    createLoadable(loading, data, error, additionalValues) {
+        return Object.assign(Object.assign({}, additionalValues), { loading,
+            data,
+            error, refetch: this._bindedRefetch });
+    }
+    createQueryService() {
+        return new QueryService_1.QueryService(this.entityManager);
     }
 }
 exports.QueryResult = QueryResult;

@@ -3,7 +3,7 @@ import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 export declare class PaginationFetcherProcessor {
     private schema;
     constructor(schema: SchemaMetadata);
-    process(fetcher: ObjectFetcher<string, object, object>): [string, ObjectFetcher<string, object, object>];
+    process(fetcher: ObjectFetcher<string, object, object>): [string, string | undefined, ObjectFetcher<string, object, object>];
     private findConnectionField;
     private adjustConnection;
     private adjustPageInfo;

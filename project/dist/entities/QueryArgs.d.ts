@@ -9,6 +9,7 @@ export declare class QueryArgs {
     readonly pagination: {
         readonly windowId: string;
         readonly connName: string;
+        readonly connAlias?: string;
         readonly style: PaginationStyle;
         readonly initialSize: number;
         readonly pageSize: number;

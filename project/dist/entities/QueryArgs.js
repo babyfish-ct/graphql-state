@@ -35,11 +35,12 @@ class QueryArgs {
             throw new Error("id/ids is required for object query");
         }
         if (schemaForPagination !== undefined) {
-            const [connName, paginationFetcher] = new PaginationFetcherProcessor_1.PaginationFetcherProcessor(schemaForPagination).process(fetcher);
+            const [connName, connAlias, paginationFetcher] = new PaginationFetcherProcessor_1.PaginationFetcherProcessor(schemaForPagination).process(fetcher);
             const queryOptions = optionArgs.options;
             return new QueryArgs(RuntimeShape_1.toRuntimeShape(fetcher, connName, (_a = optionArgs === null || optionArgs === void 0 ? void 0 : optionArgs.variableArgs) === null || _a === void 0 ? void 0 : _a.variables), paginationFetcher, {
                 windowId: queryOptions.windowId,
                 connName,
+                connAlias,
                 style: (_b = queryOptions.paginiationStyle) !== null && _b !== void 0 ? _b : "forward",
                 initialSize: queryOptions.initialSize,
                 pageSize: (_c = queryOptions.pageSize) !== null && _c !== void 0 ? _c : queryOptions.initialSize

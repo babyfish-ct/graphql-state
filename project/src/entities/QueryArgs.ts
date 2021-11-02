@@ -21,6 +21,7 @@ export class QueryArgs {
         readonly pagination: {
             readonly windowId: string,
             readonly connName: string,
+            readonly connAlias?: string,
             readonly style: PaginationStyle,
             readonly initialSize: number,
             readonly pageSize: number
@@ -63,7 +64,8 @@ export class QueryArgs {
         }
 
         if (schemaForPagination !== undefined) {
-            const [connName, paginationFetcher] = new PaginationFetcherProcessor(
+            
+            const [connName, connAlias, paginationFetcher] = new PaginationFetcherProcessor(
                 schemaForPagination
             ).process(fetcher);
             const queryOptions = optionArgs!.options as PaginationQueryOptions<any, any>;
@@ -74,6 +76,7 @@ export class QueryArgs {
                 { 
                     windowId: queryOptions.windowId, 
                     connName,
+                    connAlias,
                     style: queryOptions.paginiationStyle ?? "forward",
                     initialSize: queryOptions.initialSize,
                     pageSize: queryOptions.pageSize ?? queryOptions.initialSize

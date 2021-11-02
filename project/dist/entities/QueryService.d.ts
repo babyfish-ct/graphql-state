@@ -2,13 +2,15 @@ import { EntityManager } from "./EntityManager";
 import { QueryArgs } from "./QueryArgs";
 export declare class QueryService {
     private entityManager;
-    constructor(entityManager: EntityManager);
+    private remoteArgsTransformer?;
+    constructor(entityManager: EntityManager, remoteArgsTransformer?: ((args: QueryArgs) => QueryArgs) | undefined);
     query(args: QueryArgs, useCache: boolean, useDataService: boolean): RawQueryResult<any>;
     private graph;
     private objects;
     private findObjects;
     private findObject;
     protected loadAndMerge(objMap: Map<string, string>, args: QueryArgs, missedIds: ReadonlyArray<any>): Promise<ReadonlyArray<any>>;
+    private tranformRemoteArgs;
 }
 export declare type RawQueryResult<T> = CachedResult<T> | DeferredResult<T>;
 interface CachedResult<T> {
