@@ -4,6 +4,7 @@ exports.EntityManager = void 0;
 const MergedDataService_1 = require("../data/MergedDataService");
 const RemoteDataService_1 = require("../data/RemoteDataService");
 const ModificationContext_1 = require("./ModificationContext");
+const PaginationQueryResult_1 = require("./PaginationQueryResult");
 const QueryResult_1 = require("./QueryResult");
 const Record_1 = require("./Record");
 const RecordManager_1 = require("./RecordManager");
@@ -129,10 +130,18 @@ class EntityManager {
             if (!this.schema.isAcceptable(args.fetcher.fetchableType)) {
                 throw new Error("Cannot accept that fetcher because it is not configured in the state manager");
             }
-            result = new QueryResult_1.QueryResult(this, args, () => {
-                this._queryResultMap.delete(args.key);
-                this.gc();
-            });
+            if (args.pagination !== undefined) {
+                result = new PaginationQueryResult_1.PaginationQueryResult(this, args, () => {
+                    this._queryResultMap.delete(args.key);
+                    this.gc();
+                });
+            }
+            else {
+                result = new QueryResult_1.QueryResult(this, args, () => {
+                    this._queryResultMap.delete(args.key);
+                    this.gc();
+                });
+            }
             this._queryResultMap.set(args.key, result);
         }
         return result.retain();

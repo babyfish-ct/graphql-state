@@ -180,12 +180,12 @@ class QueryResult {
     }
     get mode() {
         var _a, _b, _c, _d;
-        return (_d = (_c = (_b = (_a = this.queryArgs) === null || _a === void 0 ? void 0 : _a.optionsArgs) === null || _b === void 0 ? void 0 : _b.options) === null || _c === void 0 ? void 0 : _c.mode) !== null && _d !== void 0 ? _d : "cache-and-network";
+        return (_d = (_c = (_b = (_a = this.queryArgs) === null || _a === void 0 ? void 0 : _a.optionArgs) === null || _b === void 0 ? void 0 : _b.options) === null || _c === void 0 ? void 0 : _c.mode) !== null && _d !== void 0 ? _d : "cache-and-network";
     }
     validateData(data) {
         var _a, _b, _c;
         if (this.queryArgs.ids !== undefined) {
-            const objectStyle = (_c = (_b = (_a = this.queryArgs.optionsArgs) === null || _a === void 0 ? void 0 : _a.options) === null || _b === void 0 ? void 0 : _b.objectStyle) !== null && _c !== void 0 ? _c : "required";
+            const objectStyle = (_c = (_b = (_a = this.queryArgs.optionArgs) === null || _a === void 0 ? void 0 : _a.options) === null || _b === void 0 ? void 0 : _b.objectStyle) !== null && _c !== void 0 ? _c : "required";
             if (objectStyle === "required") {
                 const arr = data;
                 for (let i = 0; i < arr.length; i++) {

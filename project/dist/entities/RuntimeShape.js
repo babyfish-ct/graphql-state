@@ -2,33 +2,34 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.toRuntimeShape0 = exports.toRuntimeShape = void 0;
 const Args_1 = require("../state/impl/Args");
-function toRuntimeShape(fetcher, variables) {
-    return toRuntimeShape0("", fetcher, variables);
+const PaginationFetcherProcessor_1 = require("./PaginationFetcherProcessor");
+function toRuntimeShape(fetcher, paginationConnName, variables) {
+    return toRuntimeShape0("", fetcher, paginationConnName, variables);
 }
 exports.toRuntimeShape = toRuntimeShape;
-function toRuntimeShape0(parentPath, fetcher, variables) {
+function toRuntimeShape0(parentPath, fetcher, paginationConnName, variables) {
     const fieldNames = Array.from(fetcher.fieldMap.keys());
     fieldNames.sort();
     const runtimeShapeFieldMap = new Map();
     for (const fieldName of fieldNames) {
-        addField(parentPath, fieldName, fetcher.fieldMap.get(fieldName), runtimeShapeFieldMap, variables);
+        addField(parentPath, fieldName, fetcher.fieldMap.get(fieldName), runtimeShapeFieldMap, paginationConnName, variables);
     }
     return new RuntimeShapeImpl(fetcher.fetchableType.name, runtimeShapeFieldMap);
 }
 exports.toRuntimeShape0 = toRuntimeShape0;
-function addField(parentPath, fieldName, field, runtimeShapeFieldMap, fetcherVaribles) {
+function addField(parentPath, fieldName, field, runtimeShapeFieldMap, paginationConnName, fetcherVaribles) {
     var _a, _b, _c, _d, _e, _f;
     if (fieldName.startsWith("...")) {
         if (field.childFetchers !== undefined) {
             for (const childFetcher of field.childFetchers) {
                 for (const [subFieldName, subField] of childFetcher.fieldMap) {
-                    addField(parentPath, subFieldName, subField, runtimeShapeFieldMap, fetcherVaribles);
+                    addField(parentPath, subFieldName, subField, runtimeShapeFieldMap, undefined, fetcherVaribles);
                 }
             }
         }
         return;
     }
-    const variables = resolveParameterRefs(field.args, fetcherVaribles, field.argGraphQLTypes);
+    let variables = resolveParameterRefs(field.args, fetcherVaribles, field.argGraphQLTypes);
     if (field.argGraphQLTypes !== undefined) {
         for (const [name, type] of field.argGraphQLTypes) {
             if (type.endsWith("!") && (variables === undefined || variables[name] === undefined)) {
@@ -36,11 +37,14 @@ function addField(parentPath, fieldName, field, runtimeShapeFieldMap, fetcherVar
             }
         }
     }
+    if (paginationConnName === fieldName && fetcherVaribles !== undefined) {
+        variables = Object.assign(Object.assign({}, variables), { [PaginationFetcherProcessor_1.GRAPHQL_STATE_WINDOW_ID]: fetcherVaribles[PaginationFetcherProcessor_1.GRAPHQL_STATE_WINDOW_ID] });
+    }
     const alias = (_a = field.fieldOptionsValue) === null || _a === void 0 ? void 0 : _a.alias;
     const directives = standardizedDirectives(field, fetcherVaribles);
     const childFetcher = field.childFetchers !== undefined ? field.childFetchers[0] : undefined;
     const childShape = childFetcher !== undefined ?
-        toRuntimeShape0(`${parentPath}${fieldName}/`, childFetcher, fetcherVaribles) :
+        toRuntimeShape0(`${parentPath}${fieldName}/`, childFetcher, undefined, fetcherVaribles) :
         undefined;
     let nodeShape = undefined;
     if ((childFetcher === null || childFetcher === void 0 ? void 0 : childFetcher.fetchableType.category) === "CONNECTION") {

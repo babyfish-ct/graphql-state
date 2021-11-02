@@ -15,13 +15,13 @@ class AbstractDataRequest {
     constructor(_dataService, _args) {
         this._dataService = _dataService;
         this._args = _args;
-        this.joinedResolvers = [];
+        this._joinedResolvers = [];
     }
     execute() {
         return __awaiter(this, void 0, void 0, function* () {
             let data;
             try {
-                data = yield this._dataService.onExecute(this.args);
+                data = yield this._dataService.onExecute(this._args);
                 if (typeof data !== 'object' || data === null) {
                     throw new Error("The remote loader must return an object");
                 }
@@ -31,14 +31,14 @@ class AbstractDataRequest {
                 return;
             }
             finally {
-                this._dataService.onComplete(this.args);
+                this._dataService.onComplete(this._args);
             }
             this.resolve(data);
         });
     }
     newPromise(args) {
         return new Promise((resolve, reject) => {
-            this.joinedResolvers.push({ args, resolve, reject });
+            this._joinedResolvers.push({ args, resolve, reject });
         });
     }
     get args() {
@@ -46,7 +46,7 @@ class AbstractDataRequest {
     }
     resolve(data) {
         const filter = new util_1.ObjectFilter(this._dataService.entityManager.schema, data, this._args.ids, this._args.shape);
-        for (const resolver of this.joinedResolvers) {
+        for (const resolver of this._joinedResolvers) {
             try {
                 const filtered = filter.get(resolver.args.ids);
                 let reshaped = this.reshape(filtered, resolver.args);
@@ -58,7 +58,7 @@ class AbstractDataRequest {
         }
     }
     reject(error) {
-        for (const resolver of this.joinedResolvers) {
+        for (const resolver of this._joinedResolvers) {
             try {
                 resolver.reject(error);
             }

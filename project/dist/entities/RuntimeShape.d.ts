@@ -13,5 +13,5 @@ export interface RuntimeShapeField {
     readonly childShape?: RuntimeShape;
     readonly nodeShape?: RuntimeShape;
 }
-export declare function toRuntimeShape<TVariables extends object>(fetcher: Fetcher<string, object, TVariables>, variables?: TVariables): RuntimeShape;
-export declare function toRuntimeShape0(parentPath: string, fetcher: Fetcher<string, object, object>, variables?: object): RuntimeShape;
+export declare function toRuntimeShape<TVariables extends object>(fetcher: Fetcher<string, object, TVariables>, paginationConnName?: string, variables?: TVariables): RuntimeShape;
+export declare function toRuntimeShape0(parentPath: string, fetcher: Fetcher<string, object, object>, paginationConnName?: string, variables?: object): RuntimeShape;

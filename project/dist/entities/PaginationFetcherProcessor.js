@@ -1,14 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GRAPHQL_STATE_BEFORE = exports.GRAPHQL_STATE_LAST = exports.GRAPHQL_STATE_AFTER = exports.GRAPHQL_STATE_FIRST = exports.PaginationFetcherProcessor = void 0;
+exports.GRAPHQL_STATE_BEFORE = exports.GRAPHQL_STATE_LAST = exports.GRAPHQL_STATE_AFTER = exports.GRAPHQL_STATE_FIRST = exports.GRAPHQL_STATE_WINDOW_ID = exports.PaginationFetcherProcessor = void 0;
 const graphql_ts_client_api_1 = require("graphql-ts-client-api");
 class PaginationFetcherProcessor {
     constructor(schema) {
         this.schema = schema;
     }
-    process(fetcher, paginationStyle) {
+    process(fetcher) {
         const [connName, connField] = this.findConnectionField(fetcher);
-        return this.adjustConnection(fetcher, connName, connField);
+        return [connName, this.adjustConnection(fetcher, connName, connField)];
     }
     findConnectionField(fetcher) {
         var _a;
@@ -43,16 +43,10 @@ class PaginationFetcherProcessor {
         if (connField.childFetchers === undefined) {
             throw new Error(`No child fetcher for connection`);
         }
-        for (const childFetcher of connField.childFetchers) {
-            for (const name of childFetcher.fieldMap.keys()) {
-                if (name.startsWith("...")) {
-                    throw new Error("Fragment is forbidden in pageInfo");
-                }
-            }
-        }
-        return fetcher[connName](Object.assign(Object.assign({}, connField.args), { first: graphql_ts_client_api_1.ParameterRef.of(exports.GRAPHQL_STATE_FIRST), after: graphql_ts_client_api_1.ParameterRef.of(exports.GRAPHQL_STATE_AFTER), last: graphql_ts_client_api_1.ParameterRef.of(exports.GRAPHQL_STATE_LAST), before: graphql_ts_client_api_1.ParameterRef.of(exports.GRAPHQL_STATE_BEFORE) }), this.adjustPageInfo(connField.childFetchers[0]));
+        return fetcher["addField"](connName, Object.assign(Object.assign({}, connField.args), { first: graphql_ts_client_api_1.ParameterRef.of(exports.GRAPHQL_STATE_FIRST), after: graphql_ts_client_api_1.ParameterRef.of(exports.GRAPHQL_STATE_AFTER), last: graphql_ts_client_api_1.ParameterRef.of(exports.GRAPHQL_STATE_LAST), before: graphql_ts_client_api_1.ParameterRef.of(exports.GRAPHQL_STATE_BEFORE) }), this.adjustPageInfo(connField.childFetchers[0]), connField.fieldOptionsValue);
     }
     adjustPageInfo(connFetcher) {
+        var _a;
         const pageInfoFetchableField = connFetcher.fetchableType.fields.get("pageInfo");
         if (pageInfoFetchableField === undefined) {
             throw new Error(`No field "pageInfo" declared in "${connFetcher.fetchableType.name}"`);
@@ -72,32 +66,21 @@ class PaginationFetcherProcessor {
                 throw new Error(`The field "${argName}" declared in "${pageInfoFetchableField.targetTypeName}" must be simple field`);
             }
         }
-        let pageInfoField = connFetcher.fieldMap.get("pageInfo");
-        if (pageInfoField === undefined || pageInfoField.childFetchers === undefined || pageInfoField.childFetchers.length === 0) {
+        const pageInfoField = connFetcher.findField("pageInfo");
+        if (pageInfoField === undefined) {
             return connFetcher["pageInfo"](pageInfoFetcher["hasNextPage"]["hasPreviousPage"]["startCursor"]["endCursor"]);
         }
-        const pageArgFlags = [false, false, false, false];
-        for (const childFetcher of pageInfoField.childFetchers) {
-            for (const name of childFetcher.fieldMap.keys()) {
-                if (name.startsWith("...")) {
-                    throw new Error("Fragment is forbidden in pageInfo");
-                }
-                const index = PAGE_ARG_NAMES.indexOf(name);
-                if (index !== -1) {
-                    pageArgFlags[index] = true;
-                }
-            }
-        }
         let existingPageInfoFetcher = pageInfoField.childFetchers[0];
-        for (let i = 0; i < PAGE_ARG_NAMES.length; i++) {
-            if (!pageArgFlags[i]) {
-                existingPageInfoFetcher = existingPageInfoFetcher[PAGE_ARG_NAMES[i]];
+        for (const argName of PAGE_ARG_NAMES) {
+            if (!existingPageInfoFetcher.findField("argName") === undefined) {
+                existingPageInfoFetcher = existingPageInfoFetcher[argName];
             }
         }
-        return connFetcher["pageInfo"](existingPageInfoFetcher);
+        return connFetcher["addField"]("pageInfo", undefined, existingPageInfoFetcher, (_a = connFetcher.fieldMap.get("pageInfo")) === null || _a === void 0 ? void 0 : _a.fieldOptionsValue);
     }
 }
 exports.PaginationFetcherProcessor = PaginationFetcherProcessor;
+exports.GRAPHQL_STATE_WINDOW_ID = "graphql_state_window_id__";
 exports.GRAPHQL_STATE_FIRST = "graphql_state_first__";
 exports.GRAPHQL_STATE_AFTER = "graphql_state_after__";
 exports.GRAPHQL_STATE_LAST = "graphql_state_last__";

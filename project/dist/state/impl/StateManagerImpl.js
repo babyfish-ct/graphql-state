@@ -23,7 +23,7 @@ class StateManagerImpl {
         if (!this.entityManager.schema.isAcceptable(fetcher.fetchableType)) {
             throw new Error("Cannot accept that fetcher because it is not configured in the state manager");
         }
-        this.entityManager.save(RuntimeShape_1.toRuntimeShape(fetcher, variables), obj);
+        this.entityManager.save(RuntimeShape_1.toRuntimeShape(fetcher, undefined, variables), obj);
     }
     delete(typeName, idOrArray) {
         this.entityManager.delete(typeName, idOrArray);

@@ -68,7 +68,7 @@ class RemoteDataService extends AbstractDataService_1.AbstractDataService {
     onExecute(args) {
         return __awaiter(this, void 0, void 0, function* () {
             let data = graphql_ts_client_api_1.util.exceptNullValues(yield this.executeNetworkQuery(args));
-            this.entityManager.save(args.shape, data);
+            this.entityManager.save(args.withWindowId().shape, data);
             return data;
         });
     }
@@ -83,12 +83,12 @@ class RemoteDataService extends AbstractDataService_1.AbstractDataService {
                 throw new Error(`Cannot execute remote data loading because network is not configured`);
             }
             if (args.ids === undefined) {
-                return yield network.execute(args.fetcher, (_b = (_a = args.optionsArgs) === null || _a === void 0 ? void 0 : _a.variableArgs) === null || _b === void 0 ? void 0 : _b.variables);
+                return yield network.execute(args.fetcher, (_b = (_a = args.optionArgs) === null || _a === void 0 ? void 0 : _a.variableArgs) === null || _b === void 0 ? void 0 : _b.variables);
             }
             if (this.objectFetcherCreator === undefined) {
                 throw new Error(`The object(s) query is not supported because there is no field "Query.entities"`);
             }
-            const data = yield network.execute(this.objectFetcherCreator(args.fetcher), Object.assign(Object.assign({}, (_c = args.optionsArgs) === null || _c === void 0 ? void 0 : _c.variableArgs), { typeName: args.fetcher.fetchableType.name, ids: args.ids }));
+            const data = yield network.execute(this.objectFetcherCreator(args.fetcher), Object.assign(Object.assign({}, (_c = args.optionArgs) === null || _c === void 0 ? void 0 : _c.variableArgs), { typeName: args.fetcher.fetchableType.name, ids: args.ids }));
             return data.entities;
         });
     }

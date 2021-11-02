@@ -163,7 +163,7 @@ export function useQuery<
     fetcher: ObjectFetcher<"Query", T, TVaraibles>,
     options?: QueryOptions<TVaraibles, TAsyncStyle>
 ): AsyncReturnType<T, TAsyncStyle> {
-    const queryResultHolder = useInternalQueryResultHolder(fetcher, undefined, options);
+    const queryResultHolder = useInternalQueryResultHolder(fetcher, undefined, undefined, options);
     try {
         const queryResult = queryResultHolder.get();
         if (options?.asyncStyle === "async-object") {
@@ -193,7 +193,25 @@ export function usePaginationQuery<
     fetcher: ObjectFetcher<"Query", T, TVaraibles>,
     options?: PaginationQueryOptions<TVaraibles, TAsyncStyle>,    
 ): AsyncPaginationReturnType<T, TAsyncStyle> {
-    return useQuery(fetcher, options) as any;
+    const queryResultHolder = useInternalQueryResultHolder(
+        fetcher, options?.windowId, undefined, options
+    );
+    try {
+        const queryResult = queryResultHolder.get();
+        if (options?.asyncStyle === "async-object") {
+            return queryResult.loadable as any as AsyncPaginationReturnType<T, TAsyncStyle>;
+        }
+        if (queryResult.loadable.loading) {
+            throw queryResult.promise; // throws promise, <suspense/> will catch it
+        }
+        if (queryResult.loadable.error) {
+            throw queryResult.loadable.error;
+        }
+        return queryResult.loadable as any as AsyncPaginationReturnType<T, TAsyncStyle>;
+    } catch (ex) {
+        queryResultHolder.release();
+        throw ex;
+    }
 }
 
 export function useMutation<
@@ -255,6 +273,7 @@ export interface QueryOptions<TVariables extends object, TAsyncStyle extends Asy
 
 export interface PaginationQueryOptions<TVariables extends object, TAsyncStyle extends AsyncStyle> 
 extends QueryOptions<TVariables, TAsyncStyle> {
+    readonly windowId: string,
     readonly initializedSize: number;
     readonly pageSize?: number;
     readonly paginiationStyle?: PaginationStyle
@@ -271,7 +290,7 @@ export type QueryMode = "cache-and-network" | "cache-only";
 
 export type ObjectStyle = "required" | "optional";
 
-export type PaginationStyle = "retain-all" | "retain-page";
+export type PaginationStyle = "forward" | "backward" | "page";
 
 export interface ObjectQueryOptions<
     TVariables extends object, 
@@ -299,7 +318,7 @@ class ManagedObjectHooksImpl<TSchema extends SchemaType> implements ManagedObjec
         ObjectReference<T, TObjectStyle>,
         TAsyncStyle
     > {
-        const queryResultHolder = useInternalQueryResultHolder(fetcher, [id], options);
+        const queryResultHolder = useInternalQueryResultHolder(fetcher, undefined, [id], options);
         try {
             const queryResult = queryResultHolder.get();
             if (options?.asyncStyle === "async-object") {
@@ -347,7 +366,7 @@ class ManagedObjectHooksImpl<TSchema extends SchemaType> implements ManagedObjec
         ReadonlyArray<ObjectReference<T, TObjectStyle>>,
         TAsyncStyle
     > {
-        const queryResultHolder = useInternalQueryResultHolder(fetcher, ids, options);
+        const queryResultHolder = useInternalQueryResultHolder(fetcher, undefined, ids, options);
         try {
             const queryResult = queryResultHolder.get();
             if (options?.asyncStyle === "async-object") {
@@ -401,6 +420,7 @@ function useInternalStateValueHolder(
 
 function useInternalQueryResultHolder(
     fetcher: ObjectFetcher<string, object, object>,
+    windowId: string | undefined,
     ids?: ReadonlyArray<any>,
     options?: QueryOptions<any, any>
 ): QueryResultHolder {
@@ -410,7 +430,7 @@ function useInternalQueryResultHolder(
     const queryResultHolder = useMemo(() => {
         return new QueryResultHolder(stateManager, setQueryResultVersion);
     }, [stateManager, setQueryResultVersion]);
-    queryResultHolder.set(fetcher, ids, options);
+    queryResultHolder.set(fetcher, windowId, ids, options);
     useEffect(() => {
         return () => {
             queryResultHolder.release();

@@ -205,14 +205,14 @@ export class QueryResult {
     }
 
     private get mode(): QueryMode {
-        return (this.queryArgs?.optionsArgs?.options?.mode as QueryMode | undefined) ?? "cache-and-network";
+        return (this.queryArgs?.optionArgs?.options?.mode as QueryMode | undefined) ?? "cache-and-network";
     }
 
     private validateData(data: any): any {
         if (this.queryArgs.ids !== undefined) {
             const objectStyle: ObjectStyle = 
                 (
-                    this.queryArgs.optionsArgs?.options as ObjectQueryOptions<any, any, any> | undefined
+                    this.queryArgs.optionArgs?.options as ObjectQueryOptions<any, any, any> | undefined
                 )?.objectStyle 
                 ?? "required";
             if (objectStyle === "required") {

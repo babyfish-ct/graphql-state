@@ -56,7 +56,7 @@ function useStateAccessor(state, options) {
 }
 exports.useStateAccessor = useStateAccessor;
 function useQuery(fetcher, options) {
-    const queryResultHolder = useInternalQueryResultHolder(fetcher, undefined, options);
+    const queryResultHolder = useInternalQueryResultHolder(fetcher, undefined, undefined, options);
     try {
         const queryResult = queryResultHolder.get();
         if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "async-object") {
@@ -80,7 +80,24 @@ function useQuery(fetcher, options) {
 }
 exports.useQuery = useQuery;
 function usePaginationQuery(fetcher, options) {
-    return useQuery(fetcher, options);
+    const queryResultHolder = useInternalQueryResultHolder(fetcher, options === null || options === void 0 ? void 0 : options.windowId, undefined, options);
+    try {
+        const queryResult = queryResultHolder.get();
+        if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "async-object") {
+            return queryResult.loadable;
+        }
+        if (queryResult.loadable.loading) {
+            throw queryResult.promise; // throws promise, <suspense/> will catch it
+        }
+        if (queryResult.loadable.error) {
+            throw queryResult.loadable.error;
+        }
+        return queryResult.loadable;
+    }
+    catch (ex) {
+        queryResultHolder.release();
+        throw ex;
+    }
 }
 exports.usePaginationQuery = usePaginationQuery;
 function useMutation(fetcher, options) {
@@ -98,7 +115,7 @@ function makeManagedObjectHooks() {
 exports.makeManagedObjectHooks = makeManagedObjectHooks;
 class ManagedObjectHooksImpl {
     useObject(fetcher, id, options) {
-        const queryResultHolder = useInternalQueryResultHolder(fetcher, [id], options);
+        const queryResultHolder = useInternalQueryResultHolder(fetcher, undefined, [id], options);
         try {
             const queryResult = queryResultHolder.get();
             if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "async-object") {
@@ -121,7 +138,7 @@ class ManagedObjectHooksImpl {
         }
     }
     useObjects(fetcher, ids, options) {
-        const queryResultHolder = useInternalQueryResultHolder(fetcher, ids, options);
+        const queryResultHolder = useInternalQueryResultHolder(fetcher, undefined, ids, options);
         try {
             const queryResult = queryResultHolder.get();
             if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "async-object") {
@@ -159,13 +176,13 @@ function useInternalStateValueHolder(state, options) {
     }, [stateValueHolder]);
     return stateValueHolder;
 }
-function useInternalQueryResultHolder(fetcher, ids, options) {
+function useInternalQueryResultHolder(fetcher, windowId, ids, options) {
     const stateManager = useStateManager();
     const [, setQueryResultVersion] = react_1.useState(0);
     const queryResultHolder = react_1.useMemo(() => {
         return new Holder_1.QueryResultHolder(stateManager, setQueryResultVersion);
     }, [stateManager, setQueryResultVersion]);
-    queryResultHolder.set(fetcher, ids, options);
+    queryResultHolder.set(fetcher, windowId, ids, options);
     react_1.useEffect(() => {
         return () => {
             queryResultHolder.release();

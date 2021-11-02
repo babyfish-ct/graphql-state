@@ -1,4 +1,4 @@
-import { Fetcher, FetcherField, ObjectFetcher, ParameterRef } from "graphql-ts-client-api"
+import { Fetcher, FetcherField, FieldOptions, ObjectFetcher, ParameterRef } from "graphql-ts-client-api"
 import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 import { PaginationStyle } from "../state/StateHook";
 
@@ -7,11 +7,10 @@ export class PaginationFetcherProcessor {
     constructor(private schema: SchemaMetadata) {}
     
     process(
-        fetcher: ObjectFetcher<string, object, object>,
-        paginationStyle: PaginationStyle
-    ): ObjectFetcher<string, object, object> {
+        fetcher: ObjectFetcher<string, object, object>
+    ): [string, ObjectFetcher<string, object, object>] {
         const [connName, connField] = this.findConnectionField(fetcher);
-        return this.adjustConnection(fetcher, connName, connField);
+        return [connName, this.adjustConnection(fetcher, connName, connField)];
     }
 
     private findConnectionField(
@@ -57,14 +56,8 @@ export class PaginationFetcherProcessor {
         if (connField.childFetchers === undefined) {
             throw new Error(`No child fetcher for connection`);
         }
-        for (const childFetcher of connField.childFetchers) {
-            for (const name of childFetcher.fieldMap.keys()) {
-                if (name.startsWith("...")) {
-                    throw new Error("Fragment is forbidden in pageInfo");
-                }
-            }
-        }
-        return fetcher[connName](
+        return fetcher["addField"](
+            connName,
             { 
                 ...connField.args,
                 first: ParameterRef.of(GRAPHQL_STATE_FIRST),
@@ -72,7 +65,8 @@ export class PaginationFetcherProcessor {
                 last: ParameterRef.of(GRAPHQL_STATE_LAST),
                 before: ParameterRef.of(GRAPHQL_STATE_BEFORE)
             },
-            this.adjustPageInfo(connField.childFetchers[0])
+            this.adjustPageInfo(connField.childFetchers[0]),
+            connField.fieldOptionsValue
         );
     }
 
@@ -98,36 +92,28 @@ export class PaginationFetcherProcessor {
                 throw new Error(`The field "${argName}" declared in "${pageInfoFetchableField.targetTypeName}" must be simple field`);
             }
         }
-        let pageInfoField = connFetcher.fieldMap.get("pageInfo");
-        if (pageInfoField === undefined || pageInfoField.childFetchers === undefined || pageInfoField.childFetchers.length === 0) {
+        const pageInfoField = connFetcher.findField("pageInfo");
+        if (pageInfoField === undefined) {
             return connFetcher["pageInfo"](
                 pageInfoFetcher["hasNextPage"]["hasPreviousPage"]["startCursor"]["endCursor"]
             );
         }
-        const pageArgFlags = [ false, false, false, false ];
-        for (const childFetcher of pageInfoField.childFetchers) {
-            for (const name of childFetcher.fieldMap.keys()) {
-                if (name.startsWith("...")) {
-                    throw new Error("Fragment is forbidden in pageInfo");
-                }
-                const index = PAGE_ARG_NAMES.indexOf(name);
-                if (index !== -1) {
-                    pageArgFlags[index] = true;
-                }
+        let existingPageInfoFetcher = pageInfoField.childFetchers![0];
+        for (const argName of PAGE_ARG_NAMES) {
+            if (!existingPageInfoFetcher.findField("argName") === undefined) {
+                existingPageInfoFetcher = existingPageInfoFetcher[argName];
             }
         }
-        let existingPageInfoFetcher = pageInfoField.childFetchers[0];
-        for (let i = 0; i < PAGE_ARG_NAMES.length; i++) {
-            if (!pageArgFlags[i]) {
-                existingPageInfoFetcher = existingPageInfoFetcher[PAGE_ARG_NAMES[i]];
-            }
-        }
-        return connFetcher["pageInfo"](
-            existingPageInfoFetcher
+        return connFetcher["addField"](
+            "pageInfo",
+            undefined,
+            existingPageInfoFetcher,
+            connFetcher.fieldMap.get("pageInfo")?.fieldOptionsValue
         );
     }
 }
 
+export const GRAPHQL_STATE_WINDOW_ID = "graphql_state_window_id__";
 export const GRAPHQL_STATE_FIRST = "graphql_state_first__";
 export const GRAPHQL_STATE_AFTER = "graphql_state_after__";
 export const GRAPHQL_STATE_LAST = "graphql_state_last__";

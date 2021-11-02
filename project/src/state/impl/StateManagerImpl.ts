@@ -42,7 +42,7 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
         if (!this.entityManager.schema.isAcceptable(fetcher.fetchableType)) {
             throw new Error("Cannot accept that fetcher because it is not configured in the state manager");
         }
-        this.entityManager.save(toRuntimeShape(fetcher, variables), obj);
+        this.entityManager.save(toRuntimeShape(fetcher, undefined, variables), obj);
     }
 
     delete<TName extends keyof TSchema["entities"] & string>(

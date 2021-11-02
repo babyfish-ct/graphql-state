@@ -55,6 +55,7 @@ export interface QueryOptions<TVariables extends object, TAsyncStyle extends Asy
     readonly mode?: QueryMode;
 }
 export interface PaginationQueryOptions<TVariables extends object, TAsyncStyle extends AsyncStyle> extends QueryOptions<TVariables, TAsyncStyle> {
+    readonly windowId: string;
     readonly initializedSize: number;
     readonly pageSize?: number;
     readonly paginiationStyle?: PaginationStyle;
@@ -67,7 +68,7 @@ export interface MutationOptions<T, TVariables extends object> {
 }
 export declare type QueryMode = "cache-and-network" | "cache-only";
 export declare type ObjectStyle = "required" | "optional";
-export declare type PaginationStyle = "retain-all" | "retain-page";
+export declare type PaginationStyle = "forward" | "backward" | "page";
 export interface ObjectQueryOptions<TVariables extends object, TAsyncStyle extends AsyncStyle, TObjectStyle extends ObjectStyle> extends QueryOptions<TVariables, TAsyncStyle> {
     readonly objectStyle: TObjectStyle;
 }

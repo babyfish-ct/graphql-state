@@ -1,5 +1,5 @@
 import { Table, Tag, Space, Button, Input, Modal, Spin, Row, Col } from "antd";
-import { useQuery, useMutation, useStateManager, usePaginationQuery } from "graphql-state";
+import { useMutation, useStateManager, usePaginationQuery } from "graphql-state";
 import { ModelType, ParameterRef } from "graphql-ts-client-api";
 import { ChangeEvent, FC, memo, useCallback, useState } from "react";
 import { ComponentDecorator } from "../../../common/ComponentDecorator";
@@ -33,9 +33,10 @@ export const BookList: FC = memo(() => {
             options => options.alias("bookConnection")
         ),
         {
+            windowId: "bookList",
             asyncStyle: "async-object",
             variables: { name, authorName },
-            initializedSize: 4
+            initializedSize: 2
         }
     );
 

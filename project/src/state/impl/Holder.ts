@@ -4,11 +4,10 @@ import { MutationResult } from "../../entities/MutationResult";
 import { QueryArgs } from "../../entities/QueryArgs";
 import { QueryResult } from "../../entities/QueryResult";
 import { ParameterizedStateAccessingOptions, State, StateAccessingOptions } from "../State";
-import { MutationOptions, PaginationQueryOptions, QueryOptions } from "../StateHook";
+import { MutationOptions, QueryOptions } from "../StateHook";
 import { QueryResultChangeEvent, StateManagerImpl, StateValueChangeEvent, StateValueChangeListener } from "./StateManagerImpl";
 import { StateValue } from "./StateValue";
 import { OptionArgs, VariableArgs } from "./Args";
-import { PaginationFetcherProcessor } from "../../entities/PaginationFetcherProcessor";
 
 export class StateValueHolder {
 
@@ -108,6 +107,7 @@ export class QueryResultHolder {
 
     private deferred?: {
         readonly fetcher: ObjectFetcher<string, object, object>;
+        readonly windowId?: string;
         readonly ids?: ReadonlyArray<any>;
         readonly options?: QueryOptions<any, any>;
     };
@@ -127,23 +127,30 @@ export class QueryResultHolder {
 
     set(
         fetcher: ObjectFetcher<string, object, object>,
+        windowId: string | undefined,
         ids?: ReadonlyArray<any>,
         options?: QueryOptions<any, any>
     ) {
-        if ((options as PaginationQueryOptions<any, any> | undefined)?.initializedSize !== undefined) {
-            const paginationFetcher = new PaginationFetcherProcessor(this.stateManager.entityManager.schema)
-            .process(fetcher, "retain-all");
-            console.log(paginationFetcher.toString());
-        }
+
         const oldQueryArgs = this.queryResult?.queryArgs;
-        const newQueryArgs = QueryArgs.create(fetcher, ids, OptionArgs.of(options));
+        const newQueryArgs = QueryArgs.create(
+            fetcher, 
+            windowId ? 
+            {
+                windowId,
+                schema: this.stateManager.entityManager.schema
+            } :
+            undefined, 
+            ids, 
+            OptionArgs.of(options)
+        );
 
         if (oldQueryArgs?.key === newQueryArgs.key) {
             return;
         }
 
         if (this.queryResult?.loadable.loading) { //Peak clipping
-            this.deferred = { fetcher, ids, options }; 
+            this.deferred = { fetcher, windowId, ids, options }; 
             return;
         }
         
@@ -160,7 +167,7 @@ export class QueryResultHolder {
                 this.localUpdater(old => old + 1); // Change a local state to update react component
                 if (deferred !== undefined && !this.queryResult.loadable.loading) {
                     this.deferred = undefined;
-                    this.set(deferred.fetcher, deferred.ids, deferred.options);
+                    this.set(deferred.fetcher, deferred.windowId, deferred.ids, deferred.options);
                 }
             }
         };

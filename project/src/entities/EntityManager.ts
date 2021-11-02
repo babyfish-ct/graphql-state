@@ -11,6 +11,7 @@ import { StateManagerImpl } from "../state/impl/StateManagerImpl";
 import { AssociationValue } from "./assocaition/AssocaitionValue";
 import { EntityEvictEvent } from "./EntityEvent";
 import { ModificationContext } from "./ModificationContext";
+import { PaginationQueryResult } from "./PaginationQueryResult";
 import { QueryArgs } from "./QueryArgs";
 import { QueryResult } from "./QueryResult";
 import { QUERY_OBJECT_ID, Record } from "./Record";
@@ -180,10 +181,17 @@ export class EntityManager {
             if (!this.schema.isAcceptable(args.fetcher.fetchableType)) {
                 throw new Error("Cannot accept that fetcher because it is not configured in the state manager");
             }
-            result = new QueryResult(this, args, () => { 
-                this._queryResultMap.delete(args.key); 
-                this.gc();
-            });
+            if (args.pagination !== undefined) {
+                result = new PaginationQueryResult(this, args, () => {
+                    this._queryResultMap.delete(args.key);
+                    this.gc();
+                });
+            } else {
+                result = new QueryResult(this, args, () => { 
+                    this._queryResultMap.delete(args.key); 
+                    this.gc();
+                });
+            }
             this._queryResultMap.set(args.key, result);
         }
         return result.retain();

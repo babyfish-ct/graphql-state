@@ -1,6 +1,5 @@
 import { EntityManager } from "../entities/EntityManager";
 import { QueryArgs } from "../entities/QueryArgs";
-import { reshapeObject } from "./util";
 
 export abstract class AbstractDataService {
 

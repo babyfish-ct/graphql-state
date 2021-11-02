@@ -70,7 +70,7 @@ export class RemoteDataService extends AbstractDataService {
         let data: any = util.exceptNullValues(
             await this.executeNetworkQuery(args) 
         );
-        this.entityManager.save(args.shape, data);
+        this.entityManager.save(args.withWindowId().shape, data);
         return data;
     }
 
@@ -88,7 +88,7 @@ export class RemoteDataService extends AbstractDataService {
         if (args.ids === undefined) {
             return await network.execute(
                 args.fetcher as ObjectFetcher<'Query' | 'Mutation', any, any>, 
-                args.optionsArgs?.variableArgs?.variables
+                args.optionArgs?.variableArgs?.variables
             )
         }
 
@@ -100,7 +100,7 @@ export class RemoteDataService extends AbstractDataService {
         const data = await network.execute(
             this.objectFetcherCreator(args.fetcher),
             { 
-                ...args.optionsArgs?.variableArgs, 
+                ...args.optionArgs?.variableArgs, 
                 typeName: args.fetcher.fetchableType.name,
                 ids: args.ids 
             }

@@ -27,7 +27,7 @@ export declare class QueryResultHolder {
     private deferred?;
     constructor(stateManager: StateManagerImpl<any>, localUpdater: Dispatch<SetStateAction<number>>);
     get(): QueryResult;
-    set(fetcher: ObjectFetcher<string, object, object>, ids?: ReadonlyArray<any>, options?: QueryOptions<any, any>): void;
+    set(fetcher: ObjectFetcher<string, object, object>, windowId: string | undefined, ids?: ReadonlyArray<any>, options?: QueryOptions<any, any>): void;
     release(): void;
 }
 export declare class PaginationQueryResultHolder {

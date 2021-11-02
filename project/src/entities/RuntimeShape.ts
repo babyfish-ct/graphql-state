@@ -1,6 +1,7 @@
 import { Fetcher, FetcherField } from "graphql-ts-client-api";
 import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 import { VariableArgs } from "../state/impl/Args";
+import { GRAPHQL_STATE_WINDOW_ID } from "./PaginationFetcherProcessor";
 
 /*
  * RuntimeShape = Fetcher + Variables
@@ -22,14 +23,16 @@ export interface RuntimeShapeField {
 
 export function toRuntimeShape<TVariables extends object>(
     fetcher: Fetcher<string, object, TVariables>, 
+    paginationConnName?: string,
     variables?: TVariables
 ): RuntimeShape {
-    return toRuntimeShape0("", fetcher, variables);
+    return toRuntimeShape0("", fetcher, paginationConnName, variables);
 }
 
 export function toRuntimeShape0(
     parentPath: string,
     fetcher: Fetcher<string, object, object>, 
+    paginationConnName?: string,
     variables?: object
 ): RuntimeShape {
     
@@ -44,6 +47,7 @@ export function toRuntimeShape0(
             fieldName, 
             fetcher.fieldMap.get(fieldName)!, 
             runtimeShapeFieldMap, 
+            paginationConnName,
             variables
         );
     }
@@ -58,6 +62,7 @@ function addField(
     fieldName: string,
     field: FetcherField,
     runtimeShapeFieldMap: Map<string, RuntimeShapeField>,
+    paginationConnName: string | undefined,
     fetcherVaribles: any
 ) {
     if (fieldName.startsWith("...")) {
@@ -69,6 +74,7 @@ function addField(
                         subFieldName, 
                         subField, 
                         runtimeShapeFieldMap, 
+                        undefined,
                         fetcherVaribles
                     );
                 } 
@@ -76,7 +82,7 @@ function addField(
         }
         return;
     }
-    const variables = resolveParameterRefs(field.args, fetcherVaribles, field.argGraphQLTypes);
+    let variables = resolveParameterRefs(field.args, fetcherVaribles, field.argGraphQLTypes);
     if (field.argGraphQLTypes !== undefined) {
         for (const [name, type] of field.argGraphQLTypes) {
             if (type.endsWith("!") && (variables === undefined || variables[name] === undefined)) {
@@ -84,20 +90,26 @@ function addField(
             }
         }
     }
+    if (paginationConnName === fieldName && fetcherVaribles !== undefined) {
+        variables = {
+            ...variables,
+            [GRAPHQL_STATE_WINDOW_ID]: fetcherVaribles[GRAPHQL_STATE_WINDOW_ID]
+        };
+    }
 
     const alias = field.fieldOptionsValue?.alias;
     const directives = standardizedDirectives(field, fetcherVaribles);
     const childFetcher = field.childFetchers !== undefined ? field.childFetchers[0] : undefined;
     const childShape = 
         childFetcher !== undefined ?
-        toRuntimeShape0(`${parentPath}${fieldName}/`, childFetcher, fetcherVaribles) :
+        toRuntimeShape0(`${parentPath}${fieldName}/`, childFetcher, undefined, fetcherVaribles) :
         undefined;
     let nodeShape: RuntimeShape | undefined = undefined;
     if (childFetcher?.fetchableType.category === "CONNECTION") {
         nodeShape = childShape?.fieldMap?.get("edges")?.childShape?.fieldMap?.get("node")?.childShape;
         if (nodeShape === undefined) {
             throw new Error(`Illega fetch path ${parentPath}${fieldName}, the sub path "edges/node" of connecton is required`);
-        } 
+        }
     }
     
     runtimeShapeFieldMap.set(

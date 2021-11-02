@@ -40,7 +40,7 @@ export class QueryService {
         if (useDataService) {
             return {
                 type: "deferred",
-                promise: this.entityManager.dataService.query(args)
+                promise: this.entityManager.dataService.query(args.withoutWindowId())
             };
         }
 
@@ -130,7 +130,9 @@ export class QueryService {
         const idFieldName = this.entityManager.schema.typeMap.get(shape.typeName)!.idField.name;
         const idFieldAlias = shape.fieldMap.get(idFieldName)?.alias ?? idFieldName;
 
-        const missedObjects = await this.entityManager.dataService.query(args.newArgs(missedIds));
+        const missedObjects = await this.entityManager.dataService.query(
+            args.newArgs(missedIds).withoutWindowId()
+        );
         for (const missedObject of missedObjects) {
             objMap.set(missedObject[idFieldAlias], missedObject);
         }

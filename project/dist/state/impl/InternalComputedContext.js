@@ -118,7 +118,7 @@ class InternalComputedContext {
             }
         }
         const entityManager = this.scope.stateManager.entityManager;
-        const queryResult = entityManager.retain(QueryArgs_1.QueryArgs.create(fetcher, undefined, Args_1.OptionArgs.of(options)));
+        const queryResult = entityManager.retain(QueryArgs_1.QueryArgs.create(fetcher, undefined, ids, Args_1.OptionArgs.of(options)));
         let promise;
         try {
             promise = queryResult.promise;
