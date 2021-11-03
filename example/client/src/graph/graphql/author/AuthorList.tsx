@@ -1,5 +1,5 @@
 import { Space, Table, Modal, Input, Button, Tag, Spin, Row, Col } from "antd";
-import { useQuery, useMutation, useStateManager } from "graphql-state";
+import { useMutation, useStateManager, usePaginationQuery } from "graphql-state";
 import { ModelType, ParameterRef } from "graphql-ts-client-api";
 import { ChangeEvent, FC, memo, useCallback, useState } from "react";
 import { ComponentDecorator } from "../../../common/ComponentDecorator";
@@ -20,7 +20,7 @@ export const AuthorList: FC = memo(() => {
     const [name, setName] = useState<string>();
     const [bookName, setBookName] = useState<string>();
 
-    const { data, loading, refetch } = useQuery(
+    const { data, loading, refetch, isLoadingNext, loadNext, hasNext } = usePaginationQuery(
         query$.findAuthors(
             authorConnection$.edges(
                 authorEdge$.node(
@@ -30,6 +30,8 @@ export const AuthorList: FC = memo(() => {
             options => options.alias("authorConnection")
         ),
         {
+            windowId: "authorPagination",
+            initialSize: 4,
             asyncStyle: "async-object",
             variables: { name, bookName }
         }
@@ -144,7 +146,10 @@ export const AuthorList: FC = memo(() => {
                             <Table.Column title="Books" render={renderBooks}/>
                             <Table.Column title="Operations" render={renderOperations}/>
                         </Table>
-                        <Button onClick={onAddClick}>Add Author</Button>
+                        <Space>
+                            <Button onClick={loadNext} disabled={!hasNext} loading={isLoadingNext}>Load more</Button>
+                            <Button onClick={onAddClick}>Add Author</Button>
+                        </Space>
                     </>
                 }
             </Space>

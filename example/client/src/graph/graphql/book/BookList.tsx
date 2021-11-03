@@ -33,10 +33,10 @@ export const BookList: FC = memo(() => {
             options => options.alias("bookConnection")
         ),
         {
-            windowId: "bookList",
+            windowId: "bookPagination",
+            initialSize: 4,
             asyncStyle: "async-object",
-            variables: { name, authorName },
-            initialSize: 2
+            variables: { name, authorName }
         }
     );
 
