@@ -7,6 +7,7 @@ export declare class QueryArgs {
     readonly shape: RuntimeShape;
     readonly fetcher: ObjectFetcher<string, object, object>;
     readonly pagination: {
+        readonly loadMode: "initial" | "next" | "previous";
         readonly windowId: string;
         readonly connName: string;
         readonly connAlias?: string;
@@ -22,7 +23,10 @@ export declare class QueryArgs {
     private _withoutPaginationInfo?;
     private constructor();
     get key(): string;
-    static create(fetcher: ObjectFetcher<string, object, object>, schemaForPagination?: SchemaMetadata, ids?: ReadonlyArray<any>, optionArgs?: OptionArgs): QueryArgs;
+    static create(fetcher: ObjectFetcher<string, object, object>, pagination?: {
+        readonly schema: SchemaMetadata;
+        readonly loadMode: "initial" | "next" | "previous";
+    }, ids?: ReadonlyArray<any>, optionArgs?: OptionArgs): QueryArgs;
     newArgs(ids: ReadonlyArray<any>): QueryArgs;
     contains(args: QueryArgs): boolean;
     variables(variables: any): QueryArgs;

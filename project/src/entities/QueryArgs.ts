@@ -19,6 +19,7 @@ export class QueryArgs {
         readonly shape: RuntimeShape,
         readonly fetcher: ObjectFetcher<string, object, object>,
         readonly pagination: {
+            readonly loadMode: "initial" | "next" | "previous",
             readonly windowId: string,
             readonly connName: string,
             readonly connAlias?: string,
@@ -52,7 +53,10 @@ export class QueryArgs {
 
     static create(
         fetcher: ObjectFetcher<string, object, object>,
-        schemaForPagination?: SchemaMetadata,
+        pagination?: {
+            readonly schema: SchemaMetadata,
+            readonly loadMode: "initial" | "next" | "previous",
+        },
         ids?: ReadonlyArray<any>,
         optionArgs?: OptionArgs
     ): QueryArgs {
@@ -63,10 +67,10 @@ export class QueryArgs {
             throw new Error("id/ids is required for object query");
         }
 
-        if (schemaForPagination !== undefined) {
+        if (pagination !== undefined) {
             
             const [connName, connAlias, paginationFetcher] = new PaginationFetcherProcessor(
-                schemaForPagination
+                pagination.schema
             ).process(fetcher);
             const queryOptions = optionArgs!.options as PaginationQueryOptions<any, any>;
 
@@ -74,6 +78,7 @@ export class QueryArgs {
                 toRuntimeShape(fetcher, connName, optionArgs?.variableArgs?.variables), 
                 paginationFetcher, 
                 { 
+                    loadMode: pagination.loadMode,
                     windowId: queryOptions.windowId, 
                     connName,
                     connAlias,

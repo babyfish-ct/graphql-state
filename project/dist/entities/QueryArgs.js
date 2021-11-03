@@ -26,7 +26,7 @@ class QueryArgs {
     get key() {
         return this._key;
     }
-    static create(fetcher, schemaForPagination, ids, optionArgs) {
+    static create(fetcher, pagination, ids, optionArgs) {
         var _a, _b, _c, _d;
         if (fetcher.fetchableType.name === 'Query' && ids !== undefined) {
             throw new Error("Generic query does not support id");
@@ -34,10 +34,11 @@ class QueryArgs {
         else if (fetcher.fetchableType.name !== 'Query' && ids === undefined) {
             throw new Error("id/ids is required for object query");
         }
-        if (schemaForPagination !== undefined) {
-            const [connName, connAlias, paginationFetcher] = new PaginationFetcherProcessor_1.PaginationFetcherProcessor(schemaForPagination).process(fetcher);
+        if (pagination !== undefined) {
+            const [connName, connAlias, paginationFetcher] = new PaginationFetcherProcessor_1.PaginationFetcherProcessor(pagination.schema).process(fetcher);
             const queryOptions = optionArgs.options;
             return new QueryArgs(RuntimeShape_1.toRuntimeShape(fetcher, connName, (_a = optionArgs === null || optionArgs === void 0 ? void 0 : optionArgs.variableArgs) === null || _a === void 0 ? void 0 : _a.variables), paginationFetcher, {
+                loadMode: pagination.loadMode,
                 windowId: queryOptions.windowId,
                 connName,
                 connAlias,

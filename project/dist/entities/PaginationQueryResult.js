@@ -21,51 +21,53 @@ class PaginationQueryResult extends QueryResult_1.QueryResult {
         this._bindedLoadPrevious = this.loadPrevious.bind(this);
         const queryFetcher = this.entityManager.schema.fetcher("Query");
         const connField = this.queryArgs.fetcher.fieldMap.get(this.queryArgs.pagination.connName);
-        this.loadMoreFetcher = queryFetcher["addField"](this.queryArgs.pagination.connName, connField === null || connField === void 0 ? void 0 : connField.args, connField.childFetchers[0], connField.fieldOptionsValue);
+        const loadMoreFetcher = queryFetcher["addField"](this.queryArgs.pagination.connName, connField === null || connField === void 0 ? void 0 : connField.args, connField.childFetchers[0], connField.fieldOptionsValue);
+        this._loadNextQueryArgs = QueryArgs_1.QueryArgs.create(loadMoreFetcher, { schema: this.entityManager.schema, loadMode: "next" }, undefined, this.queryArgs.optionArgs);
+        this._loadPreviousQueryArgs = QueryArgs_1.QueryArgs.create(loadMoreFetcher, { schema: this.entityManager.schema, loadMode: "previous" }, undefined, this.queryArgs.optionArgs);
     }
     createLoadable(loading, data, error, additionalValues) {
         var _a, _b, _c, _d, _e, _f;
         return super.createLoadable(loading, data, error, Object.assign({ loadNext: this._bindedLoadNext, loadPrevious: this._bindedLoadPrevious, hasNext: (_c = (_b = (_a = this.conn(data)) === null || _a === void 0 ? void 0 : _a.pageInfo) === null || _b === void 0 ? void 0 : _b.hasNextPage) !== null && _c !== void 0 ? _c : false, hasPrevious: (_f = (_e = (_d = this.conn(data)) === null || _d === void 0 ? void 0 : _d.pageInfo) === null || _e === void 0 ? void 0 : _e.hasPreviousPage) !== null && _f !== void 0 ? _f : false, isLoadingNext: false, isLoadingPrevious: false }, additionalValues));
     }
     createQueryService() {
+        return this.createPagiantionQueryService(undefined);
+    }
+    createPagiantionQueryService(data) {
+        const conn = this.conn(data !== null && data !== void 0 ? data : this._loadable.data);
         return new QueryService_1.QueryService(this.entityManager, args => {
+            var _a, _b;
             const pagination = args.pagination;
-            const loadable = this.loadable;
-            const data = loadable.data;
-            const conn = this.conn(this._loadable.data);
-            if (loadable.isLoadingNext || pagination.style !== "backward") {
+            if (pagination.loadMode === "previous" || pagination.style === "backward") {
                 return args.variables({
-                    [PaginationFetcherProcessor_1.GRAPHQL_STATE_FIRST]: data !== undefined ? pagination.pageSize : pagination.initialSize,
-                    [PaginationFetcherProcessor_1.GRAPHQL_STATE_AFTER]: loadable.isLoadingNext ? conn === null || conn === void 0 ? void 0 : conn.pageInfo.endCursor : undefined
+                    [PaginationFetcherProcessor_1.GRAPHQL_STATE_LAST]: pagination.loadMode === "initial" ? pagination.initialSize : pagination.pageSize,
+                    [PaginationFetcherProcessor_1.GRAPHQL_STATE_BEFORE]: pagination.loadMode === "initial" ? undefined : (_a = conn === null || conn === void 0 ? void 0 : conn.pageInfo) === null || _a === void 0 ? void 0 : _a.startCursor
                 });
             }
             return args.variables({
-                [PaginationFetcherProcessor_1.GRAPHQL_STATE_LAST]: data !== undefined ? pagination.pageSize : pagination.initialSize,
-                [PaginationFetcherProcessor_1.GRAPHQL_STATE_BEFORE]: loadable.isLoadingPrevious ? conn === null || conn === void 0 ? void 0 : conn.pageInfo.startCursor : undefined
+                [PaginationFetcherProcessor_1.GRAPHQL_STATE_FIRST]: pagination.loadMode === "initial" ? pagination.initialSize : pagination.pageSize,
+                [PaginationFetcherProcessor_1.GRAPHQL_STATE_AFTER]: pagination.loadMode === "initial" ? undefined : (_b = conn === null || conn === void 0 ? void 0 : conn.pageInfo) === null || _b === void 0 ? void 0 : _b.endCursor
             });
         });
     }
     loadMore(loadingStatus) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log("loadMore.....");
+            const queryService = this.createPagiantionQueryService(this._loadable.data); // Create before "_loadable" reset
             this._loadable = this.createLoadable(false, undefined, undefined, { [loadingStatus]: true });
             this.entityManager.stateManager.publishQueryResultChangeEvent({
                 queryResult: this,
                 changedType: "ASYNC_STATE_CHANGE"
             });
             try {
-                console.log("result.....");
-                const result = this.createQueryService().query(QueryArgs_1.QueryArgs.create(this.loadMoreFetcher, this.entityManager.schema, undefined, this.queryArgs.optionArgs), false, true);
+                const result = queryService.query(loadingStatus === "isLoadingNext" ? this._loadNextQueryArgs : this._loadPreviousQueryArgs, false, true);
                 if (result.type !== "deferred") {
                     throw new Error("Internal bug: LoadMore only accept deferred result");
                 }
                 const data = yield result.promise;
-                console.log("wait.....", data);
                 this._loadable = this.createLoadable(false, data, undefined, { [loadingStatus]: false });
             }
             catch (ex) {
-                console.log("ex.....", ex);
                 this._loadable = this.createLoadable(false, undefined, ex, { [loadingStatus]: false });
+                throw ex;
             }
             finally {
                 this.entityManager.stateManager.publishQueryResultChangeEvent({

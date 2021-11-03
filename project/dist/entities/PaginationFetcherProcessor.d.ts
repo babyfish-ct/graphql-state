@@ -8,8 +8,8 @@ export declare class PaginationFetcherProcessor {
     private adjustConnection;
     private adjustPageInfo;
 }
-export declare const GRAPHQL_STATE_PAGINATION_INFO = "graphql_state_pagination_info__";
-export declare const GRAPHQL_STATE_FIRST = "graphql_state_first__";
-export declare const GRAPHQL_STATE_AFTER = "graphql_state_after__";
-export declare const GRAPHQL_STATE_LAST = "graphql_state_last__";
-export declare const GRAPHQL_STATE_BEFORE = "graphql_state_before__";
+export declare const GRAPHQL_STATE_PAGINATION_INFO: string;
+export declare const GRAPHQL_STATE_FIRST: string;
+export declare const GRAPHQL_STATE_AFTER: string;
+export declare const GRAPHQL_STATE_LAST: string;
+export declare const GRAPHQL_STATE_BEFORE: string;

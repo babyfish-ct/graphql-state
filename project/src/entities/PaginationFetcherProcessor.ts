@@ -113,18 +113,24 @@ export class PaginationFetcherProcessor {
     }
 }
 
-export const GRAPHQL_STATE_PAGINATION_INFO = "graphql_state_pagination_info__";
-export const GRAPHQL_STATE_FIRST = "graphql_state_first__";
-export const GRAPHQL_STATE_AFTER = "graphql_state_after__";
-export const GRAPHQL_STATE_LAST = "graphql_state_last__";
-export const GRAPHQL_STATE_BEFORE = "graphql_state_before__";
+function graphqlStateVariableName(name: string): string {
+    return `graphql_state_${name}__`;
+}
+export const GRAPHQL_STATE_PAGINATION_INFO = graphqlStateVariableName("pagination_info");
+export const GRAPHQL_STATE_FIRST = graphqlStateVariableName("first");
+export const GRAPHQL_STATE_AFTER = graphqlStateVariableName("after");
+export const GRAPHQL_STATE_LAST = graphqlStateVariableName("last");
+export const GRAPHQL_STATE_BEFORE = graphqlStateVariableName("before");
 
 function isArgumentSpecified(args: any, name: string) {
     if (args !== undefined) {
         const value = args[name];
         if (value !== undefined) {
-            if (value[" $__instanceOfParameterRef"] && (value as ParameterRef<any>).name === name) {
-                return false;
+            if (value[" $__instanceOfParameterRef"]) {
+                const refName = (value as ParameterRef<any>).name;
+                if (refName === name || refName === graphqlStateVariableName(name)) {
+                    return false;
+                }
             }
             return true;
         }

@@ -5,10 +5,12 @@ import { QueryService } from "./QueryService";
 export declare class PaginationQueryResult extends QueryResult {
     private _bindedLoadNext;
     private _bindedLoadPrevious;
-    private loadMoreFetcher;
+    private _loadNextQueryArgs;
+    private _loadPreviousQueryArgs;
     constructor(entityManager: EntityManager, queryArgs: QueryArgs, disposer: () => void);
     protected createLoadable(loading: boolean, data: any, error: any, additionalValues?: any): PaginationQueryLoadable<any>;
     protected createQueryService(): QueryService;
+    private createPagiantionQueryService;
     private loadMore;
     private loadNext;
     private loadPrevious;

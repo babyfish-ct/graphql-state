@@ -81,17 +81,23 @@ class PaginationFetcherProcessor {
     }
 }
 exports.PaginationFetcherProcessor = PaginationFetcherProcessor;
-exports.GRAPHQL_STATE_PAGINATION_INFO = "graphql_state_pagination_info__";
-exports.GRAPHQL_STATE_FIRST = "graphql_state_first__";
-exports.GRAPHQL_STATE_AFTER = "graphql_state_after__";
-exports.GRAPHQL_STATE_LAST = "graphql_state_last__";
-exports.GRAPHQL_STATE_BEFORE = "graphql_state_before__";
+function graphqlStateVariableName(name) {
+    return `graphql_state_${name}__`;
+}
+exports.GRAPHQL_STATE_PAGINATION_INFO = graphqlStateVariableName("pagination_info");
+exports.GRAPHQL_STATE_FIRST = graphqlStateVariableName("first");
+exports.GRAPHQL_STATE_AFTER = graphqlStateVariableName("after");
+exports.GRAPHQL_STATE_LAST = graphqlStateVariableName("last");
+exports.GRAPHQL_STATE_BEFORE = graphqlStateVariableName("before");
 function isArgumentSpecified(args, name) {
     if (args !== undefined) {
         const value = args[name];
         if (value !== undefined) {
-            if (value[" $__instanceOfParameterRef"] && value.name === name) {
-                return false;
+            if (value[" $__instanceOfParameterRef"]) {
+                const refName = value.name;
+                if (refName === name || refName === graphqlStateVariableName(name)) {
+                    return false;
+                }
             }
             return true;
         }
