@@ -7,6 +7,7 @@ import { AssociationValue } from "./AssocaitionValue";
 import { AssociationConnectionValue, RecordConnection } from "./AssociationConnectionValue";
 import { AssociationListValue } from "./AssociationListValue";
 import { AssociationReferenceValue } from "./AssociationReferenceValue";
+import { Pagination } from "../QueryArgs";
 
 export class Association {
 
@@ -34,9 +35,10 @@ export class Association {
     set(
         entityManager: EntityManager, 
         args: VariableArgs | undefined, 
-        value: any
+        value: any,
+        pagination?: Pagination
     ) {
-        this.value(entityManager, args).set(entityManager, value);
+        this.value(entityManager, args).set(entityManager, value, pagination);
     }
 
     evict(

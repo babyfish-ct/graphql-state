@@ -8,7 +8,7 @@ import { StateManagerImpl } from "../state/impl/StateManagerImpl";
 import { AssociationValue } from "./assocaition/AssocaitionValue";
 import { EntityEvictEvent } from "./EntityEvent";
 import { ModificationContext } from "./ModificationContext";
-import { QueryArgs } from "./QueryArgs";
+import { Pagination, QueryArgs } from "./QueryArgs";
 import { QueryResult } from "./QueryResult";
 import { Record } from "./Record";
 import { RecordManager } from "./RecordManager";
@@ -32,7 +32,7 @@ export declare class EntityManager {
     findRefById(typeName: string, id: any): RecordRef | undefined;
     get modificationContext(): ModificationContext;
     modify<T>(action: () => T, forGC?: boolean): T;
-    save(shape: RuntimeShape, objOrArray: object | readonly object[]): void;
+    save(shape: RuntimeShape, objOrArray: object | readonly object[], pagination?: Pagination): void;
     delete(typeName: string, idOrArray: any): void;
     evict(typeName: string, idOrArray: any): void;
     saveId(typeName: string, id: any): Record;

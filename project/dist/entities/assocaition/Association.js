@@ -23,8 +23,8 @@ class Association {
         var _a;
         return (_a = this.valueMap.get(args === null || args === void 0 ? void 0 : args.key)) === null || _a === void 0 ? void 0 : _a.get();
     }
-    set(entityManager, args, value) {
-        this.value(entityManager, args).set(entityManager, value);
+    set(entityManager, args, value, pagination) {
+        this.value(entityManager, args).set(entityManager, value, pagination);
     }
     evict(entityManager, args, includeMoreStrictArgs) {
         const ctx = entityManager.modificationContext;

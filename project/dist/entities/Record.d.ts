@@ -5,6 +5,7 @@ import { VariableArgs } from "../state/impl/Args";
 import { RecordConnection } from "./assocaition/AssociationConnectionValue";
 import { BackReferences } from "./BackReferences";
 import { EntityManager, Garbage } from "./EntityManager";
+import { Pagination } from "./QueryArgs";
 export declare class Record {
     readonly superRecord: Record | undefined;
     readonly staticType: TypeMetadata;
@@ -23,7 +24,7 @@ export declare class Record {
     getSalar(fieldName: string, args?: VariableArgs): any;
     hasAssociation(field: FieldMetadata, args?: VariableArgs): boolean;
     getAssociation(field: FieldMetadata, args?: VariableArgs): Record | ReadonlyArray<Record | undefined> | RecordConnection | undefined;
-    set(entityManager: EntityManager, field: FieldMetadata, args: VariableArgs | undefined, value: any): void;
+    set(entityManager: EntityManager, field: FieldMetadata, args: VariableArgs | undefined, value: any, pagination?: Pagination): void;
     link(entityManager: EntityManager, associationField: FieldMetadata, record: Record): void;
     unlink(entityManager: EntityManager, associationField: FieldMetadata, record: Record): void;
     contains(field: FieldMetadata, args: VariableArgs | undefined, target: Record, tryMoreStrictArgs: boolean): boolean;

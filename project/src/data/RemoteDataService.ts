@@ -1,5 +1,6 @@
 import { Fetcher, ObjectFetcher, util } from "graphql-ts-client-api";
 import { EntityManager } from "../entities/EntityManager";
+import { GRAPHQL_STATE_AFTER, GRAPHQL_STATE_BEFORE, GRAPHQL_STATE_FIRST, GRAPHQL_STATE_LAST } from "../entities/PaginationFetcherProcessor";
 import { QueryArgs } from "../entities/QueryArgs";
 import { AbstractDataRequest } from "./AbstractDataRequest";
 import { AbstractDataService } from "./AbstractDataService";
@@ -70,8 +71,17 @@ export class RemoteDataService extends AbstractDataService {
         let data: any = util.exceptNullValues(
             await this.executeNetworkQuery(args) 
         );
-        this.entityManager.save(args.withPaginationInfo().shape, data);
-        return data;
+        if (args.pagination !== undefined) {
+            const savingArgs = 
+                args
+                .withPaginationInfo()
+                .variables(SAVING_PAGINATION_ARGS);
+            this.entityManager.save(savingArgs.shape, data, args.pagination);
+        } else {
+            this.entityManager.save(args.shape, data);
+        }
+        
+        return data; 
     }
 
     onComplete(args: QueryArgs) {
@@ -110,3 +120,10 @@ export class RemoteDataService extends AbstractDataService {
 }
 
 class PendingRequest extends AbstractDataRequest {}
+
+const SAVING_PAGINATION_ARGS = {
+    [GRAPHQL_STATE_FIRST]: undefined,
+    [GRAPHQL_STATE_AFTER]: undefined,
+    [GRAPHQL_STATE_LAST]: undefined,
+    [GRAPHQL_STATE_BEFORE]: undefined
+}

@@ -35,16 +35,17 @@ export class AssociationListValue extends AssociationValue {
         const newElements: Array<Record> = [];
         if (Array.isArray(list)) {
             const idFieldName = association.field.targetType!.idField.name;
-            const position = association.field.associationProperties!.position;
-            for (let i = 0; i < list.length; i++) {
-                const item = list[i];
+            for (const item of list) {
                 if (item === undefined || item === null) {
                     throw new Error(`Cannot add undfined/null element into ${association.field.fullName}`);
                 }
-                const newElement = entityManager.saveId(association.field.targetType!.name, item[idFieldName]);
+                const newElement = entityManager.saveId(
+                    item["__typename"] ?? association.field.targetType!.name, 
+                    item[idFieldName]
+                );
                 if (!newIndexMap.has(newElement.id)) {
                     newElements.push(newElement);
-                    newIndexMap.set(newElement.id, i);
+                    newIndexMap.set(newElement.id, newIndexMap.size);
                 }
             }
         }

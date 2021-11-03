@@ -5,6 +5,7 @@ import { Record, ScalarRowImpl } from "../Record";
 import { VariableArgs } from "../../state/impl/Args";
 import { Association } from "./Association";
 import { ObjectConnection, RecordConnection } from "./AssociationConnectionValue";
+import { Pagination } from "../QueryArgs";
 
 export abstract class AssociationValue {
 
@@ -30,7 +31,8 @@ export abstract class AssociationValue {
 
     abstract set(
         entityManager: EntityManager, 
-        value: any
+        value: any,
+        pagination?: Pagination
     ): void;
 
     abstract link(

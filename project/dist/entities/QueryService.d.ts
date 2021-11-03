@@ -11,6 +11,7 @@ export declare class QueryService {
     private findObject;
     protected loadAndMerge(objMap: Map<string, string>, args: QueryArgs, missedIds: ReadonlyArray<any>): Promise<ReadonlyArray<any>>;
     private tranformRemoteArgs;
+    private translateRemoteData;
 }
 export declare type RawQueryResult<T> = CachedResult<T> | DeferredResult<T>;
 interface CachedResult<T> {

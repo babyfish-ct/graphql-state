@@ -12,7 +12,7 @@ import { AssociationValue } from "./assocaition/AssocaitionValue";
 import { EntityEvictEvent } from "./EntityEvent";
 import { ModificationContext } from "./ModificationContext";
 import { PaginationQueryResult } from "./PaginationQueryResult";
-import { QueryArgs } from "./QueryArgs";
+import { Pagination, QueryArgs } from "./QueryArgs";
 import { QueryResult } from "./QueryResult";
 import { QUERY_OBJECT_ID, Record } from "./Record";
 import { RecordManager } from "./RecordManager";
@@ -105,8 +105,12 @@ export class EntityManager {
 
     save(
         shape: RuntimeShape,
-        objOrArray: object | readonly object[]
+        objOrArray: object | readonly object[],
+        pagination?: Pagination
     ): void {
+        if (pagination !== undefined && shape.typeName !== 'Query') {
+            throw new Error(`The save method cannot accept pagination when the type name of shape is not "Query"`);
+        }
         this.modify(() => {
             this.visit(shape, objOrArray, (id, runtimeType, field, args, value) => {
                 const manager = this.recordManager(field.declaringType.name);
@@ -115,7 +119,8 @@ export class EntityManager {
                     runtimeType,
                     field, 
                     args,
-                    value
+                    value,
+                    runtimeType.name === 'Query' ? pagination : undefined
                 );
             })
         });

@@ -2,6 +2,7 @@ import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { VariableArgs } from "../state/impl/Args";
 import { EntityFieldVisitor, EntityManager, Garbage } from "./EntityManager";
+import { Pagination } from "./QueryArgs";
 import { QUERY_OBJECT_ID, Record } from "./Record";
 import { RecordRef } from "./RecordRef";
 import { RuntimeShape } from "./RuntimeShape";
@@ -88,10 +89,11 @@ export class RecordManager {
         runtimeType: TypeMetadata,
         field: FieldMetadata,
         args: VariableArgs | undefined, 
-        value: any
+        value: any,
+        pagination?: Pagination
     ) {
         const record = this.saveId(id, runtimeType);
-        record.set(this.entityManager, field, args, value);
+        record.set(this.entityManager, field, args, value, pagination);
     }
 
     collectGarbages(output: Garbage[]) {

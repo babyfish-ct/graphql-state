@@ -6,15 +6,7 @@ import { RuntimeShape } from "./RuntimeShape";
 export declare class QueryArgs {
     readonly shape: RuntimeShape;
     readonly fetcher: ObjectFetcher<string, object, object>;
-    readonly pagination: {
-        readonly loadMode: "initial" | "next" | "previous";
-        readonly windowId: string;
-        readonly connName: string;
-        readonly connAlias?: string;
-        readonly style: PaginationStyle;
-        readonly initialSize: number;
-        readonly pageSize: number;
-    } | undefined;
+    readonly pagination: Pagination | undefined;
     readonly ids: ReadonlyArray<any> | undefined;
     readonly optionArgs: OptionArgs | undefined;
     private _key;
@@ -32,4 +24,18 @@ export declare class QueryArgs {
     variables(variables: any): QueryArgs;
     withPaginationInfo(): QueryArgs;
     withoutPaginationInfo(): QueryArgs;
+}
+export interface Pagination {
+    readonly loadMode: "initial" | "next" | "previous";
+    readonly windowId: string;
+    readonly connName: string;
+    readonly connAlias?: string;
+    readonly style: PaginationStyle;
+    readonly initialSize: number;
+    readonly pageSize: number;
+}
+export interface PaginationInfo {
+    windowId: string;
+    style: PaginationStyle;
+    initialSize: number;
 }

@@ -69,11 +69,14 @@ class EntityManager {
             }
         }
     }
-    save(shape, objOrArray) {
+    save(shape, objOrArray, pagination) {
+        if (pagination !== undefined && shape.typeName !== 'Query') {
+            throw new Error(`The save method cannot accept pagination when the type name of shape is not "Query"`);
+        }
         this.modify(() => {
             this.visit(shape, objOrArray, (id, runtimeType, field, args, value) => {
                 const manager = this.recordManager(field.declaringType.name);
-                manager.set(id, runtimeType, field, args, value);
+                manager.set(id, runtimeType, field, args, value, runtimeType.name === 'Query' ? pagination : undefined);
             });
         });
     }

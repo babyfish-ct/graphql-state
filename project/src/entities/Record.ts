@@ -7,6 +7,7 @@ import { Association } from "./assocaition/Association";
 import { RecordConnection } from "./assocaition/AssociationConnectionValue";
 import { BackReferences } from "./BackReferences";
 import { EntityManager, Garbage } from "./EntityManager";
+import { Pagination } from "./QueryArgs";
 
 export class Record {
 
@@ -80,7 +81,8 @@ export class Record {
         entityManager: EntityManager, 
         field: FieldMetadata,
         args: VariableArgs | undefined,
-        value: any
+        value: any,
+        pagination?: Pagination
     ) {
         if (field.declaringType !== this.staticType) {
             throw new Error(`'${field.fullName}' is not field of the type '${this.staticType.name}' of current record`);
@@ -95,7 +97,8 @@ export class Record {
             .set(
                 entityManager,
                 args,
-                value
+                value,
+                pagination
             );
         } else {
             if (args?.variables !== undefined && this.runtimeType.name !== "Query") {

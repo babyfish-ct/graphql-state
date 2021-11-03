@@ -14,6 +14,7 @@ class AssociationListValue extends AssocaitionValue_1.AssociationValue {
         return (_a = this.elements) !== null && _a !== void 0 ? _a : [];
     }
     set(entityManager, value) {
+        var _a;
         const list = value !== null && value !== void 0 ? value : [];
         this.validate(list);
         if (this.valueEquals(list)) {
@@ -26,16 +27,14 @@ class AssociationListValue extends AssocaitionValue_1.AssociationValue {
         const newElements = [];
         if (Array.isArray(list)) {
             const idFieldName = association.field.targetType.idField.name;
-            const position = association.field.associationProperties.position;
-            for (let i = 0; i < list.length; i++) {
-                const item = list[i];
+            for (const item of list) {
                 if (item === undefined || item === null) {
                     throw new Error(`Cannot add undfined/null element into ${association.field.fullName}`);
                 }
-                const newElement = entityManager.saveId(association.field.targetType.name, item[idFieldName]);
+                const newElement = entityManager.saveId((_a = item["__typename"]) !== null && _a !== void 0 ? _a : association.field.targetType.name, item[idFieldName]);
                 if (!newIndexMap.has(newElement.id)) {
                     newElements.push(newElement);
-                    newIndexMap.set(newElement.id, i);
+                    newIndexMap.set(newElement.id, newIndexMap.size);
                 }
             }
         }

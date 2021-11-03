@@ -22,6 +22,7 @@ export class QueryService {
     }
 
     private graph(args: QueryArgs, useCache: boolean, useDataService: boolean): RawQueryResult<any> {
+        
         if (useCache) {
             try {
                 return {
@@ -42,11 +43,12 @@ export class QueryService {
         }
 
         if (useDataService) {
+            const promise = this.entityManager.dataService.query(
+                this.tranformRemoteArgs(args.withoutPaginationInfo())
+            );
             return {
                 type: "deferred",
-                promise: this.entityManager.dataService.query(
-                    this.tranformRemoteArgs(args.withoutPaginationInfo())
-                )
+                promise: this.reloadResponseFromCache(promise, args)
             };
         }
 
@@ -153,6 +155,18 @@ export class QueryService {
             return args;
         }
         return this.remoteArgsTransformer(args);
+    }
+
+    private async reloadResponseFromCache(promise: Promise<any>, args: QueryArgs): Promise<any> {
+        if (args.pagination?.loadMode !== "initial") {
+            await promise;
+            const result = this.query(args, true, false);
+            if (result.type !== "cached") {
+                throw new Error("Internal bug: reloadResponseFromCache cannot reload data from cache");
+            }
+            return result.data;
+        }
+        return await promise;
     }
 }
 

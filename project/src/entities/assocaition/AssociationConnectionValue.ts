@@ -1,6 +1,8 @@
 import { ScalarRow } from "../..";
 import { PositionType } from "../../meta/Configuration";
 import { EntityManager } from "../EntityManager";
+import { GRAPHQL_STATE_PAGINATION_INFO } from "../PaginationFetcherProcessor";
+import { Pagination, PaginationInfo } from "../QueryArgs";
 import { objectWithOnlyId, Record } from "../Record";
 import { AssociationValue } from "./AssocaitionValue";
 import { toRecordMap } from "./util";
@@ -32,29 +34,18 @@ export class AssociationConnectionValue extends AssociationValue {
 
     set(
         entityManager: EntityManager, 
-        value: ObjectConnection
+        value: ObjectConnection,
+        pagination?: Pagination
     ) {
-        const connection = value ?? { edges: [] }
-        const association = this.association;
-
-        this.validate(connection);
-        if (this.valueEquals(connection)) {
-            return;
-        }
         const oldValueForTriggger = this.getAsObject();
         
         const oldIndexMap = this.indexMap;
 
-        const newIndexMap = new Map<any, number>();
-        const newEdges: Array<RecordEdge> = [];
-        for (let i = 0; i < connection.edges.length; i++) {
-            const edge = connection.edges[i];
-            const newNode = entityManager.saveId(association.field.targetType!.name, edge.node.id);
-            if (!newIndexMap.has(newNode.id)) {
-                newEdges.push({node: newNode, cursor: edge.cursor});
-                newIndexMap.set(newNode.id, i);
-            }
+        const arr = this.newValue(entityManager, value, pagination);
+        if (arr === undefined) {
+            return;
         }
+        const [newEdges, newIndexMap] = arr;
 
         if (this.connection !== undefined) {
             for (const oldEdge of this.connection.edges) {
@@ -65,7 +56,7 @@ export class AssociationConnectionValue extends AssociationValue {
         }
         
         this.connection = {
-            ...connection,
+            ...value,
             edges: newEdges
         };
         this.indexMap = newIndexMap.size !== 0 ? newIndexMap : undefined;
@@ -78,11 +69,76 @@ export class AssociationConnectionValue extends AssociationValue {
 
         entityManager.modificationContext.set(
             this.association.record, 
-            association.field.name, 
+            this.association.field.name, 
             this.args, 
             oldValueForTriggger, 
             this.getAsObject()
         );
+    }
+
+    private newValue(
+        entityManager: EntityManager,
+        value: ObjectConnection, 
+        pagination?: Pagination
+    ): [ReadonlyArray<RecordEdge>, Map<any, number>] | undefined {
+
+        let loadMode: "initial" | "next" | "previous" = "initial";
+        if (pagination?.connName === this.association.field.name) {
+            const variables = this.args?.variables ?? {};
+            const paginationInfo = variables[GRAPHQL_STATE_PAGINATION_INFO] as PaginationInfo | undefined;
+            if (paginationInfo !== undefined && 
+                pagination.windowId === paginationInfo.windowId &&
+                pagination.style === paginationInfo.style &&
+                pagination.initialSize === paginationInfo.initialSize
+            ) {
+                loadMode = pagination.loadMode;
+            }
+        }
+
+        const connection = value ?? { edges: [] };
+        const association = this.association;
+        const idFieldName = association.field.targetType!.idField.name;
+
+        this.validate(connection);
+        if (loadMode === "initial" && this.valueEquals(connection)) {
+            return undefined;
+        }
+        
+        const oldEdges = this.connection?.edges ?? [];
+        
+        const newEdges: Array<RecordEdge> = [];
+        const newIndexMap: Map<any, number> = new Map<any, number>();
+
+        if (loadMode === "next") {
+            for (const edge of oldEdges) {
+                const node = edge.node;
+                if (!newIndexMap.has(node.id)) {
+                    newEdges.push({node, cursor: edge.cursor});
+                    newIndexMap.set(node.id, newIndexMap.size);
+                }
+            }
+        }
+        for (let edge of connection.edges) {
+            const node = edge.node;
+            if (!newIndexMap.has(node.id)) {
+                const recordNode = entityManager.saveId(
+                    node["__typename"] ?? association.field.targetType!.name, 
+                    node[idFieldName]
+                );
+                newEdges.push({node: recordNode, cursor: edge.cursor});
+                newIndexMap.set(node.id, newIndexMap.size);
+            }
+        }
+        if (loadMode === "previous") {
+            for (const edge of oldEdges) {
+                const node = edge.node;
+                if (!newIndexMap.has(node.id)) {
+                    newEdges.push({node, cursor: edge.cursor});
+                    newIndexMap.set(node.id, newIndexMap.size);
+                }
+            }
+        }
+        return [newEdges, newIndexMap];
     }
 
     link(

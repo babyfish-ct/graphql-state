@@ -18,15 +18,7 @@ export class QueryArgs {
     private constructor(
         readonly shape: RuntimeShape,
         readonly fetcher: ObjectFetcher<string, object, object>,
-        readonly pagination: {
-            readonly loadMode: "initial" | "next" | "previous",
-            readonly windowId: string,
-            readonly connName: string,
-            readonly connAlias?: string,
-            readonly style: PaginationStyle,
-            readonly initialSize: number,
-            readonly pageSize: number
-        } | undefined,
+        readonly pagination: Pagination | undefined,
         readonly ids: ReadonlyArray<any> | undefined,
         readonly optionArgs: OptionArgs | undefined
     ) {
@@ -141,13 +133,13 @@ export class QueryArgs {
         }
         let w = this._withPaginationInfo;
         if (w === undefined) {
+            const paginationInfo: PaginationInfo = {
+                windowId: this.pagination.windowId,
+                style: this.pagination.style,
+                initialSize: this.pagination.initialSize
+            };
             this._withPaginationInfo = w = this.variables({
-                [GRAPHQL_STATE_PAGINATION_INFO]: {
-                    windowId: this.pagination.windowId,
-                    style: this.pagination.style,
-                    initialSize: this.pagination.initialSize, 
-                    pageSize: this.pagination.pageSize
-                }
+                [GRAPHQL_STATE_PAGINATION_INFO]: paginationInfo
             });
             w._withoutPaginationInfo = this;
         }
@@ -167,6 +159,22 @@ export class QueryArgs {
         }
         return wo;
     }
+}
+
+export interface Pagination {
+    readonly loadMode: "initial" | "next" | "previous";
+    readonly windowId: string;
+    readonly connName: string;
+    readonly connAlias?: string;
+    readonly style: PaginationStyle;
+    readonly initialSize: number;
+    readonly pageSize: number;
+}
+
+export interface PaginationInfo {
+    windowId: string;
+    style: PaginationStyle;
+    initialSize: number;
 }
 
 function containsIds(a?: ReadonlyArray<any>, b?: ReadonlyArray<any>): boolean {

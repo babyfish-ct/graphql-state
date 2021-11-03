@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RemoteDataService = void 0;
 const graphql_ts_client_api_1 = require("graphql-ts-client-api");
+const PaginationFetcherProcessor_1 = require("../entities/PaginationFetcherProcessor");
 const AbstractDataRequest_1 = require("./AbstractDataRequest");
 const AbstractDataService_1 = require("./AbstractDataService");
 class RemoteDataService extends AbstractDataService_1.AbstractDataService {
@@ -68,7 +69,15 @@ class RemoteDataService extends AbstractDataService_1.AbstractDataService {
     onExecute(args) {
         return __awaiter(this, void 0, void 0, function* () {
             let data = graphql_ts_client_api_1.util.exceptNullValues(yield this.executeNetworkQuery(args));
-            this.entityManager.save(args.withPaginationInfo().shape, data);
+            if (args.pagination !== undefined) {
+                const savingArgs = args
+                    .withPaginationInfo()
+                    .variables(SAVING_PAGINATION_ARGS);
+                this.entityManager.save(savingArgs.shape, data, args.pagination);
+            }
+            else {
+                this.entityManager.save(args.shape, data);
+            }
             return data;
         });
     }
@@ -96,3 +105,9 @@ class RemoteDataService extends AbstractDataService_1.AbstractDataService {
 exports.RemoteDataService = RemoteDataService;
 class PendingRequest extends AbstractDataRequest_1.AbstractDataRequest {
 }
+const SAVING_PAGINATION_ARGS = {
+    [PaginationFetcherProcessor_1.GRAPHQL_STATE_FIRST]: undefined,
+    [PaginationFetcherProcessor_1.GRAPHQL_STATE_AFTER]: undefined,
+    [PaginationFetcherProcessor_1.GRAPHQL_STATE_LAST]: undefined,
+    [PaginationFetcherProcessor_1.GRAPHQL_STATE_BEFORE]: undefined
+};

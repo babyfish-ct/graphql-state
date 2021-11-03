@@ -45,9 +45,10 @@ class QueryService {
             }
         }
         if (useDataService) {
+            const promise = this.entityManager.dataService.query(this.tranformRemoteArgs(args.withoutPaginationInfo()));
             return {
                 type: "deferred",
-                promise: this.entityManager.dataService.query(this.tranformRemoteArgs(args.withoutPaginationInfo()))
+                promise: this.translateRemoteData(promise, args)
             };
         }
         throw new Error('Internal bug: neither "useCache" nor "useDataService" is set');
@@ -129,6 +130,20 @@ class QueryService {
             return args;
         }
         return this.remoteArgsTransformer(args);
+    }
+    translateRemoteData(promise, args) {
+        var _a;
+        return __awaiter(this, void 0, void 0, function* () {
+            if (((_a = args.pagination) === null || _a === void 0 ? void 0 : _a.loadMode) !== "initial") {
+                yield promise;
+                const result = this.query(args, true, false);
+                if (result.type !== "cached") {
+                    throw new Error("Internal bug: translateRemoteData cannot reload data from cache");
+                }
+                return result.data;
+            }
+            return yield promise;
+        });
     }
 }
 exports.QueryService = QueryService;

@@ -11,10 +11,11 @@ class AssociationReferenceValue extends AssocaitionValue_1.AssociationValue {
         return this.referfence;
     }
     set(entityManager, value) {
+        var _a;
         const association = this.association;
         const oldReference = this.referfence;
         const reference = value !== undefined && value !== null ?
-            entityManager.saveId(association.field.targetType.name, value[association.field.targetType.idField.name]) :
+            entityManager.saveId((_a = value["__typename"]) !== null && _a !== void 0 ? _a : association.field.targetType.name, value[association.field.targetType.idField.name]) :
             undefined;
         if ((oldReference === null || oldReference === void 0 ? void 0 : oldReference.id) !== (reference === null || reference === void 0 ? void 0 : reference.id)) {
             this.releaseOldReference(entityManager, oldReference);

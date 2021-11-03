@@ -51,7 +51,7 @@ class Record {
         var _a;
         return (_a = this.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.get(args);
     }
-    set(entityManager, field, args, value) {
+    set(entityManager, field, args, value, pagination) {
         if (field.declaringType !== this.staticType) {
             throw new Error(`'${field.fullName}' is not field of the type '${this.staticType.name}' of current record`);
         }
@@ -62,7 +62,7 @@ class Record {
             this
                 .associationMap
                 .computeIfAbsent(field, f => new Association_1.Association(this, f))
-                .set(entityManager, args, value);
+                .set(entityManager, args, value, pagination);
         }
         else {
             if ((args === null || args === void 0 ? void 0 : args.variables) !== undefined && this.runtimeType.name !== "Query") {

@@ -71,9 +71,9 @@ class RecordManager {
             }
         }
     }
-    set(id, runtimeType, field, args, value) {
+    set(id, runtimeType, field, args, value, pagination) {
         const record = this.saveId(id, runtimeType);
-        record.set(this.entityManager, field, args, value);
+        record.set(this.entityManager, field, args, value, pagination);
     }
     collectGarbages(output) {
         for (const record of this.recordMap.values()) {

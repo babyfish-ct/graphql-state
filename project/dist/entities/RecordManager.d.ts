@@ -2,6 +2,7 @@ import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { VariableArgs } from "../state/impl/Args";
 import { EntityManager, Garbage } from "./EntityManager";
+import { Pagination } from "./QueryArgs";
 import { Record } from "./Record";
 import { RecordRef } from "./RecordRef";
 export declare class RecordManager {
@@ -17,6 +18,6 @@ export declare class RecordManager {
     delete(id: any): void;
     evict(id: any): void;
     forEach(visitor: (record: Record) => boolean | void): void;
-    set(id: any, runtimeType: TypeMetadata, field: FieldMetadata, args: VariableArgs | undefined, value: any): void;
+    set(id: any, runtimeType: TypeMetadata, field: FieldMetadata, args: VariableArgs | undefined, value: any, pagination?: Pagination): void;
     collectGarbages(output: Garbage[]): void;
 }

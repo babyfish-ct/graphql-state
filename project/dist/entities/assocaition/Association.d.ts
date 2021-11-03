@@ -3,6 +3,7 @@ import { EntityManager, Garbage } from "../EntityManager";
 import { Record } from "../Record";
 import { VariableArgs } from "../../state/impl/Args";
 import { RecordConnection } from "./AssociationConnectionValue";
+import { Pagination } from "../QueryArgs";
 export declare class Association {
     readonly record: Record;
     readonly field: FieldMetadata;
@@ -11,7 +12,7 @@ export declare class Association {
     constructor(record: Record, field: FieldMetadata);
     has(args: VariableArgs | undefined): boolean;
     get(args: VariableArgs | undefined): Record | ReadonlyArray<Record | undefined> | RecordConnection | undefined;
-    set(entityManager: EntityManager, args: VariableArgs | undefined, value: any): void;
+    set(entityManager: EntityManager, args: VariableArgs | undefined, value: any, pagination?: Pagination): void;
     evict(entityManager: EntityManager, args: VariableArgs | undefined, includeMoreStrictArgs: boolean): void;
     contains(args: VariableArgs | undefined, target: Record, tryMoreStrictArgs: any): boolean;
     link(entityManager: EntityManager, target: Record | ReadonlyArray<Record>, mostStringentArgs: VariableArgs | undefined, insideModification?: boolean): void;

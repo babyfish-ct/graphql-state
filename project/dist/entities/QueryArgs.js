@@ -75,13 +75,13 @@ class QueryArgs {
         }
         let w = this._withPaginationInfo;
         if (w === undefined) {
+            const paginationInfo = {
+                windowId: this.pagination.windowId,
+                style: this.pagination.style,
+                initialSize: this.pagination.initialSize
+            };
             this._withPaginationInfo = w = this.variables({
-                [PaginationFetcherProcessor_1.GRAPHQL_STATE_PAGINATION_INFO]: {
-                    windowId: this.pagination.windowId,
-                    style: this.pagination.style,
-                    initialSize: this.pagination.initialSize,
-                    pageSize: this.pagination.pageSize
-                }
+                [PaginationFetcherProcessor_1.GRAPHQL_STATE_PAGINATION_INFO]: paginationInfo
             });
             w._withoutPaginationInfo = this;
         }
