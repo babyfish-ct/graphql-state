@@ -94,8 +94,8 @@ export class PaginationQueryResult extends QueryResult {
         const queryService = this.createPagiantionQueryService(this._loadable.data); // Create before "_loadable" reset
         this._loadable = this.createLoadable(
             false,
-            undefined,
-            undefined,
+            this._loadable.data,
+            this._loadable.error,
             { [loadingStatus]: true }
         );
         this.entityManager.stateManager.publishQueryResultChangeEvent({

@@ -53,7 +53,7 @@ class PaginationQueryResult extends QueryResult_1.QueryResult {
     loadMore(loadingStatus) {
         return __awaiter(this, void 0, void 0, function* () {
             const queryService = this.createPagiantionQueryService(this._loadable.data); // Create before "_loadable" reset
-            this._loadable = this.createLoadable(false, undefined, undefined, { [loadingStatus]: true });
+            this._loadable = this.createLoadable(false, this._loadable.data, this._loadable.error, { [loadingStatus]: true });
             this.entityManager.stateManager.publishQueryResultChangeEvent({
                 queryResult: this,
                 changedType: "ASYNC_STATE_CHANGE"
