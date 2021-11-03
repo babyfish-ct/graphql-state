@@ -7,6 +7,7 @@ export declare class PaginationQueryResult extends QueryResult {
     private _bindedLoadPrevious;
     private _loadNextQueryArgs;
     private _loadPreviousQueryArgs;
+    private _loadMoreRequestId;
     constructor(entityManager: EntityManager, queryArgs: QueryArgs, disposer: () => void);
     protected createLoadable(loading: boolean, data: any, error: any, additionalValues?: any): PaginationQueryLoadable<any>;
     protected createQueryService(): QueryService;

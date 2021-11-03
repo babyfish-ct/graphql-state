@@ -15,6 +15,8 @@ export class PaginationQueryResult extends QueryResult {
 
     private _loadPreviousQueryArgs: QueryArgs;
 
+    private _loadMoreRequestId = 0;
+
     constructor(
         entityManager: EntityManager,
         queryArgs: QueryArgs,
@@ -100,6 +102,7 @@ export class PaginationQueryResult extends QueryResult {
             queryResult: this,
             changedType: "ASYNC_STATE_CHANGE"
         });
+        const requestId = ++this._loadMoreRequestId;
         try {
             const result = queryService.query(
                 loadingStatus === "isLoadingNext" ? this._loadNextQueryArgs : this._loadPreviousQueryArgs, 
@@ -110,25 +113,31 @@ export class PaginationQueryResult extends QueryResult {
                 throw new Error("Internal bug: LoadMore only accept deferred result");
             }
             const data = await result.promise;
-            this._loadable = this.createLoadable(
-                false,
-                data,
-                undefined,
-                { [loadingStatus]: false }
-            );
+            if (this._loadMoreRequestId === requestId) {
+                this._loadable = this.createLoadable(
+                    false,
+                    data,
+                    undefined,
+                    { [loadingStatus]: false }
+                );
+            }
         } catch (ex) {
-            this._loadable = this.createLoadable(
-                false,
-                undefined,
-                ex,
-                { [loadingStatus]: false }
-            );
+            if (this._loadMoreRequestId === requestId) {
+                this._loadable = this.createLoadable(
+                    false,
+                    undefined,
+                    ex,
+                    { [loadingStatus]: false }
+                );
+            }
             throw ex;
         } finally {
-            this.entityManager.stateManager.publishQueryResultChangeEvent({
-                queryResult: this,
-                changedType: "ASYNC_STATE_CHANGE"
-            }); 
+            if (this._loadMoreRequestId === requestId) {
+                this.entityManager.stateManager.publishQueryResultChangeEvent({
+                    queryResult: this,
+                    changedType: "ASYNC_STATE_CHANGE"
+                }); 
+            }
         }
     }
 
