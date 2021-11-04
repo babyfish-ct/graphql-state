@@ -102,14 +102,16 @@ export class Association {
                 if (possibleRecords.length === 0) {
                     return;
                 }
-                if (VariableArgs.contains(mostStringentArgs, value.args)) {
+                if (value.args?.paginationInfo?.style === "page") {
+                    this.evict(entityManager, value.args, false);
+                } else if (VariableArgs.contains(mostStringentArgs?.filterArgs, value.args?.filterArgs)) {
                     value.link(entityManager, possibleRecords);
                 } else {
                     const contains = this.field.associationProperties!.contains;
                     const exactRecords: Record[] = [];
                     let evict = false;
                     for (const possibleRecord of possibleRecords) {
-                        const result = contains(possibleRecord.toRow(), value.args?.variables);
+                        const result = contains(possibleRecord.toRow(), value.args?.filterVariables);
                         if (result === undefined) {
                             evict = true;
                             break;
@@ -145,7 +147,9 @@ export class Association {
                 if (possibleRecords.length === 0) {
                     return;
                 }
-                if (VariableArgs.contains(value.args, leastStringentArgs)) {
+                if (value.args?.paginationInfo?.style === "page") {
+                    this.evict(entityManager, value.args, false);
+                } else if (VariableArgs.contains(value.args?.filterArgs, leastStringentArgs?.filterArgs)) {
                     value.unlink(
                         entityManager, 
                         possibleRecords
@@ -155,7 +159,7 @@ export class Association {
                     const exactRecords: Record[] = [];
                     let evict = false;
                     for (const possibleRecord of possibleRecords) {
-                        const result = contains(possibleRecord.toRow(), value.args?.variables);
+                        const result = contains(possibleRecord.toRow(), value.args?.filterVariables);
                         if (result === undefined) {
                             evict = true;
                             break;

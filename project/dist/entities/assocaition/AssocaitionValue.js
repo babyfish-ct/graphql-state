@@ -7,7 +7,7 @@ class AssociationValue {
         this.association = association;
         this.args = args;
         this.gcVisited = false;
-        const deps = association.field.associationProperties.dependencies(args === null || args === void 0 ? void 0 : args.variables);
+        const deps = association.field.associationProperties.dependencies(args === null || args === void 0 ? void 0 : args.filterVariables);
         if (deps === undefined || deps === null || deps.length !== 0) {
             this.dependencies = deps === undefined || deps === null ? "all" : new Set(deps);
             entityManager.addAssociationValueObserver(this);
@@ -87,7 +87,7 @@ class AssociationValue {
                             map.set(fieldName, e.newValue(fieldName));
                         }
                     }
-                    const result = (_a = this.association.field.associationProperties) === null || _a === void 0 ? void 0 : _a.contains(new Record_1.ScalarRowImpl(map), (_b = this.args) === null || _b === void 0 ? void 0 : _b.variables);
+                    const result = (_a = this.association.field.associationProperties) === null || _a === void 0 ? void 0 : _a.contains(new Record_1.ScalarRowImpl(map), (_b = this.args) === null || _b === void 0 ? void 0 : _b.filterVariables);
                     if (result === true) {
                         // Cannot invoke "this.link" directly
                         this.association.link(entityManager, ref.value, this.args);

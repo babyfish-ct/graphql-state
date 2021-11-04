@@ -1,5 +1,6 @@
 import { ScalarRow } from "../..";
 import { PositionType } from "../../meta/Configuration";
+import { PaginationStyle } from "../../state/StateHook";
 import { EntityManager } from "../EntityManager";
 import { GRAPHQL_STATE_PAGINATION_INFO } from "../PaginationFetcherProcessor";
 import { Pagination, PaginationInfo } from "../QueryArgs";
@@ -151,11 +152,11 @@ export class AssociationConnectionValue extends AssociationValue {
         const edges = [...this.connection.edges];
         const indexMap = this.indexMap;
         const linkMap = toRecordMap(targets);
-        const position = this.association.field.associationProperties!.position;
+        const appender = new Appender(this);
         for (const record of linkMap.values()) {
             if (indexMap?.has(record.id) !== true) {
                 try {
-                    appendTo(edges, record, position);
+                    appender.appendTo(edges, record);
                 } catch (ex) {
                     if (!ex[" $evict"]) {
                         throw ex;
@@ -322,34 +323,52 @@ export interface PageInfo {
     endCursor: string;
 }
 
-function toNodeMap(edges: ReadonlyArray<RecordEdge>) {
-    const map = new Map<any, Record>();
-    for (const edge of edges) {
-        map.set(edge.node.id, edge.node);
-    }
-    return map;
-}
+class Appender {
 
-function appendTo(
-    newEdges: Array<RecordEdge>, 
-    newNode: Record,
-    position: (
+    private position: (
         row: ScalarRow<any>,
         rows: ReadonlyArray<ScalarRow<any>>,
-        variables?: any
-    ) => PositionType | undefined
-) {
-    const pos = newEdges.length === 0 ? 
-        0 : 
-        position(newNode.toRow(), newEdges.map(e => e.node.toRow()), this.args?.variables);
-    if (pos === undefined) {
-        throw { " $evict": true };
+        ctx: {
+            readonly paginationInfo?: PaginationInfo,
+            readonly variables?: any
+        }
+    ) => PositionType | undefined;
+
+    private ctx: { readonly paginationInfo?: PaginationInfo, readonly variables?: any };
+
+    private paginationStyle?: PaginationStyle;
+
+    constructor(owner: AssociationValue) {
+        this.position = owner.association.field.associationProperties!.position;
+        this.ctx = { 
+            paginationInfo: owner.args?.paginationInfo,
+            variables: owner.args?.filterArgs 
+        };
+        this.paginationStyle = owner.args?.paginationInfo?.style;
     }
-    const index = pos === "start" ? 0 : pos === "end" ? newEdges.length : pos;
-    const cursor = "";
-    if (index >= newEdges.length) {
-        newEdges.push({node: newNode, cursor });
-    } else {
-        newEdges.splice(Math.max(0, index), 0, { node: newNode, cursor });
+
+    appendTo(
+        newEdges: Array<RecordEdge>, 
+        newNode: Record
+    ) {
+        const pos = newEdges.length === 0 ? 
+            0 : 
+            this.position(newNode.toRow(), newEdges.map(e => e.node.toRow()), this.ctx);
+        if (pos === undefined) {
+            throw { " $evict": true };
+        }
+        const index = pos === "start" ? 0 : pos === "end" ? newEdges.length : pos;
+        if (index <= 0 && this.paginationStyle === "backward") {
+            throw { " $evict": true };
+        }
+        if (index >= newEdges.length && this.paginationStyle === "forward") {
+            throw { " $evict": true };
+        }
+        const cursor = "";
+        if (index >= newEdges.length) {
+            newEdges.push({node: newNode, cursor });
+        } else {
+            newEdges.splice(Math.max(0, index), 0, { node: newNode, cursor });
+        }
     }
 }

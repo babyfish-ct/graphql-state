@@ -18,7 +18,7 @@ export abstract class AssociationValue {
         readonly association: Association,
         readonly args?: VariableArgs
     ) {
-        const deps = association.field.associationProperties!.dependencies(args?.variables);
+        const deps = association.field.associationProperties!.dependencies(args?.filterVariables);
         if (deps === undefined || deps === null || deps.length !== 0) {
             this.dependencies = deps === undefined || deps === null ? "all" : new Set(deps);
             entityManager.addAssociationValueObserver(this);
@@ -141,7 +141,7 @@ export abstract class AssociationValue {
                     }
                     const result = this.association.field.associationProperties?.contains(
                         new ScalarRowImpl(map),
-                        this.args?.variables
+                        this.args?.filterVariables
                     );
                     if (result === true) {
                         // Cannot invoke "this.link" directly

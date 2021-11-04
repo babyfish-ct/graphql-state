@@ -131,6 +131,9 @@ export const AuthorList: FC = memo(() => {
                     <Col>
                         <Button onClick={refetch}>Refresh</Button>
                     </Col>
+                    <Col>
+                        <Button onClick={onAddClick} type="primary">Add Author...</Button>
+                    </Col>
                 </Row>
                 { loading && <div><Spin/>Loading authors...</div> }
                 {
@@ -148,7 +151,6 @@ export const AuthorList: FC = memo(() => {
                         </Table>
                         <Space>
                             <Button onClick={loadNext} disabled={!hasNext} loading={isLoadingNext}>Load more</Button>
-                            <Button onClick={onAddClick}>Add Author</Button>
                         </Space>
                     </>
                 }

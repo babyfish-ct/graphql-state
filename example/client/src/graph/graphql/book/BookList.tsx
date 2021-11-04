@@ -139,6 +139,9 @@ export const BookList: FC = memo(() => {
                     <Col>
                         <Button onClick={refetch}>Refresh</Button>
                     </Col>
+                    <Col>
+                        <Button onClick={onAddClick} type="primary">Add Book...</Button>
+                    </Col>
                 </Row>
                 { loading && <div><Spin/>Loading books...</div> }
                 {
@@ -157,7 +160,6 @@ export const BookList: FC = memo(() => {
                 }
                 <Space>
                     <Button onClick={loadNext} disabled={!hasNext} loading={isLoadingNext}>Load more</Button>
-                    <Button onClick={onAddClick}>Add Book...</Button>
                 </Space>
             </Space>
             {

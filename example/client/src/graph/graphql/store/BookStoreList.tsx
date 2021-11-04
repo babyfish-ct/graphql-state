@@ -126,6 +126,9 @@ export const BookStoreList = memo(() => {
                     <Col>
                         <Button onClick={refetch}>Refresh</Button>
                     </Col>
+                    <Col>
+                        <Button onClick={onAddClick} type="primary">Add BookStore...</Button>
+                    </Col>
                 </Row>
                 { loading && <div><Spin/>Loading book stores...</div>}
                 {
@@ -141,7 +144,6 @@ export const BookStoreList = memo(() => {
                             <Table.Column title="Books" render={renderBooks}/>
                             <Table.Column title="Operations" render={renderOperations}/>
                         </Table>
-                        <Button onClick={onAddClick}>Add BookStore</Button>
                     </>
                 }
                 {

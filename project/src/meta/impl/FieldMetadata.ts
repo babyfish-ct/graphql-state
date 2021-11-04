@@ -1,4 +1,5 @@
 import { FetchableField } from "graphql-ts-client-api";
+import { PaginationInfo } from "../../entities/QueryArgs";
 import { PositionType, ScalarRow } from "../Configuration";
 import { TypeMetadata } from "./TypeMetdata";
 
@@ -179,14 +180,19 @@ export interface AssocaitionProperties {
         row: ScalarRow<any>,
         variables?: any
     ) => boolean | undefined;
-    readonly position: (
-        row: ScalarRow<any>,
-        rows: ReadonlyArray<ScalarRow<any>>,
-        variables?: any
-    ) => PositionType | undefined;
+    
     readonly dependencies: (
         variables?: any
     ) => ReadonlyArray<string> | undefined;
+
+    readonly position: (
+        row: ScalarRow<any>,
+        rows: ReadonlyArray<ScalarRow<any>>,
+        ctx: {
+            readonly paginationInfo?: PaginationInfo,
+            readonly variables?: any
+        }
+    ) => PositionType | undefined;
 }
 
 function isAssociationCategory(category: FieldMetadataCategory) {
@@ -199,7 +205,7 @@ function createDefaultAssociationProperties(field: FieldMetadata): AssocaitionPr
     }
     return {
         contains: (
-            row: ScalarRow<any>,
+            _: ScalarRow<any>,
             variables?: any
         ): boolean | undefined => {
             if (variables === undefined) {
@@ -216,11 +222,13 @@ function createDefaultAssociationProperties(field: FieldMetadata): AssocaitionPr
                 `so the system does not known whether the new object should be added and evict that assocaition from cache`);
         },
         position: (
-            row: ScalarRow<any>,
-            rows: ReadonlyArray<ScalarRow<any>>,
-            variables?: any
+            _1: ScalarRow<any>,
+            _2: ReadonlyArray<ScalarRow<any>>,
+            ctx: {
+                readonly paginationInfo?: PaginationInfo
+            }
         ): PositionType | undefined => {
-            return "end";
+            return ctx.paginationInfo?.style === "forward" ? "start" : "end";
         },
         dependencies: (
             variables?: any

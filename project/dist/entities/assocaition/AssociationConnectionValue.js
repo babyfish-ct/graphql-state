@@ -100,11 +100,11 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
         const edges = [...this.connection.edges];
         const indexMap = this.indexMap;
         const linkMap = util_1.toRecordMap(targets);
-        const position = this.association.field.associationProperties.position;
+        const appender = new Appender(this);
         for (const record of linkMap.values()) {
             if ((indexMap === null || indexMap === void 0 ? void 0 : indexMap.has(record.id)) !== true) {
                 try {
-                    appendTo(edges, record, position);
+                    appender.appendTo(edges, record);
                 }
                 catch (ex) {
                     if (!ex[" $evict"]) {
@@ -221,27 +221,36 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
     }
 }
 exports.AssociationConnectionValue = AssociationConnectionValue;
-function toNodeMap(edges) {
-    const map = new Map();
-    for (const edge of edges) {
-        map.set(edge.node.id, edge.node);
+class Appender {
+    constructor(owner) {
+        var _a, _b, _c, _d;
+        this.position = owner.association.field.associationProperties.position;
+        this.ctx = {
+            paginationInfo: (_a = owner.args) === null || _a === void 0 ? void 0 : _a.paginationInfo,
+            variables: (_b = owner.args) === null || _b === void 0 ? void 0 : _b.filterArgs
+        };
+        this.paginationStyle = (_d = (_c = owner.args) === null || _c === void 0 ? void 0 : _c.paginationInfo) === null || _d === void 0 ? void 0 : _d.style;
     }
-    return map;
-}
-function appendTo(newEdges, newNode, position) {
-    var _a;
-    const pos = newEdges.length === 0 ?
-        0 :
-        position(newNode.toRow(), newEdges.map(e => e.node.toRow()), (_a = this.args) === null || _a === void 0 ? void 0 : _a.variables);
-    if (pos === undefined) {
-        throw { " $evict": true };
-    }
-    const index = pos === "start" ? 0 : pos === "end" ? newEdges.length : pos;
-    const cursor = "";
-    if (index >= newEdges.length) {
-        newEdges.push({ node: newNode, cursor });
-    }
-    else {
-        newEdges.splice(Math.max(0, index), 0, { node: newNode, cursor });
+    appendTo(newEdges, newNode) {
+        const pos = newEdges.length === 0 ?
+            0 :
+            this.position(newNode.toRow(), newEdges.map(e => e.node.toRow()), this.ctx);
+        if (pos === undefined) {
+            throw { " $evict": true };
+        }
+        const index = pos === "start" ? 0 : pos === "end" ? newEdges.length : pos;
+        if (index <= 0 && this.paginationStyle === "backward") {
+            throw { " $evict": true };
+        }
+        if (index >= newEdges.length && this.paginationStyle === "forward") {
+            throw { " $evict": true };
+        }
+        const cursor = "";
+        if (index >= newEdges.length) {
+            newEdges.push({ node: newNode, cursor });
+        }
+        else {
+            newEdges.splice(Math.max(0, index), 0, { node: newNode, cursor });
+        }
     }
 }

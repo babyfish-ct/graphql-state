@@ -83,11 +83,11 @@ export class AssociationListValue extends AssociationValue {
         const elements = this.elements !== undefined ? [...this.elements] : [];
         const indexMap = this.indexMap;
         const linkMap = toRecordMap(targets);
-        const position = this.association.field.associationProperties!.position;
+        const appender = new Appender(this);
         for (const record of linkMap.values()) {
             if (indexMap?.has(record.id) !== true) {
                 try {
-                    appendTo(elements, record, position);
+                    appender.appendTo(elements, record);
                 } catch (ex) {
                     if (!ex[" $evict"]) {
                         throw ex;
@@ -174,25 +174,42 @@ export class AssociationListValue extends AssociationValue {
     }
 }
 
-function appendTo(
-    newElements: Array<Record>, 
-    newElement: Record,
-    position: (
+class Appender {
+
+    private position: (
         row: ScalarRow<any>,
         rows: ReadonlyArray<ScalarRow<any>>,
-        variables?: any
-    ) => PositionType | undefined
-) {
-    const pos = newElements.length === 0 ? 
-        0 : 
-        position(newElement.toRow(), newElements.map(e => e.toRow()), this.args?.variables);
-    if (pos === undefined) {
-        throw { " $evict": true };
+        ctx: {
+            readonly variables?: any
+        }
+    ) => PositionType | undefined;
+
+    private ctx: { readonly variables: any };
+
+    constructor(owner: AssociationListValue) {
+        this.position = owner.association.field.associationProperties!.position;
+        this.ctx = { variables: owner.args?.filterArgs };
     }
-    const index = pos === "start" ? 0 : pos === "end" ? newElements.length : pos;
-    if (index >= newElements.length) {
-        newElements.push(newElement);
-    } else {
-        newElements.splice(Math.max(0, index), 0, newElement);
+
+    appendTo(
+        newElements: Array<Record>, 
+        newElement: Record
+    ) {
+        const pos = newElements.length === 0 ? 
+            0 : 
+            this.position(
+                newElement.toRow(), 
+                newElements.map(e => e.toRow()), 
+                this.ctx
+            );
+        if (pos === undefined) {
+            throw { " $evict": true };
+        }
+        const index = pos === "start" ? 0 : pos === "end" ? newElements.length : pos;
+        if (index >= newElements.length) {
+            newElements.push(newElement);
+        } else {
+            newElements.splice(Math.max(0, index), 0, newElement);
+        }
     }
 }

@@ -1,3 +1,6 @@
+import { GRAPHQL_STATE_PAGINATION_INFO } from "../../entities/PaginationFetcherProcessor";
+import { PaginationInfo } from "../../entities/QueryArgs";
+
 export class OptionArgs {
 
     private _variableArgs?: VariableArgs;
@@ -24,7 +27,33 @@ export class OptionArgs {
 
 export class VariableArgs {
 
-    private constructor(readonly variables: any, readonly key: string) {}
+    readonly filterArgs?: VariableArgs;
+
+    readonly paginationInfo?: PaginationInfo;
+
+    private constructor(
+        readonly variables: any, 
+        readonly key: string
+    ) {
+        this.paginationInfo = variables[GRAPHQL_STATE_PAGINATION_INFO];
+        if (this.paginationInfo === undefined) {
+            this.filterArgs = this;
+        } else {
+            const obj = {};
+            let hasValue = false;
+            for (const key in variables) {
+                if (key !== GRAPHQL_STATE_PAGINATION_INFO) {
+                    obj[key] = variables[key];
+                    hasValue = true;
+                }
+            }
+            this.filterArgs = hasValue ? new VariableArgs(obj, JSON.stringify(obj)) : undefined;
+        }
+    }
+
+    get filterVariables(): any {
+        return this.filterArgs?.variables;
+    }
 
     constains(args: VariableArgs): boolean {
         return variableContains(this.variables, args.variables);

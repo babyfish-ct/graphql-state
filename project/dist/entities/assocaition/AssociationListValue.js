@@ -59,11 +59,11 @@ class AssociationListValue extends AssocaitionValue_1.AssociationValue {
         const elements = this.elements !== undefined ? [...this.elements] : [];
         const indexMap = this.indexMap;
         const linkMap = util_1.toRecordMap(targets);
-        const position = this.association.field.associationProperties.position;
+        const appender = new Appender(this);
         for (const record of linkMap.values()) {
             if ((indexMap === null || indexMap === void 0 ? void 0 : indexMap.has(record.id)) !== true) {
                 try {
-                    appendTo(elements, record, position);
+                    appender.appendTo(elements, record);
                 }
                 catch (ex) {
                     if (!ex[" $evict"]) {
@@ -134,19 +134,25 @@ class AssociationListValue extends AssocaitionValue_1.AssociationValue {
     }
 }
 exports.AssociationListValue = AssociationListValue;
-function appendTo(newElements, newElement, position) {
-    var _a;
-    const pos = newElements.length === 0 ?
-        0 :
-        position(newElement.toRow(), newElements.map(e => e.toRow()), (_a = this.args) === null || _a === void 0 ? void 0 : _a.variables);
-    if (pos === undefined) {
-        throw { " $evict": true };
+class Appender {
+    constructor(owner) {
+        var _a;
+        this.position = owner.association.field.associationProperties.position;
+        this.ctx = { variables: (_a = owner.args) === null || _a === void 0 ? void 0 : _a.filterArgs };
     }
-    const index = pos === "start" ? 0 : pos === "end" ? newElements.length : pos;
-    if (index >= newElements.length) {
-        newElements.push(newElement);
-    }
-    else {
-        newElements.splice(Math.max(0, index), 0, newElement);
+    appendTo(newElements, newElement) {
+        const pos = newElements.length === 0 ?
+            0 :
+            this.position(newElement.toRow(), newElements.map(e => e.toRow()), this.ctx);
+        if (pos === undefined) {
+            throw { " $evict": true };
+        }
+        const index = pos === "start" ? 0 : pos === "end" ? newElements.length : pos;
+        if (index >= newElements.length) {
+            newElements.push(newElement);
+        }
+        else {
+            newElements.splice(Math.max(0, index), 0, newElement);
+        }
     }
 }

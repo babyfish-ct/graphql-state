@@ -136,15 +136,16 @@ function createDefaultAssociationProperties(field) {
         throw new Error(`Cannot create assocaition properties for the field ${field.fullName} because it's not association`);
     }
     return {
-        contains: (row, variables) => {
+        contains: (_, variables) => {
             if (variables === undefined) {
                 return true;
             }
             console.log(`Try to add new '${field.targetType.name}' object into the parameterized assocaition ${field.fullName}(${JSON.stringify(variables)}), but the assocaition properties of that parameterized assocition is not specified, ` +
                 `so the system does not known whether the new object should be added and evict that assocaition from cache`);
         },
-        position: (row, rows, variables) => {
-            return "end";
+        position: (_1, _2, ctx) => {
+            var _a;
+            return ((_a = ctx.paginationInfo) === null || _a === void 0 ? void 0 : _a.style) === "forward" ? "start" : "end";
         },
         dependencies: (variables) => {
             return variables === undefined ? [] : undefined;

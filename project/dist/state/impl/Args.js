@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.VariableArgs = exports.OptionArgs = void 0;
+const PaginationFetcherProcessor_1 = require("../../entities/PaginationFetcherProcessor");
 class OptionArgs {
     constructor(options, key) {
         this.options = options;
@@ -23,6 +24,25 @@ class VariableArgs {
     constructor(variables, key) {
         this.variables = variables;
         this.key = key;
+        this.paginationInfo = variables[PaginationFetcherProcessor_1.GRAPHQL_STATE_PAGINATION_INFO];
+        if (this.paginationInfo === undefined) {
+            this.filterArgs = this;
+        }
+        else {
+            const obj = {};
+            let hasValue = false;
+            for (const key in variables) {
+                if (key !== PaginationFetcherProcessor_1.GRAPHQL_STATE_PAGINATION_INFO) {
+                    obj[key] = variables[key];
+                    hasValue = true;
+                }
+            }
+            this.filterArgs = hasValue ? new VariableArgs(obj, JSON.stringify(obj)) : undefined;
+        }
+    }
+    get filterVariables() {
+        var _a;
+        return (_a = this.filterArgs) === null || _a === void 0 ? void 0 : _a.variables;
     }
     constains(args) {
         return variableContains(this.variables, args.variables);

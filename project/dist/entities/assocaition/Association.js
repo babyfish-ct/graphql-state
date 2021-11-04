@@ -69,7 +69,7 @@ class Association {
     link(entityManager, target, mostStringentArgs, insideModification = false) {
         this.changeLinks(() => {
             this.valueMap.forEachValue(value => {
-                var _a, _b;
+                var _a, _b, _c, _d, _e;
                 if (insideModification && (mostStringentArgs === null || mostStringentArgs === void 0 ? void 0 : mostStringentArgs.key) === ((_a = value.args) === null || _a === void 0 ? void 0 : _a.key)) {
                     return;
                 }
@@ -78,7 +78,10 @@ class Association {
                 if (possibleRecords.length === 0) {
                     return;
                 }
-                if (Args_1.VariableArgs.contains(mostStringentArgs, value.args)) {
+                if (((_c = (_b = value.args) === null || _b === void 0 ? void 0 : _b.paginationInfo) === null || _c === void 0 ? void 0 : _c.style) === "page") {
+                    this.evict(entityManager, value.args, false);
+                }
+                else if (Args_1.VariableArgs.contains(mostStringentArgs === null || mostStringentArgs === void 0 ? void 0 : mostStringentArgs.filterArgs, (_d = value.args) === null || _d === void 0 ? void 0 : _d.filterArgs)) {
                     value.link(entityManager, possibleRecords);
                 }
                 else {
@@ -86,7 +89,7 @@ class Association {
                     const exactRecords = [];
                     let evict = false;
                     for (const possibleRecord of possibleRecords) {
-                        const result = contains(possibleRecord.toRow(), (_b = value.args) === null || _b === void 0 ? void 0 : _b.variables);
+                        const result = contains(possibleRecord.toRow(), (_e = value.args) === null || _e === void 0 ? void 0 : _e.filterVariables);
                         if (result === undefined) {
                             evict = true;
                             break;
@@ -108,7 +111,7 @@ class Association {
     unlink(entityManager, target, leastStringentArgs, insideModification = false) {
         this.changeLinks(() => {
             this.valueMap.forEachValue(value => {
-                var _a, _b;
+                var _a, _b, _c, _d, _e;
                 if (insideModification && (leastStringentArgs === null || leastStringentArgs === void 0 ? void 0 : leastStringentArgs.key) === ((_a = value.args) === null || _a === void 0 ? void 0 : _a.key)) {
                     return;
                 }
@@ -117,7 +120,10 @@ class Association {
                 if (possibleRecords.length === 0) {
                     return;
                 }
-                if (Args_1.VariableArgs.contains(value.args, leastStringentArgs)) {
+                if (((_c = (_b = value.args) === null || _b === void 0 ? void 0 : _b.paginationInfo) === null || _c === void 0 ? void 0 : _c.style) === "page") {
+                    this.evict(entityManager, value.args, false);
+                }
+                else if (Args_1.VariableArgs.contains((_d = value.args) === null || _d === void 0 ? void 0 : _d.filterArgs, leastStringentArgs === null || leastStringentArgs === void 0 ? void 0 : leastStringentArgs.filterArgs)) {
                     value.unlink(entityManager, possibleRecords);
                 }
                 else {
@@ -125,7 +131,7 @@ class Association {
                     const exactRecords = [];
                     let evict = false;
                     for (const possibleRecord of possibleRecords) {
-                        const result = contains(possibleRecord.toRow(), (_b = value.args) === null || _b === void 0 ? void 0 : _b.variables);
+                        const result = contains(possibleRecord.toRow(), (_e = value.args) === null || _e === void 0 ? void 0 : _e.filterVariables);
                         if (result === undefined) {
                             evict = true;
                             break;
