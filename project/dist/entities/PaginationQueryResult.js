@@ -17,7 +17,6 @@ const QueryService_1 = require("./QueryService");
 class PaginationQueryResult extends QueryResult_1.QueryResult {
     constructor(entityManager, queryArgs, disposer) {
         super(entityManager, queryArgs, disposer);
-        this._loadMoreRequestId = 0;
         this._bindedLoadNext = this.loadNext.bind(this);
         this._bindedLoadPrevious = this.loadPrevious.bind(this);
         const queryFetcher = this.entityManager.schema.fetcher("Query");
@@ -58,25 +57,25 @@ class PaginationQueryResult extends QueryResult_1.QueryResult {
                 queryResult: this,
                 changedType: "ASYNC_STATE_CHANGE"
             });
-            const requestId = ++this._loadMoreRequestId;
+            const requestId = ++this._currentAsyncRequestId;
             try {
                 const result = queryService.query(loadingStatus === "isLoadingNext" ? this._loadNextQueryArgs : this._loadPreviousQueryArgs, false, true);
                 if (result.type !== "deferred") {
                     throw new Error("Internal bug: LoadMore only accept deferred result");
                 }
                 const data = yield result.promise;
-                if (this._loadMoreRequestId === requestId) {
+                if (this._currentAsyncRequestId === requestId) {
                     this._loadable = this.createLoadable(false, data, undefined, { [loadingStatus]: false });
                 }
             }
             catch (ex) {
-                if (this._loadMoreRequestId === requestId) {
+                if (this._currentAsyncRequestId === requestId) {
                     this._loadable = this.createLoadable(false, undefined, ex, { [loadingStatus]: false });
                 }
                 throw ex;
             }
             finally {
-                if (this._loadMoreRequestId === requestId) {
+                if (this._currentAsyncRequestId === requestId) {
                     this.entityManager.stateManager.publishQueryResultChangeEvent({
                         queryResult: this,
                         changedType: "ASYNC_STATE_CHANGE"

@@ -13,7 +13,7 @@ export declare class QueryResult {
     private _refetching;
     private _evictListener;
     private _changeListener;
-    private _currentAsyncRequestId;
+    protected _currentAsyncRequestId: number;
     private _dependencies?;
     private _disposeTimerId?;
     private _createdMillis;

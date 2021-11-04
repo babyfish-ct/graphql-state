@@ -26,7 +26,7 @@ export class QueryResult {
 
     private _changeListener: (e: EntityChangeEvent) => void;
 
-    private _currentAsyncRequestId = 0;
+    protected _currentAsyncRequestId = 0;
 
     private _dependencies?: Dependencies;
 
