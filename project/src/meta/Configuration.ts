@@ -1,5 +1,5 @@
 import { ObjectFetcher, TextWriter } from "graphql-ts-client-api";
-import { PaginationInfo } from "../entities/QueryArgs";
+import { PageInfo } from "../entities/assocaition/AssociationConnectionValue";
 import { StateManager } from "../state/StateManager";
 import { SchemaType } from "./SchemaType";
 
@@ -88,11 +88,14 @@ export interface ParameterizedAssociationProperties<TScalarType, TVariables> {
     readonly position?: (
         row: ScalarRow<TScalarType>,
         rows: ReadonlyArray<ScalarRow<TScalarType>>,
-        ctx: {
-            readonly paginationInfo?: PaginationInfo,
-            readonly variables?: TVariables 
-        }
+        paginationDirection?: "forward" | "backward"
     ) => PositionType | undefined;
+
+    readonly range?: (
+        range: ConnectionRange,
+        delta: number,
+        direction: "forward" | "backward"
+    ) => void;
 }
 
 export interface UnparameterizedAssociationProperties<TScalarType> {
@@ -107,10 +110,14 @@ export interface UnparameterizedAssociationProperties<TScalarType> {
     readonly position?: (
         row: ScalarRow<TScalarType>,
         rows: ReadonlyArray<ScalarRow<TScalarType>>,
-        ctx: {
-            readonly paginationInfo?: PaginationInfo
-        }
+        paginationDirection?: "forward" | "backward"
     ) => PositionType | undefined;
+
+    readonly range?: (
+        range: ConnectionRange,
+        delta: number,
+        direction: "forward" | "backward"
+    ) => void;
 }
 
 export interface ScalarRow<TScalarType extends {readonly [key: string]: any}> {
@@ -120,6 +127,12 @@ export interface ScalarRow<TScalarType extends {readonly [key: string]: any}> {
 }
 
 export type PositionType = number | "start" | "end";
+
+export interface ConnectionRange {
+    startCursor: string;
+    endCursor: string;
+    [key: string]: any;
+}
 
 export interface Network {
 

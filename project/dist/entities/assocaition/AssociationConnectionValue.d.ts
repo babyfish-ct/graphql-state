@@ -11,6 +11,7 @@ export declare class AssociationConnectionValue extends AssociationValue {
     private newValue;
     link(entityManager: EntityManager, targets: ReadonlyArray<Record>): void;
     unlink(entityManager: EntityManager, targets: ReadonlyArray<Record>): void;
+    private standardizeValueForNewLink;
     contains(target: Record): boolean;
     private validate;
     private valueEquals;
@@ -34,8 +35,8 @@ export interface ObjectEdge {
     readonly cursor?: string;
 }
 export interface PageInfo {
-    hasNextPage: boolean;
-    hasPreviousPage: boolean;
-    startCursor: string;
-    endCursor: string;
+    readonly hasNextPage: boolean;
+    readonly hasPreviousPage: boolean;
+    readonly startCursor: string;
+    readonly endCursor: string;
 }

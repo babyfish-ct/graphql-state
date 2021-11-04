@@ -24,4 +24,5 @@ export declare abstract class AssociationValue {
     onEntityChange(entityManager: EntityManager, e: EntityChangeEvent): void;
     private isTargetChanged;
     protected evict(entityManager: EntityManager): void;
+    get isLinkOptimizable(): boolean;
 }

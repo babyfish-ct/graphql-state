@@ -22,7 +22,9 @@ export const AuthorList: FC = memo(() => {
 
     const { data, loading, refetch, isLoadingNext, loadNext, hasNext } = usePaginationQuery(
         query$.findAuthors(
-            authorConnection$.edges(
+            authorConnection$
+            .totalCount
+            .edges(
                 authorEdge$.node(
                     AUTHOR_ROW
                 )
@@ -151,6 +153,7 @@ export const AuthorList: FC = memo(() => {
                         </Table>
                         <Space>
                             <Button onClick={loadNext} disabled={!hasNext} loading={isLoadingNext}>Load more</Button>
+                            {data.authorConnection.totalCount - data.authorConnection.edges.length} row(s) left
                         </Space>
                     </>
                 }

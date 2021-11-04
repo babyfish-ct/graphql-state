@@ -90,7 +90,7 @@ class FieldMetadata {
         this.declaringType.schema[" $registerUnresolvedInversedField"](this);
     }
     setAssocaitionProperties(properties) {
-        var _a, _b, _c;
+        var _a, _b, _c, _d;
         if (!this.isAssociation) {
             throw new Error(`Cannot set assciation properties for '${this.fullName}' because its not asscoation field`);
         }
@@ -98,7 +98,8 @@ class FieldMetadata {
         this._associationProperties = {
             contains: (_a = properties.contains) !== null && _a !== void 0 ? _a : defaultProperites.contains,
             position: (_b = properties.position) !== null && _b !== void 0 ? _b : defaultProperites.position,
-            dependencies: (_c = properties.dependencies) !== null && _c !== void 0 ? _c : defaultProperites.dependencies
+            dependencies: (_c = properties.dependencies) !== null && _c !== void 0 ? _c : defaultProperites.dependencies,
+            range: (_d = properties.range) !== null && _d !== void 0 ? _d : defaultProperites.range
         };
         this._containingConfigured = properties.contains !== undefined;
     }
@@ -143,9 +144,8 @@ function createDefaultAssociationProperties(field) {
             console.log(`Try to add new '${field.targetType.name}' object into the parameterized assocaition ${field.fullName}(${JSON.stringify(variables)}), but the assocaition properties of that parameterized assocition is not specified, ` +
                 `so the system does not known whether the new object should be added and evict that assocaition from cache`);
         },
-        position: (_1, _2, ctx) => {
-            var _a;
-            return ((_a = ctx.paginationInfo) === null || _a === void 0 ? void 0 : _a.style) === "forward" ? "start" : "end";
+        position: (_1, _2, paginationDirection) => {
+            return paginationDirection === "forward" ? "start" : "end";
         },
         dependencies: (variables) => {
             return variables === undefined ? [] : undefined;

@@ -175,4 +175,15 @@ export abstract class AssociationValue {
     protected evict(entityManager: EntityManager) {
         this.association.evict(entityManager, this.args, false);
     }
+
+    get isLinkOptimizable(): boolean {
+        const paginationInfo = this.args?.paginationInfo;
+        if (paginationInfo?.style === "page") {
+            return false;
+        }
+        if (paginationInfo !== undefined && this.association.field.associationProperties?.range === undefined) {
+            return false;
+        }
+        return true;
+    }
 }

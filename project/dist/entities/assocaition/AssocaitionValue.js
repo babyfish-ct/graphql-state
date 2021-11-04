@@ -119,5 +119,16 @@ class AssociationValue {
     evict(entityManager) {
         this.association.evict(entityManager, this.args, false);
     }
+    get isLinkOptimizable() {
+        var _a, _b;
+        const paginationInfo = (_a = this.args) === null || _a === void 0 ? void 0 : _a.paginationInfo;
+        if ((paginationInfo === null || paginationInfo === void 0 ? void 0 : paginationInfo.style) === "page") {
+            return false;
+        }
+        if (paginationInfo !== undefined && ((_b = this.association.field.associationProperties) === null || _b === void 0 ? void 0 : _b.range) === undefined) {
+            return false;
+        }
+        return true;
+    }
 }
 exports.AssociationValue = AssociationValue;

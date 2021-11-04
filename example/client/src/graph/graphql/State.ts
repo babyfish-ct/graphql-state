@@ -15,17 +15,6 @@ import { Schema } from "../__generated_graphql_schema__";
 const { createAsyncState } = makeStateFactory<Schema>();
 
 
-/**
- * These three simple lists are used by <Select/>(DropDownList)
- * 
- * In this example, they are not used by "useQuery" hook directly 
- * in the selector componenets, but they are wrapped as AsyncState objects.
- *
- * The reason for this is that this framework will provide a "preload" 
- * function for AsyncState IN NEXT VERSION.
- */
-
-
 export const bookStoreOptionListState = createAsyncState<
     ReadonlyArray<ModelType<typeof bookStore$.id.name>>
 >("graphql-demo-book-store-option-list", async ctx => {

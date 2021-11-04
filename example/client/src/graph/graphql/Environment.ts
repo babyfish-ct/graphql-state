@@ -1,5 +1,5 @@
 import { ScalarRow, ParameterizedAssociationProperties, StateManager } from "graphql-state";
-import { PositionType } from "graphql-state";
+import { PositionType, ConnectionRange } from "graphql-state";
 import { Schema } from "../__generated_graphql_schema__";
 import { newTypedConfiguration } from "../__generated_graphql_schema__";
 import { publishEntityLog } from "./log/EntityLog";
@@ -56,6 +56,13 @@ function createNameFilterAssociationProperties<
             // No filter, depends on nothing
             // If the name of filter is specified, depends on "name"
             return variables?.name === undefined ? [] : ["name"];
+        },
+
+        range: (range: ConnectionRange, delta: number, direction: "forward" | "backward"): void => {
+            range.totalCount += delta;
+            if (direction === "forward") {
+                range.endCursor = indexToCursor(cursorToIndex(range.endCursor) + delta);
+            }
         }
     }
 };
@@ -86,4 +93,12 @@ export function createStateManager(withCustomerOptimization: boolean): StateMana
     stateManager.addEntityChangeListener(e => { publishEntityLog(e) });
 
     return stateManager;
+}
+
+function indexToCursor(index: number): string {
+    return Buffer.from(index.toString(), 'utf-8').toString('base64');
+}
+
+function cursorToIndex(cursor: string): number {
+    return parseInt(Buffer.from(cursor, 'base64').toString('utf-8'));
 }

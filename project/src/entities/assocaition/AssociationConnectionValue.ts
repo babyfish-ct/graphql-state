@@ -1,12 +1,12 @@
 import { ScalarRow } from "../..";
 import { PositionType } from "../../meta/Configuration";
-import { PaginationStyle } from "../../state/StateHook";
 import { EntityManager } from "../EntityManager";
 import { GRAPHQL_STATE_PAGINATION_INFO } from "../PaginationFetcherProcessor";
 import { Pagination, PaginationInfo } from "../QueryArgs";
 import { objectWithOnlyId, Record } from "../Record";
 import { AssociationValue } from "./AssocaitionValue";
 import { toRecordMap } from "./util";
+import { ConnectionRange } from "../../meta/Configuration";
 
 export class AssociationConnectionValue extends AssociationValue {
 
@@ -153,28 +153,26 @@ export class AssociationConnectionValue extends AssociationValue {
         const indexMap = this.indexMap;
         const linkMap = toRecordMap(targets);
         const appender = new Appender(this);
-        for (const record of linkMap.values()) {
-            if (indexMap?.has(record.id) !== true) {
-                try {
+        try {
+            for (const record of linkMap.values()) {
+                if (indexMap?.has(record.id) !== true) {
                     appender.appendTo(edges, record);
-                } catch (ex) {
-                    if (!ex[" $evict"]) {
-                        throw ex;
-                    }
-                    this.evict(entityManager);
-                    return;
                 }
             }
-        }
-        if (edges.length !== this.connection.edges.length) {
-            this.association.set(
-                entityManager,
-                this.args,
-                {
+            if (edges.length !== this.connection.edges.length) {
+                let newConnection: any = {
                     ...this.connection,
                     edges
-                }
-            );
+                };
+                this.standardizeValueForNewLink(newConnection);
+                this.association.set(entityManager, this.args, newConnection);
+            }
+        } catch (ex) {
+            if (!ex[" $evict"]) {
+                throw ex;
+            }
+            this.evict(entityManager);
+            return;
         }
     }
 
@@ -194,15 +192,62 @@ export class AssociationConnectionValue extends AssociationValue {
                 edges.splice(index, 1);
             }
         }
-        if (edges.length !== this.connection.edges.length) {
-            this.association.set(
-                entityManager,
-                this.args,
-                {
+        try {
+            if (edges.length !== this.connection.edges.length) {
+                let newConnection: any = {
                     ...this.connection,
                     edges
-                }
+                };
+                this.standardizeValueForNewLink(newConnection);
+                this.association.set(entityManager, this.args, newConnection);
+            }
+        } catch (ex) {
+            if (!ex[" $evict"]) {
+                throw ex;
+            }
+            this.evict(entityManager);
+            return;
+        }
+    }
+
+    private standardizeValueForNewLink(newConnection: any): void {
+        if (this.args?.paginationInfo === undefined) {
+            return;
+        }
+        const style = this.args.paginationInfo.style;
+        if (style === "page") {
+            throw { " $evict": true };
+        }
+        const changeRange = this.association.field.associationProperties?.range;
+        if (changeRange === undefined) {
+            throw { " $evict": true };
+        }
+        const oldConnection = this.connection!;
+        let range: ConnectionRange = {
+            startCursor: oldConnection.pageInfo!.startCursor,
+            endCursor: oldConnection.pageInfo!.endCursor 
+        };
+        for (const key in newConnection) {
+            if (key !== "edges" && key !== "pageInfo") {
+                range[key] = newConnection[key];
+            }
+        }
+        changeRange(range, newConnection.edges.length - oldConnection.edges.length, style);
+        if (range["pageInfo"] || range["edges"]) {
+            throw new Error(
+                `User optimizer "${this.association.field.fullName}.associationProperties.range" ` +
+                `cannot set 'pageInfo' and 'edges' of its argument`
             );
+        }
+        for (const key in range) {
+            if (key !== "startCursor" && key !== "endCursor") {
+                newConnection[key] = range[key];
+            }
+        }
+        newConnection.pageInfo = {
+            ...newConnection.pageInfo,
+            startCursor: range.startCursor,
+            endCursor: range.endCursor
         }
     }
 
@@ -317,10 +362,10 @@ export interface ObjectEdge {
 }
 
 export interface PageInfo {
-    hasNextPage: boolean;
-    hasPreviousPage: boolean;
-    startCursor: string;
-    endCursor: string;
+    readonly hasNextPage: boolean;
+    readonly hasPreviousPage: boolean;
+    readonly startCursor: string;
+    readonly endCursor: string;
 }
 
 class Appender {
@@ -328,23 +373,19 @@ class Appender {
     private position: (
         row: ScalarRow<any>,
         rows: ReadonlyArray<ScalarRow<any>>,
-        ctx: {
-            readonly paginationInfo?: PaginationInfo,
-            readonly variables?: any
-        }
+        paginationDirection?: "forward" | "backward"
     ) => PositionType | undefined;
 
-    private ctx: { readonly paginationInfo?: PaginationInfo, readonly variables?: any };
-
-    private paginationStyle?: PaginationStyle;
+    private direction?: "forward" | "backward";
 
     constructor(owner: AssociationValue) {
         this.position = owner.association.field.associationProperties!.position;
-        this.ctx = { 
-            paginationInfo: owner.args?.paginationInfo,
-            variables: owner.args?.filterArgs 
-        };
-        this.paginationStyle = owner.args?.paginationInfo?.style;
+        const style = owner.args?.paginationInfo?.style;
+        if (style === "forward") {
+            this.direction = "forward";
+        } else if (style === "backward") {
+            this.direction = "backward";
+        }
     }
 
     appendTo(
@@ -353,15 +394,15 @@ class Appender {
     ) {
         const pos = newEdges.length === 0 ? 
             0 : 
-            this.position(newNode.toRow(), newEdges.map(e => e.node.toRow()), this.ctx);
+            this.position(newNode.toRow(), newEdges.map(e => e.node.toRow()), this.direction);
         if (pos === undefined) {
             throw { " $evict": true };
         }
         const index = pos === "start" ? 0 : pos === "end" ? newEdges.length : pos;
-        if (index <= 0 && this.paginationStyle === "backward") {
+        if (index <= 0 && this.direction === "backward") {
             throw { " $evict": true };
         }
-        if (index >= newEdges.length && this.paginationStyle === "forward") {
+        if (index >= newEdges.length && this.direction === "forward") {
             throw { " $evict": true };
         }
         const cursor = "";

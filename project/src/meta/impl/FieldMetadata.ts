@@ -1,6 +1,5 @@
 import { FetchableField } from "graphql-ts-client-api";
-import { PaginationInfo } from "../../entities/QueryArgs";
-import { PositionType, ScalarRow } from "../Configuration";
+import { ConnectionRange, PositionType, ScalarRow } from "../Configuration";
 import { TypeMetadata } from "./TypeMetdata";
 
 export class FieldMetadata {
@@ -134,7 +133,8 @@ export class FieldMetadata {
         this._associationProperties = {
             contains: properties.contains ?? defaultProperites.contains,
             position: properties.position ?? defaultProperites.position,
-            dependencies: properties.dependencies ?? defaultProperites.dependencies
+            dependencies: properties.dependencies ?? defaultProperites.dependencies,
+            range: properties.range ?? defaultProperites.range
         };
         this._containingConfigured = properties.contains !== undefined;
     }
@@ -188,11 +188,14 @@ export interface AssocaitionProperties {
     readonly position: (
         row: ScalarRow<any>,
         rows: ReadonlyArray<ScalarRow<any>>,
-        ctx: {
-            readonly paginationInfo?: PaginationInfo,
-            readonly variables?: any
-        }
+        paginationDirection?: "forward" | "backward"
     ) => PositionType | undefined;
+
+    readonly range?: (
+        range: ConnectionRange,
+        delta: number,
+        direction: "forward" | "backward"
+    ) => void;
 }
 
 function isAssociationCategory(category: FieldMetadataCategory) {
@@ -224,11 +227,9 @@ function createDefaultAssociationProperties(field: FieldMetadata): AssocaitionPr
         position: (
             _1: ScalarRow<any>,
             _2: ReadonlyArray<ScalarRow<any>>,
-            ctx: {
-                readonly paginationInfo?: PaginationInfo
-            }
+            paginationDirection?: "forward" | "backward"
         ): PositionType | undefined => {
-            return ctx.paginationInfo?.style === "forward" ? "start" : "end";
+            return paginationDirection === "forward" ? "start" : "end";
         },
         dependencies: (
             variables?: any

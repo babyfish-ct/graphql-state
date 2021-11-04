@@ -102,7 +102,7 @@ export class Association {
                 if (possibleRecords.length === 0) {
                     return;
                 }
-                if (value.args?.paginationInfo?.style === "page") {
+                if (!value.isLinkOptimizable) {
                     this.evict(entityManager, value.args, false);
                 } else if (VariableArgs.contains(mostStringentArgs?.filterArgs, value.args?.filterArgs)) {
                     value.link(entityManager, possibleRecords);
@@ -147,7 +147,7 @@ export class Association {
                 if (possibleRecords.length === 0) {
                     return;
                 }
-                if (value.args?.paginationInfo?.style === "page") {
+                if (!value.isLinkOptimizable) {
                     this.evict(entityManager, value.args, false);
                 } else if (VariableArgs.contains(value.args?.filterArgs, leastStringentArgs?.filterArgs)) {
                     value.unlink(

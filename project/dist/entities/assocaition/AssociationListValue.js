@@ -136,14 +136,20 @@ class AssociationListValue extends AssocaitionValue_1.AssociationValue {
 exports.AssociationListValue = AssociationListValue;
 class Appender {
     constructor(owner) {
-        var _a;
+        var _a, _b;
         this.position = owner.association.field.associationProperties.position;
-        this.ctx = { variables: (_a = owner.args) === null || _a === void 0 ? void 0 : _a.filterArgs };
+        const style = (_b = (_a = owner.args) === null || _a === void 0 ? void 0 : _a.paginationInfo) === null || _b === void 0 ? void 0 : _b.style;
+        if (style === "forward") {
+            this.direction = "forward";
+        }
+        else if (style === "backward") {
+            this.direction = "backward";
+        }
     }
     appendTo(newElements, newElement) {
         const pos = newElements.length === 0 ?
             0 :
-            this.position(newElement.toRow(), newElements.map(e => e.toRow()), this.ctx);
+            this.position(newElement.toRow(), newElements.map(e => e.toRow()), this.direction);
         if (pos === undefined) {
             throw { " $evict": true };
         }

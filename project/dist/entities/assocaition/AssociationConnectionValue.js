@@ -101,22 +101,24 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
         const indexMap = this.indexMap;
         const linkMap = util_1.toRecordMap(targets);
         const appender = new Appender(this);
-        for (const record of linkMap.values()) {
-            if ((indexMap === null || indexMap === void 0 ? void 0 : indexMap.has(record.id)) !== true) {
-                try {
+        try {
+            for (const record of linkMap.values()) {
+                if ((indexMap === null || indexMap === void 0 ? void 0 : indexMap.has(record.id)) !== true) {
                     appender.appendTo(edges, record);
                 }
-                catch (ex) {
-                    if (!ex[" $evict"]) {
-                        throw ex;
-                    }
-                    this.evict(entityManager);
-                    return;
-                }
+            }
+            if (edges.length !== this.connection.edges.length) {
+                let newConnection = Object.assign(Object.assign({}, this.connection), { edges });
+                this.standardizeValueForNewLink(newConnection);
+                this.association.set(entityManager, this.args, newConnection);
             }
         }
-        if (edges.length !== this.connection.edges.length) {
-            this.association.set(entityManager, this.args, Object.assign(Object.assign({}, this.connection), { edges }));
+        catch (ex) {
+            if (!ex[" $evict"]) {
+                throw ex;
+            }
+            this.evict(entityManager);
+            return;
         }
     }
     unlink(entityManager, targets) {
@@ -132,9 +134,55 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
                 edges.splice(index, 1);
             }
         }
-        if (edges.length !== this.connection.edges.length) {
-            this.association.set(entityManager, this.args, Object.assign(Object.assign({}, this.connection), { edges }));
+        try {
+            if (edges.length !== this.connection.edges.length) {
+                let newConnection = Object.assign(Object.assign({}, this.connection), { edges });
+                this.standardizeValueForNewLink(newConnection);
+                this.association.set(entityManager, this.args, newConnection);
+            }
         }
+        catch (ex) {
+            if (!ex[" $evict"]) {
+                throw ex;
+            }
+            this.evict(entityManager);
+            return;
+        }
+    }
+    standardizeValueForNewLink(newConnection) {
+        var _a, _b;
+        if (((_a = this.args) === null || _a === void 0 ? void 0 : _a.paginationInfo) === undefined) {
+            return;
+        }
+        const style = this.args.paginationInfo.style;
+        if (style === "page") {
+            throw { " $evict": true };
+        }
+        const changeRange = (_b = this.association.field.associationProperties) === null || _b === void 0 ? void 0 : _b.range;
+        if (changeRange === undefined) {
+            throw { " $evict": true };
+        }
+        const oldConnection = this.connection;
+        let range = {
+            startCursor: oldConnection.pageInfo.startCursor,
+            endCursor: oldConnection.pageInfo.endCursor
+        };
+        for (const key in newConnection) {
+            if (key !== "edges" && key !== "pageInfo") {
+                range[key] = newConnection[key];
+            }
+        }
+        changeRange(range, newConnection.edges.length - oldConnection.edges.length, style);
+        if (range["pageInfo"] || range["edges"]) {
+            throw new Error(`User optimizer "${this.association.field.fullName}.associationProperties.range" ` +
+                `cannot set 'pageInfo' and 'edges' of its argument`);
+        }
+        for (const key in range) {
+            if (key !== "startCursor" && key !== "endCursor") {
+                newConnection[key] = range[key];
+            }
+        }
+        newConnection.pageInfo = Object.assign(Object.assign({}, newConnection.pageInfo), { startCursor: range.startCursor, endCursor: range.endCursor });
     }
     contains(target) {
         var _a;
@@ -223,26 +271,28 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
 exports.AssociationConnectionValue = AssociationConnectionValue;
 class Appender {
     constructor(owner) {
-        var _a, _b, _c, _d;
+        var _a, _b;
         this.position = owner.association.field.associationProperties.position;
-        this.ctx = {
-            paginationInfo: (_a = owner.args) === null || _a === void 0 ? void 0 : _a.paginationInfo,
-            variables: (_b = owner.args) === null || _b === void 0 ? void 0 : _b.filterArgs
-        };
-        this.paginationStyle = (_d = (_c = owner.args) === null || _c === void 0 ? void 0 : _c.paginationInfo) === null || _d === void 0 ? void 0 : _d.style;
+        const style = (_b = (_a = owner.args) === null || _a === void 0 ? void 0 : _a.paginationInfo) === null || _b === void 0 ? void 0 : _b.style;
+        if (style === "forward") {
+            this.direction = "forward";
+        }
+        else if (style === "backward") {
+            this.direction = "backward";
+        }
     }
     appendTo(newEdges, newNode) {
         const pos = newEdges.length === 0 ?
             0 :
-            this.position(newNode.toRow(), newEdges.map(e => e.node.toRow()), this.ctx);
+            this.position(newNode.toRow(), newEdges.map(e => e.node.toRow()), this.direction);
         if (pos === undefined) {
             throw { " $evict": true };
         }
         const index = pos === "start" ? 0 : pos === "end" ? newEdges.length : pos;
-        if (index <= 0 && this.paginationStyle === "backward") {
+        if (index <= 0 && this.direction === "backward") {
             throw { " $evict": true };
         }
-        if (index >= newEdges.length && this.paginationStyle === "forward") {
+        if (index >= newEdges.length && this.direction === "forward") {
             throw { " $evict": true };
         }
         const cursor = "";

@@ -69,7 +69,7 @@ class Association {
     link(entityManager, target, mostStringentArgs, insideModification = false) {
         this.changeLinks(() => {
             this.valueMap.forEachValue(value => {
-                var _a, _b, _c, _d, _e;
+                var _a, _b, _c;
                 if (insideModification && (mostStringentArgs === null || mostStringentArgs === void 0 ? void 0 : mostStringentArgs.key) === ((_a = value.args) === null || _a === void 0 ? void 0 : _a.key)) {
                     return;
                 }
@@ -78,10 +78,10 @@ class Association {
                 if (possibleRecords.length === 0) {
                     return;
                 }
-                if (((_c = (_b = value.args) === null || _b === void 0 ? void 0 : _b.paginationInfo) === null || _c === void 0 ? void 0 : _c.style) === "page") {
+                if (!value.isLinkOptimizable) {
                     this.evict(entityManager, value.args, false);
                 }
-                else if (Args_1.VariableArgs.contains(mostStringentArgs === null || mostStringentArgs === void 0 ? void 0 : mostStringentArgs.filterArgs, (_d = value.args) === null || _d === void 0 ? void 0 : _d.filterArgs)) {
+                else if (Args_1.VariableArgs.contains(mostStringentArgs === null || mostStringentArgs === void 0 ? void 0 : mostStringentArgs.filterArgs, (_b = value.args) === null || _b === void 0 ? void 0 : _b.filterArgs)) {
                     value.link(entityManager, possibleRecords);
                 }
                 else {
@@ -89,7 +89,7 @@ class Association {
                     const exactRecords = [];
                     let evict = false;
                     for (const possibleRecord of possibleRecords) {
-                        const result = contains(possibleRecord.toRow(), (_e = value.args) === null || _e === void 0 ? void 0 : _e.filterVariables);
+                        const result = contains(possibleRecord.toRow(), (_c = value.args) === null || _c === void 0 ? void 0 : _c.filterVariables);
                         if (result === undefined) {
                             evict = true;
                             break;
@@ -111,7 +111,7 @@ class Association {
     unlink(entityManager, target, leastStringentArgs, insideModification = false) {
         this.changeLinks(() => {
             this.valueMap.forEachValue(value => {
-                var _a, _b, _c, _d, _e;
+                var _a, _b, _c;
                 if (insideModification && (leastStringentArgs === null || leastStringentArgs === void 0 ? void 0 : leastStringentArgs.key) === ((_a = value.args) === null || _a === void 0 ? void 0 : _a.key)) {
                     return;
                 }
@@ -120,10 +120,10 @@ class Association {
                 if (possibleRecords.length === 0) {
                     return;
                 }
-                if (((_c = (_b = value.args) === null || _b === void 0 ? void 0 : _b.paginationInfo) === null || _c === void 0 ? void 0 : _c.style) === "page") {
+                if (!value.isLinkOptimizable) {
                     this.evict(entityManager, value.args, false);
                 }
-                else if (Args_1.VariableArgs.contains((_d = value.args) === null || _d === void 0 ? void 0 : _d.filterArgs, leastStringentArgs === null || leastStringentArgs === void 0 ? void 0 : leastStringentArgs.filterArgs)) {
+                else if (Args_1.VariableArgs.contains((_b = value.args) === null || _b === void 0 ? void 0 : _b.filterArgs, leastStringentArgs === null || leastStringentArgs === void 0 ? void 0 : leastStringentArgs.filterArgs)) {
                     value.unlink(entityManager, possibleRecords);
                 }
                 else {
@@ -131,7 +131,7 @@ class Association {
                     const exactRecords = [];
                     let evict = false;
                     for (const possibleRecord of possibleRecords) {
-                        const result = contains(possibleRecord.toRow(), (_e = value.args) === null || _e === void 0 ? void 0 : _e.filterVariables);
+                        const result = contains(possibleRecord.toRow(), (_c = value.args) === null || _c === void 0 ? void 0 : _c.filterVariables);
                         if (result === undefined) {
                             evict = true;
                             break;

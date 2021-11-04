@@ -1,6 +1,5 @@
 import { FetchableField } from "graphql-ts-client-api";
-import { PaginationInfo } from "../../entities/QueryArgs";
-import { PositionType, ScalarRow } from "../Configuration";
+import { ConnectionRange, PositionType, ScalarRow } from "../Configuration";
 import { TypeMetadata } from "./TypeMetdata";
 export declare class FieldMetadata {
     readonly declaringType: TypeMetadata;
@@ -41,8 +40,6 @@ export interface FieldMetadataOptions {
 export interface AssocaitionProperties {
     readonly contains: (row: ScalarRow<any>, variables?: any) => boolean | undefined;
     readonly dependencies: (variables?: any) => ReadonlyArray<string> | undefined;
-    readonly position: (row: ScalarRow<any>, rows: ReadonlyArray<ScalarRow<any>>, ctx: {
-        readonly paginationInfo?: PaginationInfo;
-        readonly variables?: any;
-    }) => PositionType | undefined;
+    readonly position: (row: ScalarRow<any>, rows: ReadonlyArray<ScalarRow<any>>, paginationDirection?: "forward" | "backward") => PositionType | undefined;
+    readonly range?: (range: ConnectionRange, delta: number, direction: "forward" | "backward") => void;
 }

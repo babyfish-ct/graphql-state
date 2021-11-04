@@ -1,5 +1,4 @@
 import { ObjectFetcher } from "graphql-ts-client-api";
-import { PaginationInfo } from "../entities/QueryArgs";
 import { StateManager } from "../state/StateManager";
 import { SchemaType } from "./SchemaType";
 export interface Configuration<TSchema extends SchemaType> {
@@ -14,17 +13,14 @@ export interface Configuration<TSchema extends SchemaType> {
 export interface ParameterizedAssociationProperties<TScalarType, TVariables> {
     readonly contains?: (row: ScalarRow<TScalarType>, variables?: TVariables) => boolean | undefined;
     readonly dependencies?: (variables?: TVariables) => ReadonlyArray<keyof TScalarType> | undefined;
-    readonly position?: (row: ScalarRow<TScalarType>, rows: ReadonlyArray<ScalarRow<TScalarType>>, ctx: {
-        readonly paginationInfo?: PaginationInfo;
-        readonly variables?: TVariables;
-    }) => PositionType | undefined;
+    readonly position?: (row: ScalarRow<TScalarType>, rows: ReadonlyArray<ScalarRow<TScalarType>>, paginationDirection?: "forward" | "backward") => PositionType | undefined;
+    readonly range?: (range: ConnectionRange, delta: number, direction: "forward" | "backward") => void;
 }
 export interface UnparameterizedAssociationProperties<TScalarType> {
     readonly contains?: (row: ScalarRow<TScalarType>) => boolean | undefined;
     readonly dependencies?: () => ReadonlyArray<keyof TScalarType> | undefined;
-    readonly position?: (row: ScalarRow<TScalarType>, rows: ReadonlyArray<ScalarRow<TScalarType>>, ctx: {
-        readonly paginationInfo?: PaginationInfo;
-    }) => PositionType | undefined;
+    readonly position?: (row: ScalarRow<TScalarType>, rows: ReadonlyArray<ScalarRow<TScalarType>>, paginationDirection?: "forward" | "backward") => PositionType | undefined;
+    readonly range?: (range: ConnectionRange, delta: number, direction: "forward" | "backward") => void;
 }
 export interface ScalarRow<TScalarType extends {
     readonly [key: string]: any;
@@ -34,6 +30,11 @@ export interface ScalarRow<TScalarType extends {
     toString(): string;
 }
 export declare type PositionType = number | "start" | "end";
+export interface ConnectionRange {
+    startCursor: string;
+    endCursor: string;
+    [key: string]: any;
+}
 export interface Network {
     execute<T extends object, TVariabes extends object>(fetcher: ObjectFetcher<'Query' | 'Mutation', T, TVariabes>, variables?: TVariabes): Promise<T>;
 }

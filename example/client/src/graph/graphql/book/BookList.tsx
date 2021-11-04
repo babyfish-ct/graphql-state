@@ -25,7 +25,9 @@ export const BookList: FC = memo(() => {
 
     const { data, loading, refetch, hasNext, loadNext, isLoadingNext } = usePaginationQuery(
         query$.findBooks(
-            bookConnection$.edges(
+            bookConnection$
+            .totalCount
+            .edges(
                 bookEdge$.node(
                     BOOK_ROW
                 )
@@ -145,22 +147,25 @@ export const BookList: FC = memo(() => {
                 </Row>
                 { loading && <div><Spin/>Loading books...</div> }
                 {
-                    !loading && data &&
-                    <Table 
-                    rowKey="id" 
-                    dataSource={data.bookConnection.edges.map(edge => edge.node)} 
-                    pagination={false}
-                    rowClassName={rowClassName}>
-                        <Table.Column title="Id" dataIndex="id"/>
-                        <Table.Column title="Name" dataIndex="name"/>
-                        <Table.Column title="Store" dataIndex={["store", "name"]} render={renderStoreName}/>
-                        <Table.Column title="Authors" render={renderAuthors}/>
-                        <Table.Column title="Operations" render={renderOperations}/>
-                    </Table>
+                    data &&
+                    <>
+                        <Table 
+                        rowKey="id" 
+                        dataSource={data.bookConnection.edges.map(edge => edge.node)} 
+                        pagination={false}
+                        rowClassName={rowClassName}>
+                            <Table.Column title="Id" dataIndex="id"/>
+                            <Table.Column title="Name" dataIndex="name"/>
+                            <Table.Column title="Store" dataIndex={["store", "name"]} render={renderStoreName}/>
+                            <Table.Column title="Authors" render={renderAuthors}/>
+                            <Table.Column title="Operations" render={renderOperations}/>
+                        </Table>
+                        <Space>
+                            <Button onClick={loadNext} disabled={!hasNext} loading={isLoadingNext}>Load more</Button>
+                            {data.bookConnection.totalCount - data.bookConnection.edges.length} row(s) left
+                        </Space>
+                    </>
                 }
-                <Space>
-                    <Button onClick={loadNext} disabled={!hasNext} loading={isLoadingNext}>Load more</Button>
-                </Space>
             </Space>
             {
                 dialog !== undefined &&

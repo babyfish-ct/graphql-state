@@ -179,16 +179,19 @@ class Appender {
     private position: (
         row: ScalarRow<any>,
         rows: ReadonlyArray<ScalarRow<any>>,
-        ctx: {
-            readonly variables?: any
-        }
+        paginationDirection?: "forward" | "backward"
     ) => PositionType | undefined;
 
-    private ctx: { readonly variables: any };
+    private direction?: "forward" | "backward";
 
     constructor(owner: AssociationListValue) {
         this.position = owner.association.field.associationProperties!.position;
-        this.ctx = { variables: owner.args?.filterArgs };
+        const style = owner.args?.paginationInfo?.style;
+        if (style === "forward") {
+            this.direction = "forward";
+        } else if (style === "backward") {
+            this.direction = "backward";
+        }
     }
 
     appendTo(
@@ -200,7 +203,7 @@ class Appender {
             this.position(
                 newElement.toRow(), 
                 newElements.map(e => e.toRow()), 
-                this.ctx
+                this.direction
             );
         if (pos === undefined) {
             throw { " $evict": true };
