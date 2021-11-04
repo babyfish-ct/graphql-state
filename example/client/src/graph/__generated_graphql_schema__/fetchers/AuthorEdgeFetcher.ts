@@ -33,13 +33,23 @@ export interface AuthorEdgeFetcher<T extends object, TVariables extends object> 
 
     node<
         X extends object, 
+        XVariables extends object
+    >(
+        child: ObjectFetcher<'Author', X, XVariables>
+    ): AuthorEdgeFetcher<
+        T & {readonly "node": X}, 
+        TVariables & XVariables
+    >;
+
+    node<
+        X extends object, 
         XVariables extends object, 
         XAlias extends string = "node", 
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
         child: ObjectFetcher<'Author', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"node", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): AuthorEdgeFetcher<
@@ -59,7 +69,7 @@ export interface AuthorEdgeFetcher<T extends object, TVariables extends object> 
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"cursor", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): AuthorEdgeFetcher<

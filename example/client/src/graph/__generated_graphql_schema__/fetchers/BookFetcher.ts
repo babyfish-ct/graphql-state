@@ -39,7 +39,7 @@ export interface BookFetcher<T extends object, TVariables extends object> extend
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"id", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): BookFetcher<
@@ -61,7 +61,7 @@ export interface BookFetcher<T extends object, TVariables extends object> extend
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"name", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): BookFetcher<
@@ -78,12 +78,22 @@ export interface BookFetcher<T extends object, TVariables extends object> extend
 
     store<
         X extends object, 
+        XVariables extends object
+    >(
+        child: ObjectFetcher<'BookStore', X, XVariables>
+    ): BookFetcher<
+        T & {readonly "store"?: X}, 
+        TVariables & XVariables
+    >;
+
+    store<
+        X extends object, 
         XVariables extends object, 
         XAlias extends string = "store", 
         XDirectiveVariables extends object = {}
     >(
         child: ObjectFetcher<'BookStore', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"store", {}, {}>
         ) => FieldOptions<XAlias, {readonly [key: string]: DirectiveArgs}, XDirectiveVariables>
     ): BookFetcher<
@@ -94,13 +104,35 @@ export interface BookFetcher<T extends object, TVariables extends object> extend
 
     authors<
         X extends object, 
+        XVariables extends object
+    >(
+        child: ObjectFetcher<'Author', X, XVariables>
+    ): BookFetcher<
+        T & {readonly "authors": readonly X[]}, 
+        TVariables & XVariables & BookArgs["authors"]
+    >;
+
+    authors<
+        XArgs extends AcceptableVariables<BookArgs['authors']>, 
+        X extends object, 
+        XVariables extends object
+    >(
+        args: XArgs, 
+        child: ObjectFetcher<'Author', X, XVariables>
+    ): BookFetcher<
+        T & {readonly "authors": readonly X[]}, 
+        TVariables & XVariables & UnresolvedVariables<XArgs, BookArgs['authors']>
+    >;
+
+    authors<
+        X extends object, 
         XVariables extends object, 
         XAlias extends string = "authors", 
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
         child: ObjectFetcher<'Author', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"authors", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): BookFetcher<
@@ -122,7 +154,7 @@ export interface BookFetcher<T extends object, TVariables extends object> extend
     >(
         args: XArgs, 
         child: ObjectFetcher<'Author', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"authors", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): BookFetcher<

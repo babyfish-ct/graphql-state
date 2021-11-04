@@ -13,14 +13,27 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
 
     directive(name: string, args?: DirectiveArgs): QueryFetcher<T, TVariables>;
 
+
     findBookStores<
         X extends object, 
         XVariables extends object
     >(
-        child: ObjectFetcher<'BookStore', X, XVariables>,
+        child: ObjectFetcher<'BookStore', X, XVariables>
     ): QueryFetcher<
         T & {readonly "findBookStores": readonly X[]}, 
         TVariables & XVariables & QueryArgs["findBookStores"]
+    >;
+
+    findBookStores<
+        XArgs extends AcceptableVariables<QueryArgs['findBookStores']>, 
+        X extends object, 
+        XVariables extends object
+    >(
+        args: XArgs, 
+        child: ObjectFetcher<'BookStore', X, XVariables>
+    ): QueryFetcher<
+        T & {readonly "findBookStores": readonly X[]}, 
+        TVariables & XVariables & UnresolvedVariables<XArgs, QueryArgs['findBookStores']>
     >;
 
     findBookStores<
@@ -31,7 +44,7 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
         XDirectiveVariables extends object = {}
     >(
         child: ObjectFetcher<'BookStore', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"findBookStores", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): QueryFetcher<
@@ -53,7 +66,7 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
     >(
         args: XArgs, 
         child: ObjectFetcher<'BookStore', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"findBookStores", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): QueryFetcher<
@@ -68,13 +81,35 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
 
     findBooks<
         X extends object, 
+        XVariables extends object
+    >(
+        child: ConnectionFetcher<'BookConnection', X, XVariables>
+    ): QueryFetcher<
+        T & {readonly "findBooks": X}, 
+        TVariables & XVariables & QueryArgs["findBooks"]
+    >;
+
+    findBooks<
+        XArgs extends AcceptableVariables<QueryArgs['findBooks']>, 
+        X extends object, 
+        XVariables extends object
+    >(
+        args: XArgs, 
+        child: ConnectionFetcher<'BookConnection', X, XVariables>
+    ): QueryFetcher<
+        T & {readonly "findBooks": X}, 
+        TVariables & XVariables & UnresolvedVariables<XArgs, QueryArgs['findBooks']>
+    >;
+
+    findBooks<
+        X extends object, 
         XVariables extends object, 
         XAlias extends string = "findBooks", 
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
         child: ConnectionFetcher<'BookConnection', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"findBooks", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): QueryFetcher<
@@ -96,7 +131,7 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
     >(
         args: XArgs, 
         child: ConnectionFetcher<'BookConnection', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"findBooks", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): QueryFetcher<
@@ -111,13 +146,35 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
 
     findAuthors<
         X extends object, 
+        XVariables extends object
+    >(
+        child: ConnectionFetcher<'AuthorConnection', X, XVariables>
+    ): QueryFetcher<
+        T & {readonly "findAuthors": X}, 
+        TVariables & XVariables & QueryArgs["findAuthors"]
+    >;
+
+    findAuthors<
+        XArgs extends AcceptableVariables<QueryArgs['findAuthors']>, 
+        X extends object, 
+        XVariables extends object
+    >(
+        args: XArgs, 
+        child: ConnectionFetcher<'AuthorConnection', X, XVariables>
+    ): QueryFetcher<
+        T & {readonly "findAuthors": X}, 
+        TVariables & XVariables & UnresolvedVariables<XArgs, QueryArgs['findAuthors']>
+    >;
+
+    findAuthors<
+        X extends object, 
         XVariables extends object, 
         XAlias extends string = "findAuthors", 
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
         child: ConnectionFetcher<'AuthorConnection', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"findAuthors", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): QueryFetcher<
@@ -139,7 +196,7 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
     >(
         args: XArgs, 
         child: ConnectionFetcher<'AuthorConnection', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"findAuthors", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): QueryFetcher<
@@ -154,13 +211,35 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
 
     entities<
         X extends object, 
+        XVariables extends object
+    >(
+        child: ObjectFetcher<'Any', X, XVariables>
+    ): QueryFetcher<
+        T & {readonly "entities": readonly X[]}, 
+        TVariables & XVariables & QueryArgs["entities"]
+    >;
+
+    entities<
+        XArgs extends AcceptableVariables<QueryArgs['entities']>, 
+        X extends object, 
+        XVariables extends object
+    >(
+        args: XArgs, 
+        child: ObjectFetcher<'Any', X, XVariables>
+    ): QueryFetcher<
+        T & {readonly "entities": readonly X[]}, 
+        TVariables & XVariables & UnresolvedVariables<XArgs, QueryArgs['entities']>
+    >;
+
+    entities<
+        X extends object, 
         XVariables extends object, 
         XAlias extends string = "entities", 
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
         child: ObjectFetcher<'Any', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"entities", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): QueryFetcher<
@@ -182,7 +261,7 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
     >(
         args: XArgs, 
         child: ObjectFetcher<'Any', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"entities", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): QueryFetcher<

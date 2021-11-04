@@ -1,4 +1,3 @@
-import { ObjectFetcher } from "graphql-ts-client-api";
 import { EntityManager } from "./EntityManager";
 import { GRAPHQL_STATE_AFTER, GRAPHQL_STATE_BEFORE, GRAPHQL_STATE_FIRST, GRAPHQL_STATE_LAST } from "./PaginationFetcherProcessor";
 import { QueryArgs } from "./QueryArgs";

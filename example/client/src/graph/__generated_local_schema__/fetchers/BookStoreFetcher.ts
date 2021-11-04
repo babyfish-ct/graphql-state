@@ -38,7 +38,7 @@ export interface BookStoreFetcher<T extends object, TVariables extends object> e
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"id", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): BookStoreFetcher<
@@ -60,7 +60,7 @@ export interface BookStoreFetcher<T extends object, TVariables extends object> e
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"name", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): BookStoreFetcher<
@@ -77,13 +77,23 @@ export interface BookStoreFetcher<T extends object, TVariables extends object> e
 
     books<
         X extends object, 
+        XVariables extends object
+    >(
+        child: ObjectFetcher<'Book', X, XVariables>
+    ): BookStoreFetcher<
+        T & {readonly "books": readonly X[]}, 
+        TVariables & XVariables
+    >;
+
+    books<
+        X extends object, 
         XVariables extends object, 
         XAlias extends string = "books", 
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
         child: ObjectFetcher<'Book', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"books", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): BookStoreFetcher<

@@ -38,7 +38,7 @@ export interface BookConnectionFetcher<T extends object, TVariables extends obje
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"totalCount", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): BookConnectionFetcher<
@@ -55,13 +55,23 @@ export interface BookConnectionFetcher<T extends object, TVariables extends obje
 
     edges<
         X extends object, 
+        XVariables extends object
+    >(
+        child: EdgeFetcher<'BookEdge', X, XVariables>
+    ): BookConnectionFetcher<
+        T & {readonly "edges": readonly X[]}, 
+        TVariables & XVariables
+    >;
+
+    edges<
+        X extends object, 
         XVariables extends object, 
         XAlias extends string = "edges", 
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
         child: EdgeFetcher<'BookEdge', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"edges", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): BookConnectionFetcher<
@@ -76,13 +86,23 @@ export interface BookConnectionFetcher<T extends object, TVariables extends obje
 
     pageInfo<
         X extends object, 
+        XVariables extends object
+    >(
+        child: ObjectFetcher<'PageInfo', X, XVariables>
+    ): BookConnectionFetcher<
+        T & {readonly "pageInfo": X}, 
+        TVariables & XVariables
+    >;
+
+    pageInfo<
+        X extends object, 
         XVariables extends object, 
         XAlias extends string = "pageInfo", 
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
         child: ObjectFetcher<'PageInfo', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"pageInfo", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): BookConnectionFetcher<

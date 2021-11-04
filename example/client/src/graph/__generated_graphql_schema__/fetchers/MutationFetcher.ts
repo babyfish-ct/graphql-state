@@ -19,13 +19,35 @@ export interface MutationFetcher<T extends object, TVariables extends object> ex
 
     mergeBookStore<
         X extends object, 
+        XVariables extends object
+    >(
+        child: ObjectFetcher<'BookStore', X, XVariables>
+    ): MutationFetcher<
+        T & {readonly "mergeBookStore": X}, 
+        TVariables & XVariables & MutationArgs["mergeBookStore"]
+    >;
+
+    mergeBookStore<
+        XArgs extends AcceptableVariables<MutationArgs['mergeBookStore']>, 
+        X extends object, 
+        XVariables extends object
+    >(
+        args: XArgs, 
+        child: ObjectFetcher<'BookStore', X, XVariables>
+    ): MutationFetcher<
+        T & {readonly "mergeBookStore": X}, 
+        TVariables & XVariables & UnresolvedVariables<XArgs, MutationArgs['mergeBookStore']>
+    >;
+
+    mergeBookStore<
+        X extends object, 
         XVariables extends object, 
         XAlias extends string = "mergeBookStore", 
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
         child: ObjectFetcher<'BookStore', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"mergeBookStore", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): MutationFetcher<
@@ -47,7 +69,7 @@ export interface MutationFetcher<T extends object, TVariables extends object> ex
     >(
         args: XArgs, 
         child: ObjectFetcher<'BookStore', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"mergeBookStore", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): MutationFetcher<
@@ -60,11 +82,26 @@ export interface MutationFetcher<T extends object, TVariables extends object> ex
     >;
 
 
+    deleteBookStore(
+    ): MutationFetcher<
+        T & {readonly "deleteBookStore"?: string}, 
+        TVariables & MutationArgs["deleteBookStore"]
+    >;
+
+    deleteBookStore<
+        XArgs extends AcceptableVariables<MutationArgs['deleteBookStore']>
+    >(
+        args: XArgs
+    ): MutationFetcher<
+        T & {readonly "deleteBookStore"?: string}, 
+        TVariables & UnresolvedVariables<XArgs, MutationArgs['deleteBookStore']>
+    >;
+
     deleteBookStore<
         XAlias extends string = "deleteBookStore", 
         XDirectiveVariables extends object = {}
     >(
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"deleteBookStore", {}, {}>
         ) => FieldOptions<XAlias, {readonly [key: string]: DirectiveArgs}, XDirectiveVariables>
     ): MutationFetcher<
@@ -78,7 +115,7 @@ export interface MutationFetcher<T extends object, TVariables extends object> ex
         XDirectiveVariables extends object = {}
     >(
         args: XArgs, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"deleteBookStore", {}, {}>
         ) => FieldOptions<XAlias, {readonly [key: string]: DirectiveArgs}, XDirectiveVariables>
     ): MutationFetcher<
@@ -89,13 +126,35 @@ export interface MutationFetcher<T extends object, TVariables extends object> ex
 
     mergeBook<
         X extends object, 
+        XVariables extends object
+    >(
+        child: ObjectFetcher<'Book', X, XVariables>
+    ): MutationFetcher<
+        T & {readonly "mergeBook": X}, 
+        TVariables & XVariables & MutationArgs["mergeBook"]
+    >;
+
+    mergeBook<
+        XArgs extends AcceptableVariables<MutationArgs['mergeBook']>, 
+        X extends object, 
+        XVariables extends object
+    >(
+        args: XArgs, 
+        child: ObjectFetcher<'Book', X, XVariables>
+    ): MutationFetcher<
+        T & {readonly "mergeBook": X}, 
+        TVariables & XVariables & UnresolvedVariables<XArgs, MutationArgs['mergeBook']>
+    >;
+
+    mergeBook<
+        X extends object, 
         XVariables extends object, 
         XAlias extends string = "mergeBook", 
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
         child: ObjectFetcher<'Book', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"mergeBook", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): MutationFetcher<
@@ -117,7 +176,7 @@ export interface MutationFetcher<T extends object, TVariables extends object> ex
     >(
         args: XArgs, 
         child: ObjectFetcher<'Book', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"mergeBook", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): MutationFetcher<
@@ -130,11 +189,26 @@ export interface MutationFetcher<T extends object, TVariables extends object> ex
     >;
 
 
+    deleteBook(
+    ): MutationFetcher<
+        T & {readonly "deleteBook"?: string}, 
+        TVariables & MutationArgs["deleteBook"]
+    >;
+
+    deleteBook<
+        XArgs extends AcceptableVariables<MutationArgs['deleteBook']>
+    >(
+        args: XArgs
+    ): MutationFetcher<
+        T & {readonly "deleteBook"?: string}, 
+        TVariables & UnresolvedVariables<XArgs, MutationArgs['deleteBook']>
+    >;
+
     deleteBook<
         XAlias extends string = "deleteBook", 
         XDirectiveVariables extends object = {}
     >(
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"deleteBook", {}, {}>
         ) => FieldOptions<XAlias, {readonly [key: string]: DirectiveArgs}, XDirectiveVariables>
     ): MutationFetcher<
@@ -148,7 +222,7 @@ export interface MutationFetcher<T extends object, TVariables extends object> ex
         XDirectiveVariables extends object = {}
     >(
         args: XArgs, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"deleteBook", {}, {}>
         ) => FieldOptions<XAlias, {readonly [key: string]: DirectiveArgs}, XDirectiveVariables>
     ): MutationFetcher<
@@ -159,13 +233,35 @@ export interface MutationFetcher<T extends object, TVariables extends object> ex
 
     mergeAuthor<
         X extends object, 
+        XVariables extends object
+    >(
+        child: ObjectFetcher<'Author', X, XVariables>
+    ): MutationFetcher<
+        T & {readonly "mergeAuthor": X}, 
+        TVariables & XVariables & MutationArgs["mergeAuthor"]
+    >;
+
+    mergeAuthor<
+        XArgs extends AcceptableVariables<MutationArgs['mergeAuthor']>, 
+        X extends object, 
+        XVariables extends object
+    >(
+        args: XArgs, 
+        child: ObjectFetcher<'Author', X, XVariables>
+    ): MutationFetcher<
+        T & {readonly "mergeAuthor": X}, 
+        TVariables & XVariables & UnresolvedVariables<XArgs, MutationArgs['mergeAuthor']>
+    >;
+
+    mergeAuthor<
+        X extends object, 
         XVariables extends object, 
         XAlias extends string = "mergeAuthor", 
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
         child: ObjectFetcher<'Author', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"mergeAuthor", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): MutationFetcher<
@@ -187,7 +283,7 @@ export interface MutationFetcher<T extends object, TVariables extends object> ex
     >(
         args: XArgs, 
         child: ObjectFetcher<'Author', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"mergeAuthor", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): MutationFetcher<
@@ -200,11 +296,26 @@ export interface MutationFetcher<T extends object, TVariables extends object> ex
     >;
 
 
+    deleteAuthor(
+    ): MutationFetcher<
+        T & {readonly "deleteAuthor"?: string}, 
+        TVariables & MutationArgs["deleteAuthor"]
+    >;
+
+    deleteAuthor<
+        XArgs extends AcceptableVariables<MutationArgs['deleteAuthor']>
+    >(
+        args: XArgs
+    ): MutationFetcher<
+        T & {readonly "deleteAuthor"?: string}, 
+        TVariables & UnresolvedVariables<XArgs, MutationArgs['deleteAuthor']>
+    >;
+
     deleteAuthor<
         XAlias extends string = "deleteAuthor", 
         XDirectiveVariables extends object = {}
     >(
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"deleteAuthor", {}, {}>
         ) => FieldOptions<XAlias, {readonly [key: string]: DirectiveArgs}, XDirectiveVariables>
     ): MutationFetcher<
@@ -218,7 +329,7 @@ export interface MutationFetcher<T extends object, TVariables extends object> ex
         XDirectiveVariables extends object = {}
     >(
         args: XArgs, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"deleteAuthor", {}, {}>
         ) => FieldOptions<XAlias, {readonly [key: string]: DirectiveArgs}, XDirectiveVariables>
     ): MutationFetcher<
