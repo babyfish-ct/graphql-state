@@ -69,7 +69,10 @@ function useQuery(fetcher, options) {
             throw queryResult.loadable.error;
         }
         if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "refetchable-suspense") {
-            return [queryResult.loadable.data, queryResult.loadable.refetch];
+            return {
+                data: queryResult.loadable.data,
+                refetch: queryResult.loadable.refetch
+            };
         }
         return queryResult.loadable.data;
     }
@@ -128,7 +131,10 @@ class ManagedObjectHooksImpl {
                 throw queryResult.loadable.error;
             }
             if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "refetchable-suspense") {
-                return [queryResult.loadable.data[0], queryResult.loadable.refetch];
+                return {
+                    data: queryResult.loadable.data[0],
+                    refetch: queryResult.loadable.refetch
+                };
             }
             return queryResult.loadable.data[0];
         }
@@ -151,7 +157,10 @@ class ManagedObjectHooksImpl {
                 throw queryResult.loadable.error;
             }
             if ((options === null || options === void 0 ? void 0 : options.asyncStyle) === "refetchable-suspense") {
-                return [queryResult.loadable.data, queryResult.loadable.refetch];
+                return {
+                    data: queryResult.loadable.data,
+                    refetch: queryResult.loadable.refetch
+                };
             }
             return queryResult.loadable.data;
         }

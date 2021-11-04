@@ -18,16 +18,16 @@ export interface StateAccessor<T> {
 export interface AsyncOptions<TAsyncStyle extends AsyncStyle = "suspense"> {
     readonly asyncStyle?: TAsyncStyle;
 }
-export interface UseStateAsyncValueHookResult<T> {
-    readonly data: T;
+export declare type UseStateAsyncValueHookResult<T> = {
+    readonly data?: T;
     readonly loading: boolean;
     readonly error?: Error;
     readonly refetch: () => void;
-}
-export declare type AsyncReturnType<T, TAsyncStyle extends AsyncStyle> = TAsyncStyle extends "async-object" ? UseStateAsyncValueHookResult<T> : TAsyncStyle extends "refetchable-suspense" ? [
-    T,
-    () => void
-] : T;
+};
+export declare type AsyncReturnType<T, TAsyncStyle extends AsyncStyle> = TAsyncStyle extends "async-object" ? UseStateAsyncValueHookResult<T> : TAsyncStyle extends "refetchable-suspense" ? {
+    readonly data: T;
+    readonly refetch: () => void;
+} : T;
 export declare type AsyncPaginationReturnType<T, TAsyncStyle extends AsyncStyle> = (TAsyncStyle extends "async-object" ? {
     readonly loading: boolean;
     readonly error: any;
@@ -42,15 +42,16 @@ export declare type AsyncPaginationReturnType<T, TAsyncStyle extends AsyncStyle>
     readonly isLoadingPrevious: boolean;
 };
 export declare type AsyncStyle = "suspense" | "refetchable-suspense" | "async-object";
-export declare function useQuery<T extends object, TVaraibles extends object, TAsyncStyle extends AsyncStyle = "suspense">(fetcher: ObjectFetcher<"Query", T, TVaraibles>, options?: QueryOptions<TVaraibles, TAsyncStyle>): AsyncReturnType<T, TAsyncStyle>;
-export declare function usePaginationQuery<T extends object, TVaraibles extends object, TAsyncStyle extends AsyncStyle = "suspense">(fetcher: ObjectFetcher<"Query", T, TVaraibles>, options?: PaginationQueryOptions<TVaraibles, TAsyncStyle>): AsyncPaginationReturnType<T, TAsyncStyle>;
-export declare function useMutation<T extends object, TVaraibles extends object>(fetcher: ObjectFetcher<"Mutation", T, TVaraibles>, options?: MutationOptions<T, TVaraibles>): [(variables?: TVaraibles) => Promise<T>, Loadable<T>];
+export declare function useQuery<T extends object, TVariables extends object, TAsyncStyle extends AsyncStyle = "suspense">(fetcher: ObjectFetcher<"Query", T, TVariables>, options?: QueryOptions<TVariables, TAsyncStyle>): AsyncReturnType<T, TAsyncStyle>;
+export declare function usePaginationQuery<T extends object, TVariables extends object, TAsyncStyle extends AsyncStyle = "suspense">(fetcher: ObjectFetcher<"Query", T, TVariables>, options?: PaginationQueryOptions<TVariables, TAsyncStyle>): AsyncPaginationReturnType<T, TAsyncStyle>;
+export declare function useMutation<T extends object, TVariables extends object>(fetcher: ObjectFetcher<"Mutation", T, TVariables>, options?: MutationOptions<T, TVariables>): [(variables?: TVariables) => Promise<T>, Loadable<T>];
 export declare function makeManagedObjectHooks<TSchema extends SchemaType>(): ManagedObjectHooks<TSchema>;
 export interface ManagedObjectHooks<TSchema extends SchemaType> {
     useObject<TName extends keyof TSchema["entities"] & string, T extends object, TVariables extends object, TAsyncStyle extends AsyncStyle = "suspense", TObjectStyle extends ObjectStyle = "required">(fetcher: Fetcher<string, T, TVariables>, id: TSchema["entities"][TName][" $id"], options?: ObjectQueryOptions<TVariables, TAsyncStyle, TObjectStyle>): AsyncReturnType<ObjectReference<T, TObjectStyle>, TAsyncStyle>;
     useObjects<TName extends keyof TSchema["entities"] & string, T extends object, TVariables extends object, TAsyncStyle extends AsyncStyle = "suspense", TObjectStyle extends ObjectStyle = "required">(fetcher: Fetcher<string, T, TVariables>, ids: ReadonlyArray<TSchema["entities"][TName][" $id"]>, options?: ObjectQueryOptions<TVariables, TAsyncStyle, TObjectStyle>): AsyncReturnType<ReadonlyArray<ObjectReference<T, TObjectStyle>>, TAsyncStyle>;
 }
-export interface QueryOptions<TVariables extends object, TAsyncStyle extends AsyncStyle> extends AsyncOptions<TAsyncStyle> {
+export interface QueryOptions<TVariables extends object, TAsyncStyle extends AsyncStyle> {
+    readonly asyncStyle?: TAsyncStyle;
     readonly variables?: TVariables;
     readonly mode?: QueryMode;
 }

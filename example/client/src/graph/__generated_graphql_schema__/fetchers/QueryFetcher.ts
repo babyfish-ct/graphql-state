@@ -13,6 +13,15 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
 
     directive(name: string, args?: DirectiveArgs): QueryFetcher<T, TVariables>;
 
+    findBookStores<
+        X extends object, 
+        XVariables extends object
+    >(
+        child: ObjectFetcher<'BookStore', X, XVariables>,
+    ): QueryFetcher<
+        T & {readonly "findBookStores": readonly X[]}, 
+        TVariables & XVariables & QueryArgs["findBookStores"]
+    >;
 
     findBookStores<
         X extends object, 

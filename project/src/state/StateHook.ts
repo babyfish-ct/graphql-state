@@ -118,18 +118,18 @@ export interface AsyncOptions<TAsyncStyle extends AsyncStyle = "suspense"> {
     readonly asyncStyle?: TAsyncStyle;
 }
 
-export interface UseStateAsyncValueHookResult<T> {
-    readonly data: T;
+export type UseStateAsyncValueHookResult<T> = {
+    readonly data?: T;
     readonly loading: boolean;
     readonly error?: Error;
     readonly refetch: () => void;
-}
+};
 
 export type AsyncReturnType<T, TAsyncStyle extends AsyncStyle> =
     TAsyncStyle extends "async-object" ?
     UseStateAsyncValueHookResult<T> :
     TAsyncStyle extends "refetchable-suspense" ?
-    [T, () => void] :
+    { readonly data: T, readonly refetch: () => void} :
     T
 ;
 
@@ -157,11 +157,11 @@ export type AsyncStyle = "suspense" | "refetchable-suspense" | "async-object";
 
 export function useQuery<
     T extends object,
-    TVaraibles extends object,
+    TVariables extends object,
     TAsyncStyle extends AsyncStyle = "suspense"
 >(
-    fetcher: ObjectFetcher<"Query", T, TVaraibles>,
-    options?: QueryOptions<TVaraibles, TAsyncStyle>
+    fetcher: ObjectFetcher<"Query", T, TVariables>,
+    options?: QueryOptions<TVariables, TAsyncStyle>
 ): AsyncReturnType<T, TAsyncStyle> {
     const queryResultHolder = useInternalQueryResultHolder(fetcher, undefined, undefined, options);
     try {
@@ -176,9 +176,12 @@ export function useQuery<
             throw queryResult.loadable.error;
         }
         if (options?.asyncStyle === "refetchable-suspense") {
-            return [queryResult.loadable.data, queryResult.loadable.refetch] as AsyncReturnType<T, TAsyncStyle>;
+            return { 
+                data: queryResult.loadable.data, 
+                refetch: queryResult.loadable.refetch 
+            } as AsyncReturnType<T, TAsyncStyle>;
         }
-        return queryResult.loadable.data as AsyncReturnType<T, TAsyncStyle>;
+        return queryResult.loadable.data;
     } catch (ex) {
         queryResultHolder.release();
         throw ex;
@@ -187,11 +190,11 @@ export function useQuery<
 
 export function usePaginationQuery<
     T extends object,
-    TVaraibles extends object,
+    TVariables extends object,
     TAsyncStyle extends AsyncStyle = "suspense"
 >(
-    fetcher: ObjectFetcher<"Query", T, TVaraibles>,
-    options?: PaginationQueryOptions<TVaraibles, TAsyncStyle>,    
+    fetcher: ObjectFetcher<"Query", T, TVariables>,
+    options?: PaginationQueryOptions<TVariables, TAsyncStyle>,    
 ): AsyncPaginationReturnType<T, TAsyncStyle> {
     const queryResultHolder = useInternalQueryResultHolder(
         fetcher, options?.windowId, undefined, options
@@ -216,11 +219,11 @@ export function usePaginationQuery<
 
 export function useMutation<
     T extends object,
-    TVaraibles extends object
+    TVariables extends object
 >(
-    fetcher: ObjectFetcher<"Mutation", T, TVaraibles>,
-    options?: MutationOptions<T, TVaraibles>
-): [(variables?: TVaraibles)=> Promise<T>, Loadable<T>] {
+    fetcher: ObjectFetcher<"Mutation", T, TVariables>,
+    options?: MutationOptions<T, TVariables>
+): [(variables?: TVariables)=> Promise<T>, Loadable<T>] {
     const stateManager = useStateManager() as StateManagerImpl<any>;
     const [, setMutationResultVersion] = useState(0);
     const [holder] = useState(() => new MutationResultHolder(stateManager, setMutationResultVersion));
@@ -266,7 +269,8 @@ export interface ManagedObjectHooks<TSchema extends SchemaType> {
     >;
 }
 
-export interface QueryOptions<TVariables extends object, TAsyncStyle extends AsyncStyle> extends AsyncOptions<TAsyncStyle> {
+export interface QueryOptions<TVariables extends object, TAsyncStyle extends AsyncStyle> {
+    readonly asyncStyle?: TAsyncStyle
     readonly variables?: TVariables;
     readonly mode?: QueryMode;
 }
@@ -337,7 +341,10 @@ class ManagedObjectHooksImpl<TSchema extends SchemaType> implements ManagedObjec
                 throw queryResult.loadable.error;
             }
             if (options?.asyncStyle === "refetchable-suspense") {
-                return [queryResult.loadable.data[0], queryResult.loadable.refetch] as AsyncReturnType<
+                return {
+                    data: queryResult.loadable.data[0], 
+                    refetch: queryResult.loadable.refetch
+                } as AsyncReturnType<
                     ObjectReference<T, TObjectStyle>,
                     TAsyncStyle
                 >;
@@ -382,7 +389,10 @@ class ManagedObjectHooksImpl<TSchema extends SchemaType> implements ManagedObjec
                 throw queryResult.loadable.error;
             }
             if (options?.asyncStyle === "refetchable-suspense") {
-                return [queryResult.loadable.data, queryResult.loadable.refetch] as AsyncReturnType<
+                return { 
+                    data: queryResult.loadable.data, 
+                    refetch: queryResult.loadable.refetch
+                } as AsyncReturnType<
                 ReadonlyArray<ObjectReference<T, TObjectStyle>>,
                     TAsyncStyle
                 >;

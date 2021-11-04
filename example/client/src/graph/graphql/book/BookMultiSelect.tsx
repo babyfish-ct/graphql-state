@@ -1,15 +1,22 @@
 import { FC, memo } from "react";
 import { Select, Spin } from "antd";
-import { useStateValue } from "graphql-state";
-import { bookOptionListState } from "../State";
+import { useQuery } from "graphql-state";
+import { query$, bookConnection$, bookEdge$, book$ } from "../../__generated_graphql_schema__/fetchers";
 
 export const BookMultiSelect: FC<{
     value?: string[],
     onChange?: (value: string[]) => void
 }> = memo(({value, onChange}) => {
 
-    const { data: books, loading, error } = useStateValue(
-        bookOptionListState,
+    const { data, loading, error } = useQuery(
+        query$.findBooks(
+            bookConnection$.edges(
+                bookEdge$.node(
+                    book$.id.name,
+                )
+            ),
+            options => options.alias("conn")
+        ),
         { asyncStyle: "async-object" }
     );
 
@@ -18,11 +25,11 @@ export const BookMultiSelect: FC<{
             { error && <div>Failed to load options</div> }
             { loading && <><Spin/>Loading options...</> }
             {
-                books && <Select mode="multiple" value={value ?? []} onChange={onChange}>
+                data && <Select mode="multiple" value={value ?? []} onChange={onChange}>
                     {
-                        books.map(book =>
-                            <Select.Option key={book.id} value={book.id}>
-                                {book.name}
+                        data.conn.edges.map(edge =>
+                            <Select.Option key={edge.node.id} value={edge.node.id}>
+                                {edge.node.name}
                             </Select.Option>
                         )
                     }
