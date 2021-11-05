@@ -2,6 +2,14 @@
 
 ## Introduce
 
+![image](./architecture.png "architecture")
+1. Simple state
+
+2. Graph state
+
+3. Http optimization
+
+
 ### 1. GraphQL style but not only GraphQL
    
 1. If the server is not implemented based on GraphQL, the client will simulate a GraphQL implementation based on REST requests(Not implemented in 0.0.1).
@@ -21,11 +29,11 @@ graph-state is the core value of this framework.
 
 #### 3.1. Intelligent object association maintenance
 
+![image](./mutation.png "mutation flow")
+
 In the past, when using the GraphQL client with cache, the greatest pain developers faced was the need to decide whether to update the local cache or re-query after the mutation operation. If you choose to modify the local cache, you will face a heavy workload; if you choose to re-query, not only will you accept performance defects, but it will also be difficult to determine which queries need to be refetched.
 
 The built-in cache database of this framework is highly intelligent. You only need to simply update it with the information returned by the server, it will first try to find out all other related objects that may be affected, then update the local data and modify the relationship between the old and new data; if this attempt is not feasible, it will automatically upgrade to re-query behavior and automatically determine which queries need to be refetched.
-
-![image](./mutation.png "mutation flow")
 
 Regardless of whether the framework chooses a better strategy for modifying local data **(A)** or a poor requery strategy **(B)**. They are all automated and do not require your intervention.
 
