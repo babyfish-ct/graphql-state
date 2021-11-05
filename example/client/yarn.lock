@@ -5730,21 +5730,24 @@ graceful-fs@^4.1.11, graceful-fs@^4.1.15, graceful-fs@^4.1.2, graceful-fs@^4.1.6
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.8.tgz#e412b8d33f5e006593cbd3cee6df9f2cebbe802a"
   integrity sha512-qkIilPUYcNhJpd33n0GBXTB1MMPp14TxEsEs0pTrsSVucApsYzW5V+Q8Qxhik6KU3evy+qkAAowTByymK0avdg==
 
-"graphql-state@link:../../project":
-  version "0.0.0"
-  uid ""
+graphql-state@^0.0.2:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/graphql-state/-/graphql-state-0.0.2.tgz#61a95c754687d8e6d69f21f4fa1d72237e74bc01"
+  integrity sha512-YsnDHZ5Vi4AiQeG1/blMZcj6pdx1rNb9r4ceXljuB3E/oCwO+ZwQ1n2C3HAVPLBR+YK4CSonTIY2m/2uwttJAA==
+  dependencies:
+    graphql-ts-client-api "^3.0.8"
 
-graphql-ts-client-api@^3.0.7:
-  version "3.0.7"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.0.7.tgz#c8ec79ad92b30c8a3ea925fa0c086c537630c5bb"
-  integrity sha512-e6gPfyBht++leVEFEoZjbEhri4zUcdXdejZKsUajdZ/y5eOY1eTnj2fp1KL/AE5OyurYhC3jAouIbboeqCCAFA==
+graphql-ts-client-api@^3.0.8:
+  version "3.0.8"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.0.8.tgz#5cfe7245ea21abf1525aa7a169c8363752921a99"
+  integrity sha512-qmNceZjNsMAQrYfEce3RDqQMZEmwiq7j0SkjIvD6MM+5DnSBnm0v92hFDJGVyLpNYjCATPfRog2p6eSD/WN0Ag==
   dependencies:
     ts-md5 "^1.2.9"
 
-graphql-ts-client-codegen@^3.0.7:
-  version "3.0.7"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.0.7.tgz#8c471d8ec12aa00e819582afe522180deee9f6d9"
-  integrity sha512-LbpWxsgbZZOaPggoX40AaIzZmKS5bboR/l0b+y+u5KEKebaSijvVIl9ab4MEHd/JCHoRzlwj1dy2YDE6eK6yoA==
+graphql-ts-client-codegen@^3.0.8:
+  version "3.0.8"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.0.8.tgz#1be100b1b45d9e7e3f3561a851e798b046876a08"
+  integrity sha512-suZWutWTqV2cEbd7UFySEC++MtsDd2inkQ2EPNdxs4DJZxpg0lSfA1k/9F+ACOlsux/XtAm87jczXfVgdVFwOQ==
   dependencies:
     "@types/node" "^15.12.2"
     "@types/node-fetch" "^2.5.10"
@@ -7900,9 +7903,9 @@ no-case@^3.0.4:
     tslib "^2.0.3"
 
 node-fetch@^2.6.1:
-  version "2.6.5"
-  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.5.tgz#42735537d7f080a7e5f78b6c549b7146be1742fd"
-  integrity sha512-mmlIVHJEu5rnIxgEgez6b9GgWXbkZj5YZ7fx+2r94a2E+Uirsp6HsPTPlomfdHtpt/B0cdKviwkoaM6pyvUOpQ==
+  version "2.6.6"
+  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.6.tgz#1751a7c01834e8e1697758732e9efb6eeadfaf89"
+  integrity sha512-Z8/6vRlTUChSdIgMa51jxQ4lrw/Jy5SOW10ObaA47/RElsAN2c5Pn8bTgFGWn/ibwzXTE8qwr1Yzx28vsecXEA==
   dependencies:
     whatwg-url "^5.0.0"
 

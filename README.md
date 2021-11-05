@@ -77,7 +77,7 @@ Access http://localhost:3000
 
 ## Dependencies
 1. React, version >= 17.0.0
-2. [graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client), version >= 3.0.7
+2. [graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client), version >= 3.0.8
 
 [graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client) is another framework created by me a few months ago, it's TypeScript-DSL for GraphQL with full features.
 
@@ -87,10 +87,9 @@ This is the first version 0.0.0, and there is still some work to be done in the 
 
 ### Short-term goal
 1. Doucment **(Emergency)**
-2. Pagination support(connection is supported but pagination is not supported now)
-3. Cascade deleting for non-null many-to-assocaition
-4. Preload async state
-5. Support RestNework for REST server
+2. Cascade deleting for non-null many-to-assocaition
+3. Preload async state
+4. Support RestNework for REST server
 
 ### Long-term goal
 1. Transaction, save point, undo/redo 
@@ -98,4 +97,7 @@ This is the first version 0.0.0, and there is still some work to be done in the 
 
 
 ## Change Log
-0.0.1     GC for built-in cache database
+|Version|Description|
+|-------|-----------|
+|0.0.1     GC for built-in cache database|
+|0.0.2     Support usePaginationQuery| 
