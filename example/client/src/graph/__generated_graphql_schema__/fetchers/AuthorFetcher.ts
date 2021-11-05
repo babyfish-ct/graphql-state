@@ -174,11 +174,8 @@ export interface AuthorArgs {
     }
 }
 
-export interface AuthorScalarType {
+export interface AuthorFlatType {
     readonly name: string;
-}
-
-export interface AuthorFlatType extends AuthorScalarType {
     readonly books: readonly {
         readonly id: string
     }[];

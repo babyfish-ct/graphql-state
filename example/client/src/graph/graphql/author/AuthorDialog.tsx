@@ -7,8 +7,8 @@ import { author$$, book$, mutation$ } from "../../__generated_graphql_schema__/f
 import { AuthorInput } from "../../__generated_graphql_schema__/inputs";
 import { BookMultiSelect } from "../book/BookMultiSelect";
 import { INFORMATION_CLASS, PSEUDO_CODE_CLASS } from "../Css";
-import { useMutation, useStateManager } from "graphql-state";
-import { Schema } from "../../__generated_graphql_schema__";
+import { useMutation } from "graphql-state";
+import { useTypedStateManager } from "../../__generated_graphql_schema__";
 
 const AUTHOR_EDIT_INFO =
     author$$
@@ -30,7 +30,7 @@ export const AuthorDialog: FC<{
         })
     }, [form, value]);
 
-    const stateManager = useStateManager<Schema>();
+    const stateManager = useTypedStateManager();
     
     const [mutate, {loading}] = useMutation(
         mutation$.mergeAuthor(AUTHOR_EDIT_INFO),

@@ -1,4 +1,4 @@
-import { ScalarRow } from "../meta/Configuration";
+import { FlatRow } from "../meta/Configuration";
 import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { VariableArgs } from "../state/impl/Args";
@@ -22,8 +22,8 @@ export declare class Record {
     get isDeleted(): boolean;
     hasScalar(fieldName: string, args?: VariableArgs): boolean;
     getSalar(fieldName: string, args?: VariableArgs): any;
-    hasAssociation(field: FieldMetadata, args?: VariableArgs): boolean;
-    getAssociation(field: FieldMetadata, args?: VariableArgs): Record | ReadonlyArray<Record | undefined> | RecordConnection | undefined;
+    hasAssociation(field: FieldMetadata | string, args?: VariableArgs): boolean;
+    getAssociation(field: FieldMetadata | string, args?: VariableArgs): Record | ReadonlyArray<Record | undefined> | RecordConnection | undefined;
     set(entityManager: EntityManager, field: FieldMetadata, args: VariableArgs | undefined, value: any, pagination?: Pagination): void;
     link(entityManager: EntityManager, associationField: FieldMetadata, record: Record): void;
     unlink(entityManager: EntityManager, associationField: FieldMetadata, record: Record): void;
@@ -31,18 +31,20 @@ export declare class Record {
     evict(entityManager: EntityManager, field: FieldMetadata, args: VariableArgs | undefined, includeMoreStrictArgs?: boolean): void;
     delete(entityManager: EntityManager): void;
     undelete(): boolean;
-    toRow(): ScalarRow<any>;
+    toRow(): FlatRow<any>;
     createMap(): Map<string, any>;
     dispose(entityManager: EntityManager): void;
     private disposeAssocaitions;
     gcVisit(field: FieldMetadata, args: VariableArgs | undefined): void;
     collectGarbages(output: Garbage[]): void;
+    toString(): string;
+    private writeTo;
 }
 export declare const QUERY_OBJECT_ID = "____QUERY_OBJECT____";
 export declare function objectWithOnlyId(record: Record | undefined): any;
-export declare class ScalarRowImpl implements ScalarRow<any> {
-    private map;
-    constructor(map: Map<string, any>);
+export declare class FlatRowImpl implements FlatRow<any> {
+    private record;
+    constructor(record: Record);
     has(fieldName: string): boolean;
     get(fieldName: string): any;
     toString(): string;

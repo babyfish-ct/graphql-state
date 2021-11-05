@@ -16,13 +16,35 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
 
     findDepartments<
         X extends object, 
+        XVariables extends object
+    >(
+        child: ObjectFetcher<'Department', X, XVariables>
+    ): QueryFetcher<
+        T & {readonly "findDepartments": readonly X[]}, 
+        TVariables & XVariables & QueryArgs["findDepartments"]
+    >;
+
+    findDepartments<
+        XArgs extends AcceptableVariables<QueryArgs['findDepartments']>, 
+        X extends object, 
+        XVariables extends object
+    >(
+        args: XArgs, 
+        child: ObjectFetcher<'Department', X, XVariables>
+    ): QueryFetcher<
+        T & {readonly "findDepartments": readonly X[]}, 
+        TVariables & XVariables & UnresolvedVariables<XArgs, QueryArgs['findDepartments']>
+    >;
+
+    findDepartments<
+        X extends object, 
         XVariables extends object, 
         XAlias extends string = "findDepartments", 
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
         child: ObjectFetcher<'Department', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"findDepartments", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): QueryFetcher<
@@ -44,7 +66,7 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
     >(
         args: XArgs, 
         child: ObjectFetcher<'Department', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"findDepartments", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): QueryFetcher<
@@ -81,4 +103,10 @@ export interface QueryArgs {
     readonly findDepartments: {
         readonly name?: string
     }
+}
+
+export interface QueryFlatType {
+    readonly findDepartments: readonly {
+        readonly id: string
+    }[];
 }

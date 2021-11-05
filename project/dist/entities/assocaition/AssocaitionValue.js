@@ -76,18 +76,7 @@ class AssociationValue {
             if (declaredTypeName === "Query" && this.association.field.isContainingConfigured) {
                 const ref = entityManager.findRefById(targetType.name, e.id);
                 if ((ref === null || ref === void 0 ? void 0 : ref.value) !== undefined) {
-                    const fieldNames = Array.isArray(this.dependencies) ?
-                        this.dependencies :
-                        Array.from(targetType.fieldMap.values())
-                            .filter(field => field.category === "SCALAR")
-                            .map(field => field.name);
-                    const map = new Map();
-                    for (const fieldName of fieldNames) {
-                        if (e.has(fieldName)) {
-                            map.set(fieldName, e.newValue(fieldName));
-                        }
-                    }
-                    const result = (_a = this.association.field.associationProperties) === null || _a === void 0 ? void 0 : _a.contains(new Record_1.ScalarRowImpl(map), (_b = this.args) === null || _b === void 0 ? void 0 : _b.filterVariables);
+                    const result = (_a = this.association.field.associationProperties) === null || _a === void 0 ? void 0 : _a.contains(new Record_1.FlatRowImpl(this.association.record), (_b = this.args) === null || _b === void 0 ? void 0 : _b.filterVariables);
                     if (result === true) {
                         // Cannot invoke "this.link" directly
                         this.association.link(entityManager, ref.value, this.args);

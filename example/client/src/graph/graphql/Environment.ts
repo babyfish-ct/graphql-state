@@ -1,4 +1,4 @@
-import { ScalarRow, ParameterizedAssociationProperties, StateManager } from "graphql-state";
+import { FlatRow, ParameterizedAssociationProperties, StateManager } from "graphql-state";
 import { PositionType, ConnectionRange } from "graphql-state";
 import { Schema } from "../__generated_graphql_schema__";
 import { newTypedConfiguration } from "../__generated_graphql_schema__";
@@ -6,15 +6,15 @@ import { publishEntityLog } from "./log/EntityLog";
 import { createGraphQLNetwork } from "../common/Networks";
 
 function createNameFilterAssociationProperties<
-    TScalarType extends { readonly name: string }, 
+    TFlatType extends { readonly name: string }, 
     TVariables extends { readonly name?: string }
->(): ParameterizedAssociationProperties<TScalarType, TVariables> {
+>(): ParameterizedAssociationProperties<TFlatType, TVariables> {
     
     return {
 
         // Is the object allowed to be inserted into association?
         contains: (
-            row: ScalarRow<TScalarType>, 
+            row: FlatRow<TFlatType>, 
             variables?: TVariables
         ): boolean | undefined => {
             if (variables?.name === undefined) {
@@ -31,8 +31,8 @@ function createNameFilterAssociationProperties<
         },
 
         position(
-            row: ScalarRow<TScalarType>, 
-            rows: ReadonlyArray<ScalarRow<TScalarType>>
+            row: FlatRow<TFlatType>, 
+            rows: ReadonlyArray<FlatRow<TFlatType>>
         ): PositionType | undefined {
             if (row.has("name")) {
                 const rowName = row.get("name");
@@ -45,14 +45,14 @@ function createNameFilterAssociationProperties<
             return "end";
         },
 
-        // Does this association depend on some scalar fields of target object?
+        // Does this association depend on some fields of target object?
         // If some dependencies fields of some objects are changed, the current association be evict
         // from cache and affected UI will reload the data from server.
         // 1. If an object is already in this association but it does not match the filter after change,
         //    the association will not contain it after automatic refetch
         // 2. If an object is not in the association but it match the filter after change,
         //    this association will not contain it after automatic refetch
-        dependencies: (variables?: TVariables): ReadonlyArray<keyof TScalarType> | undefined => {
+        dependencies: (variables?: TVariables): ReadonlyArray<keyof TFlatType> | undefined => {
             // No filter, depends on nothing
             // If the name of filter is specified, depends on "name"
             return variables?.name === undefined ? [] : ["name"];

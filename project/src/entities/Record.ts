@@ -1,4 +1,5 @@
-import { ScalarRow } from "../meta/Configuration";
+import { TextWriter } from "graphql-ts-client-api";
+import { FlatRow } from "../meta/Configuration";
 import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { VariableArgs } from "../state/impl/Args";
@@ -17,7 +18,7 @@ export class Record {
 
     readonly backReferences = new BackReferences();
 
-    private row?: ScalarRow<any>;
+    private row?: FlatRow<any>;
 
     private gcVisited = false;
 
@@ -62,19 +63,30 @@ export class Record {
     }
 
     hasScalar(fieldName: string, args?: VariableArgs): boolean {
-        return this.scalarMap.has(VariableArgs.fieldKey(fieldName, args));
+        return fieldName === "__typename" ? true : this.scalarMap.has(VariableArgs.fieldKey(fieldName, args));
     }
 
     getSalar(fieldName: string, args?: VariableArgs): any {
+        if (fieldName === "__typename") {
+            return this.runtimeType.name;
+        }
         return this.scalarMap.get(VariableArgs.fieldKey(fieldName, args));
     }
 
-    hasAssociation(field: FieldMetadata, args?: VariableArgs): boolean {
-        return this.associationMap.get(field)?.has(args) === true;
+    hasAssociation(field: FieldMetadata | string, args?: VariableArgs): boolean {
+        const fieldMetadata = typeof field === "string" ? this.runtimeType.fieldMap.get(field) : field;
+        if (fieldMetadata === undefined) {
+            throw new Error(`Illega asscoaition field: "${field}"`);
+        }
+        return this.associationMap.get(fieldMetadata)?.has(args) === true;
     }
 
-    getAssociation(field: FieldMetadata, args?: VariableArgs): Record | ReadonlyArray<Record | undefined> | RecordConnection | undefined {
-        return this.associationMap.get(field)?.get(args);
+    getAssociation(field: FieldMetadata | string, args?: VariableArgs): Record | ReadonlyArray<Record | undefined> | RecordConnection | undefined {
+        const fieldMetadata = typeof field === "string" ? this.runtimeType.fieldMap.get(field) : field;
+        if (fieldMetadata === undefined) {
+            throw new Error(`Illega asscoaition field: "${field}"`);
+        }
+        return this.associationMap.get(fieldMetadata)?.get(args);
     }
 
     set(
@@ -103,6 +115,12 @@ export class Record {
         } else {
             if (args?.variables !== undefined && this.runtimeType.name !== "Query") {
                 throw new Error('scalar fields of entity object does not support variables');
+            }
+            if (field.name === "__typename") {
+                if (value !== this.runtimeType.name) {
+                    throw new Error(`Illegal new value value "${value}" for "__typename", the runtime type of current record is "${this.runtimeType.name}"`);
+                }
+                return;
             }
             const fieldKey = VariableArgs.fieldKey(field.name, args);
             if (field === this.staticType.idField) {
@@ -201,10 +219,10 @@ export class Record {
         return false;
     }
 
-    toRow(): ScalarRow<any> {
+    toRow(): FlatRow<any> {
         let row = this.row;
         if (row === undefined) {
-            this.row = row = new ScalarRowImpl(this.scalarMap);
+            this.row = row = new FlatRowImpl(this);
         }
         return row;
     }
@@ -256,6 +274,29 @@ export class Record {
             association.collectGarbages(output);
         }) 
     }
+
+    toString(): string {
+        const writer = new TextWriter();
+        writer.scope({"type": "BLOCK", multiLines: true}, () => {
+            writer.seperator();
+            writer.text(`"__typeame": ${this.runtimeType.name}`); 
+            writer.seperator();
+            writer.text(`"id": ${this.id}`);
+            this.writeTo(writer);
+        });
+        return writer.toString();
+    }
+
+    private writeTo(writer: TextWriter) {
+        this.superRecord?.writeTo(writer);
+        for (const [key, value] of this.scalarMap) {
+            writer.seperator();
+            writer.text(`"${key}"": ${JSON.stringify(value)}`);
+        }
+        this.associationMap.forEachValue(association => {
+            association.writeTo(writer);
+        });
+    }
 }
 
 export const QUERY_OBJECT_ID = "____QUERY_OBJECT____";
@@ -267,35 +308,25 @@ export function objectWithOnlyId(record: Record | undefined): any {
     return record.staticType.createObject(record.id);
 }
 
-export class ScalarRowImpl implements ScalarRow<any> {
+export class FlatRowImpl implements FlatRow<any> {
     
-    constructor(private map: Map<string, any>) {}
+    constructor(private record: Record) {}
 
     has(fieldName: string): boolean {
-        return this.map.has(fieldName);
+        return this.record.hasScalar(fieldName) || this.record.hasAssociation(fieldName, undefined);
     }
 
     get(fieldName: string): any {
-        const value = this.map.get(fieldName);
-        if (value === undefined && !this.map.has(fieldName)) {
-            throw new Error(`The field '${fieldName}' is not cached in the scalar row`);
+        if (this.record.hasScalar(fieldName)) {
+            return this.record.getSalar(fieldName);
         }
-        return value;
+        if (this.record.hasAssociation(fieldName, undefined)) {
+            return this.record.getAssociation(fieldName, undefined);
+        }
+        throw new Error(`The field '${fieldName}' is not cached in the scalar row`);
     }
 
     toString(): string {
-        let sperator = "";
-        let result = "{ ";
-        for (const [k, v] of this.map) {
-            if (v !== undefined) {
-                result += sperator;
-                result += k;
-                result += ": ";
-                result += JSON.stringify(v)
-                sperator = ", ";
-            }
-        }
-        result += " }";
-        return result;
+        return this.record.toString();
     }
 }

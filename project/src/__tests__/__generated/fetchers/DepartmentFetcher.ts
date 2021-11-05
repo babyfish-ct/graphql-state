@@ -38,7 +38,7 @@ export interface DepartmentFetcher<T extends object, TVariables extends object> 
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"id", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): DepartmentFetcher<
@@ -60,7 +60,7 @@ export interface DepartmentFetcher<T extends object, TVariables extends object> 
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"name", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): DepartmentFetcher<
@@ -77,13 +77,35 @@ export interface DepartmentFetcher<T extends object, TVariables extends object> 
 
     employees<
         X extends object, 
+        XVariables extends object
+    >(
+        child: ObjectFetcher<'Employee', X, XVariables>
+    ): DepartmentFetcher<
+        T & {readonly "employees": readonly X[]}, 
+        TVariables & XVariables & DepartmentArgs["employees"]
+    >;
+
+    employees<
+        XArgs extends AcceptableVariables<DepartmentArgs['employees']>, 
+        X extends object, 
+        XVariables extends object
+    >(
+        args: XArgs, 
+        child: ObjectFetcher<'Employee', X, XVariables>
+    ): DepartmentFetcher<
+        T & {readonly "employees": readonly X[]}, 
+        TVariables & XVariables & UnresolvedVariables<XArgs, DepartmentArgs['employees']>
+    >;
+
+    employees<
+        X extends object, 
         XVariables extends object, 
         XAlias extends string = "employees", 
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
         child: ObjectFetcher<'Employee', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"employees", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): DepartmentFetcher<
@@ -105,7 +127,7 @@ export interface DepartmentFetcher<T extends object, TVariables extends object> 
     >(
         args: XArgs, 
         child: ObjectFetcher<'Employee', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"employees", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): DepartmentFetcher<
@@ -154,12 +176,9 @@ export interface DepartmentArgs {
         readonly descending?: boolean
     }
 }
-export interface DepartmentScalarType {
-    readonly id: string;
-    readonly name: string;
-}
 
-export interface DepartmentFlatType extends DepartmentScalarType {
+export interface DepartmentFlatType {
+    readonly name: string;
     readonly employees: readonly {
         readonly id: string
     }[];

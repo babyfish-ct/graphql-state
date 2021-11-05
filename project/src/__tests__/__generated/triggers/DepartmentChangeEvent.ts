@@ -1,32 +1,58 @@
 import {ImplementationType} from '../CommonTypes';
 import {DepartmentArgs, DepartmentFlatType} from '../fetchers/DepartmentFetcher';
 
-export interface DepartmentChangeEvent {
+
+export interface DepartmentEvictEvent {
+
+    readonly eventType: "evict";
 
     readonly typeName: ImplementationType<"Department">;
 
-     readonly id: string;
+    readonly id: string;
 
-    readonly changedType: "INSERT" | "UPDATE" | "DELETE";
+    readonly causedByGC: boolean;
 
-    readonly changedKeys: ReadonlyArray<DepartmentChangeEventKey<any>>;
+    readonly evictedType: "row" | "fields";
 
-    oldValue<TFieldName extends DepartmentChangeEventFields>(
-        key: DepartmentChangeEventKey<TFieldName>
-    ): DepartmentFlatType[TFieldName] | undefined;
+    readonly evictedKeys: ReadonlyArray<DepartmentEntityKey<any>>;
 
-    newValue<TFieldName extends DepartmentChangeEventFields>(
-        key: DepartmentChangeEventKey<TFieldName>
+    has(evictedKey: DepartmentEntityKey<any>): boolean;
+
+    evictedValue<TFieldName extends DepartmentEntityFields>(
+        key: DepartmentEntityKey<TFieldName>
     ): DepartmentFlatType[TFieldName] | undefined;
 }
 
-export type DepartmentChangeEventKey<TFieldName extends DepartmentChangeEventFields> = 
+export interface DepartmentChangeEvent {
+
+    readonly eventType: "change";
+
+    readonly typeName: ImplementationType<"Department">;
+
+    readonly id: string;
+
+    readonly changedType: "insert" | "update" | "delete";
+
+    readonly changedKeys: ReadonlyArray<DepartmentEntityKey<any>>;
+
+    has(changedKey: DepartmentEntityKey<any>): boolean;
+
+    oldValue<TFieldName extends DepartmentEntityFields>(
+        key: DepartmentEntityKey<TFieldName>
+    ): DepartmentFlatType[TFieldName] | undefined;
+
+    newValue<TFieldName extends DepartmentEntityFields>(
+        key: DepartmentEntityKey<TFieldName>
+    ): DepartmentFlatType[TFieldName] | undefined;
+}
+
+export type DepartmentEntityKey<TFieldName extends DepartmentEntityFields> = 
     TFieldName extends "employees" ? 
     { readonly name: "employees"; readonly variables: DepartmentArgs } : 
     TFieldName
 ;
 
-export type DepartmentChangeEventFields = 
+export type DepartmentEntityFields = 
     "name" | 
     "employees"
 ;

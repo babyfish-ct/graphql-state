@@ -4,6 +4,7 @@ import { Record } from "../Record";
 import { VariableArgs } from "../../state/impl/Args";
 import { RecordConnection } from "./AssociationConnectionValue";
 import { Pagination } from "../QueryArgs";
+import { TextWriter } from "graphql-ts-client-api";
 export declare class Association {
     readonly record: Record;
     readonly field: FieldMetadata;
@@ -22,6 +23,7 @@ export declare class Association {
     dispose(entityManager: EntityManager): void;
     private value;
     private changeLinks;
+    writeTo(writer: TextWriter): void;
     gcVisit(args: VariableArgs | undefined): void;
     collectGarbages(output: Garbage[]): void;
 }

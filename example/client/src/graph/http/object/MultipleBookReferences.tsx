@@ -1,10 +1,8 @@
-import { makeManagedObjectHooks } from "graphql-state";
 import { FC, memo } from "react";
 import { ComponentDecorator } from "../../../common/ComponentDecorator";
 import { RawValueView } from "../../../common/RawValueView";
 import { author$$, book$$ } from "../../__generated_graphql_schema__/fetchers";
-
-const { useObjects } = makeManagedObjectHooks();
+import { useObjects } from "../../__generated_graphql_schema__";
 
 export const MultipleBookReferences: FC<{
     readonly ids: ReadonlyArray<string>,

@@ -1,6 +1,4 @@
-import { makeStateFactory } from "graphql-state"
-
-const { createState } = makeStateFactory();
+import { createState } from "../../__generated_graphql_schema__";
 
 export const bookNameState = createState("http-pending-demo-book-name", "");
 

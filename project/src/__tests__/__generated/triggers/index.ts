@@ -1,2 +1,3 @@
-export type { DepartmentChangeEvent } from './DepartmentChangeEvent';
-export type { EmployeeChangeEvent } from './EmployeeChangeEvent';
+export type { DepartmentEvictEvent, DepartmentChangeEvent } from './DepartmentChangeEvent';
+export type { EmployeeEvictEvent, EmployeeChangeEvent } from './EmployeeChangeEvent';
+export type { QueryEvictEvent, QueryChangeEvent } from './QueryChangeEvent';

@@ -74,20 +74,20 @@ export interface Configuration<TSchema extends SchemaType> {
     buildStateManager(): StateManager<TSchema>;
 }
 
-export interface ParameterizedAssociationProperties<TScalarType, TVariables> {
+export interface ParameterizedAssociationProperties<TFlatType, TVariables> {
     
     readonly contains?: (
-        row: ScalarRow<TScalarType>,
+        row: FlatRow<TFlatType>,
         variables?: TVariables
     ) => boolean | undefined;
 
     readonly dependencies?: (
         variables?: TVariables
-    ) => ReadonlyArray<keyof TScalarType> | undefined;
+    ) => ReadonlyArray<keyof TFlatType> | undefined;
 
     readonly position?: (
-        row: ScalarRow<TScalarType>,
-        rows: ReadonlyArray<ScalarRow<TScalarType>>,
+        row: FlatRow<TFlatType>,
+        rows: ReadonlyArray<FlatRow<TFlatType>>,
         paginationDirection?: "forward" | "backward"
     ) => PositionType | undefined;
 
@@ -98,18 +98,18 @@ export interface ParameterizedAssociationProperties<TScalarType, TVariables> {
     ) => void;
 }
 
-export interface UnparameterizedAssociationProperties<TScalarType> {
+export interface UnparameterizedAssociationProperties<TFlatType> {
 
     readonly contains?: (
-        row: ScalarRow<TScalarType>
+        row: FlatRow<TFlatType>
     ) => boolean | undefined;
 
     readonly dependencies?: (
-    ) => ReadonlyArray<keyof TScalarType> | undefined;
+    ) => ReadonlyArray<keyof TFlatType> | undefined;
 
     readonly position?: (
-        row: ScalarRow<TScalarType>,
-        rows: ReadonlyArray<ScalarRow<TScalarType>>,
+        row: FlatRow<TFlatType>,
+        rows: ReadonlyArray<FlatRow<TFlatType>>,
         paginationDirection?: "forward" | "backward"
     ) => PositionType | undefined;
 
@@ -120,9 +120,9 @@ export interface UnparameterizedAssociationProperties<TScalarType> {
     ) => void;
 }
 
-export interface ScalarRow<TScalarType extends {readonly [key: string]: any}> {
-    has(fieldName: keyof TScalarType): boolean;
-    get<TFieldName extends keyof TScalarType & string>(fieldName: TFieldName): TScalarType[TFieldName];
+export interface FlatRow<TFlatType extends {readonly [key: string]: any}> {
+    has(fieldName: keyof TFlatType): boolean;
+    get<TFieldName extends keyof TFlatType & string>(fieldName: TFieldName): TFlatType[TFieldName];
     toString(): string;
 }
 

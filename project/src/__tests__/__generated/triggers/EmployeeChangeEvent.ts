@@ -1,30 +1,56 @@
 import {ImplementationType} from '../CommonTypes';
 import {EmployeeFlatType} from '../fetchers/EmployeeFetcher';
 
-export interface EmployeeChangeEvent {
+
+export interface EmployeeEvictEvent {
+
+    readonly eventType: "evict";
 
     readonly typeName: ImplementationType<"Employee">;
 
-     readonly id: string;
+    readonly id: string;
 
-    readonly changedType: "INSERT" | "UPDATE" | "DELETE";
+    readonly causedByGC: boolean;
 
-    readonly changedKeys: ReadonlyArray<EmployeeChangeEventKey<any>>;
+    readonly evictedType: "row" | "fields";
 
-    oldValue<TFieldName extends EmployeeChangeEventFields>(
-        key: EmployeeChangeEventKey<TFieldName>
-    ): EmployeeFlatType[TFieldName] | undefined;
+    readonly evictedKeys: ReadonlyArray<EmployeeEntityKey<any>>;
 
-    newValue<TFieldName extends EmployeeChangeEventFields>(
-        key: EmployeeChangeEventKey<TFieldName>
+    has(evictedKey: EmployeeEntityKey<any>): boolean;
+
+    evictedValue<TFieldName extends EmployeeEntityFields>(
+        key: EmployeeEntityKey<TFieldName>
     ): EmployeeFlatType[TFieldName] | undefined;
 }
 
-export type EmployeeChangeEventKey<TFieldName extends EmployeeChangeEventFields> = 
+export interface EmployeeChangeEvent {
+
+    readonly eventType: "change";
+
+    readonly typeName: ImplementationType<"Employee">;
+
+    readonly id: string;
+
+    readonly changedType: "insert" | "update" | "delete";
+
+    readonly changedKeys: ReadonlyArray<EmployeeEntityKey<any>>;
+
+    has(changedKey: EmployeeEntityKey<any>): boolean;
+
+    oldValue<TFieldName extends EmployeeEntityFields>(
+        key: EmployeeEntityKey<TFieldName>
+    ): EmployeeFlatType[TFieldName] | undefined;
+
+    newValue<TFieldName extends EmployeeEntityFields>(
+        key: EmployeeEntityKey<TFieldName>
+    ): EmployeeFlatType[TFieldName] | undefined;
+}
+
+export type EmployeeEntityKey<TFieldName extends EmployeeEntityFields> = 
     TFieldName
 ;
 
-export type EmployeeChangeEventFields = 
+export type EmployeeEntityFields = 
     "name" | 
     "department"
 ;

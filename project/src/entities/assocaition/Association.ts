@@ -8,6 +8,7 @@ import { AssociationConnectionValue, RecordConnection } from "./AssociationConne
 import { AssociationListValue } from "./AssociationListValue";
 import { AssociationReferenceValue } from "./AssociationReferenceValue";
 import { Pagination } from "../QueryArgs";
+import { TextWriter } from "graphql-ts-client-api";
 
 export class Association {
 
@@ -231,6 +232,20 @@ export class Association {
         } finally {
             this.linkChanging = false;
         }
+    }
+
+    writeTo(writer: TextWriter) {
+        this.valueMap.forEachValue(value => {
+            writer.seperator();
+            writer.text('"');
+            writer.text(value.association.field.name);
+            if (value.args !== undefined) {
+                writer.text(":");
+                writer.text(JSON.stringify(value.args));
+            }
+            writer.text('": ');
+            writer.text(JSON.stringify(value.getAsObject()));
+        });
     }
 
     gcVisit(args: VariableArgs | undefined) {

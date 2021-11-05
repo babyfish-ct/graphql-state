@@ -1,4 +1,4 @@
-import { PositionType, ScalarRow } from "../../meta/Configuration";
+import { PositionType, FlatRow } from "../../meta/Configuration";
 import { EntityManager } from "../EntityManager";
 import { objectWithOnlyId, Record } from "../Record";
 import { AssociationValue } from "./AssocaitionValue";
@@ -177,8 +177,8 @@ export class AssociationListValue extends AssociationValue {
 class Appender {
 
     private position: (
-        row: ScalarRow<any>,
-        rows: ReadonlyArray<ScalarRow<any>>,
+        row: FlatRow<any>,
+        rows: ReadonlyArray<FlatRow<any>>,
         paginationDirection?: "forward" | "backward"
     ) => PositionType | undefined;
 

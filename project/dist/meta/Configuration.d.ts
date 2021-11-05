@@ -10,23 +10,23 @@ export interface Configuration<TSchema extends SchemaType> {
     network(network: Network): this;
     buildStateManager(): StateManager<TSchema>;
 }
-export interface ParameterizedAssociationProperties<TScalarType, TVariables> {
-    readonly contains?: (row: ScalarRow<TScalarType>, variables?: TVariables) => boolean | undefined;
-    readonly dependencies?: (variables?: TVariables) => ReadonlyArray<keyof TScalarType> | undefined;
-    readonly position?: (row: ScalarRow<TScalarType>, rows: ReadonlyArray<ScalarRow<TScalarType>>, paginationDirection?: "forward" | "backward") => PositionType | undefined;
+export interface ParameterizedAssociationProperties<TFlatType, TVariables> {
+    readonly contains?: (row: FlatRow<TFlatType>, variables?: TVariables) => boolean | undefined;
+    readonly dependencies?: (variables?: TVariables) => ReadonlyArray<keyof TFlatType> | undefined;
+    readonly position?: (row: FlatRow<TFlatType>, rows: ReadonlyArray<FlatRow<TFlatType>>, paginationDirection?: "forward" | "backward") => PositionType | undefined;
     readonly range?: (range: ConnectionRange, delta: number, direction: "forward" | "backward") => void;
 }
-export interface UnparameterizedAssociationProperties<TScalarType> {
-    readonly contains?: (row: ScalarRow<TScalarType>) => boolean | undefined;
-    readonly dependencies?: () => ReadonlyArray<keyof TScalarType> | undefined;
-    readonly position?: (row: ScalarRow<TScalarType>, rows: ReadonlyArray<ScalarRow<TScalarType>>, paginationDirection?: "forward" | "backward") => PositionType | undefined;
+export interface UnparameterizedAssociationProperties<TFlatType> {
+    readonly contains?: (row: FlatRow<TFlatType>) => boolean | undefined;
+    readonly dependencies?: () => ReadonlyArray<keyof TFlatType> | undefined;
+    readonly position?: (row: FlatRow<TFlatType>, rows: ReadonlyArray<FlatRow<TFlatType>>, paginationDirection?: "forward" | "backward") => PositionType | undefined;
     readonly range?: (range: ConnectionRange, delta: number, direction: "forward" | "backward") => void;
 }
-export interface ScalarRow<TScalarType extends {
+export interface FlatRow<TFlatType extends {
     readonly [key: string]: any;
 }> {
-    has(fieldName: keyof TScalarType): boolean;
-    get<TFieldName extends keyof TScalarType & string>(fieldName: TFieldName): TScalarType[TFieldName];
+    has(fieldName: keyof TFlatType): boolean;
+    get<TFieldName extends keyof TFlatType & string>(fieldName: TFieldName): TFlatType[TFieldName];
     toString(): string;
 }
 export declare type PositionType = number | "start" | "end";

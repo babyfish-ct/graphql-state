@@ -135,10 +135,7 @@ export const query$: QueryFetcher<{}, {}> =
     )
 ;
 
-export interface QueryScalarType {
-}
-
-export interface QueryFlatType extends QueryScalarType {
+export interface QueryFlatType {
     readonly bookStores: readonly {
         readonly id: string
     }[];

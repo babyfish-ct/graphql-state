@@ -7,8 +7,7 @@ import { author$, book$$, bookStore$ } from "../../__generated_local_schema__/fe
 import { AuthorMultiSelect } from "../author/AuthorMultiSelect";
 import { INFORMATION_CLASS, PSEUDO_CODE_CLASS } from "../Css";
 import { BookStoreSelect } from "../store/BookStoreSelect";
-import { useStateManager } from "graphql-state";
-import { Schema } from "../../__generated_local_schema__";
+import { useTypedStateManager } from "../../__generated_local_schema__";
 
 const BOOK_EDIT_INFO =
     book$$
@@ -37,7 +36,7 @@ export const BookDialog: FC<{
         })
     }, [form, value]);
 
-    const stateManager = useStateManager<Schema>();
+    const stateManager = useTypedStateManager();
 
     const onOk = useCallback(async () => {
         const input = await form.validateFields();

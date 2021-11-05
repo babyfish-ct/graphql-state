@@ -167,11 +167,8 @@ export const book$$ =
         .name
 ;
 
-export interface BookScalarType {
+export interface BookFlatType {
     readonly name: string;
-}
-
-export interface BookFlatType extends BookScalarType {
     readonly store?: {
         readonly id: string
     };

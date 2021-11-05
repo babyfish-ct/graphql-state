@@ -360,10 +360,7 @@ export interface QueryArgs {
     }
 }
 
-export interface QueryScalarType {
-}
-
-export interface QueryFlatType extends QueryScalarType {
+export interface QueryFlatType {
     readonly findBookStores: readonly {
         readonly id: string
     }[];

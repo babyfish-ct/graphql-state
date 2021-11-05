@@ -192,6 +192,19 @@ class Association {
             this.linkChanging = false;
         }
     }
+    writeTo(writer) {
+        this.valueMap.forEachValue(value => {
+            writer.seperator();
+            writer.text('"');
+            writer.text(value.association.field.name);
+            if (value.args !== undefined) {
+                writer.text(":");
+                writer.text(JSON.stringify(value.args));
+            }
+            writer.text('": ');
+            writer.text(JSON.stringify(value.getAsObject()));
+        });
+    }
     gcVisit(args) {
         const value = this.valueMap.get(args === null || args === void 0 ? void 0 : args.key);
         if (value !== undefined) {

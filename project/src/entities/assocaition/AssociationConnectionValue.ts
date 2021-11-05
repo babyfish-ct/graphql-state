@@ -1,4 +1,4 @@
-import { ScalarRow } from "../..";
+import { FlatRow } from "../..";
 import { PositionType } from "../../meta/Configuration";
 import { EntityManager } from "../EntityManager";
 import { GRAPHQL_STATE_PAGINATION_INFO } from "../PaginationFetcherProcessor";
@@ -371,8 +371,8 @@ export interface PageInfo {
 class Appender {
 
     private position: (
-        row: ScalarRow<any>,
-        rows: ReadonlyArray<ScalarRow<any>>,
+        row: FlatRow<any>,
+        rows: ReadonlyArray<FlatRow<any>>,
         paginationDirection?: "forward" | "backward"
     ) => PositionType | undefined;
 

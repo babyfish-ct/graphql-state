@@ -19,9 +19,9 @@ import {
     AuthorArgs
 } from './fetchers';
 import {
-    BookStoreScalarType,
-    BookScalarType,
-    AuthorScalarType
+    BookStoreFlatType,
+    BookFlatType,
+    AuthorFlatType
 } from './fetchers';
 import {
     BookStoreEvictEvent,
@@ -63,9 +63,9 @@ export type Schema = {
             readonly entities: QueryArgs["entities"]
         };
         readonly " $associationTargetTypes": {
-            readonly findBookStores: BookStoreScalarType, 
-            readonly findBooks: BookScalarType, 
-            readonly findAuthors: AuthorScalarType
+            readonly findBookStores: BookStoreFlatType, 
+            readonly findBooks: BookFlatType, 
+            readonly findAuthors: AuthorFlatType
         };
     };
     readonly entities: {
@@ -80,7 +80,7 @@ export type Schema = {
                 readonly books: BookStoreArgs["books"]
             };
             readonly " $associationTargetTypes": {
-                readonly books: BookScalarType
+                readonly books: BookFlatType
             };
         };
         readonly "Book": {
@@ -95,8 +95,8 @@ export type Schema = {
                 readonly authors: BookArgs["authors"]
             };
             readonly " $associationTargetTypes": {
-                readonly store: BookStoreScalarType, 
-                readonly authors: AuthorScalarType
+                readonly store: BookStoreFlatType, 
+                readonly authors: AuthorFlatType
             };
         };
         readonly "Author": {
@@ -110,7 +110,7 @@ export type Schema = {
                 readonly books: AuthorArgs["books"]
             };
             readonly " $associationTargetTypes": {
-                readonly books: BookScalarType
+                readonly books: BookFlatType
             };
         };
     };

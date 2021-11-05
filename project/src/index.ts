@@ -1,6 +1,6 @@
 export { 
     Configuration, 
-    ScalarRow, 
+    FlatRow, 
     ParameterizedAssociationProperties, 
     UnparameterizedAssociationProperties,
     Network,

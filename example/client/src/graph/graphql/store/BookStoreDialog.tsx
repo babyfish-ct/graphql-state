@@ -7,8 +7,8 @@ import { book$, bookStore$$, mutation$ } from "../../__generated_graphql_schema_
 import { BookStoreInput } from "../../__generated_graphql_schema__/inputs";
 import { BookMultiSelect } from "../book/BookMultiSelect";
 import { INFORMATION_CLASS, PSEUDO_CODE_CLASS } from "../Css";
-import { useMutation, useStateManager } from "graphql-state";
-import { Schema } from "../../__generated_graphql_schema__";
+import { useMutation } from "graphql-state";
+import { useTypedStateManager } from "../../__generated_graphql_schema__";
 
 const BOOK_STORE_EDIT_INFO =
     bookStore$$
@@ -31,7 +31,7 @@ export const BookStoreDialog: FC<{
         })
     }, [form, value]);
 
-    const stateManager = useStateManager<Schema>();
+    const stateManager = useTypedStateManager();
     
     const [mutate, {loading}] = useMutation(
         mutation$.mergeBookStore(BOOK_STORE_EDIT_INFO),

@@ -38,7 +38,7 @@ export interface EmployeeFetcher<T extends object, TVariables extends object> ex
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"id", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): EmployeeFetcher<
@@ -60,7 +60,7 @@ export interface EmployeeFetcher<T extends object, TVariables extends object> ex
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"name", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): EmployeeFetcher<
@@ -77,13 +77,23 @@ export interface EmployeeFetcher<T extends object, TVariables extends object> ex
 
     department<
         X extends object, 
+        XVariables extends object
+    >(
+        child: ObjectFetcher<'Department', X, XVariables>
+    ): EmployeeFetcher<
+        T & {readonly "department": X}, 
+        TVariables & XVariables
+    >;
+
+    department<
+        X extends object, 
         XVariables extends object, 
         XAlias extends string = "department", 
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
         child: ObjectFetcher<'Department', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"department", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): EmployeeFetcher<
@@ -125,12 +135,8 @@ export const employee$$ =
         .name
 ;
 
-export interface EmployeeScalarType {
-    readonly id: string;
+export interface EmployeeFlatType {
     readonly name: string;
-}
-
-export interface EmployeeFlatType extends EmployeeScalarType {
     readonly department: {
         readonly id: string
     };

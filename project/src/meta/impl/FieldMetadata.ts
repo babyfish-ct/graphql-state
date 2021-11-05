@@ -1,5 +1,5 @@
 import { FetchableField } from "graphql-ts-client-api";
-import { ConnectionRange, PositionType, ScalarRow } from "../Configuration";
+import { ConnectionRange, PositionType, FlatRow } from "../Configuration";
 import { TypeMetadata } from "./TypeMetdata";
 
 export class FieldMetadata {
@@ -177,7 +177,7 @@ export interface FieldMetadataOptions {
 
 export interface AssocaitionProperties {
     readonly contains: (
-        row: ScalarRow<any>,
+        row: FlatRow<any>,
         variables?: any
     ) => boolean | undefined;
     
@@ -186,8 +186,8 @@ export interface AssocaitionProperties {
     ) => ReadonlyArray<string> | undefined;
 
     readonly position: (
-        row: ScalarRow<any>,
-        rows: ReadonlyArray<ScalarRow<any>>,
+        row: FlatRow<any>,
+        rows: ReadonlyArray<FlatRow<any>>,
         paginationDirection?: "forward" | "backward"
     ) => PositionType | undefined;
 
@@ -208,7 +208,7 @@ function createDefaultAssociationProperties(field: FieldMetadata): AssocaitionPr
     }
     return {
         contains: (
-            _: ScalarRow<any>,
+            _: FlatRow<any>,
             variables?: any
         ): boolean | undefined => {
             if (variables === undefined) {
@@ -225,8 +225,8 @@ function createDefaultAssociationProperties(field: FieldMetadata): AssocaitionPr
                 `so the system does not known whether the new object should be added and evict that assocaition from cache`);
         },
         position: (
-            _1: ScalarRow<any>,
-            _2: ReadonlyArray<ScalarRow<any>>,
+            _1: FlatRow<any>,
+            _2: ReadonlyArray<FlatRow<any>>,
             paginationDirection?: "forward" | "backward"
         ): PositionType | undefined => {
             return paginationDirection === "forward" ? "start" : "end";

@@ -1,7 +1,7 @@
 import { TypeMetadata } from "../../meta/impl/TypeMetdata";
 import { EntityChangeEvent, EntityEvictEvent, EntityKey } from "../EntityEvent";
 import { EntityManager } from "../EntityManager";
-import { Record, ScalarRowImpl } from "../Record";
+import { Record, FlatRowImpl } from "../Record";
 import { VariableArgs } from "../../state/impl/Args";
 import { Association } from "./Association";
 import { ObjectConnection, RecordConnection } from "./AssociationConnectionValue";
@@ -128,19 +128,8 @@ export abstract class AssociationValue {
             if (declaredTypeName === "Query" && this.association.field.isContainingConfigured) {
                 const ref = entityManager.findRefById(targetType.name, e.id);
                 if (ref?.value !== undefined) {
-                    const fieldNames = Array.isArray(this.dependencies) ? 
-                        this.dependencies :
-                        Array.from(targetType.fieldMap.values())
-                        .filter(field => field.category === "SCALAR")
-                        .map(field => field.name);
-                    const map = new Map<string, any>();
-                    for (const fieldName of fieldNames) {
-                        if (e.has(fieldName)) {
-                            map.set(fieldName, e.newValue(fieldName));
-                        }
-                    }
                     const result = this.association.field.associationProperties?.contains(
-                        new ScalarRowImpl(map),
+                        new FlatRowImpl(this.association.record),
                         this.args?.filterVariables
                     );
                     if (result === true) {

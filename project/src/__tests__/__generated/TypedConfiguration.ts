@@ -1,4 +1,4 @@
-import { Configuration, newConfiguration } from 'graphql-state';
+import { Configuration, newConfiguration } from '../..';
 import {
     department$,
     employee$,
@@ -9,11 +9,13 @@ import {
     QueryArgs
 } from './fetchers';
 import {
-    DepartmentScalarType,
-    EmployeeScalarType
+    DepartmentFlatType,
+    EmployeeFlatType
 } from './fetchers';
 import {
+    DepartmentEvictEvent,
     DepartmentChangeEvent,
+    EmployeeEvictEvent,
     EmployeeChangeEvent
 } from './triggers';
 
@@ -34,13 +36,14 @@ export type Schema = {
             readonly findDepartments: QueryArgs["findDepartments"]
         };
         readonly " $associationTargetTypes": {
-            readonly findDepartments: DepartmentScalarType
+            readonly findDepartments: DepartmentFlatType
         };
     };
     readonly entities: {
         readonly "Department": {
             readonly " $id": string;
-            readonly " $event": DepartmentChangeEvent;
+            readonly " $evictEvent": DepartmentEvictEvent;
+            readonly " $changeEvent": DepartmentChangeEvent;
             readonly " $associationTypes": {
                 readonly employees: "Employee"
             };
@@ -48,19 +51,20 @@ export type Schema = {
                 readonly employees: DepartmentArgs["employees"]
             };
             readonly " $associationTargetTypes": {
-                readonly employees: EmployeeScalarType
+                readonly employees: EmployeeFlatType
             };
         };
         readonly "Employee": {
             readonly " $id": string;
-            readonly " $event": EmployeeChangeEvent;
+            readonly " $evictEvent": EmployeeEvictEvent;
+            readonly " $changeEvent": EmployeeChangeEvent;
             readonly " $associationTypes": {
                 readonly department: "Department"
             };
             readonly " $associationArgs": {
             };
             readonly " $associationTargetTypes": {
-                readonly department: DepartmentScalarType
+                readonly department: DepartmentFlatType
             };
         };
     };

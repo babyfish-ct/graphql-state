@@ -1,12 +1,12 @@
-export type {QueryFetcher, QueryArgs, QueryScalarType, QueryFlatType} from './QueryFetcher';
+export type {QueryFetcher, QueryArgs, QueryFlatType} from './QueryFetcher';
 export {query$} from './QueryFetcher';
-export type {BookStoreFetcher, BookStoreArgs, BookStoreScalarType, BookStoreFlatType} from './BookStoreFetcher';
+export type {BookStoreFetcher, BookStoreArgs, BookStoreFlatType} from './BookStoreFetcher';
 export {bookStore$, bookStore$$} from './BookStoreFetcher';
 export type {AnyFetcher} from './AnyFetcher';
 export {any$, any$$} from './AnyFetcher';
-export type {BookFetcher, BookArgs, BookScalarType, BookFlatType} from './BookFetcher';
+export type {BookFetcher, BookArgs, BookFlatType} from './BookFetcher';
 export {book$, book$$} from './BookFetcher';
-export type {AuthorFetcher, AuthorArgs, AuthorScalarType, AuthorFlatType} from './AuthorFetcher';
+export type {AuthorFetcher, AuthorArgs, AuthorFlatType} from './AuthorFetcher';
 export {author$, author$$} from './AuthorFetcher';
 export type {BookConnectionFetcher} from './BookConnectionFetcher';
 export {bookConnection$, bookConnection$$} from './BookConnectionFetcher';
