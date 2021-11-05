@@ -25,12 +25,7 @@ In the past, when using the GraphQL client with cache, the greatest pain develop
 
 The built-in cache database of this framework is highly intelligent. You only need to simply update it with the information returned by the server, it will first try to find out all other related objects that may be affected, then update the local data and modify the relationship between the old and new data; if this attempt is not feasible, it will automatically upgrade to re-query behavior and automatically determine which queries need to be refetched.
 
-```mermaid
-graph TD;
-    A --> B;
-    B --> C;
-	
-```
+![image](./mutation.png "mutation flow")
 
 Regardless of whether the framework chooses a better strategy for modifying local data **(A)** or a poor requery strategy **(B)**. They are all automated and do not require your intervention.
 
