@@ -99,5 +99,5 @@ This is the first version 0.0.0, and there is still some work to be done in the 
 ## Change Log
 |Version|Description|
 |-------|-----------|
-|0.0.1     GC for built-in cache database|
-|0.0.2     Support usePaginationQuery| 
+|0.0.1  |GC for built-in cache database|
+|0.0.2  |Support usePaginationQuery| 
