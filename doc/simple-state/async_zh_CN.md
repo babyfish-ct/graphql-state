@@ -22,10 +22,11 @@ function delay(millis: number): Promise<void> {
     })
 }
 ```
-使用useStateValue函数从异步状态取值时，可以设置asyncStyle参数，该参数有三种不同的
+使用useStateValue函数从异步状态取值时，可以设置asyncStyle参数，该参数有三种不同的取值
 1. suspense
 2. suspense-refetch
 3. async-object
+
 ***随着asyncStyle参数的不同，useStateValue函数的返回类型也不同***，对应到三种不同的异步值获取模式
 
 ## 1. suspense
