@@ -3,6 +3,7 @@
 **语言: [English](/) | 中文**
 
 系统功能
+
 ![image](./architecture_zh_CN.png "系统功能")
 
 ## 1. 简单状态
