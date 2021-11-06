@@ -11,7 +11,7 @@ const { createState } = makeStateFactory();
 export const countState = createState("count", 1);
 ```
 - 第一个参数无实际意义，保证每个状态都有一个唯一的name即可
-- 第二个参数表示可选状态的默认值
+- 第二个参数表示可写状态的默认值
 
 2. 新建一个OutputView.tsx，显示此状态
 ```
