@@ -32,10 +32,10 @@ export const InputView: FC = memo(() => {
     const firstNumber = useStateAccessor(firstNumberState);
     const lastNumber = useStateAccessor(firstNumberState);
 
-    const onFirstNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    const onFirstNumberChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         firstNumber(e.target.valueAsNumber);
     }, [firstNumber]);
-    const onSecondNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    const onSecondNumberChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         secondNumber(e.target.valueAsNumber);
     }, [secondNumber]);
 
@@ -133,22 +133,22 @@ export const factorialResultState = createComputedState("factorialResult", ctx =
      +----> | numberState |
      |      +-------------+
      |
-     |      +------------------------+
-     \----> | factorial(numberState) |
-            +----+-------------------+
+     |      +-----------------------------+
+     \----> | factorialState(numberState) |
+            +----+------------------------+
                  |
-                 |      +----------------------------+
-                 \----> | factorial(numberState - 1) |
-                        +----+-----------------------+
+                 |      +---------------------------------+
+                 \----> | factorialState(numberState - 1) |
+                        +----+----------------------------+
                              |
-                             |      +----------------------------+
-                             \----> | factorial(numberState - 2) |
-                                    +----+-----------------------+
+                             |      +---------------------------------+
+                             \----> | factorialState(numberState - 2) |
+                                    +----+----------------------------+
                                          |
                                         ...
-                                         |      +--------------+
-                                         \----> | factorial(1) |
-                                                +--------------+
+                                         |      +-------------------+
+                                         \----> | factorialState(1) |
+                                                +-------------------+
 ```
 > 上面的代码中
 > - "ctx(numberState)"表示当前计算状态依赖于可写状态
@@ -157,5 +157,66 @@ export const factorialResultState = createComputedState("factorialResult", ctx =
 
 如果numberState发生变化，factorialResultState重新计算阶乘
 
+2. 在InputView.tsx中编辑可写状态numberState
+```ts
+import { FC, ChangeEvent, memo, useCallback } from 'react';
+import { useStateAccessor } from 'graphql-state';
+import { numberState } from './State';
 
+export const InputView: FC = memo(() => {
+
+    const number = useStateAccessor(numberState);
+    
+    const onNumberChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+        number(e.target.valueAsNumber);
+    }, [number]);
+
+    return (
+        <>
+            <div>
+                Number: 
+                <input type="number" value={number()} onChange={onNumberChange}/>
+            </div>
+        </>
+    );
+});
+```
+
+3. 在OutputView.tsx呈现计算状态
+```ts
+import { FC, memo } from 'react';
+import { useStateValue } from 'graphql-state';
+import { factorialResultState } from './State';
+
+export const OutputView: FC = memo(() => {
+
+    const factorialResult = useStateValue(factorialResultState);
+    return <div>The factorial result is {factorialResult}</div>;    
+});
+```
+> 注意
+> 
+> 计算状态是只读的，所以只能使用useStateValue，不能对其使用useStateAcessor
+
+4. 在App.tsx中整合它们
+```ts
+import { FC, memo } from 'react';
+import { StateManagerProvider } from 'graphql-state';
+import { InputView } from './InputView';
+import { OutputView } from './OutputView';
+
+export const App: FC = memo(() => {
+    return (
+        <StateManagerProvider>
+            <InputView/>
+            <OuputView/>
+        </StateManagerProvider>
+    );
+});
+```
+运行起来，我们会发现，如果numberState发生变化，factorialResultState重新计算阶乘
+
+-------------------------
+
+[< 上一篇：可写状态](./writable_zh_CN.md) | [返回上级：简单状态](./README_zh_CN.md) | [下一篇：异步状态 >](./async_zh_CN.md)
 
