@@ -3,7 +3,7 @@
 # 1. 无参数可写状态
 
 1. 新建一个State.ts文件，定义状态
-```
+```ts
 import { makeStateFactory } from "graphql-state";
 
 const { createState } = makeStateFactory();
@@ -14,7 +14,7 @@ export const countState = createState("count", 1);
 - 第二个参数表示可写状态的默认值
 
 2. 新建一个OutputView.tsx，显示此状态
-```
+```ts
 import { FC, memo } from "react";
 import { useStateValue } from "graphql-state";
 import { countState } from "./State";
@@ -30,7 +30,7 @@ export const InputView: FC = memo(() => {
 useStateValue函数用于从状态读取值
 
 3. 新建一个InputView.tsx，修改此状态
-```
+```ts
 import { FC, memo, useCallback } from "react";
 import { useStateAccessor } from "graphql-state";
 import { countState } from "./State";
@@ -60,7 +60,7 @@ import { StateManagerProvider } from "graphql-state";
 import { OutputView } from "./OutputView";
 import { InputView } from "./InputView";
 
-```
+```ts
 export const App: FC = memo(() => {
     return (
         <StateManagerProvider>
@@ -80,7 +80,7 @@ export const App: FC = memo(() => {
 参数化的状态不在是一个单独的状态, 而是多个状态形成的一个族, 每一个参数都对应到族中一个子状态.
 
 1. 新建一个State.ts文件，定义状态
-```
+```ts
 import { makeStateFactory } from "graphql-state";
 
 const { createParameterizedState } = makeStateFactory();
@@ -95,7 +95,7 @@ export const countState = createParameterizedState<number, {
 > 参数必须是对象类型
 
 2. 新建一个OutputView.tsx，显示特定参数所对应的状态
-```
+```ts
 import { FC, memo } from "react";
 import { useStateValue } from "graphql-state";
 import { countState } from "./State";
@@ -111,7 +111,7 @@ export const InputView: FC<{
     return <div>Current count: {count}</div>;
 });
 
-```
+```ts
 useStateValue函数用于从状态读取值
 
 3. 新建一个InputView.tsx，修改特定参数所对应的状态
@@ -143,7 +143,7 @@ import { StateManagerProvider } from "graphql-state";
 import { OutputView } from "./OutputView";
 import { InputView } from "./InputView";
 
-```
+```ts
 export const App: FC = memo(() => {
     return (
         <StateManagerProvider>
