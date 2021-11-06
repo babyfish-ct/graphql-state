@@ -89,7 +89,7 @@ export const DelayedView: FC = memo(() => {
     );
 });
 ```
-但需要更外围的组件使用&lt;Suspense/&gt;，否则将会导致运行时异常。上文中已有示范，为了间接，这里不再重复罗列相应的代码
+和suspense模式相似，外围的组件使用&lt;Suspense/&gt;，否则将会导致运行时异常。上文对此已有示范，为了简洁，这里不再重复罗列相应代码
 
 ## 3. async-object
 和前两种模式不同，外部组件不再需哟使用使用&lt;Suspense/&gt;，由用户自己控制异步状态，假设异步状态的数据类型为T，此模式下useStateValue函数的返回类型如下
