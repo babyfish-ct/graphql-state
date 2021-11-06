@@ -34,7 +34,7 @@
 
 在业务层上讲，BookStore.books和Book.store其实是同一个关系因视角不不同而展现出的两面，因此，graphql-state允许你把这样的两个关系绑定为双向关联。一旦你完成了这种绑定，你就可以得到如下的效果
 
-![image](./bidirectional-association.png "双向关联")
+![image](./bidirectional-association.gif "双向关联")
 
 在这个例子中，当你执行
 ```
