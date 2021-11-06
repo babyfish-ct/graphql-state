@@ -112,7 +112,7 @@ import { useStateValue } from 'graphql-state';
 import { delayedState } from './State';
 
 export const DelayedView: FC = memo(() => {
-    const { data: delayed, loading, error, refetch}  = useStateValue(delayedState, {
+    const { data: delayed, loading, refetch}  = useStateValue(delayedState, {
         asyncStyle: "async-object"
     });
     return (
@@ -129,7 +129,7 @@ export const DelayedView: FC = memo(() => {
 });
 ```
 
-在async-object模式，外围的组件不再需要使用&lt;Suspense/&gt;
+async-object模式不再需要外围的组件使用&lt;Suspense/&gt;
 ```
 import { FC, memo } from 'react';
 import { StateManagerProvider } from 'graphql-state';
