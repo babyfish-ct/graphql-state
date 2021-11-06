@@ -8,7 +8,7 @@
 2. 计算状态
 3. 异步状态
 
-## 创建状态的API
+## 1. 创建状态的API
 
 这些就个函数用于创建状态，相当于编程语言中的变量定义。它们的返回值应该被全局变量记录，以便于在整个应用范围内共享。
 
@@ -47,7 +47,7 @@ import {
 
 ```
 
-## 使用被定义状态的API
+## 2. 使用被定义状态的API
 
 使用状态的API只有两个: useStateValue和useStateAccessor
 
@@ -58,7 +58,7 @@ import {
 } from 'graphql-state';
 ```
 
-## 更多文档
+## 3. 下级章节
 
 1. [可写状态](./writable_zh_CN.md)
 2. [计算状态](./computed_zh_CN.md)
