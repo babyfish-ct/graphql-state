@@ -1,6 +1,16 @@
 # A new react state management framework
 
+**Language: English | [中文](./README_zh_CN.md)**
+
 ## Introduce
+
+![image](./architecture.png "architecture")
+1. Simple state
+
+2. Graph state
+
+3. Http optimization
+
 
 ### 1. GraphQL style but not only GraphQL
    
@@ -20,6 +30,8 @@ The state management of this framework is divided into two parts
 graph-state is the core value of this framework.
 
 #### 3.1. Intelligent object association maintenance
+
+![image](./mutation.png "mutation flow")
 
 In the past, when using the GraphQL client with cache, the greatest pain developers faced was the need to decide whether to update the local cache or re-query after the mutation operation. If you choose to modify the local cache, you will face a heavy workload; if you choose to re-query, not only will you accept performance defects, but it will also be difficult to determine which queries need to be refetched.
 
