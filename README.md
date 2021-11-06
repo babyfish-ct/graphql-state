@@ -25,6 +25,8 @@ In the past, when using the GraphQL client with cache, the greatest pain develop
 
 The built-in cache database of this framework is highly intelligent. You only need to simply update it with the information returned by the server, it will first try to find out all other related objects that may be affected, then update the local data and modify the relationship between the old and new data; if this attempt is not feasible, it will automatically upgrade to re-query behavior and automatically determine which queries need to be refetched.
 
+![image](./smart-mutation.png "Smart mutation")
+
 Regardless of whether the framework chooses a better strategy for modifying local data **(A)** or a poor requery strategy **(B)**. They are all automated and do not require your intervention.
 
 However, you can also intervene in it. You can use simple APIs to help it optimize, increase the probability of case **(A)** and decrease the probability of case **(B)**.
@@ -34,6 +36,8 @@ However, you can also intervene in it. You can use simple APIs to help it optimi
 Although from the perspective of a single UI component, one-way associations between objects are concerned. However, the cache is shared by all UI components, and the data of these components will be merged inside the cache, and finally a two-way association will inevitably appear in the cache. If the two-way association cannot be handled well, data inconsistency will occur between different components. In fact, the maintenance of two-way association is one of the foundations of the intelligence of this framework.
 
 Bidirectonal association is supported and the symmetry of bidirectonal association is strictly guaranteed. Developers can modify one end of the  bidirectonal association at will. If the other end has been cached, the other one will be automatically updated to guarantee the symmetry of the association and the consistency of the data. 
+
+![image](./bidirectional-association.gif "Bidirectional assocaition")
 
 #### 3.3. Database style trigger
 The built-in cache database supports triggers. Not only does the framework use it internally to achieve the purpose of data intelligent maintenance, the triggers are also exposed as public APIs so that developers can customize more intelligent behaviors.
