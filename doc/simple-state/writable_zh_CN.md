@@ -71,4 +71,4 @@ export const App: FC = memo(() => {
 });
 ```
 > 注意
-> 使用状态管理的的前提是，顶层用<StateManagerProvider/>包裹
+> 使用状态管理的的前提，顶层需要用&lt;StateManagerProvider/&gt;包裹
