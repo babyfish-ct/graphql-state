@@ -63,7 +63,7 @@ export const App: FC = memo(() => {
 });
 ```
 
-## 2. suspense-object
+## 2. suspense-refetch
 和suspense模式类似，也需要外部组件使用&lt;Suspense/&gt;，但是useStateValue的返回类型和suspend不同，假设异步状态的数据类型为T，此模式下useStateValue函数的返回类型如下
 ```ts
 {
