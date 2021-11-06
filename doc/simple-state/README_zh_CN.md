@@ -43,7 +43,7 @@ import {
     createParameterizedState,
     createParameterizedComputedState,
     createParameterizedAsyncState
-} from "<Relative path the root dir of generaed code>";
+} from "<被生成代码的根目录的相对路径>";
 
 ```
 
