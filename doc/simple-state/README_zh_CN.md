@@ -20,8 +20,8 @@
 
 这些函数的使用方法在更细节的文档中有详细的讨论，这里讨论如何导入他们，分两种情况
 
-1. 如果你的应用仅仅使用了简单状态，没有使用图状态
-```
+1. 如果你的应用仅仅使用了简单状态，并没有使用图状态
+```ts
 import { makeStateFactory } from "graphql-state";
 
 const { 
@@ -34,8 +34,8 @@ const {
 } = makeStateFactory();
 ```
 
-2. 如果你的应用使用了图状态，在相关代码被生成后
-```
+2. 如果你的应用使用了图状态，在相关代码被生成后，如下代码是更好的选择
+```ts
 import { 
     createState, 
     createComputedState, 
@@ -51,8 +51,11 @@ import {
 
 使用状态的API只有两个: useStateValue和useStateAccessor
 
-```
-import { useStateValue, useStateAccessor } from 'graphql-state';
+```ts
+import { 
+    useStateValue, 
+    useStateAccessor 
+} from 'graphql-state';
 ```
 
 ## 更多文档
