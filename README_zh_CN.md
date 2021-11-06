@@ -26,3 +26,22 @@
 然而，如果你愿意的话，你也可以参与这个抉择进行优化干预。您可以使用简单的API来帮助它优化，增加情况(A)的发生概率并降低情况(B)的发生概率。
 
 ### 2.2. 双向关联管理
+
+参考这样一个例子
+
+- BookStore具备一个books关联属性，一个指向Book的one-to-many关联
+- Book具备一个store属性，一个指向BookSotre的many-to-one关联
+
+在业务层上讲，BookStore.books和Book.store其实是同一个关系因视角不不同而展现出的两面，因此，graphql-state允许你把这样的两个关系绑定为双向关联。一旦你完成了这种绑定，你就可以得到如下的效果
+
+![image](./bidirectional-association.png "双向关联")
+
+在这个例子中，当你执行
+```
+MANNING.books.add(LearningGraphQL);
+```
+时，graphql-state为你执行两个自动更新
+```
+O'REILLY.books.remove(LearningGraphQL);
+LearningGraphQL.store = MANNING;
+```
