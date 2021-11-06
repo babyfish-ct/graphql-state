@@ -1,4 +1,4 @@
-# [grpahql-state](../)/[文档](../index_zh_CN.md)/简单状态
+# [grpahql-state](../../)/[文档](../README_CN.md)/简单状态
 
 简单状态使用方式非常类似于recoil，但是它可以和图状态配合使用。
 
