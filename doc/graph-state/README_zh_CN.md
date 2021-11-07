@@ -1,4 +1,4 @@
-# [graphql-state]/(https://github.com/babyfish-ct/graphql-state)/[文档](../README_zh_CN.md)/图状态
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../README_zh_CN.md)/图状态
 
 所谓图状态，并非一定需要GraphQL服务端，而是可以被GraphQL风格的API读写的缓存的数据。
 
