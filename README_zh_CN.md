@@ -10,7 +10,7 @@
 一套看起来非常类似于recoil的状态管理，用于管理业务对象模型以外的零散数据，可以方便地和图状态配合。
 
 ## 2. 图状态
-本框剪的核心价值，一套和apollo-client/以及relay类似的复杂状态管理，其内部的图数据缓存数据库远强于apollo cache和relay store中的normalized cache，也是我创建此框架的根本原因。
+本框架的核心价值，和apollo-client/以及relay类似的复杂状态管理，但智能性方面有重大提升。用内置的缓存数据库替代简单的normalize-cache，支持智能的更新操作，让开发变得极简，是我创建此框架的动机。
 
 图状态管理支持两个核心功能
 ### 2.1. 智能更新
@@ -45,3 +45,9 @@ MANNING.books.add(LearningGraphQL);
 O'REILLY.books.remove(LearningGraphQL);
 LearningGraphQL.store = MANNING;
 ```
+
+## 3. HTTP优化
+
+当缓存数据无法完成用户期望时，框架不得不想服务端发出HTTP查询请求。但是, graphql-state会充分优化，尽可能降低HTTP请求的数量，比如合并碎片化的小请求，重用查询范围更大的现有请求。
+
+
