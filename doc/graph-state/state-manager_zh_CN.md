@@ -42,7 +42,7 @@ function createStateManager() {
 
 ### 1.1 不基于GraphQL服务端
 
-如果你的开发并不基于GraphQL服务端，就如同[本地示例](https://github.com/babyfish-ct/graphql-state/tree/master/example/client/src/graph/local)一样，createStateManager函数应该如下实现
+如果你的开发并不基于GraphQL服务端，就如同[本地示例](https://github.com/babyfish-ct/graphql-state/tree/master/example/client/src/graph/local)一样，上文中的createStateManager函数应该如下实现
 
 ```ts
 
@@ -59,7 +59,7 @@ function createStateManager() {
 
 ### 1.2 基于GraphQL服务端
 
-如果你的开发基于GraphQL服务端，createStateManager函数应该如下实现
+如果你的开发基于GraphQL服务端，上文中的createStateManager函数应该如下实现
 
 ```ts
 import { GraphQLNetwork } from "graphql-state";
@@ -90,6 +90,21 @@ function createStateManager() {
 这里传入的GraphQLNetwork对象指定如何和服务端通信
 
 （未来，框架会支持一个RESTNetwork将REST服务模拟成GraphQL服务）
+
+## 2. 获取StateManager
+
+要在React组件内部获取StateManager，比较好的方式是调用自动生成的代码中的函数useTypedStateManager
+```
+import { FC, memo } from 'react';
+import { useTypedStateManager } from './__generated';
+
+export const SomeComponent: FC = memo(() => {
+    
+    const stateManager = useTypedStateManager();
+    
+    ... more code ...
+});
+```
 
 ----------------------------------
 
