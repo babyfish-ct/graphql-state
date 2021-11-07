@@ -109,3 +109,46 @@ export const BookStoreList:FC = memo(() => {
     ```
   - 备注：data可以为undefined，当loading为true时，data必为undefined
   
+这里以async-object为例，展示可以刷新的查询
+
+```ts
+import { FC, memo } from 'react';
+import { query$, bookStore$$ } from './__generated';
+import { useQuery } from 'graphql-state';
+
+export const BookStoreList:FC = memo(() => {
+
+    const {data, loading, refetch } = useQuery(
+        query$.findBookStores(
+            bookStore$$
+        ),
+        {
+            asyncStyle: "async-object"
+        }
+    );
+    
+    return (
+        <>
+            {loading && <div>Loading...</div>}
+            {
+                data &&
+                <>
+                    <ul>
+                        {bookStores.map(store =>
+                            <li key={store.id}>{store.name}</li>
+                        )}
+                    </ul>
+                    <button onClick={refetch}>刷新</button>
+                </>
+            }
+        </>
+    );
+});
+```
+当用户点击刷新按钮后，查询会重新执行。
+
+"async-object"需要用户自己处理loading状态，但对外部组件没有任何要求
+
+----------------------------
+
+[返回上级: 查询](../README_zh_CN.md) | [下一篇：usePaginationQuery >](./usePaginationQuery_zh_CN.md)
