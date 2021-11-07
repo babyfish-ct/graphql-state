@@ -22,6 +22,7 @@ StateManager支持save函数用于保存数据，它合并了insert和update操�
 > 
 > 1. 为了简化例子，后续所有代码都隐了这些import语句
 >   ```
+>   import { ParameterRef } from 'graphql-ts-client';
 >   import { book$, book$$, bookStore$$, author$, author$$ } from './__generated/fetchers';
 >   ```
 > 2. 后续代码硬编码了大量的JSON字面量。在实际项目中，不可能对需要保存数据的JSON进行硬编码，而本文档如此只是为了简化讨论
