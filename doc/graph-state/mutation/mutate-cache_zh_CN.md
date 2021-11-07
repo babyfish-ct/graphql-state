@@ -7,7 +7,9 @@ import { FC, memo } form 'react';
 import { useTypedStateManager } from './__generated';
 
 export const SomeComponent: FC = memo(() => {
+
     const stateManager = useTypedStateManager();
+    
     ... more code ...
 });
 ```
