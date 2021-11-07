@@ -165,4 +165,4 @@ export const BookStoreList:FC = memo(() => {
 
 ----------------------------
 
-[返回上级: 查询](../README_zh_CN.md) | [下一篇：usePaginationQuery >](./usePaginationQuery_zh_CN.md)
+[返回上级: 查询](./README_zh_CN.md) | [下一篇：usePaginationQuery >](./usePaginationQuery_zh_CN.md)
