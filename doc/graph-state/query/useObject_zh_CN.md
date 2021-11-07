@@ -266,14 +266,16 @@ interface Any {
     id: ID!
 }
 type Query {
-    entities(typeName: String!, ids: [ID]!): [Any]!
+    entities(typeName: String!, ids: [ID]!): [Any!]!
     ...
 }
 type BookStore implements Any {...}
 type Book implements Any {...}
 type Author implements Any {...}
 ```
-其中, Any和Query中的ID不是强制性的，可以使用其它类型，比如String, Int等
+其中, Any和Query中的ID不是强制性的，可以使用其它类型，比如String, Int等。
+
+如果ids参数中某些id无法查找到对象，允许服务端返回的数组长度小于ids参数的长度。
 
 ------------------------------
 [< 上一篇：usePaginationQuery](./usePaginationQuery_zh_CN.md) | [返回上级：查询](./README_zh_CN.md)
