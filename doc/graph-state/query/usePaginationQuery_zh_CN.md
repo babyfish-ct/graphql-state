@@ -427,4 +427,4 @@ const BookList: FC = memo(() => {
 
 -------------
 
-[< 上一篇：useQuery](./useQuery_zh_CN.md) | [返回上级：查询](./README_zh_CN.md) | [下一篇：useObject/useObjects](./useObject_zh_CN.md)
+[< 上一篇：useQuery](./useQuery_zh_CN.md) | [返回上级：查询](./README_zh_CN.md) | [下一篇：useObject&useObjects](./useObject_zh_CN.md)
