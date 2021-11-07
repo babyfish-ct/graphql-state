@@ -62,9 +62,9 @@ LearningGraphQL.store = MANNING;
 ### 未来
 #### 短期目标
 
-2. 支持级联删除，针对非空的many-to-one关联而言几乎是唯一的选择
-3. 预先加载查询
-4. 提供RESTNetwork接口，基于REST服务模拟GraphQL服务，这对服务端的遗留项目很有用。
+1. 支持级联删除，对非空的many-to-one关联而言，这是唯一的选择
+2. 预先加载查询
+3. 提供RESTNetwork接口，基于REST服务模拟GraphQL服务，这对服务端的遗留项目很有用。
 
 #### 长远目标
 1. 事务、保存点、撤销/重做 
