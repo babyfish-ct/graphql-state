@@ -5,6 +5,34 @@ import { newTypedConfiguration } from "../__generated_graphql_schema__";
 import { publishEntityLog } from "./log/EntityLog";
 import { createGraphQLNetwork } from "../common/Networks";
 
+export function createStateManager(withCustomerOptimization: boolean): StateManager<Schema> {
+
+    const cfg = newTypedConfiguration()
+
+        .bidirectionalAssociation("BookStore", "books", "store")
+        .bidirectionalAssociation("Book", "authors", "books")
+
+        .network(createGraphQLNetwork())
+    ;
+
+    if (withCustomerOptimization) {
+        cfg
+        .rootAssociationProperties("findBookStores", createNameFilterAssociationProperties())
+        .rootAssociationProperties("findBooks", createNameFilterAssociationProperties())
+        .rootAssociationProperties("findAuthors", createNameFilterAssociationProperties())
+        .associationProperties("BookStore", "books", createNameFilterAssociationProperties())
+        .associationProperties("Book", "authors", createNameFilterAssociationProperties())
+        .associationProperties("Author", "books", createNameFilterAssociationProperties())
+    }
+
+    const stateManager = cfg.buildStateManager();
+
+    stateManager.addEntityEvictListener(e => { publishEntityLog(e) });
+    stateManager.addEntityChangeListener(e => { publishEntityLog(e) });
+
+    return stateManager;
+}
+
 function createNameFilterAssociationProperties<
     TFlatType extends { readonly name: string }, 
     TVariables extends { readonly name?: string }
@@ -66,34 +94,6 @@ function createNameFilterAssociationProperties<
         }
     }
 };
-
-export function createStateManager(withCustomerOptimization: boolean): StateManager<Schema> {
-
-    const cfg = newTypedConfiguration()
-
-        .bidirectionalAssociation("BookStore", "books", "store")
-        .bidirectionalAssociation("Book", "authors", "books")
-
-        .network(createGraphQLNetwork())
-    ;
-
-    if (withCustomerOptimization) {
-        cfg
-        .rootAssociationProperties("findBookStores", createNameFilterAssociationProperties())
-        .rootAssociationProperties("findBooks", createNameFilterAssociationProperties())
-        .rootAssociationProperties("findAuthors", createNameFilterAssociationProperties())
-        .associationProperties("BookStore", "books", createNameFilterAssociationProperties())
-        .associationProperties("Book", "authors", createNameFilterAssociationProperties())
-        .associationProperties("Author", "books", createNameFilterAssociationProperties())
-    }
-
-    const stateManager = cfg.buildStateManager();
-
-    stateManager.addEntityEvictListener(e => { publishEntityLog(e) });
-    stateManager.addEntityChangeListener(e => { publishEntityLog(e) });
-
-    return stateManager;
-}
 
 function indexToCursor(index: number): string {
     return Buffer.from(index.toString(), 'utf-8').toString('base64');

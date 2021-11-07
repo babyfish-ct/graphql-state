@@ -137,13 +137,19 @@ export type AsyncPaginationReturnType<T, TAsyncStyle extends AsyncStyle> =
     (
         TAsyncStyle extends "async-object" ? {
             readonly loading: boolean,
-            readonly error: any
+            readonly error: any,
+            readonly data?: T,
         } : {
+            readonly data: T,
         }
-    ) & 
-    { 
-        readonly data: T, 
-        readonly refetch: () => void,
+    ) &
+    (
+        TAsyncStyle extends "suspense" ? {
+        } : {
+            readonly refetch: () => void
+        }
+    ) &
+    {  
         readonly loadNext: () => void,
         readonly loadPrevious: () => void,
         readonly hasNext: boolean,
