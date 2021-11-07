@@ -57,4 +57,60 @@ usePaginationQuery<
 
 # 2. 返回类型
 
+随着options.asyncStyle取值的不同，useQuery的返回值也不相同。
+
+其行为和[AsyncValue](../../simple-state/async_zh_CN.md)中讨论过的useStateValue完全一致，这里不做重复讨论，仅仅给出asyncStyle和返回类型的对应关系（假设Fetcher参数返回类型为T）
+
+- suspense:
+  - 返回类型：
+    ```
+    {
+        readonly data: T,
+        
+        readonly loadNext: () => void,
+        readonly loadPrevious: () => void,
+        readonly hasNext: boolean,
+        readonly hasPrevious: boolean,
+        readonly isLoadingNext: boolean,
+        readonly isLoadingPrevious: boolean
+    }
+    ```
+  - 备注：外部React组件需要使用&lt;Suspense/&gt;
+- suspense-refetch:
+  - 返回类型：
+    ```
+    {
+        readonly data: T,
+        readonly refetch: () => void,
+        
+        readonly loadNext: () => void,
+        readonly loadPrevious: () => void,
+        readonly hasNext: boolean,
+        readonly hasPrevious: boolean,
+        readonly isLoadingNext: boolean,
+        readonly isLoadingPrevious: boolean
+    }
+    ```
+  - 备注：外部React组件需要使用&lt;Suspense/&gt;
+- async-object:
+  - 返回类型：
+    ```
+    {
+        readonly data?: T,
+        readonly loading: boolean,
+        readonly error: any,
+        readonly refetch: () => void,
+        
+        readonly loadNext: () => void,
+        readonly loadPrevious: () => void,
+        readonly hasNext: boolean,
+        readonly hasPrevious: boolean,
+        readonly isLoadingNext: boolean,
+        readonly isLoadingPrevious: boolean
+    }
+    ```
+  - 备注：data可以为undefined，当loading为true时，data必为undefined
     
+-------------
+
+[< 上一篇：useQuery](./useQuery_zh_CN.md) | [返回上级：查询](./README_zh_CN.md) | [下一篇：useObject/useObjects](./useObject_zh_CN.md)
