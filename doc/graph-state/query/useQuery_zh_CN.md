@@ -9,7 +9,7 @@ import { useQuery } from 'graphql-state';
 
 export const BookStoreList:FC = memo(() => {
 
-    const bookStores = useQuery(
+    const data = useQuery(
         query$.findBookStores(
             bookStore$$
         )
@@ -17,7 +17,7 @@ export const BookStoreList:FC = memo(() => {
     
     return (
         <ul>
-            {bookStores.map(store =>
+            {data.findBookStores.map(store =>
                 <li key={store.id}>{store.name}</li>
             )}
         </ul>
@@ -68,7 +68,7 @@ export const BookStoreList:FC = memo(() => {
         setName(e.target.value);
     }, []);
     
-    const bookStores = useQuery(
+    const data = useQuery(
         query$.findBookStores(
             bookStore$$
         ),
@@ -81,7 +81,7 @@ export const BookStoreList:FC = memo(() => {
         <>
             <input value={name} onChange={onNameChange} placeholder="Input name to filter rows..."/>
             <ul>
-                {bookStores.map(store =>
+                {data.findBookStores.map(store =>
                     <li key={store.id}>{store.name}</li>
                 )}
             </ul>
@@ -148,7 +148,7 @@ export const BookStoreList:FC = memo(() => {
                 data &&
                 <>
                     <ul>
-                        {bookStores.map(store =>
+                        {data.findBookStores.map(store =>
                             <li key={store.id}>{store.name}</li>
                         )}
                     </ul>
