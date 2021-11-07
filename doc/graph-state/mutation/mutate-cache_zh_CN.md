@@ -120,7 +120,7 @@ stateManager.save(
 > 
 > 这个例子保存的关联不是Book.authors，而是Book.authors({name: "eve"})
 > 
-> 这是一个参数化的关联。所以仅仅传递数据对象是不够的。此例很好地解释了为什么save函数的第一个参数要指定[graphql-ts-client]（https://github.com/babyfish-ct/graphql-ts-client）的fetcher。
+> 这是一个参数化的关联。所以仅仅传递数据对象是不够的。此例很好地解释了为什么save函数的第一个参数要指定[graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client)的fetcher。
 
 
 ### 1.5 保存多个对象
