@@ -55,23 +55,25 @@ LearningGraphQL.store = MANNING;
 
 [文档](./doc/README_zh_CN.md)
 
-## 未来
+## 其它
 
 这是一个新诞生的框架，为了让它越来越完整，未来会实现的功能如下
 
-### 短期目标
+### 未来
+#### 短期目标
 
 2. 支持级联删除，针对非空的many-to-one关联而言几乎是唯一的选择
 3. 预先加载查询
 4. 提供RESTNetwork接口，基于REST服务模拟GraphQL服务，这对服务端的遗留项目很有用。
 
-### 长远目标
+#### 长远目标
 1. 事务、保存点、撤销/重做 
 2. 支持数据可视化的Chrome插件，以方便调试。
 
 
-## Change Log
-|Version|Description|
+### 变更列表
+|版本|描述|graphql-ts-client所需版本|
 |-------|-----------|
-|0.0.1  |GC for built-in cache database|
-|0.0.2  |Support usePaginationQuery| 
+|0.0.0  |首个版本|>=3.0.4|
+|0.0.1  |为内置的缓存数据库添加垃圾回收器|>=3.0.7|
+|0.0.2  |支持分页查询API：usePaginationQuery|>=3.0.8|
