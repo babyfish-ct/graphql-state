@@ -157,5 +157,13 @@ stateManager.save(
 
 ## 2. 删除
 
+### 2.1 删除对象
+```
+stateManager.delete("Book", "e110c564-23cc-4811-9e81-d587a13db634");
+```
+> API是强类型
+
+### 2.2 删除多个对象
+
 -----------------------
 [返回上级：变更](./README_zh_CN.md) | [下一篇：useMutation >](./useMutation_zh_CN.md)
