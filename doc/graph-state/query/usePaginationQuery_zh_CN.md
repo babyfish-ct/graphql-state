@@ -39,7 +39,6 @@ usePaginationQuery<
   - windowId: 指定一个标识名称
     > 任何界面都可以使用usePaginationQuery, 都会得到相应的分页结果
     > 对于不同的分页结果，如果以下条件全部满足
-    > - 所属对象（包含根对象Query）相同
     > - windowId相同
     > - paginationStyle相同
     > - initialSize相同
@@ -51,11 +50,11 @@ usePaginationQuery<
     > 
     > 如果paginationStyle为"page"，则pageSize要么不指定，要么等于initialSize，否则会导致异常
   - paginationStyle: 分页方式，有三种取值
-    - forward: 被显示行可以可累积的，由前到后逐段加载的分页
-    - backward: 被显示行可以可累积的，由后到前逐段加载的分页
-    - page: 经典的，显示行业固定，能前后自由导航的分页
+    - forward: 可累积的，由前到后逐段加载的分页
+    - backward: 可累积的，由后到前逐段加载的分页
+    - page: 经典的，记录条数固定，能前后自由导航的分页
 
-# 2. 返回类型
+## 2. 返回类型
 
 随着options.asyncStyle取值的不同，useQuery的返回值也不相同。
 
@@ -110,7 +109,103 @@ usePaginationQuery<
     }
     ```
   - 备注：data可以为undefined，当loading为true时，data必为undefined
+
+## 3. 分页风格
+
+options.paginationStyle为分页风格分页方式，有三种取值
+  - forward: 可累积的，由前到后逐段加载的分页
+  - backward: 可累积的，由后到前逐段加载的分页
+  - page: 经典的，记录条数固定，能前后自由导航的分页
     
+### 3.1. forward
+```ts
+import { FC, memo } form 'react';
+import { usePaginationQuery } from 'graphql-state';
+import { query$, bookConnection$, bookEdge$, book$$ } from './__generated';
+
+const BookList: FC = memo(() => {
+
+    const { data, loading, loadNext, hasNext, isLoadingNext } = usePaginationQuery(
+        query$.findBooks(
+            bookConnection$.edges(
+                bookEdge$.node(
+                    book$$
+                )
+            ),
+            options => options.alias("conn")
+        ),
+        {
+            asyncStyle: "async-object",
+            
+            windowId: "BookList",
+            paginationStyle: "forward",
+            initialSize: 2
+        }
+    );
+    
+    return (
+        <>
+            { loading && <div>Loading...</div> }
+            { 
+                data && <>
+                    <table>
+                        { data.conn.edges.map(edge =>
+                            <tr key={edge.node.id}>
+                                ... more ui elements ...
+                            </tr>
+                        ) }
+                    </table>
+                    <button disabled={!hasNext} onClick={loadNext}>
+                        { isLoadingNext ? "Loading more": "Load more" }
+                    </button>
+                </> 
+            }
+        </>
+    );
+});
+```
+
+运行后，UI如下
+```
++---------------------+
+| row-1               |
++---------------------+
+| row-2               |
++---------------------+
+
++-----------+
+| Load more |
++-----------+
+```
+点击"Load more"按钮，界面变为
+```
++---------------------+
+| row-1               |
++---------------------+
+| row-2               |
++---------------------+
+
++--------------+
+| Loading more |
++--------------+
+```
+HTTP请求返回后，界面变为
+
+```
++---------------------+
+| row-1               |
++---------------------+
+| row-2               |
++---------------------+
+| row-3               |
++---------------------+
+| row-4               |
++---------------------+
+
++-----------+
+| Load more |
++-----------+
+```
 -------------
 
 [< 上一篇：useQuery](./useQuery_zh_CN.md) | [返回上级：查询](./README_zh_CN.md) | [下一篇：useObject/useObjects](./useObject_zh_CN.md)
