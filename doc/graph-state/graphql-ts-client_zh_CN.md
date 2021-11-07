@@ -72,7 +72,6 @@ type Query {
     authors: [Author!]!
 }
 ```
-这里的文件内容拷贝自
 
 2. 在"react项目目录/scripts"下创建一个名称随意的NodeJS文件，这里假设文件名为"codegen.js"，编辑其内容如下
 ```
@@ -88,7 +87,12 @@ const generator = new GraphQLStateGenerator({
 generator.generate();
 ```
 
-3. 首次开发，或schema.sdl文件变更时，执行"yarn codegen"生成代码
+3. 在react项目的package.json配置codegen命令，找到此json文件的"scripts"对象属性，添加一个子属性
+```
+"codegen": "node scripts/codegen.js
+```
+
+4. 首次开发，或schema.sdl文件变更时，执行"yarn codegen"生成代码
 
 --------------------------------------
 
