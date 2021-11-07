@@ -165,7 +165,7 @@ const BookList: FC = memo(() => {
 });
 ```
 
-运行后，UI如下
+运行后，初始界面如下
 ```
 +---------------------+
 | row-1               |
@@ -206,6 +206,198 @@ HTTP请求返回后，界面变为
 | Load more |
 +-----------+
 ```
+
+### 3.2. backward
+```ts
+import { FC, memo } form 'react';
+import { usePaginationQuery } from 'graphql-state';
+import { query$, bookConnection$, bookEdge$, book$$ } from './__generated';
+
+const BookList: FC = memo(() => {
+
+    const { data, loading, loadPrevious, hasPrevious, isLoadingPrevious } = usePaginationQuery(
+        query$.findBooks(
+            bookConnection$.edges(
+                bookEdge$.node(
+                    book$$
+                )
+            ),
+            options => options.alias("conn")
+        ),
+        {
+            asyncStyle: "async-object",
+            
+            windowId: "BookList",
+            paginationStyle: "backward",
+            initialSize: 2
+        }
+    );
+    
+    return (
+        <>
+            { loading && <div>Loading...</div> }
+            { 
+                data && <>
+                    <button disabled={!hasPrevious} onClick={loadPrevious}>
+                        { isLoadingPrevious ? "Loading more": "Load more" }
+                    </button>
+                    <table>
+                        { data.conn.edges.map(edge =>
+                            <tr key={edge.node.id}>
+                                ... more ui elements ...
+                            </tr>
+                        ) }
+                    </table>
+                </> 
+            }
+        </>
+    );
+});
+```
+
+运行后，初始界面如下(假设总记录100条)
+```
++-----------+
+| Load more |
++-----------+
++---------------------+
+| row-99              |
++---------------------+
+| row-100             |
++---------------------+
+```
+点击"Load more"按钮，界面变为
+```
++--------------+
+| Loading more |
++--------------+
+
++---------------------+
+| row-99              |
++---------------------+
+| row-100             |
++---------------------+
+```
+HTTP请求返回后，界面变为
+
+```
++-----------+
+| Load more |
++-----------+
+
++-----------------------+
+| row-97                |
++-----------------------+
+| row-98                |
++-----------------------+
+| row-99                |
++-----------------------+
+| row-100               |
++-----------------------+
+
+```
+
+### 3.3. page
+```ts
+import { FC, memo } form 'react';
+import { usePaginationQuery } from 'graphql-state';
+import { query$, bookConnection$, bookEdge$, book$$ } from './__generated';
+
+const BookList: FC = memo(() => {
+
+    const { 
+        data, 
+        loading, 
+        
+        loadNext, 
+        loadPrevious,
+        
+        hasNext, 
+        hasPrevious,
+        
+        isLoadingNext,
+        isLoadingPrevious
+    } = usePaginationQuery(
+        query$.findBooks(
+            bookConnection$.edges(
+                bookEdge$.node(
+                    book$$
+                )
+            ),
+            options => options.alias("conn")
+        ),
+        {
+            asyncStyle: "async-object",
+            
+            windowId: "BookList",
+            paginationStyle: "forward",
+            initialSize: 2
+        }
+    );
+    
+    return (
+        <>
+            { loading && <div>Loading...</div> }
+            { 
+                data && <>
+                    <table>
+                        { data.conn.edges.map(edge =>
+                            <tr key={edge.node.id}>
+                                ... more ui elements ...
+                            </tr>
+                        ) }
+                    </table>
+                    <button disabled={!hasPrevious} onClick={loadPrevious}>
+                        { isLoadingPrevious ? "Loading pervious page": "< Previous" }
+                    </button>
+                    <button disabled={!hasNext} onClick={loadNext}>
+                        { isLoadingNext ? "Loading next page": "Next >" }
+                    </button>
+                </> 
+            }
+        </>
+    );
+});
+```
+
+运行后，初始界面如下
+```
++---------------------+
+| row-1               |
++---------------------+
+| row-2               |
++---------------------+
+
++------------+ +--------+
+| < Previous | | Next > |
++------------+ +--------+
+```
+点击"Next>"按钮，界面变为
+```
++---------------------+
+| row-1               |
++---------------------+
+| row-2               |
++---------------------+
+
++------------+ +-------------------+
+| < Previous | | Loading next page |
++------------+ +-------------------+
+```
+HTTP请求返回后，界面变为
+
+```
++---------------------+
+| row-3               |
++---------------------+
+| row-4               |
++---------------------+
+
++------------+ +--------+
+| < Previous | | Next > |
++------------+ +--------+
+```
+
 -------------
 
 [< 上一篇：useQuery](./useQuery_zh_CN.md) | [返回上级：查询](./README_zh_CN.md) | [下一篇：useObject/useObjects](./useObject_zh_CN.md)
