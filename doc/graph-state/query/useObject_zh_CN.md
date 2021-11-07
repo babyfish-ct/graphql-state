@@ -76,7 +76,7 @@ useObjects<
       <td>asyncStyle: "suspense"</td>
       <td>T</td>
       <td>T | undefined</td>
-      <td>需要外部组件使用&lt;Suspendse&gt;</td>
+      <td>需要外部组件使用&lt;Suspendse/&gt;</td>
     </tr>
     <tr>
       <td>asyncStyle: "suspense-refetch"</td>
@@ -88,7 +88,7 @@ useObjects<
     readonly data?: T,
     readonly refetch: () => void
 }</pre></td>
-      <td>需要外部组件使用&lt;Suspendse&gt;</td>
+      <td>需要外部组件使用&lt;Suspendse/&gt;</td>
     </tr>
     <tr>
       <td>asyncStyle: "async-error"</td>
@@ -125,7 +125,7 @@ useObjects<
       <td>asyncStyle: "suspense"</td>
       <td>ReadonlyArray&lt;T&gt;</td>
       <td>ReadonlyArray&lt;T | undefined&gt;</td>
-      <td>需要外部组件使用&lt;Suspendse&gt;</td>
+      <td>需要外部组件使用&lt;Suspendse/&gt;</td>
     </tr>
     <tr>
       <td>asyncStyle: "suspense-refetch"</td>
@@ -139,7 +139,7 @@ useObjects<
         ReadonlyArray&lt;T | undefined&gt;,
     readonly refetch: () => void
 }</pre></td>
-      <td>需要外部组件使用&lt;Suspendse&gt;</td>
+      <td>需要外部组件使用&lt;Suspendse/&gt;</td>
     </tr>
     <tr>
       <td>asyncStyle: "async-error"</td>
