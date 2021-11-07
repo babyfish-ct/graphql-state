@@ -252,5 +252,28 @@ export const BookReferences: FC<{
 
 ```
 
+## 4. 服务端的支持
+
+useObject和useObjects需要服务端的给予支持，服务端需要如下实现
+
+- 所有实体类从一个抽象接口派生
+- 支持一个名称为"entities"的查询字段，接受参数typeName和ids，返回抽象接口的数组
+
+公共接口的名称可以随便取，比如Any, Node, Entity, Object等等。这里我们以Any作为抽象接口的名称给出示范。服务端的行为应该让其sdl看起来类似如此
+
+```
+interface Any {
+    id: ID!
+}
+type Query {
+    entities(typeName: String!, ids: [ID]!): [Any]!
+    ...
+}
+type BookStore implements Any {...}
+type Book implements Any {...}
+type Author implements Any {...}
+```
+其中, Any和Query中的ID不是强制性的，可以使用其它类型，比如String, Int等
+
 ------------------------------
 [< 上一篇：usePaginationQuery](./usePaginationQuery_zh_CN.md) | [返回上级：查询](./README_zh_CN.md)
