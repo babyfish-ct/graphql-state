@@ -35,7 +35,7 @@ stateManager.save(
 );
 ```
 
-### 1.1 Save object with GraphQL field alias
+### 1.1 保持使用字段别名的对象
 ```
 stateManager.save(
     
@@ -47,7 +47,7 @@ stateManager.save(
 );
 ```
 
-### 1.2 Save object with associations
+### 1.2 保存带关联的对象
 ```
 stateManager.save(
     
@@ -139,9 +139,9 @@ stateManager.save(
             ]
         },
         {
-            "id":"8f30bc8a-49f9-481d-beca-5fe2d147c831",
-            "name":"Effective TypeScript",
-            "authors": [
+            id:"8f30bc8a-49f9-481d-beca-5fe2d147c831",
+            name:"Effective TypeScript",
+            authors: [
                 { id: "c14665c8-c689-4ac7-b8cc-6f065b8d835d" }
             ]
         }
@@ -151,7 +151,7 @@ stateManager.save(
 
 > **注意**
 > 
-> 在这个例子中，只保存author对象的id。这表示，不想修改Author对象的任何字段，只想修改Book和Author之间的关系
+> 在这个例子中，在关系属性authors中，对Author对象只保存其id字段。这表示，不想修改Author对象的任何字段，只想修改Book和Author之间的关系
 
 ## 2. 删除
 
