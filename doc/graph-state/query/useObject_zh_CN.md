@@ -66,20 +66,20 @@ useObjects<
   <thead>
     <tr>
        <th></th>
-       <th>objectStyle: "required"</th>
-       <th>objectStyle: "optional"</th>
+       <th>objectStyle: required</th>
+       <th>objectStyle: optional</th>
        <th>备注</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td>asyncStyle: "suspense"</td>
+      <td><b>asyncStyle: suspense</b></td>
       <td>T</td>
       <td>T | undefined</td>
       <td>需要外部组件使用&lt;Suspendse/&gt;</td>
     </tr>
     <tr>
-      <td>asyncStyle: "suspense-refetch"</td>
+      <td><b>asyncStyle: suspense-refetch</b></td>
       <td><pre>{
     readonly data: T,
     readonly refetch: () => void
@@ -91,7 +91,7 @@ useObjects<
       <td>需要外部组件使用&lt;Suspendse/&gt;</td>
     </tr>
     <tr>
-      <td>asyncStyle: "async-error"</td>
+      <td><b>asyncStyle: async-error</b></td>
       <td><pre>{
     readonly data?: T,
     readonly loading: boolean,
