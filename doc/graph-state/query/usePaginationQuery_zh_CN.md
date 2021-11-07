@@ -121,7 +121,7 @@ options.paginationStyle为分页风格分页方式，有三种取值
 ```ts
 import { FC, memo } form 'react';
 import { usePaginationQuery } from 'graphql-state';
-import { query$, bookConnection$, bookEdge$, book$$ } from './__generated';
+import { query$, bookConnection$, bookEdge$, book$$ } from './__generated/';
 
 const BookList: FC = memo(() => {
 
@@ -211,7 +211,7 @@ const BookList: FC = memo(() => {
 ```ts
 import { FC, memo } form 'react';
 import { usePaginationQuery } from 'graphql-state';
-import { query$, bookConnection$, bookEdge$, book$$ } from './__generated';
+import { query$, bookConnection$, bookEdge$, book$$ } from './__generated/fetchers';
 
 const BookList: FC = memo(() => {
 
@@ -302,7 +302,7 @@ const BookList: FC = memo(() => {
 ```ts
 import { FC, memo } form 'react';
 import { usePaginationQuery } from 'graphql-state';
-import { query$, bookConnection$, bookEdge$, book$$ } from './__generated';
+import { query$, bookConnection$, bookEdge$, book$$ } from './__generated/fetchers';
 
 const BookList: FC = memo(() => {
 
