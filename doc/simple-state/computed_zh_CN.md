@@ -1,4 +1,4 @@
-# [graphql-state](/)/[文档]/(../../README_zh_CN.md)/[简单状态](./README_zh_CN.md)/计算状态
+# [graphql-state](/)/[文档](../README_zh_CN.md)/[简单状态](./README_zh_CN.md)/计算状态
 
 ##1. 简单计算依赖
 
@@ -33,7 +33,7 @@ firstNumberState和secondNumberState是两个可写状态，averageNumberState�
      \----> | secondNumberState |
             +-------------------+
 ```
-当firstNumberState和secondNumberState中任何一个变化是，averageNumberState就会自动重新计算
+当firstNumberState和secondNumberState中任何一个变化时，averageNumberState就会自动重新计算
 
 2. 在InputView.tsx中编辑两个可写状态
 ```ts
