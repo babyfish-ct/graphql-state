@@ -4,7 +4,7 @@
 
 ```ts
 import { FC, memo } from 'react';
-import { query$, bookStore$$ } from './__generated';
+import { query$, bookStore$$ } from './__generated/fetchers';
 import { useQuery } from 'graphql-state';
 
 export const BookStoreList:FC = memo(() => {
@@ -121,13 +121,13 @@ export const BookStoreList:FC = memo(() => {
         readonly refetch: () => void
     }
     ```
-  - 备注：data可以为undefined，当loading为true时，data必为undefined
+  - 备注：data可以为undefined，当loading为true或error存在时，data必为undefined
   
 这里以async-object为例，展示可以刷新的查询
 
 ```ts
 import { FC, memo } from 'react';
-import { query$, bookStore$$ } from './__generated';
+import { query$, bookStore$$ } from './__generated/fetchers';
 import { useQuery } from 'graphql-state';
 
 export const BookStoreList:FC = memo(() => {
