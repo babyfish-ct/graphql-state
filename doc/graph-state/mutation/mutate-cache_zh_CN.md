@@ -16,7 +16,7 @@ export const SomeComponent: FC = memo(() => {
 
 ## 1. 保存
 
-StateManager支持save函数用于保存数据，它合并了insert和update操作
+StateManager支持save函数用于保存数据，它合并了insert和update操作，你不用区分insert和update
 
 > 注意：
 > 
@@ -37,7 +37,7 @@ stateManager.save(
 );
 ```
 
-### 1.1 保持使用字段别名的对象
+### 1.1 保存使用字段别名的对象
 ```
 stateManager.save(
     
