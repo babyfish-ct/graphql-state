@@ -29,9 +29,24 @@ export const BookStoreList:FC = memo(() => {
 > 这种例子的代码需要外部React组件需要使用&lt;Suspense/&gt;
 
 ## 2. 参数
-useQuery具备两个参数
+useQuery定义如下
+```ts
+useQuery<
+    T, 
+    TVariables
+    TAsyncStyle extends "suspense" | "suspense-refetch" | "async-object" = "suspense"
+>(
+    fetcher: ObjectFetcher<"Query", T, TVariables>,
+    options?: {
+        mode?: "cache-and-network" | "cache-only",
+        variables?: TVariables,
+        asyncStyle?: TAsyncStyle
+    }
+);
+```
 1. 第一个参数为[graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client)的Fetcher，其根类型必须是"Query"
-2. 第二个参数为options，可选，一个JSON对象，包含如下字段
+2. 第二个参数options可选，一个JSON对象，包含如下字段
+  - variables: 可选，一个JOSN对象，表示查询参数
   - mode: 具备两个取值，可选，默认"cache-and-network"
     1. "cache-and-network": 先尝试从缓存中查询数据，如果缓存数据不全，从服务的查询数据并更新缓存
     2. "cache-only": 只从缓存中查询数据，如果缓存数据不全，抛出异常
@@ -39,7 +54,6 @@ useQuery具备两个参数
     1. "suspense": 稍后讨论
     2. "suspense-refetch": 稍后讨论
     3. "async-object": 稍后讨论
-  - variables: 可选，一个JOSN对象，表示查询参数
     
 ```ts
 import { FC, ChangeEvent, memo, useState, useCallback } from 'react';
