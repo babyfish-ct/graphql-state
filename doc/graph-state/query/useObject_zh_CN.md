@@ -210,7 +210,7 @@ import { book$$, author$$ } from './__generated/fetchers';
 
 export const BookReference: FC<{
     readonly id: string,
-    readonly bookName: string
+    readonly bookName?: string
 }> = memo(({id, bookName}) => {
     const book = useObject(
         book$$
@@ -227,8 +227,9 @@ export const BookReference: FC<{
 });
 
 export const BookReferences: FC<{
-    readonly ids: ReadonlyArray<string>
-}> = memo(({ids}) => {
+    readonly ids: ReadonlyArray<string>,
+    readonly bookName?: string
+}> = memo(({ids, bookName}) => {
     const books = useObjects(
         book$$
         .authors(
