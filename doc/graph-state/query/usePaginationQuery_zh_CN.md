@@ -20,7 +20,7 @@ usePaginationQuery<
     }
 );
 ```
-参数解释
+## 1. 参数解释
 1. fetcher: 
   [grahql-ts-client](https://github.com/babyfish-ct/graphql-ts-client)的Fetcher，根对象类型必须为"Query"
 
@@ -54,6 +54,7 @@ usePaginationQuery<
     - forward: 被显示行可以可累积的，由前到后逐段加载的分页
     - backward: 被显示行可以可累积的，由后到前逐段加载的分页
     - page: 经典的，显示行业固定，能前后自由导航的分页
-    
-    
+
+# 2. 返回类型
+
     
