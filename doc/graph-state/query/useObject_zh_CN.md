@@ -8,9 +8,13 @@
 
 > 注意：
 >
-> 按照普通的思维莫斯来想，根据单个id查询单个对象，很容易导致出现大量碎片化的小请求，进而导致性能问题。
->
+> 1. 按照普通的思维莫斯来想，根据单个id查询单个对象，很容易导致出现大量碎片化的小请求，进而导致性能问题。
+> 
 > 别担心，配套[HTTP优化](../../http-optimization/README_zh_CN.md)能应对这种情况，碎片化的小请求都会被合并一个大的批量请求
+>
+> 2. 这两个函数不能直接从graphql-state导入，需要从生成的代码中导入，例如
+> 
+> import { useObject, useObjects } from './__generated';
 
 useObject和useObjects的定义如下
 ```ts
@@ -21,6 +25,7 @@ useObject<
     TObjectStyle extends "required" | "optional" = "required"
 >(
     fetcher: ObjectFetcher<...Any type except Query..., T, TVariables>,
+    id: Id type of T,
     options?: {
         mode?: "cache-and-network" | "cache-only",
         variables?: TVariables,
@@ -36,6 +41,7 @@ useObjects<
     TObjectStyle extends "required" | "optional" = "required"
 >(
     fetcher: ObjectFetcher<...Any type except Query..., T, TVariables>,
+    ids: ReadonlyArray<Id type of T>
     options?: {
         mode?: "cache-and-network" | "cache-only",
         variables?: TVariables,
@@ -44,9 +50,10 @@ useObjects<
     }
 );
 ```
+
 ## 1. 参数解释
 1. fetcher: 
-  [grahql-ts-client](https://github.com/babyfish-ct/graphql-ts-client)的Fetcher，根对象类型必须不能为"Query"
+  [grahql-ts-client](https://github.com/babyfish-ct/graphql-ts-client)的Fetcher，根对象类型不能为"Query"
 2. options:
   一个可选对象，包含如下字段
   - mode: 和useQuery中此参数的用法相同，此处不再赘述
@@ -163,6 +170,86 @@ options.asyncStyle和options.objectStyle这两个参数都会影响useObject/use
     </tr>
   </tbody>
 </table>
+
+## 3. 使用示范
+
+### 3.1 只带id/ids参数
+```ts
+import { FC, memo } from 'react';
+import { useObject, useObjects } from './__generated';
+import { book$$ } from './__generated/fetchers';
+
+export const BookReference: FC<{
+    readonly id: string
+}> = memo(({id}) => {
+    const book = useObject(book$$, id);
+    return <div>{JSON.stringify(book)}</div>
+});
+
+export const BookReferences: FC<{
+    readonly ids: ReadonlyArray<string>
+}> = memo(({ids}) => {
+    const books = useObjects(book$$, ids);
+    return (
+        <ul>
+            {books.map(book => 
+                <li key={book.id}>{JSON.stringify(book)}</li>
+            )}
+        </ul>
+    );
+});
+
+```
+
+### 3.1 除id/ids外更多的参数
+```ts
+import { FC, memo } from 'react';
+import { ParameterRef } from 'graphql-ts-client';
+import { useObject, useObjects } from './__generated';
+import { book$$, author$$ } from './__generated/fetchers';
+
+export const BookReference: FC<{
+    readonly id: string,
+    readonly bookName: string
+}> = memo(({id, bookName}) => {
+    const book = useObject(
+        book$$
+        .authors(
+            { name: ParameterRef.of("bookName") },
+            author$$
+        ), 
+        id,
+        {
+            variables: { bookName }
+        }
+    );
+    return <div>{JSON.stringify(book)}</div>
+});
+
+export const BookReferences: FC<{
+    readonly ids: ReadonlyArray<string>
+}> = memo(({ids}) => {
+    const books = useObjects(
+        book$$
+        .authors(
+            { name: ParameterRef.of("bookName") },
+            author$$
+        ), 
+        ids,
+        {
+            variables: { bookName }
+        }
+    );
+    return (
+        <ul>
+            {books.map(book => 
+                <li key={book.id}>{JSON.stringify(book)}</li>
+            )}
+        </ul>
+    );
+});
+
+```
 
 ------------------------------
 [< 上一篇：usePaginationQuery](./usePaginationQuery_zh_CN.md) | [返回上级：查询](./README_zh_CN.md)
