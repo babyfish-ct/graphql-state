@@ -1,4 +1,4 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档]/(../../README_zh_CN.md)/图状态[../README_zh_CN.md]/查询
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../../README_zh_CN.md)/图状态[../README_zh_CN.md]/查询
 
 本框剪支持四个函数，用于从缓存或服务端查询数据
 
