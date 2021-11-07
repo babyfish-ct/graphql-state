@@ -28,6 +28,21 @@ useObject<
         objectStyle?: TObjectStyle
     }
 );
+
+useObjects<
+    T, 
+    TVariables
+    TAsyncStyle extends "suspense" | "suspense-refetch" | "async-object" = "suspense",
+    TObjectStyle extends "required" | "optional" = "required"
+>(
+    fetcher: ObjectFetcher<...Any type except Query..., T, TVariables>,
+    options?: {
+        mode?: "cache-and-network" | "cache-only",
+        variables?: TVariables,
+        asyncStyle?: TAsyncStyle,
+        objectStyle?: TObjectStyle
+    }
+);
 ```
 ## 1. 参数解释
 1. fetcher: 
