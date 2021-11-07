@@ -12,18 +12,25 @@ export const SomeComponent: FC = memo(() => {
 });
 ```
 
-## 1. 插入或更新
+## 1. 保存
 
-为了简化例子，此章节的所有代码都需包含
-```
-import { book$, book$$, bookStore$$ } from './__generated/fetchers';
-```
+StateManager支持save函数用于保存数据，它合并了insert和update操作
 
-### 1.1 Save simplest object
+> 注意：
+> 
+> 1. 为了简化例子，后续所有代码都隐了这些import语句
+>   ```
+>   import { book$, book$$, bookStore$$, author$, author$$ } from './__generated/fetchers';
+>   ```
+> 2. 后续代码硬编码了大量的JSON字面量。在实际项目中，不可能对需要保存数据的JSON进行硬编码，而本文档如此只是为了简化讨论
+
+### 1.1 保存简单对象
 ```
 
 stateManager.save(
+
     book$$,
+    
     { id: "e110c564-23cc-4811-9e81-d587a13db634", name: "Learning GraphQL" }
 );
 ```
@@ -60,7 +67,7 @@ stateManager.save(
 );
 ```
 
-### 1.3 Save object with variables(parameterized assocaition)
+### 1.3 保存带参数的对象（参数化的关联）
 
 最直观，但是不推荐的方式
 ```
@@ -107,19 +114,44 @@ stateManager.save(
 );
 ```
 
-### 1.5 Save multiple objects
+> **注意**
+> 
+> 这个例子保存的关联不是Book.authors，而是Book.authors({name: "eve"})
+> 
+> 这是一个参数化的关联。所以仅仅传递数据对象是不够的。此例很好地解释了为什么save函数的第一个参数要指定[graphql-ts-client]（https://github.com/babyfish-ct/graphql-ts-client）的fetcher。
 
+
+### 1.5 保存多个对象
+
+```
 stateManager.save(
-    book$$,
+    book$$
+    .authors(
+        author$.id
+    ),
     [
-        { id: "e110c564-23cc-4811-9e81-d587a13db634", name: "Learning GraphQL" },
-        {"id":"8f30bc8a-49f9-481d-beca-5fe2d147c831","name":"Effective TypeScript"}
+        { 
+            id: "e110c564-23cc-4811-9e81-d587a13db634", 
+            name: "Learning GraphQL",
+            authors: [
+                {id: "fd6bb6cf-336d-416c-8005-1ae11a6694b5"},
+                {id: "1e93da94-af84-44f4-82d1-d8a9fd52ea94"}
+            ]
+        },
+        {
+            "id":"8f30bc8a-49f9-481d-beca-5fe2d147c831",
+            "name":"Effective TypeScript",
+            "authors": [
+                { id: "c14665c8-c689-4ac7-b8cc-6f065b8d835d" }
+            ]
+        }
     ]
 );
+```
 
-> 注意：
->
-> 在实际项目中，不可能对需要保存数据的JSON进行硬编码。本文档如此只是为了简化讨论
+> **注意**
+> 
+> 在这个例子中，只保存author对象的id。这表示，不想修改Author对象的任何字段，只想修改Book和Author之间的关系
 
 ## 2. 删除
 
