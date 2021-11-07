@@ -10,6 +10,7 @@
 ## 下级章节
 
 - [整合graphql-ts-client](./graphql-ts-client_zh_CN.md)
+- [StateManager](./state-manager_zh_CN.md)
 - [查询](./query/README_zh_CN.md)
   - [useQuery](./query/useQuery_zh_CN.md)
   - [usePaginationQuery](./query/usePaginationQuery_zh_CN.md)
