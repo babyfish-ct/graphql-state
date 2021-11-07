@@ -87,7 +87,9 @@ function createStateManager() {
 }
 ```
 
+这里传入的GraphQLNetwork对象指定如何和服务端通信
 
+（未来，框架会支持一个RESTNetwork将REST服务模拟成GraphQL服务）
 
 ----------------------------------
 
