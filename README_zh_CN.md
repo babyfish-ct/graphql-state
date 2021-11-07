@@ -32,15 +32,15 @@
 - BookStore具备一个books关联属性，一个指向Book的one-to-many关联
 - Book具备一个store属性，一个指向BookSotre的many-to-one关联
 
-在业务层上讲，BookStore.books和Book.store其实是同一个关系因视角不不同而展现出的两面，因此，graphql-state允许你把这样的两个关系绑定为双向关联。一旦你完成了这种绑定，你就可以得到如下的效果
+在业务层上讲，BookStore.books和Book.store其实是同一个关系因视角不不同而展现出的两面，因此，graphql-state允许你把这样的两个关系绑定为双向关联。一旦你完成了这种绑定，你就可以得到如下GIF动画所示的效果
 
 ![image](./bidirectional-association.gif "双向关联")
 
-在这个例子中，当你执行
+在这个例子中，你执行的修改行为是
 ```
 MANNING.books.add(LearningGraphQL);
 ```
-时，graphql-state为你执行两个自动更新
+与此同事，graphql-state会为你执行两个自动更新
 ```
 O'REILLY.books.remove(LearningGraphQL);
 LearningGraphQL.store = MANNING;
