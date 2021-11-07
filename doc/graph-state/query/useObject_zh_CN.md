@@ -122,13 +122,13 @@ useObjects<
   </thead>
   <tbody>
     <tr>
-      <td>asyncStyle: "suspense"</td>
+      <td><b>asyncStyle: suspense</b></td>
       <td>ReadonlyArray&lt;T&gt;</td>
       <td>ReadonlyArray&lt;T | undefined&gt;</td>
       <td>需要外部组件使用&lt;Suspendse/&gt;</td>
     </tr>
     <tr>
-      <td>asyncStyle: "suspense-refetch"</td>
+      <td><b>asyncStyle: suspense-refetch</b></td>
       <td><pre>{
     readonly data: 
         ReadonlyArray&lt;T&gt;,
@@ -142,7 +142,7 @@ useObjects<
       <td>需要外部组件使用&lt;Suspendse/&gt;</td>
     </tr>
     <tr>
-      <td>asyncStyle: "async-error"</td>
+      <td><b>asyncStyle: async-error</b></td>
       <td><pre>{
     readonly data?: 
         ReadonlyArray&lt;T&gt;,
