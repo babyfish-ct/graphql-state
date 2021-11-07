@@ -91,7 +91,7 @@ useObjects<
       <td>需要外部组件使用&lt;Suspendse/&gt;</td>
     </tr>
     <tr>
-      <td><b>asyncStyle: async-error</b></td>
+      <td><b>asyncStyle: async-object</b></td>
       <td><pre>{
     readonly data?: T,
     readonly loading: boolean,
@@ -142,7 +142,7 @@ useObjects<
       <td>需要外部组件使用&lt;Suspendse/&gt;</td>
     </tr>
     <tr>
-      <td><b>asyncStyle: async-error</b></td>
+      <td><b>asyncStyle: async-object</b></td>
       <td><pre>{
     readonly data?: 
         ReadonlyArray&lt;T&gt;,
