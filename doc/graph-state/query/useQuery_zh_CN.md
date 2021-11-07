@@ -24,6 +24,9 @@ export const BookStoreList:FC = memo(() => {
     );
 });
 ```
+> 注意：
+>
+> 这种例子的代码需要外部React组件需要使用&lt;Suspense/&gt;
 
 ## 2. 参数
 useQuery具备两个参数
@@ -72,6 +75,9 @@ export const BookStoreList:FC = memo(() => {
     );
 });
 ```
+> 注意：
+>
+> 这种例子的代码需要外部React组件需要使用&lt;Suspense/&gt;
 
 ## 3. 返回类型
 
