@@ -331,7 +331,7 @@ const BookList: FC = memo(() => {
             asyncStyle: "async-object",
             
             windowId: "BookList",
-            paginationStyle: "forward",
+            paginationStyle: "page",
             initialSize: 2
         }
     );
