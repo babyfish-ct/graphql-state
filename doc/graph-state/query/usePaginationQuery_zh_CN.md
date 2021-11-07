@@ -108,7 +108,7 @@ usePaginationQuery<
         readonly isLoadingPrevious: boolean
     }
     ```
-  - 备注：data可以为undefined，当loading为true时，data必为undefined
+  - 备注：data可以为undefined，当loading为true或error存在时，data必为undefined
 
 ## 3. 分页风格
 
