@@ -101,7 +101,9 @@ books({name: "b"}).tryLink({
     reason: {name: "a}
 });
 ```
-这说明，books({name: "a"})的变化有可能对books()和books({name: "b"})形成影响
+这说明，books({name: "a"})的变化有可能对books()和books({name: "b"})形成影响。即
+
+> 同族内的子关联之间会相互影响
 
 --------------------------------
 
