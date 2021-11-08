@@ -105,27 +105,27 @@ books({name: "b"}).tryLink({
 
 > 同族内的子关联之间会相互影响; 任何一个被修改，其余的都会被执行unlink或link操作
 
-### 1.3. Variables contains
+### 1.3. containsVariables
 
 为了更好地判断是否可以直接修改缓存，引入了一个概念variables contains，判断查询参数之间的包含关系
 ```
-contains(variables1, variables2): boolean
+containsVariables(variables1, variables2): boolean
 ```
 改方法件判断variables1是否包含variables2，即variables2的所有字段都在variables1中存在且它们的值相等
 |Expression|Result|
 |--------|--------|
-|contains({k1: 'A', k2: 'B'}, {k1: 'A'})|true|
-|contains({k1: 'A'}, {k1: 'A', k2: 'B'})|false|
+|containsVariables({k1: 'A', k2: 'B'}, {k1: 'A'})|true|
+|containsVariables({k1: 'A'}, {k1: 'A', k2: 'B'})|false|
 |||
-|contains({name: "a"}, {name: "a")|true|
+|containsVariables({name: "a"}, {name: "a")|true|
 |||
-|contains({name: "a"}, {name: "b")|false|
-|contains({name: "b"}, {name: "a")|false|
+|containsVariables({name: "a"}, {name: "b")|false|
+|containsVariables({name: "b"}, {name: "a")|false|
 |||
-|contains({name: "a"}, udefined)|true|
-|contains(undefined, {name: "a"})|false|
+|containsVariables({name: "a"}, udefined)|true|
+|containsVariables(undefined, {name: "a"})|false|
 |||
-|contains(undefined, udefined)|true|
+|containsVariables(undefined, udefined)|true|
 
 借助辅助这个函数，tryUnlink的实现如下
 ```
@@ -137,11 +137,11 @@ tryUnlink(oldIds: ReadonlyArray<any>, reason: any) {
 
 tryUnlinkOne(oldId: any, reason: any) {
     if (!this.ids.contains(oldId)) {
-        return; //当前子关联并没有oldId, 不需要做任何事
+        return; //要删除的数据早已不存在, 不需要做任何事
     }
-    if (contains(this.variables, reason)) {
-        this.remove(oldId); //条件比我宽松的子关联都同意删除旧元素了，我当然同意
-        return;
+    if (containsVariables(this.variables, reason)) {
+        this.unlinkDirectly(oldId); 
+        return; //条件比我宽松的子关联都同意删除旧元素了，我当然同意
     }
     ... 更多的代码 需要进一步判断 ....
 }
@@ -152,29 +152,35 @@ tryUnlinkOne(oldId: any, reason: any) {
 
 tryLink的实现如下
 ```
-tryUnlink(newIds: ReadonlyArray<any>, reason: any) {
-    for (const oldId of oldIds) {
-        tryUnlinkOne(oldId, reason)
+tryLink(newIds: ReadonlyArray<any>, reason: any) {
+    for (const newId of newIds) {
+        tryLinkOne(oldId, reason)
     }
 }
 
-tryUnlinkOne(oldId: any, reason: any) {
-    if (!this.ids.contains(oldId)) {
-        return; //当前子关联并没有oldId, 不需要做任何事
+tryLinkOne(newId: any, reason: any) {
+    if (this.ids.contains(newId)) {
+        return; //要添加的新元素已经存在, 不需要做任何事
     }
-    if (contains(reason, this.variables)) {
-        this.remove(oldId); //条件比我严格的子关联同意添加新元素了，我当然同意
+    if (containsVariables(reason, this.variables)) {
+        this.linkDirectly(newId); 
+        return; //条件比我严格的子关联同意添加新元素了，我当然同意
     }
     ... 更多的代码 需要进一步判断 ....
 }
 ```
 
 经过此variables contains的优化，上个章节的行为变成了
-> 暂时
+> 暂时忽略
+> - tryLink发现要添加的元素已经存在
+> - tryUnlink发现要删除的元素早已不存在
+>
+> 这两种可以提前结束判断的情况
+
 <table>
     <thead>
         <tr>
-            <th>期望行为<th>
+            <th>期望行为</th>
             <th>判断结果</th>
         </tr>
     </thead>
@@ -186,7 +192,7 @@ tryUnlinkOne(oldId: any, reason: any) {
     reason: {name: "a}
 });</pre>
             </td>
-            <td></td>
+            <td>尚需进一步判定</td>
         </tr>
         <tr>
             <td>
@@ -195,7 +201,10 @@ tryUnlinkOne(oldId: any, reason: any) {
     reason: {name: "a}
 });</pre>
             </td>
-            <td></td>
+            <td>
+                contains({name: "a"}, {})为true，
+                既比当前子关联条件更严苛的其它同族子关联books({name: "a"})都同意接受新元素了，books({})当然也同意，此修改可以直接在本地缓存上之执行
+            </td>
         </tr>
         <tr>
             <td>
@@ -204,7 +213,7 @@ tryUnlinkOne(oldId: any, reason: any) {
     reason: {name: "a}
 });</pre>
             </td>
-            <td></td>
+            <td>尚需进一步判定</td>
         </tr>
         <tr>
             <td>
@@ -213,7 +222,7 @@ tryUnlinkOne(oldId: any, reason: any) {
     reason: {name: "a}
 });</pre>
             </td>
-            <td></td>
+            <td>尚需进一步判定</td>
         </tr>
     </tbody>
 </table>
