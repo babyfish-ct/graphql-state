@@ -382,7 +382,10 @@ function defaultContains(
 
 由于各种原因，会导致对象被自动插入到并未被直接修改的集合关联中，这时我们决定其插入位置呢？关联是否有业务层面的排序呢？
 
-在[配套例子中](https://github.com/babyfish-ct/graphql-state/tree/master/example/client/src/graph/graphql)，数据是按照对象的name字段排序的，我们可以这样来为被自动插入的对象提供插入位置
+在[配套例子中](https://github.com/babyfish-ct/graphql-state/tree/master/example/client/src/graph/graphql)，所有关联数据是按照对象的name字段排序的。
+
+关联优化器支持一个position函数，我们可以这样来为被自动插入的对象自定义插入位置
+
 ```ts
 import { FlatRow } from 'graphql-state';
 import { BookStoreArgs, BookFlatType } from './generated/fetchers';
@@ -422,8 +425,29 @@ function createStateManager() {
 - row: 即将被插入的新元素
 - rows: 现在已经存在的数据
 - paginationDirection:
-  - forward: 当前
-- rows: 现在已经存在的数据
+  - forward: 当前connection关联工作于forward分页模式
+  - backward: 当前connection关联工作于backward分页模式
+  - undefined: 当前connection关联并未使用分页
+  
+  > paginationDirection不可能是"page"，page模式的分页无法进行优化以尝试判断其变更是否仅需要修改本地缓存
+  
+- variables: 查询参数
+
+返回值：
+  - 数字：
+    - 如果 <= 0, 插入到头部
+    - 如果 >= rows.length, 插入到尾部
+    - 其它情况，插入到指定位置之前
+  - start
+    插入到头部
+  - end
+    插入到头部
+  - undefined
+    无法判断新对象应该插入到什么位置。缓存中数据作废，所有受此关联相关的UI查询自动刷新。
+  > 注意
+  > - 如果使用forward分页，如果新数据被定位到尾部，优化行为终止，缓存中数据作废，所有受此关联相关的UI查询自动刷新。 
+  > - 如果使用backward分页，如果新数据被定位到头部，优化行为终止，缓存中数据作废，所有受此关联相关的UI查询自动刷新。
+
 
 
 ## 3. 对象内容被修改后
