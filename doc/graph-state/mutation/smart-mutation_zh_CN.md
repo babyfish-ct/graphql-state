@@ -271,8 +271,8 @@ function createStateManager() {
 > 注意：
 > 
 > 此处只需判断variables?.name是否为undefined，不用考虑null和""
-> - null会被转化为undefined
-> - 如果参数为""，但GraphQL schema并没有定义改参数不能为空，转化为""
+> - null会被自动转化为undefined
+> - 如果参数为""，但GraphQL schema并没有定义改参数不能为空，自动转化为undefined
 
 这个优化可选的，如果用户没有指定，框架默认的的contains行为如下
 ```
