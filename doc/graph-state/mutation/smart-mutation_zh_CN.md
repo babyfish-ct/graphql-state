@@ -407,7 +407,7 @@ function createStateManager() {
                             return undefined;
                         }
                         if (rows[i].get("name") > rowName) {
-                                return i;
+                            return i;
                         }
                     }
                     return "end";
