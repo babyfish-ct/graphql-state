@@ -51,7 +51,7 @@ type BookStore {
 
 如上图，我们有两个关联族，每个族中有三个子关联
 
-### 1.2 link和unlink
+### 1.2. link和unlink
 
 清观察下面的代码
 ```
@@ -104,6 +104,44 @@ books({name: "b"}).tryLink({
 这说明，books({name: "a"})的变化有可能对books()和books({name: "b"})形成影响。即
 
 > 同族内的子关联之间会相互影响; 任何一个被修改，其余的都会被执行unlink或link操作
+
+### 1.3. Variables contains
+
+为了更好地判断是否可以直接修改缓存，引入了一个概念variables contains，判断查询参数之间的包含关系
+```
+contains(variables1, variables2): boolean
+```
+改方法件判断variables1是否包含variables2，即variables2的所有字段都在variables1中存在且它们的值相等
+|Expression|Result|
+|--------|--------|
+|contains({k1: 'A', k2: 'B'}, {k1: 'A'})|true|
+|contains({k1: 'A'}, {k1: 'A', k2: 'B'})|false|
+|||
+|contains({name: "a"}, {name: "a")|true|
+|||
+|contains({name: "a"}, {name: "b")|false|
+|contains({name: "b"}, {name: "a")|false|
+|||
+|contains({name: "a"}, udefined)|true|
+|contains(undefined, {name: "a"})|false|
+|||
+|contains(undefined, udefined)|true|
+
+借助辅助这个函数，ttryUnlink的实现如下
+
+tryUnlink(oldIds: ReadonlyArray<any>, reason: any) {
+    for (const oldId of oldIds) {
+        tryUnlinkOne(oldId, reason)
+    }
+}
+
+tryUnlinkOne(oldId: any, reason: any) {
+    if (!this.ids.contains(oldId)) {
+        return; //当前
+    }
+tryUnlinkOne(oldId: any, reason: any) {g
+tryUnlinkOne(oldId: any, reason: any) 
+}
 
 --------------------------------
 
