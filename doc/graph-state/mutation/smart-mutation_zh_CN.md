@@ -236,7 +236,7 @@ import { newTypedConfiguration } from './__generated';
 
 function createStateManager() {
     return newTypedConfiguration()
-        .rootAssociationProperites("findBookStore", { ... })
+        .rootAssociationProperites("findBookStores", { ... })
         .assocaitionProperties("BookStore", "authors", {...})
         .network(...)
         .buildStateManager();
@@ -244,9 +244,35 @@ function createStateManager() {
 ```
 其中
 - rootAssociationProperites针对根对象Query的关联字段
-- assocaitionProperties针对
-- rootAssociationProperites针对根对象Query的关联字段q
-- rootAssociationProperites针对根对象Query的关联字
+- assocaitionProperties针对其他对象的关联字段
+二者用法一样
+
+> 注意：API是强类型设计，不用担心"findBookStores", "BookStore"和"authors"等字符串的拼写错误，错误会在编译时呈现。
+
+这里，我们以assocaitionProperties来讲解如何优化BookStore.books
+> 为了清晰讲解，这里写出了所有类型，并未有任何省略，你在开发中可以省略。
+
+```
+import { FlatRow } from 'graphql-state';
+import { BookStoreArgs, BookFlatType } from './generated/fetchers';
+
+function createStateManager() {
+    return newTypedConfiguration()
+        .assocaitionProperties("BookStore", "authors", {
+            contains: (
+                row: FlatRow<BookFlatType>,
+                variables: BookStoreArgs["books"]
+            ) => boolean | undefined {
+                if (variables.name === undefined) {
+                    return true; // 没有
+                }
+            ) => boolean | undefined {
+            }
+        })
+        .network(...)
+        .buildStateManager();
+}
+```
 
 
 --------------------------------
