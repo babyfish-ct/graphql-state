@@ -67,11 +67,11 @@ stateManager.save(
     {
         id: storeId,
         books: [
-            {id: c }, 
-            {id: d }, 
-            {id: e },
-            {id: f },
-            {id: g }
+            {id: id3 }, 
+            {id: id4 }, 
+            {id: id5 },
+            {id: id6 },
+            {id: id7 }
         ]
     }
     
@@ -80,14 +80,28 @@ stateManager.save(
 ```
 这段代码试图修改id为storeId的BookStore对象的子关联books({name: "a"})
 
-假如books({name: "a"})现在的旧值为[a, b, c, d, e]，而新的bookIds为[c, d, e, f, g]。对比新旧数据，被删除的book为[a, b]，被添加的书为[f, g]。
+假如books({name: "a"})现在的旧值为[id1, id2, id3, id4, id5]，而期望修改的新值为[id3, id4, id5, id6, id7]。对比新旧数据，被删除的book为[id1, id2]，被添加的书为[id6, id7]。
 
 当前BookStore对象，除了具备当前的books({name: "a})这个子关联外，还有另外两个子同族的子关联books()，books({name: "b"})，接下来，框架即将尝试
-- **尝试** books().unlink([a, b]);
-- **尝试** books().link([f, g]);
-- **尝试** books({name: "b"}).unlink([a, b]);
-- **尝试** books({name: "b"}).link([f, g]);
-
+```
+books().tryUnlink({
+    ids: [id1, id2], 
+    reason: {name: "a}
+});
+books().tryLink({
+    ids: [id6, id7], 
+    reason: {name: "a}
+});
+books({name: "b"}).tryUnlink({
+    ids: [id1, id2], 
+    reason: {name: "a}
+});
+books({name: "b"}).tryLink({
+    ids: [id6, id7], 
+    reason: {name: "a}
+});
+```
+这说明，books({name: "a"})的变化有可能对books()和books({name: "b"})形成影响
 
 --------------------------------
 
