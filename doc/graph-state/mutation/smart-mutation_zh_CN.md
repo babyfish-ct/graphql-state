@@ -255,7 +255,7 @@ function createStateManager() {
                     return row.get("name").toLowerCase()
                         .indexOf(variables.name.toLowerCase()) !== -1;
                 }
-                return undefined; // 如果name没有被缓存，的确不知道该如何优化
+                return undefined; // 如果name没有被缓存，不知道该如何优化
             }
         })
         .network(...)
@@ -274,7 +274,7 @@ function createStateManager() {
 > - null会被自动转化为undefined
 > - 如果参数为""，但GraphQL schema并没有定义改参数不能为空，自动转化为undefined
 
-这个优化可选的，如果用户没有指定，框架默认的的contains行为如下
+这个优化是可选的，如果用户没有指定，框架默认的的contains行为如下
 ```ts
 function defaultContains(
     row: FlatRow<BookFlatType>,
@@ -380,6 +380,8 @@ function defaultContains(
 
 ## 2. 对象被插入位置
 
+### 2.1. position决策
+
 由于各种原因，会导致对象被自动插入到并未被直接修改的集合关联中，这时我们决定其插入位置呢？关联是否有业务层面的排序呢？
 
 在[配套例子中](https://github.com/babyfish-ct/graphql-state/tree/master/example/client/src/graph/graphql)，所有关联数据是按照对象的name字段排序的。
@@ -425,8 +427,8 @@ function createStateManager() {
 - row: 即将被插入的新元素
 - rows: 现在已经存在的数据
 - paginationDirection:
-  - forward: 当前connection关联工作于forward分页模式
-  - backward: 当前connection关联工作于backward分页模式
+  - forward: 当前connection关联使用了forward模式的分页
+  - backward: 当前connection关联使用了backward模式的分页
   - undefined: 当前connection关联并未使用分页
   
   > paginationDirection不可能是"page"，page模式的分页无法进行优化以尝试判断其变更是否仅需要修改本地缓存
@@ -448,9 +450,100 @@ function createStateManager() {
   > - 如果使用forward分页，如果新数据被定位到尾部，优化行为终止，缓存中数据作废，所有受此关联相关的UI查询自动刷新。 
   > - 如果使用backward分页，如果新数据被定位到头部，优化行为终止，缓存中数据作废，所有受此关联相关的UI查询自动刷新。
 
+### 2.2 默认的position
 
+position是可选的，如果用户没有指定，框架默认的的position行为如下
+```ts
+defaultPosition: (
+    row: FlatRow<BookFlatType>,
+    rows: ReadonlyArray<FlatRow<BookFlatType>>,
+    paginationDirection?: "forward" | "backward"
+    variables?: BookStoreArgs["books"]
+) => number | "start" | "end" | undefined {
+    return paginationDirection === "forward" ? "start" : "end";
+}
+```
+即，forward分页下，插入到头部，其余情况，全部插入到尾部。
 
 ## 3. 对象内容被修改后
+
+假如现在有如下数据
+```
++-------------+
+| A BookStore |
++---+---------+
+    |
+    |                             +-----+------------------------+
+    +----books({name: "typ"})---->| id  | name                   |
+    |                             +-----+------------------------+
+    |                             | id1 | Effective TypeScript   |
+    |                             | id2 | Programming TypeScript |
+    |                             +-----+------------------------+
+    |
+    |                             +-----+------------------------+
+    \----books({name: "gra"})---->| id  | name                   |
+                                  +-----+------------------------+
+                                  | id3 | Learning GraphQL       |
+                                  +-----+------------------------+
+```
+
+下面开看两个案例
+
+1. 执行
+```ts
+stateManager.set(book$$, {id: "id1", 'effective typescript'});
+```
+很明显, "effective typescript" > Programming TypeScript, 因此业务上期望的效果是这样的
+```
++-------------+
+| A BookStore |
++---+---------+
+    |
+    |                             +-----+------------------------+
+    +----books({name: "typ"})---->| id  | name                   |
+    |                             +-----+------------------------+
+    |                             | id2 | Programming TypeScript |
+    |                             | id1 | effective typescript   |
+    |                             +-----+------------------------+
+    |
+    |                             +-----+------------------------+
+    \----books({name: "gra"})---->| id  | name                   |
+                                  +-----+------------------------+
+                                  | id3 | Learning GraphQL       |
+                                  +-----+------------------------+
+```
+books({name: "typ"})的顺序发生了变化
+
+2. 执行
+```ts
+stateManager.set(book$$, {id: "id1", 'Effective GraphQL'});
+```
+很明显, "Effective GraphQL"不在和查询条件{name: "typ"}匹配, 业务上期望的效果是这样的
+```
++-------------+
+| A BookStore |
++---+---------+
+    |
+    |                             +-----+------------------------+
+    +----books({name: "typ"})---->| id  | name                   |
+    |                             +-----+------------------------+
+    |                             | id2 | Programming TypeScript |
+    |                             +-----+------------------------+
+    |
+    |                             +-----+------------------------+
+    \----books({name: "gra"})---->| id  | name                   |
+                                  +-----+------------------------+
+                                  | id1 | Effective GraphQL      |
+                                  | id3 | Learning GraphQL       |
+                                  +-----+------------------------+
+```
+比上个例子更惊人，被修改的数据直接搬家了。
+
+如何让graphql-state实现上面这两个效果呢？
+
+答案很简单，让graphql-state知道books({...})依赖于其对象的name字段即可，这样，被依赖的对象字段发生变更的时候，contains和position的策略有机会被重新执行一次
+
+
 --------------------------------
 
 [< 上一篇: useMutation](./useMutation_zh_CN.md) | [返回上级：变更](./README_zh_CN.md) | [下一篇：双向关联](./bidirectional-association_zh_CN.md)
