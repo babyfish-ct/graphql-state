@@ -24,11 +24,13 @@ useMutation<
 ```
 
 fetcher: 一个[graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client)的fetcher，其根对象类型必须为"Mutation"
+
 options: 一个可选的对象，包含如下字段
   - variables: 请求参数
   - onSuccess: 请求成功后调用此函数
   - onError: 请求失败后调用此函数
   - onComplete: 无论成功失败，请求完成后都会调用，相当于编程编程语言中的"finally"
+  
 返回值：一个对象，包含如下字段
   - mutate: 用户需要调用此函数发送变更请求到服务端。和useQuery，usePaginationQuery，useObject以及useObjects不同，变更请求不会自动发送，必须由用户自己调用
   - loading: 是否正在等待返回结果
