@@ -104,7 +104,7 @@ const MUTATION_FETCHER = mutation$.mergeBook(
     .store(bookStore$.id)
     .authors(author$.id)
 ```
-既要用与指定mutation的返回格式，又要勇于更新本地数据。我们可以选择把独立出来，如下
+既要用与指定mutation的返回格式，又要用于更新本地数据。我们可以稍微修改一下代码，把这部分独立出来，如下
 ```
 const BOOK_MUATION_INFO = book$$
     .store(bookStore$.id)
