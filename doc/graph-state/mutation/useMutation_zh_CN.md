@@ -58,7 +58,29 @@ options: 一个可选的对象，包含如下字段
   
 ## 2. 使用例子
 
+以在附带的例子的[服务端例子](https://github.com/babyfish-ct/graphql-state/tree/master/example/server)中，Mutation支持一个mergeBook字段，用于插入或修改Book，其sdl如下
+```
+type Mutation {
+    mergeBook(input: BookInput): Book
+}
 
+input BookInput {
+    id: String!
+    name: String!
+    storeId: String,
+    authorIds: [String!]!
+}
+type Book {
+    id: String!,
+    name: String!,
+    store: BookStore
+    authors: [Author!]!
+}
+
+type BookStore { ... }
+
+type Author { ... }
+```
 
 --------------
 [< 上一篇：变更缓存](./mutate-cache_zh_CN.md) | [返回上级：变更](./README_zh_CN.md) | [下一篇：智能变更 >](./smart-mutation_zh_CN.md)
