@@ -11,7 +11,7 @@
 - 框架如何抉择只需修改本地数据还是需要重新查询?
 - 如果用户愿意介入抉择过程，他应该如何参与优化?
 
-## 1. 当关联被修改时
+## 1. 关联被修改
 
 ### 1.1. 关联族和子关联
 
@@ -54,7 +54,7 @@ type BookStore {
 ### 1.2. link和unlink
 
 清观察下面的代码
-```
+```ts
 stateManager.save(
 
     bookStore$
@@ -80,7 +80,7 @@ stateManager.save(
 假设books({name: "a"})现在的旧值为[id1, id2]，而期望修改的新值为[id2, id3]。对比新旧数据，被删除的book为[id1]，被添加的书为[id3]。
 
 当前BookStore对象，除了具备当前的books({name: "a})这个子关联外，还有另外两个子同族的子关联books({})，books({name: "b"})，接下来，框架即将尝试
-```
+```ts
 books({}).tryUnlink({
     id: id1, 
     reason: {name: "a}
@@ -105,7 +105,7 @@ books({name: "b"}).tryLink({
 ### 1.3. containsVariables
 
 为了更好地判断是否可以直接修改缓存，引入了一个概念variables contains，判断查询参数之间的包含关系
-```
+```ts
 containsVariables(variables1, variables2): boolean
 ```
 改方法件判断variables1是否包含variables2，即variables2的所有字段都在variables1中存在且它们的值相等
@@ -125,7 +125,7 @@ containsVariables(variables1, variables2): boolean
 |containsVariables(undefined, udefined)|true|
 
 借助辅助这个函数，tryUnlink的逻辑如下
-```
+```ts
 tryUnlink(oldId, reason) {
     if (!this.ids.contains(oldId)) {
         return; //要删除的数据早已不存在, 不需要做任何事
@@ -142,7 +142,7 @@ tryUnlink(oldId, reason) {
 很遗憾，上文的案例并没有命中这种情况
 
 tryLink的逻辑如下
-```
+```ts
 tryLink(newId, reason) {
     if (this.ids.contains(newId)) {
         return; //要添加的新元素已经存在, 不需要做任何事
@@ -216,7 +216,7 @@ tryLink(newId, reason) {
 
 在创建全局的StateManager时，可以为对象之间的关联设置优化器
 
-```
+```ts
 import { newTypedConfiguration } from './__generated';
 
 function createStateManager() {
@@ -237,7 +237,7 @@ function createStateManager() {
 这里，我们以assocaitionProperties来讲解如何优化BookStore.books
 > 为了清晰讲解，这里写出了所有类型，并未有任何省略，你在开发中可以省略。
 
-```
+```ts
 import { FlatRow } from 'graphql-state';
 import { BookStoreArgs, BookFlatType } from './generated/fetchers';
 
@@ -275,7 +275,7 @@ function createStateManager() {
 > - 如果参数为""，但GraphQL schema并没有定义改参数不能为空，自动转化为undefined
 
 这个优化可选的，如果用户没有指定，框架默认的的contains行为如下
-```
+```ts
 function defaultContains(
     row: FlatRow<BookFlatType>,
     variables?: BookStoreArgs["books"]
