@@ -40,9 +40,20 @@ options: 一个可选的对象，包含如下字段
 > 注意
 > 
 > 有两种方法可以指定请求参数
-> 1. 在调用此Hook时指定options.variables
+> 1. 在调用此Hook时指定options.variables，例如
+>   ```
+>   const { mutate} = useMutation(..., {
+>      variables: { input: ...}
+>   });
+>   ```
 > 2. 在调用此Hook返回的muate函数时指定参数
-> 
+>   ```
+>   const { mutation } = useMutation(..., {});
+>   const onSubmitClick = useCallback(() => {
+>       mutate({input: ...});
+>   }, [mutate]);
+>   ```
+>   
 > 如果两种行为都存在，2优先
   
 ## 2. 使用例子
