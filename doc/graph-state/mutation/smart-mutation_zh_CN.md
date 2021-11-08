@@ -2,9 +2,9 @@
 
 智能更新更新流程如下
 
-![image](https://github.com/babyfish-ct/graphql-state/smart-mutation_zh_CN.png "smart mutation")
+![image](../../../smart-mutation_zh_CN.png "smart mutation")
 
-此图图在首页[graphql-state](https://github.com/babyfish-ct/graphql-state/README_zh_CN.md)中已经讨论过了，这里不再赘述。
+此图图在首页中已经讨论过了，这里不再赘述。
 
 本文档重点讨论两点：
 
