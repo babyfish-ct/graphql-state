@@ -378,7 +378,53 @@ function defaultContains(
     </tbody>
 </table>
 
-## 2. 新对象被插入到什么位置？
+## 2. 对象被插入位置
+
+由于各种原因，会导致对象被自动插入到并未被直接修改的集合关联中，这时我们决定其插入位置呢？关联是否有业务层面的排序呢？
+
+在[配套例子中](https://github.com/babyfish-ct/graphql-state/tree/master/example/client/src/graph/graphql)，数据是按照对象的name字段排序的，我们可以这样来为被自动插入的对象提供插入位置
+```ts
+import { FlatRow } from 'graphql-state';
+import { BookStoreArgs, BookFlatType } from './generated/fetchers';
+
+function createStateManager() {
+    return newTypedConfiguration()
+        .assocaitionProperties("BookStore", "authors", {
+            contains: ...,
+            position: (
+                row: FlatRow<BookFlatType>,
+                rows: ReadonlyArray<FlatRow<BookFlatType>>,
+                paginationDirection?: "forward" | "backward"
+                variables?: BookStoreArgs["books"]
+            ) => number | "start" | "end" | undefined {
+                if (row.has("name")) { // if name of new row is cached
+                    const rowName = row.get("name");
+                    for (let i = 0; i < rows.length; i++) {
+                        if (!rows[i].has("name")) { // if name of existing row is not cached
+                            return undefined;
+                        }
+                        if (rows[i].get("name") > rowName) {
+                                return i;
+                        }
+                    }
+                    return "end";
+                }
+                return undefined;
+            }
+        })
+        .network(...)
+        .buildStateManager();
+}
+```
+
+这里，position函数为新对象指定插入位置
+参数:
+- row: 即将被插入的新元素
+- rows: 现在已经存在的数据
+- paginationDirection:
+  - forward: 当前
+- rows: 现在已经存在的数据
+
 
 ## 3. 对象内容被修改后
 --------------------------------
