@@ -127,8 +127,8 @@ contains(variables1, variables2): boolean
 |||
 |contains(undefined, udefined)|true|
 
-借助辅助这个函数，ttryUnlink的实现如下
-
+借助辅助这个函数，tryUnlink的实现如下
+```
 tryUnlink(oldIds: ReadonlyArray<any>, reason: any) {
     for (const oldId of oldIds) {
         tryUnlinkOne(oldId, reason)
@@ -137,11 +137,86 @@ tryUnlink(oldIds: ReadonlyArray<any>, reason: any) {
 
 tryUnlinkOne(oldId: any, reason: any) {
     if (!this.ids.contains(oldId)) {
-        return; //当前
+        return; //当前子关联并没有oldId, 不需要做任何事
     }
-tryUnlinkOne(oldId: any, reason: any) {g
-tryUnlinkOne(oldId: any, reason: any) 
+    if (contains(this.variables, reason)) {
+        this.remove(oldId); //条件比我宽松的子关联都同意删除旧元素了，我当然同意
+        return;
+    }
+    ... 更多的代码 需要进一步判断 ....
 }
+```
+因为conains({name: "a"}, {})，所以，
+如果一个元素从books({})中被删除，那么它一定能直接从books({name: "a"})被删除。
+很遗憾，上文的案例并没有命中这种情况
+
+tryLink的实现如下
+```
+tryUnlink(newIds: ReadonlyArray<any>, reason: any) {
+    for (const oldId of oldIds) {
+        tryUnlinkOne(oldId, reason)
+    }
+}
+
+tryUnlinkOne(oldId: any, reason: any) {
+    if (!this.ids.contains(oldId)) {
+        return; //当前子关联并没有oldId, 不需要做任何事
+    }
+    if (contains(reason, this.variables)) {
+        this.remove(oldId); //条件比我严格的子关联同意添加新元素了，我当然同意
+    }
+    ... 更多的代码 需要进一步判断 ....
+}
+```
+
+经过此variables contains的优化，上个章节的行为变成了
+> 暂时
+<table>
+    <thead>
+        <tr>
+            <th>期望行为<th>
+            <th>判断结果</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+<pre>books({}).tryUnlink({
+    ids: [id1, id2], 
+    reason: {name: "a}
+});</pre>
+            </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>
+<pre>books({}).tryLink({
+    ids: [id6, id7], 
+    reason: {name: "a}
+});</pre>
+            </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>
+<pre>books({name: "b"}).tryUnlink({
+    ids: [id1, id2], 
+    reason: {name: "a}
+});</pre>
+            </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>
+<pre>books({name: "b"}).tryLink({
+    ids: [id6, id7], 
+    reason: {name: "a}
+});</pre>
+            </td>
+            <td></td>
+        </tr>
+    </tbody>
+</table>
 
 --------------------------------
 
