@@ -67,11 +67,8 @@ stateManager.save(
     {
         id: storeId,
         books: [
-            {id: id3 }, 
-            {id: id4 }, 
-            {id: id5 },
-            {id: id6 },
-            {id: id7 }
+            {id: id2 }, 
+            {id: id3 }
         ]
     }
     
@@ -80,24 +77,24 @@ stateManager.save(
 ```
 这段代码试图修改id为storeId的BookStore对象的子关联books({name: "a"})
 
-假如books({name: "a"})现在的旧值为[id1, id2, id3, id4, id5]，而期望修改的新值为[id3, id4, id5, id6, id7]。对比新旧数据，被删除的book为[id1, id2]，被添加的书为[id6, id7]。
+假设books({name: "a"})现在的旧值为[id1, id2]，而期望修改的新值为[id2, id3]。对比新旧数据，被删除的book为[id1]，被添加的书为[id3]。
 
 当前BookStore对象，除了具备当前的books({name: "a})这个子关联外，还有另外两个子同族的子关联books({})，books({name: "b"})，接下来，框架即将尝试
 ```
 books({}).tryUnlink({
-    ids: [id1, id2], 
+    id: id1, 
     reason: {name: "a}
 });
 books({}).tryLink({
-    ids: [id6, id7], 
+    id: id3, 
     reason: {name: "a}
 });
 books({name: "b"}).tryUnlink({
-    ids: [id1, id2], 
+    id: id1, 
     reason: {name: "a}
 });
 books({name: "b"}).tryLink({
-    ids: [id6, id7], 
+    id: id3, 
     reason: {name: "a}
 });
 ```
@@ -127,15 +124,9 @@ containsVariables(variables1, variables2): boolean
 |||
 |containsVariables(undefined, udefined)|true|
 
-借助辅助这个函数，tryUnlink的实现如下
+借助辅助这个函数，tryUnlink的逻辑如下
 ```
-tryUnlink(oldIds: ReadonlyArray<any>, reason: any) {
-    for (const oldId of oldIds) {
-        tryUnlinkOne(oldId, reason)
-    }
-}
-
-tryUnlinkOne(oldId: any, reason: any) {
+tryUnlink(oldId, reason) {
     if (!this.ids.contains(oldId)) {
         return; //要删除的数据早已不存在, 不需要做任何事
     }
@@ -150,15 +141,9 @@ tryUnlinkOne(oldId: any, reason: any) {
 如果一个元素从books({})中被删除，那么它一定能直接从books({name: "a"})被删除。
 很遗憾，上文的案例并没有命中这种情况
 
-tryLink的实现如下
+tryLink的逻辑如下
 ```
-tryLink(newIds: ReadonlyArray<any>, reason: any) {
-    for (const newId of newIds) {
-        tryLinkOne(oldId, reason)
-    }
-}
-
-tryLinkOne(newId: any, reason: any) {
+tryLink(newId, reason) {
     if (this.ids.contains(newId)) {
         return; //要添加的新元素已经存在, 不需要做任何事
     }
@@ -188,7 +173,7 @@ tryLinkOne(newId: any, reason: any) {
         <tr>
             <td>
 <pre>books({}).tryUnlink({
-    ids: [id1, id2], 
+    id: id1, 
     reason: {name: "a}
 });</pre>
             </td>
@@ -197,7 +182,7 @@ tryLinkOne(newId: any, reason: any) {
         <tr>
             <td>
 <pre>books({}).tryLink({
-    ids: [id6, id7], 
+    id: id3, 
     reason: {name: "a}
 });</pre>
             </td>
@@ -209,7 +194,7 @@ tryLinkOne(newId: any, reason: any) {
         <tr>
             <td>
 <pre>books({name: "b"}).tryUnlink({
-    ids: [id1, id2], 
+    id: id1, 
     reason: {name: "a}
 });</pre>
             </td>
@@ -218,7 +203,7 @@ tryLinkOne(newId: any, reason: any) {
         <tr>
             <td>
 <pre>books({name: "b"}).tryLink({
-    ids: [id6, id7], 
+    id: id3, 
     reason: {name: "a}
 });</pre>
             </td>
@@ -261,12 +246,16 @@ function createStateManager() {
         .assocaitionProperties("BookStore", "authors", {
             contains: (
                 row: FlatRow<BookFlatType>,
-                variables: BookStoreArgs["books"]
+                variables?: BookStoreArgs["books"]
             ) => boolean | undefined {
-                if (variables.name === undefined) {
-                    return true; // 没有
+                if (variables?.name === undefined) {
+                    return true; 
                 }
-            ) => boolean | undefined {
+                if (row.has("name")) { // 如果name被缓存，检查之
+                    return row.get("name").toLowerCase()
+                        .indexOf(variables.name.toLowerCase()) !== -1;
+                }
+                return undefined; // 如果name没有被缓存，的确不知道该如何优化
             }
         })
         .network(...)
@@ -274,6 +263,92 @@ function createStateManager() {
 }
 ```
 
+这里
+- 先检查子关联的参数是否指定了name，如果没有，直接判定接受元素属于关联
+- 如果对象的name被缓存了，检查对象的name是否包含参数的name，并返回检查结果
+- 如果对象的name没有被缓存，没有任何办法优化，返回undefine即可
+
+> 注意：
+> 
+> 此处只需判断variables?.name是否为undefined，不用考虑null和""
+> - null会被转化为undefined
+> - 如果参数为""，但GraphQL schema并没有定义改参数不能为空，转化为""
+
+这个优化可选的，如果用户没有指定，框架默认的的contains行为如下
+```
+function defaultContains(
+    row: FlatRow<BookFlatType>,
+    variables?: BookStoreArgs["books"]
+) => boolean | undefined {
+    if (variables?.name === undefined) {
+        return true; 
+    }
+    return undefined; 
+}
+```
+即便是框架默认的优化器，对没有参数的子关联也是很友好的。
+
+至此，上文无法执行的三个操作的执行策略为
+
+<table>
+    <thead>
+        <tr>
+            <th>期望行为</th>
+            <th>判断结果</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+<pre>books({}).tryUnlink({
+    id: id1, 
+    reason: {name: "a}
+});</pre>
+            </td>
+            <td>
+                当前子关联无参数
+                - 如果用户不参与优化
+                    不做任何操作，旧对象不应该被移除（这是没问题的，这里讨论的是修改bookStore.books({name: "a"})，不是delete操作）
+                - 如果用户参与优化
+                    不做任何操作，旧对象不应该被移除（对于无参数子关联，上文中的用户行为和框架行为一致）
+            </td>
+        </tr>
+        <tr>
+            <td>
+<pre>books({name: "b"}).tryUnlink({
+    id: id1, 
+    reason: {name: "a}
+});</pre>
+            </td>
+            <td>
+                当前子关联有参数
+                - 如果用户不参与优化
+                    缓存中数据作废，所有受此关联相关的UI查询自动刷新
+                - 如果用户参与优化，检查用户实现的contains函数的返回值
+                    - true: 不做任何操作
+                    - false: 从当前子关联删除元素
+                    - undefined: 用户也无法判断。缓存中数据作废，所有受此关联相关的UI查询自动刷新
+            </td>
+        </tr>
+        <tr>
+            <td>
+<pre>books({name: "b"}).tryLink({
+    id: id3, 
+    reason: {name: "a}
+});</pre>
+            </td>
+            <td>
+                当前子关联有参数
+                - 如果用户不参与优化
+                    缓存中数据作废，所有受此关联相关的UI查询自动刷新
+                - 如果用户参与优化，检查用户实现的contains函数的返回值
+                    - true: 为当前子关联添加新元素
+                    - false: 不做任何操作
+                    - undefined: 用户也无法判断。缓存中此关联作废，所有受此关联相关的UI查询自动刷新
+            </td>
+        </tr>
+    </tbody>
+</table>
 
 --------------------------------
 
