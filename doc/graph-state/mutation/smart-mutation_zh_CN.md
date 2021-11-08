@@ -67,10 +67,11 @@ stateManager.save(
     {
         id: storeId,
         books: [
-            {id: id1 }, 
-            {id: id2 }, 
-            ..., 
-            {id: idN}
+            {id: c }, 
+            {id: d }, 
+            {id: e },
+            {id: f },
+            {id: g }
         ]
     }
     
@@ -79,7 +80,7 @@ stateManager.save(
 ```
 这段代码试图修改id为storeId的BookStore对象的子关联books({name: "a"})
 
-假如这个BookStore现在的bookIds为
+假如books({name: "a"})现在的就关联
 ```
 a, b, c, d, e
 ```
