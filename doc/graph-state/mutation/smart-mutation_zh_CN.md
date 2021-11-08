@@ -227,6 +227,28 @@ tryLinkOne(newId: any, reason: any) {
     </tbody>
 </table>
 
+### 1.4. 默认优化器和用户优化器
+
+在创建全局的StateManager时，可以为对象之间的关联设置优化器
+
+```
+import { newTypedConfiguration } from './__generated';
+
+function createStateManager() {
+    return newTypedConfiguration()
+        .rootAssociationProperites("findBookStore", { ... })
+        .assocaitionProperties("BookStore", "authors", {...})
+        .network(...)
+        .buildStateManager();
+}
+```
+其中
+- rootAssociationProperites针对根对象Query的关联字段
+- assocaitionProperties针对
+- rootAssociationProperites针对根对象Query的关联字段q
+- rootAssociationProperites针对根对象Query的关联字
+
+
 --------------------------------
 
 [< 上一篇: useMutation](./useMutation_zh_CN.md) | [返回上级：变更](./README_zh_CN.md) | [下一篇：双向关联](./bidirectional-association_zh_CN.md)
