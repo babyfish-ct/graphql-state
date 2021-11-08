@@ -34,7 +34,7 @@ type BookStore {
 ```
 ----+-Query.findBookStores
     |
-    +---- Query.findBooksStores()
+    +---- Query.findBooksStores({})
     |
     +---- Query.findBooksStores({name: "a"})
     |
@@ -42,7 +42,7 @@ type BookStore {
 
 ----+- Book.authors
     |
-    +---- Book.authors()
+    +---- Book.authors({})
     |
     +---- Book.authors({name: "a"})
     |
@@ -82,13 +82,13 @@ stateManager.save(
 
 假如books({name: "a"})现在的旧值为[id1, id2, id3, id4, id5]，而期望修改的新值为[id3, id4, id5, id6, id7]。对比新旧数据，被删除的book为[id1, id2]，被添加的书为[id6, id7]。
 
-当前BookStore对象，除了具备当前的books({name: "a})这个子关联外，还有另外两个子同族的子关联books()，books({name: "b"})，接下来，框架即将尝试
+当前BookStore对象，除了具备当前的books({name: "a})这个子关联外，还有另外两个子同族的子关联books({})，books({name: "b"})，接下来，框架即将尝试
 ```
-books().tryUnlink({
+books({}).tryUnlink({
     ids: [id1, id2], 
     reason: {name: "a}
 });
-books().tryLink({
+books({}).tryLink({
     ids: [id6, id7], 
     reason: {name: "a}
 });
