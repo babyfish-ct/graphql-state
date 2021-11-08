@@ -82,5 +82,84 @@ type BookStore { ... }
 type Author { ... }
 ```
 
+mergeBook字段接受一个BookInput，返回Book，可以利用这个返回值修改本地数据
+
+| > 某些情况下，返回的对象和传入的Input所包含等价信息是等价相同的，但这不是绝对的，服务端允许返回和input不一致的数据，客户端应该以返回的数据为准。
+| > 无论如何，这是一个很常见且通用的设计方法
+
+如此，我们期望执行的变更操作的fetcher看起来应该是这个样子
+```
+const MUTATION_FETCHER = mutation$.mergeBook(
+    { input: ... },
+    book$$
+    .store(bookStore$.id)
+    .authors(author$.id)
+);
+```
+
+其中
+```
+    book$$
+    .store(bookStore$.id)
+    .authors(author$.id)
+```
+既要用与指定mutation的返回格式，又要勇于更新本地数据。我们可以选择把独立出来，如下
+```
+const BOOK_MUATION_INFO = book$$
+    .store(bookStore$.id)
+    .authors(author$.id)
+;
+
+const MUTATION_FETCHER = mutation$.mergeBook(
+    { input: ... },
+    BOOK_MUATION_INFO
+)
+```
+
+好了，现在，我们给出useMutation的示例代码
+
+```
+import { FC, memo } from 'react';
+import { useMutation } from 'graphql-state';
+import { useTypedStateManager } from './__generated/fetchers';
+import { mutation$, book$$, bookStore$, author$ } from './__generated/fetchers';
+import { BookInput } from './__generated/inputs';
+
+const BOOK_MUATION_INFO = book$$
+    .store(bookStore$.id)
+    .authors(author$.id)
+;
+
+export const BookMutationComponent: FC = memo(() => {
+
+    const stateManager = useTypedStateManager();
+    
+    const { mutate, loading } = useMutation(
+        mutation$.mergeBook(BOOK_MUTATION_INFO),
+        {
+            onSuccess: data => {
+                stateManager.save(BOOK_MUTATION_INFO, data);
+            }
+        }
+    );
+    
+    const onSaveClick = useCallback(() => {
+        const input: BookInput = ... more code, create input object by UI form...;
+        muate({ input });
+    }, [muate]);
+    
+    return (
+        <>
+            ...more code, UI form...
+            <button onClick={onSaveClick}>
+                {loading ? "Saving" : "Save"}
+            </button>
+        </>
+    );
+});
+```
+
+当用户点击Save按钮后，提交变更到服务端，并根据服务的的返回结果更新本地缓存
+
 --------------
 [< 上一篇：变更缓存](./mutate-cache_zh_CN.md) | [返回上级：变更](./README_zh_CN.md) | [下一篇：智能变更 >](./smart-mutation_zh_CN.md)
