@@ -80,15 +80,7 @@ stateManager.save(
 ```
 这段代码试图修改id为storeId的BookStore对象的子关联books({name: "a"})
 
-假如books({name: "a"})现在的就关联
-```
-a, b, c, d, e
-```
-新的bookIds为
-```
-c, d, e, f, g
-```
-对比新旧数据，被删除的book为[a, b]，被添加的书为[f, g]
+假如books({name: "a"})现在的旧值为[a, b, c, d, e]，而新的bookIds为[c, d, e, f, g]。对比新旧数据，被删除的book为[a, b]，被添加的书为[f, g]。
 
 当前BookStore对象，除了具备当前的books({name: "a})这个子关联外，还有另外两个子同族的子关联books()，books({name: "b"})，接下来，框架即将尝试
 - **尝试** books().unlink([a, b]);
