@@ -243,7 +243,7 @@ import { BookStoreArgs, BookFlatType } from './generated/fetchers';
 
 function createStateManager() {
     return newTypedConfiguration()
-        .assocaitionProperties("BookStore", "authors", {
+        .assocaitionProperties("BookStore", "books", {
             contains: (
                 row: FlatRow<BookFlatType>,
                 variables?: BookStoreArgs["books"]
@@ -394,7 +394,7 @@ import { BookStoreArgs, BookFlatType } from './generated/fetchers';
 
 function createStateManager() {
     return newTypedConfiguration()
-        .assocaitionProperties("BookStore", "authors", {
+        .assocaitionProperties("BookStore", "books", {
             contains: ...,
             position: (
                 row: FlatRow<BookFlatType>,
@@ -469,22 +469,22 @@ defaultPosition: (
 
 假如现在有如下数据
 ```
-+-------------+
-| A BookStore |
-+---+---------+
++-------+
+| Query |
++---+---+
     |
-    |                             +-----+------------------------+
-    +----books({name: "typ"})---->| id  | name                   |
-    |                             +-----+------------------------+
-    |                             | id1 | Effective TypeScript   |
-    |                             | id2 | Programming TypeScript |
-    |                             +-----+------------------------+
+    |                                 +-----+------------------------+
+    +----findBooks({name: "typ"})---->| id  | name                   |
+    |                                 +-----+------------------------+
+    |                                 | id1 | Effective TypeScript   |
+    |                                 | id2 | Programming TypeScript |
+    |                                 +-----+------------------------+
     |
-    |                             +-----+------------------------+
-    \----books({name: "gra"})---->| id  | name                   |
-                                  +-----+------------------------+
-                                  | id3 | Learning GraphQL       |
-                                  +-----+------------------------+
+    |                                 +-----+------------------------+
+    \----findBooks({name: "gra"})---->| id  | name                   |
+                                      +-----+------------------------+
+                                      | id3 | Learning GraphQL       |
+                                      +-----+------------------------+
 ```
 
 下面开看两个案例
@@ -499,18 +499,18 @@ stateManager.set(book$$, {id: "id1", 'effective typescript'});
 | A BookStore |
 +---+---------+
     |
-    |                             +-----+------------------------+
-    +----books({name: "typ"})---->| id  | name                   |
-    |                             +-----+------------------------+
-    |                             | id2 | Programming TypeScript |
-    |                             | id1 | effective typescript   |
-    |                             +-----+------------------------+
+    |                                 +-----+------------------------+
+    +----findBooks({name: "typ"})---->| id  | name                   |
+    |                                 +-----+------------------------+
+    |                                 | id2 | Programming TypeScript |
+    |                                 | id1 | effective typescript   |
+    |                                 +-----+------------------------+
     |
-    |                             +-----+------------------------+
-    \----books({name: "gra"})---->| id  | name                   |
-                                  +-----+------------------------+
-                                  | id3 | Learning GraphQL       |
-                                  +-----+------------------------+
+    |                                 +-----+------------------------+
+    \----findBooks({name: "gra"})---->| id  | name                   |
+                                      +-----+------------------------+
+                                      | id3 | Learning GraphQL       |
+                                      +-----+------------------------+
 ```
 books({name: "typ"})的顺序发生了变化
 
@@ -520,28 +520,45 @@ stateManager.set(book$$, {id: "id1", 'Effective GraphQL'});
 ```
 很明显, "Effective GraphQL"不在和查询条件{name: "typ"}匹配, 业务上期望的效果是这样的
 ```
-+-------------+
-| A BookStore |
-+---+---------+
++-------+
+| Query |
++---+---+
     |
-    |                             +-----+------------------------+
-    +----books({name: "typ"})---->| id  | name                   |
-    |                             +-----+------------------------+
-    |                             | id2 | Programming TypeScript |
-    |                             +-----+------------------------+
+    |                                 +-----+------------------------+
+    +----findBooks({name: "typ"})---->| id  | name                   |
+    |                                 +-----+------------------------+
+    |                                 | id2 | Programming TypeScript |
+    |                                 +-----+------------------------+
     |
-    |                             +-----+------------------------+
-    \----books({name: "gra"})---->| id  | name                   |
-                                  +-----+------------------------+
-                                  | id1 | Effective GraphQL      |
-                                  | id3 | Learning GraphQL       |
-                                  +-----+------------------------+
+    |                                 +-----+------------------------+
+    \----findBooks({name: "gra"})---->| id  | name                   |
+                                      +-----+------------------------+
+                                      | id1 | Effective GraphQL      |
+                                      | id3 | Learning GraphQL       |
+                                      +-----+------------------------+
 ```
 比上个例子更惊人，被修改的数据直接搬家了。
 
 如何让graphql-state实现上面这两个效果呢？
 
 答案很简单，让graphql-state知道books({...})依赖于其对象的name字段即可，这样，被依赖的对象字段发生变更的时候，contains和position的策略有机会被重新执行一次
+
+```ts
+function createStateManager() {
+    return newTypedConfiguration()
+        .rootAssocaitionProperties("findBooks", {
+            contains: ...,
+            position: ...,
+            dependencies: (
+                variables?: BookStoreArgs["findBooks"]
+            ) => ReadonlyArray<keyof BookFlatType> {
+                return ["name"];
+            }
+        })
+        .network(...)
+        .buildStateManager();
+}
+```
 
 
 --------------------------------
