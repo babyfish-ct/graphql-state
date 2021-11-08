@@ -48,7 +48,7 @@ options: 一个可选的对象，包含如下字段
 >   ```
 > 2. 在调用此Hook返回的muate函数时指定参数
 >   ```
->   const { mutation } = useMutation(..., {});
+>   const { mutate } = useMutation(..., {});
 >   const onSubmitClick = useCallback(() => {
 >       mutate({input: ...});
 >   }, [mutate]);
