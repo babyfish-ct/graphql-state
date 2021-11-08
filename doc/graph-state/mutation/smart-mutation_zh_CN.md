@@ -309,7 +309,7 @@ function defaultContains(
                 当前子关联无参数
                 <ul>
                     <li>
-                        <li>如果用户不参与优化</li>
+                        <div>如果用户不参与优化</div>
                         不做任何操作，旧对象不应该被移除
                         <div><i>
                             这是没问题的，如果对象在books({name: "a"})中的消失是是因为其它原因导致的
@@ -378,6 +378,9 @@ function defaultContains(
     </tbody>
 </table>
 
+## 2. 新对象被插入到什么位置？
+
+## 3. 对象内容被修改后
 --------------------------------
 
 [< 上一篇: useMutation](./useMutation_zh_CN.md) | [返回上级：变更](./README_zh_CN.md) | [下一篇：双向关联](./bidirectional-association_zh_CN.md)
