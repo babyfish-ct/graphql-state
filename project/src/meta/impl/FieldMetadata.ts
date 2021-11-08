@@ -176,20 +176,22 @@ export interface FieldMetadataOptions {
 }
 
 export interface AssocaitionProperties {
+    
     readonly contains: (
         row: FlatRow<any>,
         variables?: any
     ) => boolean | undefined;
-    
-    readonly dependencies: (
-        variables?: any
-    ) => ReadonlyArray<string> | undefined;
 
     readonly position: (
         row: FlatRow<any>,
         rows: ReadonlyArray<FlatRow<any>>,
-        paginationDirection?: "forward" | "backward"
+        paginationDirection?: "forward" | "backward",
+        variables?: any
     ) => PositionType | undefined;
+
+    readonly dependencies: (
+        variables?: any
+    ) => ReadonlyArray<string> | undefined;
 
     readonly range?: (
         range: ConnectionRange,
@@ -227,7 +229,8 @@ function createDefaultAssociationProperties(field: FieldMetadata): AssocaitionPr
         position: (
             _1: FlatRow<any>,
             _2: ReadonlyArray<FlatRow<any>>,
-            paginationDirection?: "forward" | "backward"
+            paginationDirection?: "forward" | "backward",
+            _4?: any,
         ): PositionType | undefined => {
             return paginationDirection === "forward" ? "start" : "end";
         },

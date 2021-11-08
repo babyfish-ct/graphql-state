@@ -33,7 +33,7 @@ export const BookStoreDialog: FC<{
 
     const stateManager = useTypedStateManager();
     
-    const [mutate, {loading}] = useMutation(
+    const { mutate, loading } = useMutation(
         mutation$.mergeBookStore(BOOK_STORE_EDIT_INFO),
         {
             onSuccess: data => {

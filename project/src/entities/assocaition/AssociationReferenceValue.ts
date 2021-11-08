@@ -85,5 +85,7 @@ export class AssociationReferenceValue extends AssociationValue {
     contains(target: Record): boolean {
         return this.referfence?.id === target.id;
     }
+
+    protected reorder(entityManager: EntityManager, target: Record) {}
 }
 

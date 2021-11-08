@@ -73,6 +73,9 @@ class EntityManager {
         if (pagination !== undefined && shape.typeName !== 'Query') {
             throw new Error(`The save method cannot accept pagination when the type name of shape is not "Query"`);
         }
+        if (shape.typeName === "Mutation") {
+            throw new Error(`save() does not accept object whose type is 'Mutation'`);
+        }
         this.modify(() => {
             this.visit(shape, objOrArray, (id, runtimeType, field, args, value) => {
                 const manager = this.recordManager(field.declaringType.name);
@@ -123,6 +126,9 @@ class EntityManager {
             const type = this.schema.typeMap.get(typeName);
             if (type === undefined) {
                 throw new Error(`Cannot save object id for illegal type "${typeName}"`);
+            }
+            if (typeName === "Mutation") {
+                throw new Error(`saveId() does not accept object whose type is 'Mutation'`);
             }
             return this.recordManager(typeName).saveId(id, type);
         });

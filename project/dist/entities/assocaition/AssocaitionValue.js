@@ -78,8 +78,13 @@ class AssociationValue {
                 if ((ref === null || ref === void 0 ? void 0 : ref.value) !== undefined) {
                     const result = (_a = this.association.field.associationProperties) === null || _a === void 0 ? void 0 : _a.contains(new Record_1.FlatRowImpl(this.association.record), (_b = this.args) === null || _b === void 0 ? void 0 : _b.filterVariables);
                     if (result === true) {
-                        // Cannot invoke "this.link" directly
-                        this.association.link(entityManager, ref.value, this.args);
+                        if (this.contains(ref.value)) {
+                            this.reorder(entityManager, ref.value);
+                        }
+                        else {
+                            // Cannot invoke "this.link" directly
+                            this.association.link(entityManager, ref.value, this.args);
+                        }
                         return;
                     }
                     if (result === false) {

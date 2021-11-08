@@ -13,6 +13,7 @@ export declare class AssociationConnectionValue extends AssociationValue {
     unlink(entityManager: EntityManager, targets: ReadonlyArray<Record>): void;
     private standardizeValueForNewLink;
     contains(target: Record): boolean;
+    protected reorder(entityManager: EntityManager, target: Record): void;
     private validate;
     private valueEquals;
 }

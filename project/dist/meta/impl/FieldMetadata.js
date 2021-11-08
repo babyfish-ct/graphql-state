@@ -144,7 +144,7 @@ function createDefaultAssociationProperties(field) {
             console.log(`Try to add new '${field.targetType.name}' object into the parameterized assocaition ${field.fullName}(${JSON.stringify(variables)}), but the assocaition properties of that parameterized assocition is not specified, ` +
                 `so the system does not known whether the new object should be added and evict that assocaition from cache`);
         },
-        position: (_1, _2, paginationDirection) => {
+        position: (_1, _2, paginationDirection, _4) => {
             return paginationDirection === "forward" ? "start" : "end";
         },
         dependencies: (variables) => {

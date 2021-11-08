@@ -9,7 +9,7 @@ export interface StateManager<TSchema extends SchemaType> {
 
     transaction<TResult>(callback: (ts: TransactionStatus) => TResult): TResult;
 
-    save<TName extends (keyof TSchema["entities"] & string) | "Query" | "Mutation", T extends object, TVariables extends object = {}>(
+    save<TName extends (keyof TSchema["entities"] & string) | "Query", T extends object, TVariables extends object = {}>(
         fetcher: ObjectFetcher<TName, T, any>,
         obj: T,
         variables?: TVariables

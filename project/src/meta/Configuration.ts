@@ -88,7 +88,8 @@ export interface ParameterizedAssociationProperties<TFlatType, TVariables> {
     readonly position?: (
         row: FlatRow<TFlatType>,
         rows: ReadonlyArray<FlatRow<TFlatType>>,
-        paginationDirection?: "forward" | "backward"
+        paginationDirection?: "forward" | "backward",
+        variables?: TVariables
     ) => PositionType | undefined;
 
     readonly range?: (

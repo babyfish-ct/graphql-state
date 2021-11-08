@@ -17,6 +17,7 @@ export declare abstract class AssociationValue {
     abstract link(entityManager: EntityManager, targets: ReadonlyArray<Record>): void;
     abstract unlink(entityManager: EntityManager, targets: ReadonlyArray<Record>): void;
     abstract contains(target: Record): boolean;
+    protected abstract reorder(entityManager: EntityManager, target: Record): void;
     protected releaseOldReference(entityManager: EntityManager, oldReference: Record | undefined): void;
     protected retainNewReference(entityManager: EntityManager, newReference: Record | undefined): void;
     dispose(entityManager: EntityManager): void;

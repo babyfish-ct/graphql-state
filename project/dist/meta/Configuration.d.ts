@@ -13,7 +13,7 @@ export interface Configuration<TSchema extends SchemaType> {
 export interface ParameterizedAssociationProperties<TFlatType, TVariables> {
     readonly contains?: (row: FlatRow<TFlatType>, variables?: TVariables) => boolean | undefined;
     readonly dependencies?: (variables?: TVariables) => ReadonlyArray<keyof TFlatType> | undefined;
-    readonly position?: (row: FlatRow<TFlatType>, rows: ReadonlyArray<FlatRow<TFlatType>>, paginationDirection?: "forward" | "backward") => PositionType | undefined;
+    readonly position?: (row: FlatRow<TFlatType>, rows: ReadonlyArray<FlatRow<TFlatType>>, paginationDirection?: "forward" | "backward", variables?: TVariables) => PositionType | undefined;
     readonly range?: (range: ConnectionRange, delta: number, direction: "forward" | "backward") => void;
 }
 export interface UnparameterizedAssociationProperties<TFlatType> {

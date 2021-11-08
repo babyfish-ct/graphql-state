@@ -47,6 +47,8 @@ export abstract class AssociationValue {
 
     abstract contains(target: Record): boolean;
 
+    protected abstract reorder(entityManager: EntityManager, target: Record): void;
+
     protected releaseOldReference(
         entityManager: EntityManager,
         oldReference: Record | undefined
@@ -133,8 +135,12 @@ export abstract class AssociationValue {
                         this.args?.filterVariables
                     );
                     if (result === true) {
+                        if (this.contains(ref.value)) {
+                            this.reorder(entityManager, ref.value);
+                        } else {
                         // Cannot invoke "this.link" directly
-                        this.association.link(entityManager, ref.value, this.args);
+                            this.association.link(entityManager, ref.value, this.args);
+                        }
                         return;
                     }
                     if (result === false) {

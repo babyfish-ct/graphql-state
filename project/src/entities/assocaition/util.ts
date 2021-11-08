@@ -1,3 +1,4 @@
+import { PositionType } from "../..";
 import { Record } from "../Record";
 
 export function toRecordMap(arr: ReadonlyArray<Record> | undefined): Map<any, Record> {
@@ -8,4 +9,20 @@ export function toRecordMap(arr: ReadonlyArray<Record> | undefined): Map<any, Re
         }
     }
     return map;
+}
+
+export function positionToIndex(position: PositionType, maxIndex: number): number {
+    if (position === 'start') {
+        return 0;
+    }
+    if (position === 'end') {
+        return maxIndex;
+    }
+    if (position <= 0) {
+        return 0;
+    }
+    if (position >= maxIndex) {
+        return maxIndex;
+    }
+    return position;
 }

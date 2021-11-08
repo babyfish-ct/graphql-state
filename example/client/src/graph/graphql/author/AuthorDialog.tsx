@@ -32,7 +32,7 @@ export const AuthorDialog: FC<{
 
     const stateManager = useTypedStateManager();
     
-    const [mutate, {loading}] = useMutation(
+    const { mutate, loading } = useMutation(
         mutation$.mergeAuthor(AUTHOR_EDIT_INFO),
         {
             onSuccess: data => { 

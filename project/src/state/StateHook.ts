@@ -16,9 +16,8 @@ import { StateManagerImpl } from "./impl/StateManagerImpl";
 import { WritableStateValue } from "./impl/WritableStateValue";
 import { ComputedStateValue } from "./impl/ComputedStateValue";
 import { SchemaType } from "../meta/SchemaType";
-import { Fetcher, ObjectFetcher } from "graphql-ts-client-api";
+import { Fetcher, ObjectFetcher, TextWriter } from "graphql-ts-client-api";
 import { MutationResultHolder, QueryResultHolder, StateValueHolder } from "./impl/Holder";
-import { Loadable } from "./impl/StateValue";
 import { useScopePath } from "./StateScope";
 
 export function useStateManager<TSchema extends SchemaType>(): StateManager<TSchema> {
@@ -159,6 +158,13 @@ export type AsyncPaginationReturnType<T, TAsyncStyle extends AsyncStyle> =
     }
 ;
 
+export interface MutationReturnType<T extends object, TVariables extends object> {
+    readonly mutate: (variables?: TVariables) => Promise<T>;
+    readonly data?: T;
+    readonly loading: boolean;
+    readonly error: any;
+}
+
 export type AsyncStyle = "suspense" | "refetchable-suspense" | "async-object";
 
 export function useQuery<
@@ -229,13 +235,18 @@ export function useMutation<
 >(
     fetcher: ObjectFetcher<"Mutation", T, TVariables>,
     options?: MutationOptions<T, TVariables>
-): [(variables?: TVariables)=> Promise<T>, Loadable<T>] {
+): MutationReturnType<T, TVariables> {
     const stateManager = useStateManager() as StateManagerImpl<any>;
     const [, setMutationResultVersion] = useState(0);
     const [holder] = useState(() => new MutationResultHolder(stateManager, setMutationResultVersion));
     holder.set(fetcher, options);
     const result = holder.get();
-    return [result.mutate, result.loadable];
+    return { 
+        mutate: result.mutate, 
+        data: result.loadable.data,
+        loading: result.loadable.loading,
+        error: result.loadable.error,
+    };
 }
 
 export function makeManagedObjectHooks<TSchema extends SchemaType>(): ManagedObjectHooks<TSchema> {
