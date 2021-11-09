@@ -16,8 +16,8 @@ class EntityManager {
         this._queryResultMap = new Map();
         this._evictListenerMap = new Map();
         this._changeListenerMap = new Map();
-        this._associationValueObservers = new Set();
         this._bidirectionalAssociationManagementSuspending = false;
+        this._modificationVersion = 0;
         this.dataService = new MergedDataService_1.MergedDataService(new RemoteDataService_1.RemoteDataService(this));
         const queryType = schema.typeMap.get("Query");
         if (queryType !== undefined) {
@@ -47,6 +47,9 @@ class EntityManager {
         }
         return ctx;
     }
+    get modificationVersion() {
+        return this._modificationVersion;
+    }
     modify(action, forGC = false) {
         if (this._ctx !== undefined) {
             if (forGC) {
@@ -55,7 +58,7 @@ class EntityManager {
             return action();
         }
         else {
-            this._ctx = new ModificationContext_1.ModificationContext(this.linkToQuery.bind(this), this.publishEvictChangeEvent.bind(this), this.publishEntityChangeEvent.bind(this), forGC);
+            this._ctx = new ModificationContext_1.ModificationContext(() => { ++this._modificationVersion; }, this.linkToQuery.bind(this), this.publishEvictChangeEvent.bind(this), this.publishEntityChangeEvent.bind(this), forGC);
             try {
                 return action();
             }
@@ -177,9 +180,8 @@ class EntityManager {
         (_a = this._evictListenerMap.get(typeName)) === null || _a === void 0 ? void 0 : _a.delete(listener);
     }
     publishEvictChangeEvent(e) {
-        for (const observer of this._associationValueObservers) {
-            observer.onEntityEvict(this, e);
-        }
+        var _a, _b;
+        (_b = (_a = this.recordManager(e.typeName).findRefById(e.id)) === null || _a === void 0 ? void 0 : _a.value) === null || _b === void 0 ? void 0 : _b.refresh(this, e);
         for (const [, set] of this._evictListenerMap) {
             for (const listener of set) {
                 listener(e);
@@ -204,9 +206,8 @@ class EntityManager {
         (_a = this._changeListenerMap.get(typeName)) === null || _a === void 0 ? void 0 : _a.delete(listener);
     }
     publishEntityChangeEvent(e) {
-        for (const observer of this._associationValueObservers) {
-            observer.onEntityChange(this, e);
-        }
+        var _a, _b;
+        (_b = (_a = this.recordManager(e.typeName).findRefById(e.id)) === null || _a === void 0 ? void 0 : _a.value) === null || _b === void 0 ? void 0 : _b.refresh(this, e);
         for (const [, set] of this._changeListenerMap) {
             for (const listener of set) {
                 listener(e);
@@ -223,14 +224,6 @@ class EntityManager {
                 }
             }
         }
-    }
-    addAssociationValueObserver(observer) {
-        if (observer !== undefined && observer !== null) {
-            this._associationValueObservers.add(observer);
-        }
-    }
-    removeAssociationValueObserver(observer) {
-        this._associationValueObservers.delete(observer);
     }
     forEach(typeName, visitor) {
         this.recordManager(typeName).forEach(visitor);
@@ -251,12 +244,12 @@ class EntityManager {
         }
     }
     gc() {
-        if (this._gcTimerId === undefined) {
-            this._gcTimerId = setTimeout(() => {
-                this._gcTimerId = undefined;
-                this.onGC();
-            }, 0);
-        }
+        // if (this._gcTimerId === undefined) {
+        //     this._gcTimerId = setTimeout(() => {
+        //         this._gcTimerId = undefined;
+        //         this.onGC();
+        //     }, 0);
+        // }
     }
     onGC() {
         for (const result of this._queryResultMap.values()) {

@@ -51,7 +51,7 @@ class Record {
         var _a;
         const fieldMetadata = typeof field === "string" ? this.runtimeType.fieldMap.get(field) : field;
         if (fieldMetadata === undefined) {
-            throw new Error(`Illega asscoaition field: "${field}"`);
+            return false;
         }
         return ((_a = this.associationMap.get(fieldMetadata)) === null || _a === void 0 ? void 0 : _a.has(args)) === true;
     }
@@ -59,7 +59,7 @@ class Record {
         var _a;
         const fieldMetadata = typeof field === "string" ? this.runtimeType.fieldMap.get(field) : field;
         if (fieldMetadata === undefined) {
-            throw new Error(`Illega asscoaition field: "${field}"`);
+            throw new Error(`Illegal asscoaition field: "${field}"`);
         }
         return (_a = this.associationMap.get(fieldMetadata)) === null || _a === void 0 ? void 0 : _a.get(args);
     }
@@ -176,10 +176,16 @@ class Record {
         // Add other behaviors in future
     }
     disposeAssocaitions(entityManager) {
-        this.associationMap.forEachValue(assocaition => {
-            assocaition.dispose(entityManager);
-        });
         this.associationMap.clear();
+    }
+    refresh(entityManager, event) {
+        this.backReferences.forEach((field, _, ownerRecord) => {
+            var _a;
+            // Duplicated invacaion, but not problem
+            // because Asscoaiton.refresh can ignore duplicated invocations
+            // by comparing EntityManager.modificationVersion
+            (_a = ownerRecord.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.refresh(entityManager, event);
+        });
     }
     gcVisit(field, args) {
         var _a;

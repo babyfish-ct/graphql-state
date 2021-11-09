@@ -33,7 +33,7 @@ class BackReferences {
         this.associationOwnerMap.forEach((field, subMap) => {
             subMap.forEachValue(set => {
                 set.forEach(record => {
-                    callback(field, set.variables, record);
+                    callback(field, set.args, record);
                 });
             });
         });
@@ -41,8 +41,8 @@ class BackReferences {
 }
 exports.BackReferences = BackReferences;
 class ParameterizedRecordSet {
-    constructor(variables) {
-        this.variables = variables;
+    constructor(args) {
+        this.args = args;
         this.records = new Set();
     }
     add(record) {

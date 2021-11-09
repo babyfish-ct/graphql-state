@@ -35,11 +35,11 @@ export class EntityManager {
 
     private _queryRecord?: Record;
 
-    private _associationValueObservers = new Set<AssociationValue>();
-
     private _bidirectionalAssociationManagementSuspending = false;
 
     private _gcTimerId?: NodeJS.Timeout;
+
+    private _modificationVersion = 0;
     
     constructor(
         readonly stateManager: StateManagerImpl<any>,
@@ -78,6 +78,10 @@ export class EntityManager {
         return ctx;
     }
 
+    get modificationVersion(): number {
+        return this._modificationVersion;
+    }
+
     modify<T>(action: () => T, forGC: boolean = false): T {
         if (this._ctx !== undefined) {
             if (forGC) {
@@ -86,6 +90,7 @@ export class EntityManager {
             return action();
         } else {
             this._ctx = new ModificationContext(
+                () => { ++this._modificationVersion },
                 this.linkToQuery.bind(this),
                 this.publishEvictChangeEvent.bind(this),
                 this.publishEntityChangeEvent.bind(this),
@@ -232,9 +237,7 @@ export class EntityManager {
     }
 
     private publishEvictChangeEvent(e: EntityEvictEvent) {
-        for (const observer of this._associationValueObservers) {
-            observer.onEntityEvict(this, e);
-        }
+        this.recordManager(e.typeName).findRefById(e.id)?.value?.refresh(this, e);
         for (const [, set] of this._evictListenerMap) {
             for (const listener of set) {
                 listener(e);
@@ -261,9 +264,7 @@ export class EntityManager {
     }
 
     private publishEntityChangeEvent(e: EntityChangeEvent) {
-        for (const observer of this._associationValueObservers) {
-            observer.onEntityChange(this, e);
-        }
+        this.recordManager(e.typeName).findRefById(e.id)?.value?.refresh(this, e);
         for (const [, set] of this._changeListenerMap) {
             for (const listener of set) {
                 listener(e);
@@ -281,16 +282,6 @@ export class EntityManager {
                 }
             }
         }
-    }
-
-    addAssociationValueObserver(observer: AssociationValue) {
-        if (observer !== undefined && observer !== null) {
-            this._associationValueObservers.add(observer);
-        }
-    }
-
-    removeAssociationValueObserver(observer: AssociationValue) {
-        this._associationValueObservers.delete(observer);
     }
 
     forEach(typeName: string, visitor: (record: Record) => boolean | void) {
@@ -314,12 +305,12 @@ export class EntityManager {
     }
 
     gc() {
-        if (this._gcTimerId === undefined) {
-            this._gcTimerId = setTimeout(() => {
-                this._gcTimerId = undefined;
-                this.onGC();
-            }, 0);
-        }
+        // if (this._gcTimerId === undefined) {
+        //     this._gcTimerId = setTimeout(() => {
+        //         this._gcTimerId = undefined;
+        //         this.onGC();
+        //     }, 0);
+        // }
     }
 
     private onGC() {

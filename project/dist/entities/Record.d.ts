@@ -1,3 +1,4 @@
+import { EntityChangeEvent, EntityEvictEvent } from "..";
 import { FlatRow } from "../meta/Configuration";
 import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
@@ -35,6 +36,7 @@ export declare class Record {
     createMap(): Map<string, any>;
     dispose(entityManager: EntityManager): void;
     private disposeAssocaitions;
+    refresh(entityManager: EntityManager, event: EntityEvictEvent | EntityChangeEvent): void;
     gcVisit(field: FieldMetadata, args: VariableArgs | undefined): void;
     collectGarbages(output: Garbage[]): void;
     toString(): string;

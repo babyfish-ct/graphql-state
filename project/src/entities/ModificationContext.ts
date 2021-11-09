@@ -8,15 +8,17 @@ export class ModificationContext {
     private objPairMap = new Map<TypeMetadata, Map<any, ObjectPair>>();
 
     constructor(
+        private versionIncreaser: () => void,
         private linkToQuery: (type: TypeMetadata, id: any) => void,
         private publishEvictEvent: (event: EntityEvictEvent) => void,
         private publishChangeEvent: (event: EntityChangeEvent) => void,
         private forGC: boolean
-    ) {}
+    ) {
+        this.versionIncreaser();
+    }
 
     close() {
-        let i = 0;
-        do {
+        while (true) {
             const pairMap = this.objPairMap;
             this.objPairMap = new Map<TypeMetadata, Map<any, ObjectPair>>();
             for (const [type, subMap] of pairMap) {
@@ -31,7 +33,11 @@ export class ModificationContext {
                     this.publishEvents(type, id, pair);
                 }
             }
-        } while (this.objPairMap.size !== 0);
+            if (this.objPairMap.size === 0) {
+                break;
+            }
+            this.versionIncreaser();
+        }
     }
 
     insert(record: Record) {

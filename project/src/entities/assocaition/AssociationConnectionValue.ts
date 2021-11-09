@@ -39,9 +39,7 @@ export class AssociationConnectionValue extends AssociationValue {
         pagination?: Pagination
     ) {
         const oldValueForTriggger = this.getAsObject();
-        
         const oldIndexMap = this.indexMap;
-
         const arr = this.newValue(entityManager, value, pagination);
         if (arr === undefined) {
             return;

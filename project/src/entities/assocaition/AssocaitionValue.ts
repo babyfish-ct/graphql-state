@@ -14,14 +14,12 @@ export abstract class AssociationValue {
     gcVisited = false;
 
     constructor(
-        entityManager: EntityManager,
         readonly association: Association,
         readonly args?: VariableArgs
     ) {
         const deps = association.field.associationProperties!.dependencies(args?.filterVariables);
         if (deps === undefined || deps === null || deps.length !== 0) {
             this.dependencies = deps === undefined || deps === null ? "all" : new Set(deps);
-            entityManager.addAssociationValueObserver(this);
         }
     }
 
@@ -102,13 +100,15 @@ export abstract class AssociationValue {
         }
     }
 
-    dispose(entityManager: EntityManager) {
-        if (this.dependencies !== undefined) {
-            entityManager.removeAssociationValueObserver(this);
+    referesh(entityManager: EntityManager, e: EntityEvictEvent | EntityChangeEvent) {
+        if (e.eventType === "evict") {
+            this.refreshByEvictEvent(entityManager, e);
+        } else if (e.eventType === "change") {
+            this.refreshByChangeEvent(entityManager, e);
         }
     }
 
-    onEntityEvict(entityManager: EntityManager, e: EntityEvictEvent) {
+    private refreshByEvictEvent(entityManager: EntityManager, e: EntityEvictEvent) {
         if (!e.causedByGC) {
             const targetType = this.association.field.targetType!;
             const actualType = entityManager.schema.typeMap.get(e.typeName)!;
@@ -120,32 +120,29 @@ export abstract class AssociationValue {
         }
     }
 
-    onEntityChange(entityManager: EntityManager, e: EntityChangeEvent) {
-        const declaredTypeName = this.association.field.declaringType.name;
+    private refreshByChangeEvent(entityManager: EntityManager, e: EntityChangeEvent) {
         const targetType = this.association.field.targetType!;
         const actualType = entityManager.schema.typeMap.get(e.typeName)!;
         if (targetType!.isAssignableFrom(actualType) && 
         e.changedType === "update" &&
         this.isTargetChanged(targetType, e.changedKeys)) {
-            if (declaredTypeName === "Query" && this.association.field.isContainingConfigured) {
+            if (this.association.field.isContainingConfigured) {
                 const ref = entityManager.findRefById(targetType.name, e.id);
                 if (ref?.value !== undefined) {
                     const result = this.association.field.associationProperties?.contains(
-                        new FlatRowImpl(this.association.record),
+                        new FlatRowImpl(ref.value),
                         this.args?.filterVariables
                     );
                     if (result === true) {
                         if (this.contains(ref.value)) {
                             this.reorder(entityManager, ref.value);
                         } else {
-                        // Cannot invoke "this.link" directly
-                            this.association.link(entityManager, ref.value, this.args);
+                            this.link(entityManager, [ref.value]);
                         }
                         return;
                     }
                     if (result === false) {
-                        // Cannot invoke "this.unlink" directly
-                        this.association.unlink(entityManager, ref.value, this.args);
+                        this.unlink(entityManager, [ref.value]);
                         return;
                     }
                 }
@@ -156,7 +153,7 @@ export abstract class AssociationValue {
 
     private isTargetChanged(targetType: TypeMetadata, keys: ReadonlyArray<EntityKey>) {
         for (const key of keys) {
-            if (typeof key === "string" && targetType.fieldMap.get(key)?.category === "SCALAR") {
+            if (typeof key === "string") {
                 if (this.dependencies === "all") {
                     return true;
                 }
@@ -165,6 +162,7 @@ export abstract class AssociationValue {
                 }
             }
         }
+        return false;
     }
 
     protected evict(entityManager: EntityManager) {

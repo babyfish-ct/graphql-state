@@ -9,12 +9,15 @@ import { AssociationListValue } from "./AssociationListValue";
 import { AssociationReferenceValue } from "./AssociationReferenceValue";
 import { Pagination } from "../QueryArgs";
 import { TextWriter } from "graphql-ts-client-api";
+import { EntityChangeEvent, EntityEvictEvent } from "../EntityEvent";
 
 export class Association {
 
     private valueMap = new SpaceSavingMap<string | undefined, AssociationValue>();
 
     private linkChanging = false;
+
+    private refreshedVersion = 0;
 
     constructor(
         readonly record: Record,
@@ -39,7 +42,8 @@ export class Association {
         value: any,
         pagination?: Pagination
     ) {
-        this.value(entityManager, args).set(entityManager, value, pagination);
+        this.refreshedVersion = entityManager.modificationVersion;
+        this.value(args).set(entityManager, value, pagination);
     }
 
     evict(
@@ -47,13 +51,13 @@ export class Association {
         args: VariableArgs | undefined,
         includeMoreStrictArgs: boolean
     ) {
+        this.refreshedVersion = entityManager.modificationVersion;
         const ctx = entityManager.modificationContext;
         if (includeMoreStrictArgs) {
             const keys: Array<string | undefined> = [];
             this.valueMap.forEachValue(value => {
                 if (VariableArgs.contains(value.args, args)) {
                     ctx.unset(this.record, this.field.name, value.args);
-                    value.dispose(entityManager);
                     keys.push(args?.key);
                 }
             });
@@ -64,7 +68,6 @@ export class Association {
             const value = this.valueMap.get(args?.key);
             if (value !== undefined) {
                 ctx.unset(this.record, this.field.name, value.args);
-                value.dispose(entityManager);
                 this.valueMap.remove(args?.key);
             }
         }
@@ -92,6 +95,7 @@ export class Association {
         mostStringentArgs: VariableArgs | undefined,
         insideModification: boolean = false
     ) {
+        this.refreshedVersion = entityManager.modificationVersion;
         this.changeLinks(() => {
             this.valueMap.forEachValue(value => {
                 if (insideModification && mostStringentArgs?.key === value.args?.key) {
@@ -137,6 +141,7 @@ export class Association {
         leastStringentArgs: VariableArgs | undefined,
         insideModification: boolean = false
     ) {
+        this.refreshedVersion = entityManager.modificationVersion;
         this.changeLinks(() => {
             this.valueMap.forEachValue(value => {
                 if (insideModification && leastStringentArgs?.key === value.args?.key) {
@@ -183,6 +188,7 @@ export class Association {
         entityManager: EntityManager, 
         target: Record
     ) {
+        this.refreshedVersion = entityManager.modificationVersion;
         this.changeLinks(() => {
             this.valueMap.forEachValue(value => {
                 value.unlink(
@@ -194,7 +200,6 @@ export class Association {
     }
 
     appendTo(map: Map<string, any>) {
-        const idFieldName = this.field.targetType!.idField.name;
         this.valueMap.forEachValue(value => {
             map.set(
                 VariableArgs.fieldKey(this.field.name, value.args), 
@@ -203,21 +208,15 @@ export class Association {
         });
     }
 
-    dispose(entityManager: EntityManager) {
-        this.valueMap.forEachValue(value => {
-            value.dispose(entityManager);
-        })
-    }
-
-    private value(entityManager: EntityManager, args: VariableArgs | undefined): AssociationValue {
+    private value(args: VariableArgs | undefined): AssociationValue {
         return this.valueMap.computeIfAbsent(args?.key, () => {
             switch (this.field.category) {
                 case "CONNECTION":
-                    return new AssociationConnectionValue(entityManager, this, args);
+                    return new AssociationConnectionValue(this, args);
                 case "LIST":
-                    return new AssociationListValue(entityManager, this, args);
+                    return new AssociationListValue(this, args);
                 default:
-                    return new AssociationReferenceValue(entityManager, this, args);
+                    return new AssociationReferenceValue(this, args);
             }
         });
     }
@@ -231,6 +230,15 @@ export class Association {
             action();
         } finally {
             this.linkChanging = false;
+        }
+    }
+
+    refresh(entityManager: EntityManager, event: EntityEvictEvent | EntityChangeEvent) {
+        if (this.refreshedVersion !== entityManager.modificationVersion) {
+            this.refreshedVersion = entityManager.modificationVersion;
+            this.valueMap.forEachValue(value => { 
+                value.referesh(entityManager, event); 
+            });
         }
     }
 

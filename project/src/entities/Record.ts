@@ -1,4 +1,5 @@
 import { TextWriter } from "graphql-ts-client-api";
+import { EntityChangeEvent, EntityEvictEvent } from "..";
 import { FlatRow } from "../meta/Configuration";
 import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
@@ -76,15 +77,18 @@ export class Record {
     hasAssociation(field: FieldMetadata | string, args?: VariableArgs): boolean {
         const fieldMetadata = typeof field === "string" ? this.runtimeType.fieldMap.get(field) : field;
         if (fieldMetadata === undefined) {
-            throw new Error(`Illega asscoaition field: "${field}"`);
+            return false;
         }
         return this.associationMap.get(fieldMetadata)?.has(args) === true;
     }
 
-    getAssociation(field: FieldMetadata | string, args?: VariableArgs): Record | ReadonlyArray<Record | undefined> | RecordConnection | undefined {
+    getAssociation(
+        field: FieldMetadata | string, 
+        args?: VariableArgs
+    ): Record | ReadonlyArray<Record | undefined> | RecordConnection | undefined {
         const fieldMetadata = typeof field === "string" ? this.runtimeType.fieldMap.get(field) : field;
         if (fieldMetadata === undefined) {
-            throw new Error(`Illega asscoaition field: "${field}"`);
+            throw new Error(`Illegal asscoaition field: "${field}"`);
         }
         return this.associationMap.get(fieldMetadata)?.get(args);
     }
@@ -244,10 +248,16 @@ export class Record {
     }
 
     private disposeAssocaitions(entityManager: EntityManager) {
-        this.associationMap.forEachValue(assocaition => { 
-            assocaition.dispose(entityManager); 
-        });
         this.associationMap.clear();
+    }
+
+    refresh(entityManager: EntityManager, event: EntityEvictEvent | EntityChangeEvent) {
+        this.backReferences.forEach((field, _, ownerRecord) => {
+            // Duplicated invacaion, but not problem
+            // because Asscoaiton.refresh can ignore duplicated invocations
+            // by comparing EntityManager.modificationVersion
+            ownerRecord.associationMap.get(field)?.refresh(entityManager, event);
+        });
     }
 
     gcVisit(field: FieldMetadata, args: VariableArgs | undefined) {

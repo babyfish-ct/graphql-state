@@ -7,5 +7,5 @@ export declare class BackReferences {
     remove(associationField: FieldMetadata, args: VariableArgs | undefined, ownerRecord: Record): void;
     forEach(callback: BackReferencesCallback): void;
 }
-declare type BackReferencesCallback = (field: FieldMetadata, variables: any, ownerRecord: Record) => void;
+declare type BackReferencesCallback = (field: FieldMetadata, args: VariableArgs | undefined, ownerRecord: Record) => void;
 export {};
