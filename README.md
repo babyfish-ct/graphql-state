@@ -1,43 +1,55 @@
 # A new react state management framework
 
-## Introduce
+## System functions
 
 ![image](./architecture.png "architecture")
-1. Simple state
 
-2. Graph state
+### 1. Simple State
 
-3. Http optimization
+A simple state management tool that looks similar to recoil, used to manage scattered data outside the business object model, and can be easily coordinated with the "Graph State".
 
+### 2. Graph State
 
-### 1. GraphQL style but not only GraphQL
-   
-1. If the server is not implemented based on GraphQL, the client will simulate a GraphQL implementation based on REST requests(Not implemented in 0.0.1).
+The core value of this framework is to provide graph state management capabilities that are far more intelligent than apollo-client and relay. This is also my motivation for creating this framework.
 
-### 2. No unnecessary re-rendering 
+Graph state management supports two core functions: 
+- Smart mutation
+- Bidirectional association
 
-Like recoil, each state is an individual piece of state, your components can subscribe to state. When the value changes only the related components are re-renders.
+#### 2.1 Smart Mutation
 
-### 3. Not only normalized cache, but also more database-like solution
+When using the traditional GraphQL client, the biggest pain developers face is the need to decide whether to update the local cache or requery the data after the change operation. If you choose to modify the local cache, you will face a heavy workload; if you choose to re-query, not only you need to accept the performance defects, but also it is not easy to determine which queries need to be re-executed.
 
-The state management of this framework is divided into two parts
+The cache database built into this framework is highly intelligent. You only need to simply update it with the information returned by the server, and it will analyze the impact of the new data on the existing cache, and try to modify only the local cache; if this effort is not feasible, the current operation will be automatically upgraded to Re-query behavior and automatically find all queries that need to be re-executed.
 
-1. simple-state: its API looks like recoil.
-2. graph-state: it looks like database.
+![image](./smart-mutation.png "Smart Mutation")
 
-graph-state is the core value of this framework.
+Regardless of whether the framework chooses to modify only the local data(A), or re-query(B). They are all fully automatic and do not require your intervention.
 
-#### 3.1. Intelligent object association maintenance
+However, you can also intervene in the decision-making process if you wish. You can use simple APIs to help it with performance optimization, increase the probability of occurrence (A) and decrease the probability of occurrence (B).
 
-In the past, when using the GraphQL client with cache, the greatest pain developers faced was the need to decide whether to update the local cache or re-query after the mutation operation. If you choose to modify the local cache, you will face a heavy workload; if you choose to re-query, not only will you accept performance defects, but it will also be difficult to determine which queries need to be refetched.
+##### 2.1.1. When users do not optimize
 
-The built-in cache database of this framework is highly intelligent. You only need to simply update it with the information returned by the server, it will first try to find out all other related objects that may be affected, then update the local data and modify the relationship between the old and new data; if this attempt is not feasible, it will automatically upgrade to re-query behavior and automatically determine which queries need to be refetched.
+Let's take a look at an example where the mutation cannot be completed by only modifying the local cache because the user does not optimize it. The GIF animation is as follows
 
-![image](./smart-mutation.png "Smart mutation")
+![image](./unoptimized-mutation.gif "When the user does not give optimization")
 
-Regardless of whether the framework chooses a better strategy for modifying local data **(A)** or a poor requery strategy **(B)**. They are all automated and do not require your intervention.
+When we changed "MANNING-1" to "MANNING-2", in the absence of user optimization, the two cache entries with parameters were cleared. Therefore, queries with parameters will automatically retrieve new data from the server again.
 
-However, you can also intervene in it. You can use simple APIs to help it optimize, increase the probability of case **(A)** and decrease the probability of case **(B)**.
+##### 2.1.1. 用户给予优化时
+
+Let's take a look at an example where the change can be completed by modifying the local cache without re-query due to the support of user optimization. The GIF animation is as follows
+![image](./optimized-mutation.gif "When the user gives optimization")
+
+当我们把"MANNING-1"修改成"MANNING-2"的时候，在用户优化的支持下，带参数的两个缓存项被直接更新，而不是被清除。所以，带参数的查询会马上呈现了最新结果，无需重新查询。
+
+> 注意
+> 
+> - Query.findBooksStores()
+> - Query.findBooksStores({name: "1"})
+> - Query.findBooksStores({name: "2"})
+> 
+> 实际项目中，被UI抛弃的数据可能会在较短时间内被垃圾回收系统释放。在这个例子中，为了达到演示效果，故意调整了垃圾释放策略，让这三个数据都可以相对长时间地在缓存中同时存在。
 
 #### 3.2. Bidirectonal association maintenance
 
