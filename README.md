@@ -86,7 +86,7 @@ O'REILLY.books.remove(LearningGraphQL);
 LearningGraphQL.store = MANNING;
 ```
 
-#### 3.3. Database style trigger
+#### 2.3. Database style trigger
 The built-in cache database supports triggers. Not only does the framework use it internally to achieve the purpose of data intelligent maintenance, the triggers are also exposed as public APIs so that developers can customize more intelligent behaviors.
 
 
