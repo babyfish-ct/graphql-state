@@ -1,4 +1,4 @@
-# [graphql-state](/)/[文档]/(../../README_zh_CN.md)/[简单状态](./README_zh_CN.md)/计算状态
+# [graphql-state](/)/[文档](../README_zh_CN.md)/[简单状态](./README_zh_CN.md)/计算状态
 
 ##1. 简单计算依赖
 
@@ -19,7 +19,21 @@ export const averageNumberState = createComputedState("averageNumber", ctx => {
 ```
 firstNumberState和secondNumberState是两个可写状态，averageNumberState是依赖它们的一个计算状态，计算它们的平均值
 
-> 当firstNumberState和secondNumberState中任何一个变化是，averageNumberState就会自动重新计算
+通过这这样一段代码，状态之间的计算依赖如下
+```
++--------------------+
+| averageNumberState |
++----+---------------+
+     |
+     |      +------------------+
+     +----> | firstNumberState |
+     |      +------------------+
+     |
+     |      +-------------------+
+     \----> | secondNumberState |
+            +-------------------+
+```
+当firstNumberState和secondNumberState中任何一个变化时，averageNumberState就会自动重新计算
 
 2. 在InputView.tsx中编辑两个可写状态
 ```ts
@@ -123,6 +137,11 @@ export const factorialResultState = createComputedState("factorialResult", ctx =
     });
 });
 ```
+> 上面的代码中
+> - "ctx(numberState)"表示当前计算状态依赖于可写状态
+> - "ctx(factorialState)表示当前计算状态依赖于另外一个计算状态"
+> - "ctx.self(...)"表示当前参数化计算状态依赖于其自身的另外不同参数所代表一个子状态
+
 通过这这样一段代码，状态之间的计算依赖如下
 ```
 +----------------------+
@@ -150,10 +169,6 @@ export const factorialResultState = createComputedState("factorialResult", ctx =
                                          \----> | factorialState(1) |
                                                 +-------------------+
 ```
-> 上面的代码中
-> - "ctx(numberState)"表示当前计算状态依赖于可写状态
-> - "ctx(factorialState)表示当前计算状态依赖于另外一个计算状态"
-> - "ctx.self(...)"表示当前参数化计算状态依赖于其自身的另外不同参数所代表一个子状态
 
 如果numberState发生变化，factorialResultState重新计算阶乘
 

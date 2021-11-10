@@ -1,3 +1,4 @@
+import { EntityChangeEvent } from "..";
 import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { VariableArgs } from "../state/impl/Args";
@@ -19,5 +20,6 @@ export declare class RecordManager {
     evict(id: any): void;
     forEach(visitor: (record: Record) => boolean | void): void;
     set(id: any, runtimeType: TypeMetadata, field: FieldMetadata, args: VariableArgs | undefined, value: any, pagination?: Pagination): void;
+    refresh(field: FieldMetadata, e: EntityChangeEvent): void;
     collectGarbages(output: Garbage[]): void;
 }

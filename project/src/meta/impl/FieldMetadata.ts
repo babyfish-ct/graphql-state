@@ -92,10 +92,14 @@ export class FieldMetadata {
         if (targetMetadata === undefined) {
             throw new Error(`Illegal association field "${this.fullName}", its target type "${this._targetType}" is not exists`);
         }
-        if (targetMetadata.category !== "OBJECT") {
-            throw new Error(`Illegal association field "${this.fullName}", the category of its target type "${this._targetType}" is not "OBJECT"`);
+        if (targetMetadata.category === "OBJECT") {
+            this._targetType = targetMetadata;
+            if (this.declaringType.category === "OBJECT" && this.declaringType.name !== "Mutation") {
+                targetMetadata.addBackRefField(this);
+            }
+        } else {
+            this._targetType = undefined;
         }
-        this._targetType = targetMetadata;
         return targetMetadata;
     }
 
@@ -176,20 +180,22 @@ export interface FieldMetadataOptions {
 }
 
 export interface AssocaitionProperties {
+
     readonly contains: (
         row: FlatRow<any>,
         variables?: any
     ) => boolean | undefined;
-    
-    readonly dependencies: (
-        variables?: any
-    ) => ReadonlyArray<string> | undefined;
 
     readonly position: (
         row: FlatRow<any>,
         rows: ReadonlyArray<FlatRow<any>>,
-        paginationDirection?: "forward" | "backward"
+        paginationDirection?: "forward" | "backward",
+        variables?: any
     ) => PositionType | undefined;
+
+    readonly dependencies: (
+        variables?: any
+    ) => ReadonlyArray<string> | undefined;
 
     readonly range?: (
         range: ConnectionRange,
@@ -227,7 +233,8 @@ function createDefaultAssociationProperties(field: FieldMetadata): AssocaitionPr
         position: (
             _1: FlatRow<any>,
             _2: ReadonlyArray<FlatRow<any>>,
-            paginationDirection?: "forward" | "backward"
+            paginationDirection?: "forward" | "backward",
+            _4?: any,
         ): PositionType | undefined => {
             return paginationDirection === "forward" ? "start" : "end";
         },

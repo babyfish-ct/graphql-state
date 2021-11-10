@@ -35,13 +35,13 @@ class QueryResult {
         this._refCount++;
         return this;
     }
-    release(maxDelayMillis) {
+    release(releasePolicy) {
         if (--this._refCount === 0) {
-            if (maxDelayMillis <= 0) {
+            const millis = (releasePolicy !== null && releasePolicy !== void 0 ? releasePolicy : this.entityManager.stateManager.releasePolicy)(new Date().getTime() - this._createdMillis);
+            if (millis <= 0) {
                 this.dispose();
                 return;
             }
-            const millis = Math.min(new Date().getTime() - this._createdMillis, maxDelayMillis);
             if (this._disposeTimerId !== undefined) {
                 clearTimeout(this._disposeTimerId);
             }
@@ -154,6 +154,10 @@ class QueryResult {
     dispose() {
         this.entityManager.removeEvictListener(undefined, this._evictListener);
         this.entityManager.removeChangeListener(undefined, this._changeListener);
+        if (this._disposeTimerId !== undefined) {
+            clearTimeout(this._disposeTimerId);
+            this._disposeTimerId = undefined;
+        }
         this.disposer();
     }
     _refetch() {

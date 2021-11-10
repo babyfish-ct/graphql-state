@@ -109,7 +109,12 @@ function useMutation(fetcher, options) {
     const [holder] = react_1.useState(() => new Holder_1.MutationResultHolder(stateManager, setMutationResultVersion));
     holder.set(fetcher, options);
     const result = holder.get();
-    return [result.mutate, result.loadable];
+    return {
+        mutate: result.mutate,
+        data: result.loadable.data,
+        loading: result.loadable.loading,
+        error: result.loadable.error,
+    };
 }
 exports.useMutation = useMutation;
 function makeManagedObjectHooks() {

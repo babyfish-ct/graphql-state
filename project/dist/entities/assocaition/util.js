@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.toRecordMap = void 0;
+exports.positionToIndex = exports.toRecordMap = void 0;
 function toRecordMap(arr) {
     const map = new Map();
     if (arr !== undefined) {
@@ -11,3 +11,19 @@ function toRecordMap(arr) {
     return map;
 }
 exports.toRecordMap = toRecordMap;
+function positionToIndex(position, maxIndex) {
+    if (position === 'start') {
+        return 0;
+    }
+    if (position === 'end') {
+        return maxIndex;
+    }
+    if (position <= 0) {
+        return 0;
+    }
+    if (position >= maxIndex) {
+        return maxIndex;
+    }
+    return position;
+}
+exports.positionToIndex = positionToIndex;

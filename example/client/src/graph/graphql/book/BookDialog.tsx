@@ -35,7 +35,7 @@ export const BookDialog: FC<{
 
     const stateManager = useTypedStateManager();
     
-    const [mutate, { loading }] = useMutation(
+    const { mutate, loading } = useMutation(
         mutation$.mergeBook(
             BOOK_EDIT_INFO
         ),

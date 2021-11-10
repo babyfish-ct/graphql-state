@@ -8,30 +8,28 @@ export class ModificationContext {
     private objPairMap = new Map<TypeMetadata, Map<any, ObjectPair>>();
 
     constructor(
-        private linkToQuery: (type: TypeMetadata, id: any) => void,
+        private versionIncreaser: () => void,
         private publishEvictEvent: (event: EntityEvictEvent) => void,
         private publishChangeEvent: (event: EntityChangeEvent) => void,
         private forGC: boolean
-    ) {}
+    ) {
+        this.versionIncreaser();
+    }
 
     close() {
-        let i = 0;
-        do {
+        while (true) {
             const pairMap = this.objPairMap;
             this.objPairMap = new Map<TypeMetadata, Map<any, ObjectPair>>();
-            for (const [type, subMap] of pairMap) {
-                for (const [id, pair] of subMap) {
-                    if (pair.oldObj === undefined && pair.newObj !== undefined) {
-                        this.linkToQuery(type, id);
-                    }
-                }
-            }
             for (const [type, subMap] of pairMap) {
                 for (const [id, pair] of subMap) {
                     this.publishEvents(type, id, pair);
                 }
             }
-        } while (this.objPairMap.size !== 0);
+            if (this.objPairMap.size === 0) {
+                break;
+            }
+            this.versionIncreaser();
+        }
     }
 
     insert(record: Record) {

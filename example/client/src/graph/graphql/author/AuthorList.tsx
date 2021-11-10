@@ -41,7 +41,7 @@ export const AuthorList: FC = memo(() => {
 
     const stateManager = useStateManager<Schema>();
     
-    const [remove, {loading: removing}] = useMutation(
+    const { mutate: remove, loading: removing } = useMutation(
         mutation$.deleteAuthor(),
         {
             onSuccess: data => {

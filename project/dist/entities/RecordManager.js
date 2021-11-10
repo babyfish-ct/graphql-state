@@ -75,6 +75,11 @@ class RecordManager {
         const record = this.saveId(id, runtimeType);
         record.set(this.entityManager, field, args, value, pagination);
     }
+    refresh(field, e) {
+        for (const record of this.recordMap.values()) {
+            record.refreshByChangeEvent(this.entityManager, field, e);
+        }
+    }
     collectGarbages(output) {
         for (const record of this.recordMap.values()) {
             if (record.staticType === record.runtimeType) {

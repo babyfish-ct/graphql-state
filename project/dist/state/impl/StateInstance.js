@@ -16,9 +16,9 @@ class StateInstance {
             new ComputedStateValue_1.ComputedStateValue(this, args, () => { this.valueMap.remove(args === null || args === void 0 ? void 0 : args.key); }));
         return stateValue.retain();
     }
-    release(args) {
+    release(args, releasePolicy) {
         var _a;
-        (_a = this.valueMap.get(args === null || args === void 0 ? void 0 : args.key)) === null || _a === void 0 ? void 0 : _a.release(60000);
+        (_a = this.valueMap.get(args === null || args === void 0 ? void 0 : args.key)) === null || _a === void 0 ? void 0 : _a.release(releasePolicy);
     }
     dispose() {
         const values = [];

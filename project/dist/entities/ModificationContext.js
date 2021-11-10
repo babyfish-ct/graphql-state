@@ -3,31 +3,28 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ModificationContext = void 0;
 const Args_1 = require("../state/impl/Args");
 class ModificationContext {
-    constructor(linkToQuery, publishEvictEvent, publishChangeEvent, forGC) {
-        this.linkToQuery = linkToQuery;
+    constructor(versionIncreaser, publishEvictEvent, publishChangeEvent, forGC) {
+        this.versionIncreaser = versionIncreaser;
         this.publishEvictEvent = publishEvictEvent;
         this.publishChangeEvent = publishChangeEvent;
         this.forGC = forGC;
         this.objPairMap = new Map();
+        this.versionIncreaser();
     }
     close() {
-        let i = 0;
-        do {
+        while (true) {
             const pairMap = this.objPairMap;
             this.objPairMap = new Map();
-            for (const [type, subMap] of pairMap) {
-                for (const [id, pair] of subMap) {
-                    if (pair.oldObj === undefined && pair.newObj !== undefined) {
-                        this.linkToQuery(type, id);
-                    }
-                }
-            }
             for (const [type, subMap] of pairMap) {
                 for (const [id, pair] of subMap) {
                     this.publishEvents(type, id, pair);
                 }
             }
-        } while (this.objPairMap.size !== 0);
+            if (this.objPairMap.size === 0) {
+                break;
+            }
+            this.versionIncreaser();
+        }
     }
     insert(record) {
         if (this.forGC) {

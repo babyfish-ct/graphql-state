@@ -3,14 +3,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AssociationValue = void 0;
 const Record_1 = require("../Record");
 class AssociationValue {
-    constructor(entityManager, association, args) {
+    constructor(association, args) {
         this.association = association;
         this.args = args;
         this.gcVisited = false;
         const deps = association.field.associationProperties.dependencies(args === null || args === void 0 ? void 0 : args.filterVariables);
         if (deps === undefined || deps === null || deps.length !== 0) {
             this.dependencies = deps === undefined || deps === null ? "all" : new Set(deps);
-            entityManager.addAssociationValueObserver(this);
         }
     }
     releaseOldReference(entityManager, oldReference) {
@@ -20,7 +19,7 @@ class AssociationValue {
             this.association.unlink(entityManager, oldReference, this.args, true);
             if (!entityManager.isBidirectionalAssociationManagementSuspending) {
                 const oppositeField = this.association.field.oppositeField;
-                if (oppositeField !== undefined) {
+                if (oppositeField !== undefined && this.args === undefined) {
                     if (oldReference) {
                         oldReference.unlink(entityManager, oppositeField, self);
                     }
@@ -49,12 +48,15 @@ class AssociationValue {
             }
         }
     }
-    dispose(entityManager) {
-        if (this.dependencies !== undefined) {
-            entityManager.removeAssociationValueObserver(this);
+    referesh(entityManager, e) {
+        if (e.eventType === "evict") {
+            this.refreshByEvictEvent(entityManager, e);
+        }
+        else if (e.eventType === "change") {
+            this.refreshByChangeEvent(entityManager, e);
         }
     }
-    onEntityEvict(entityManager, e) {
+    refreshByEvictEvent(entityManager, e) {
         if (!e.causedByGC) {
             const targetType = this.association.field.targetType;
             const actualType = entityManager.schema.typeMap.get(e.typeName);
@@ -65,27 +67,35 @@ class AssociationValue {
             }
         }
     }
-    onEntityChange(entityManager, e) {
+    refreshByChangeEvent(entityManager, e) {
         var _a, _b;
-        const declaredTypeName = this.association.field.declaringType.name;
         const targetType = this.association.field.targetType;
         const actualType = entityManager.schema.typeMap.get(e.typeName);
         if (targetType.isAssignableFrom(actualType) &&
-            e.changedType === "update" &&
+            e.changedType !== "delete" &&
             this.isTargetChanged(targetType, e.changedKeys)) {
-            if (declaredTypeName === "Query" && this.association.field.isContainingConfigured) {
+            if (this.association.field.isContainingConfigured) {
                 const ref = entityManager.findRefById(targetType.name, e.id);
                 if ((ref === null || ref === void 0 ? void 0 : ref.value) !== undefined) {
-                    const result = (_a = this.association.field.associationProperties) === null || _a === void 0 ? void 0 : _a.contains(new Record_1.FlatRowImpl(this.association.record), (_b = this.args) === null || _b === void 0 ? void 0 : _b.filterVariables);
-                    if (result === true) {
-                        // Cannot invoke "this.link" directly
-                        this.association.link(entityManager, ref.value, this.args);
+                    const belongToMe = this.belongToMe(ref.value);
+                    if (belongToMe === false) {
                         return;
                     }
-                    if (result === false) {
-                        // Cannot invoke "this.unlink" directly
-                        this.association.unlink(entityManager, ref.value, this.args);
-                        return;
+                    if (belongToMe === true) {
+                        const result = (_a = this.association.field.associationProperties) === null || _a === void 0 ? void 0 : _a.contains(new Record_1.FlatRowImpl(ref.value), (_b = this.args) === null || _b === void 0 ? void 0 : _b.filterVariables);
+                        if (result === true) {
+                            if (this.contains(ref.value)) {
+                                this.reorder(entityManager, ref.value);
+                            }
+                            else {
+                                this.link(entityManager, [ref.value]);
+                            }
+                            return;
+                        }
+                        if (result === false) {
+                            this.unlink(entityManager, [ref.value]);
+                            return;
+                        }
                     }
                 }
             }
@@ -93,17 +103,34 @@ class AssociationValue {
         }
     }
     isTargetChanged(targetType, keys) {
-        var _a, _b;
+        var _a;
         for (const key of keys) {
-            if (typeof key === "string" && ((_a = targetType.fieldMap.get(key)) === null || _a === void 0 ? void 0 : _a.category) === "SCALAR") {
+            if (typeof key === "string") {
                 if (this.dependencies === "all") {
                     return true;
                 }
-                if (((_b = this.dependencies) === null || _b === void 0 ? void 0 : _b.has(key)) === true) {
+                if (((_a = this.dependencies) === null || _a === void 0 ? void 0 : _a.has(key)) === true) {
                     return true;
                 }
             }
         }
+        return false;
+    }
+    belongToMe(target) {
+        if (this.association.record.runtimeType.name === "Query") {
+            return true;
+        }
+        if (this.association.anyValueContains(target)) {
+            return true;
+        }
+        const oppositeField = this.association.field.oppositeField;
+        if (oppositeField !== undefined) {
+            const oppositeReferenceMe = target.anyValueContains(oppositeField, this.association.record);
+            if (oppositeReferenceMe !== undefined) {
+                return oppositeReferenceMe;
+            }
+        }
+        return undefined;
     }
     evict(entityManager) {
         this.association.evict(entityManager, this.args, false);

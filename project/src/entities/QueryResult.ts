@@ -2,6 +2,7 @@ import { EntityChangeEvent } from "..";
 import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 import { VariableArgs } from "../state/impl/Args";
 import { Loadable } from "../state/impl/StateValue";
+import { ReleasePolicy } from "../state/State";
 import { ObjectQueryOptions, ObjectStyle, QueryMode } from "../state/StateHook";
 import { EntityEvictEvent } from "./EntityEvent";
 import { EntityManager } from "./EntityManager";
@@ -54,13 +55,15 @@ export class QueryResult {
         return this;
     }
 
-    release(maxDelayMillis: number) {
+    release(releasePolicy?: ReleasePolicy) {
         if (--this._refCount === 0) {
-            if (maxDelayMillis <= 0) {
+            const millis = (releasePolicy ?? this.entityManager.stateManager.releasePolicy)(
+                new Date().getTime() - this._createdMillis
+            );
+            if (millis <= 0) {
                 this.dispose();
                 return;
             }
-            const millis = Math.min(new Date().getTime() - this._createdMillis, maxDelayMillis)
             if (this._disposeTimerId !== undefined) {
                 clearTimeout(this._disposeTimerId);
             }
@@ -178,6 +181,10 @@ export class QueryResult {
     private dispose() {
         this.entityManager.removeEvictListener(undefined, this._evictListener);
         this.entityManager.removeChangeListener(undefined, this._changeListener);
+        if (this._disposeTimerId !== undefined) {
+            clearTimeout(this._disposeTimerId);
+            this._disposeTimerId = undefined;
+        }
         this.disposer();
     }
 

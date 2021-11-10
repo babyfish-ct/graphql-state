@@ -326,6 +326,8 @@ export interface ParameterizedStateAccessingOptions<TVariables> extends StateAcc
     readonly variables: TVariables;
 }
 
+export type ReleasePolicy = (aliveTime: number) => number;
+
 function unsupportedOperation() {
     throw new Error("UnsupportedOperationException");
 }

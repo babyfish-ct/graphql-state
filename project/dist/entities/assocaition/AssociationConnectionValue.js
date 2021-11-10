@@ -188,6 +188,33 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
         var _a;
         return ((_a = this.indexMap) === null || _a === void 0 ? void 0 : _a.has(target.id)) === true;
     }
+    reorder(entityManager, target) {
+        var _a, _b;
+        const index = (_a = this.indexMap) === null || _a === void 0 ? void 0 : _a.get(target.id);
+        if (index === undefined) {
+            throw new Error("Internal bug: cannot non-existing record");
+        }
+        if (((_b = this.connection) === null || _b === void 0 ? void 0 : _b.edges.length) === 1) {
+            return;
+        }
+        const newEdeges = [...this.connection.edges];
+        newEdeges.splice(index, 1);
+        try {
+            const newIndex = new Appender(this).appendTo(newEdeges, target);
+            if (newIndex !== index) {
+                let newConnection = Object.assign(Object.assign({}, this.connection), { edges: newEdeges });
+                this.standardizeValueForNewLink(newConnection);
+                this.set(entityManager, newConnection);
+            }
+        }
+        catch (ex) {
+            if (!ex[" $evict"]) {
+                throw ex;
+            }
+            this.evict(entityManager);
+            return;
+        }
+    }
     validate(value) {
         const association = this.association;
         if (value === undefined) {
@@ -271,36 +298,40 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
 exports.AssociationConnectionValue = AssociationConnectionValue;
 class Appender {
     constructor(owner) {
-        var _a, _b;
+        var _a, _b, _c, _d, _e;
         this.position = owner.association.field.associationProperties.position;
         const style = (_b = (_a = owner.args) === null || _a === void 0 ? void 0 : _a.paginationInfo) === null || _b === void 0 ? void 0 : _b.style;
         if (style === "forward") {
             this.direction = "forward";
+            this.hasMore = (_c = owner.get().pageInfo) === null || _c === void 0 ? void 0 : _c.hasNextPage;
         }
         else if (style === "backward") {
             this.direction = "backward";
+            this.hasMore = (_d = owner.get().pageInfo) === null || _d === void 0 ? void 0 : _d.hasPreviousPage;
         }
+        this.filterVariables = (_e = owner.args) === null || _e === void 0 ? void 0 : _e.filterVariables;
     }
     appendTo(newEdges, newNode) {
         const pos = newEdges.length === 0 ?
             0 :
-            this.position(newNode.toRow(), newEdges.map(e => e.node.toRow()), this.direction);
+            this.position(newNode.toRow(), newEdges.map(e => e.node.toRow()), this.direction, this.filterVariables);
         if (pos === undefined) {
             throw { " $evict": true };
         }
-        const index = pos === "start" ? 0 : pos === "end" ? newEdges.length : pos;
-        if (index <= 0 && this.direction === "backward") {
+        const index = util_1.positionToIndex(pos, newEdges.length);
+        if (index === 0 && this.direction === "backward" && this.hasMore !== false) {
             throw { " $evict": true };
         }
-        if (index >= newEdges.length && this.direction === "forward") {
+        if (index === newEdges.length && this.direction === "forward" && this.hasMore !== false) {
             throw { " $evict": true };
         }
         const cursor = "";
-        if (index >= newEdges.length) {
+        if (index === newEdges.length) {
             newEdges.push({ node: newNode, cursor });
         }
         else {
             newEdges.splice(Math.max(0, index), 0, { node: newNode, cursor });
         }
+        return index;
     }
 }

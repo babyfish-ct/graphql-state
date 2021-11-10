@@ -97,6 +97,31 @@ class AssociationListValue extends AssocaitionValue_1.AssociationValue {
         var _a;
         return ((_a = this.indexMap) === null || _a === void 0 ? void 0 : _a.has(target.id)) === true;
     }
+    reorder(entityManager, target) {
+        var _a;
+        const index = (_a = this.indexMap) === null || _a === void 0 ? void 0 : _a.get(target.id);
+        if (index === undefined) {
+            throw new Error("Internal bug: cannot non-existing record");
+        }
+        if (this.elements.length === 1) {
+            return;
+        }
+        const newElements = [...this.elements];
+        newElements.splice(index, 1);
+        try {
+            const newIndex = new Appender(this).appendTo(newElements, target);
+            if (newIndex !== index) {
+                this.set(entityManager, newElements.map(Record_1.objectWithOnlyId));
+            }
+        }
+        catch (ex) {
+            if (!ex[" $evict"]) {
+                throw ex;
+            }
+            this.evict(entityManager);
+            return;
+        }
+    }
     validate(newList) {
         if (newList !== undefined && newList !== null) {
             if (!Array.isArray(newList)) {
@@ -136,29 +161,28 @@ class AssociationListValue extends AssocaitionValue_1.AssociationValue {
 exports.AssociationListValue = AssociationListValue;
 class Appender {
     constructor(owner) {
-        var _a, _b;
+        var _a, _b, _c;
         this.position = owner.association.field.associationProperties.position;
         const style = (_b = (_a = owner.args) === null || _a === void 0 ? void 0 : _a.paginationInfo) === null || _b === void 0 ? void 0 : _b.style;
-        if (style === "forward") {
-            this.direction = "forward";
+        if (style !== "page") {
+            this.direction = style;
         }
-        else if (style === "backward") {
-            this.direction = "backward";
-        }
+        this.filterVariables = (_c = owner.args) === null || _c === void 0 ? void 0 : _c.filterVariables;
     }
     appendTo(newElements, newElement) {
         const pos = newElements.length === 0 ?
             0 :
-            this.position(newElement.toRow(), newElements.map(e => e.toRow()), this.direction);
+            this.position(newElement.toRow(), newElements.map(e => e.toRow()), this.direction, this.filterVariables);
         if (pos === undefined) {
             throw { " $evict": true };
         }
-        const index = pos === "start" ? 0 : pos === "end" ? newElements.length : pos;
-        if (index >= newElements.length) {
+        const index = util_1.positionToIndex(pos, newElements.length);
+        if (index === newElements.length) {
             newElements.push(newElement);
         }
         else {
             newElements.splice(Math.max(0, index), 0, newElement);
         }
+        return index;
     }
 }

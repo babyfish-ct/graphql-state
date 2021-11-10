@@ -2,7 +2,7 @@ import { PositionType, FlatRow } from "../../meta/Configuration";
 import { EntityManager } from "../EntityManager";
 import { objectWithOnlyId, Record } from "../Record";
 import { AssociationValue } from "./AssocaitionValue";
-import { toRecordMap } from "./util";
+import { positionToIndex, toRecordMap } from "./util";
 
 export class AssociationListValue extends AssociationValue {
 
@@ -132,6 +132,30 @@ export class AssociationListValue extends AssociationValue {
         return this.indexMap?.has(target.id) === true;
     }
 
+    protected reorder(entityManager: EntityManager, target: Record) {
+        const index = this.indexMap?.get(target.id);
+        if (index === undefined) {
+            throw new Error("Internal bug: cannot non-existing record");
+        }
+        if (this.elements!.length === 1) {
+            return;
+        }
+        const newElements = [...this.elements!];
+        newElements.splice(index, 1);
+        try {
+            const newIndex = new Appender(this).appendTo(newElements, target);
+            if (newIndex !== index) {
+                this.set(entityManager, newElements.map(objectWithOnlyId));
+            }
+        } catch (ex) {
+            if (!ex[" $evict"]) {
+                throw ex;
+            }
+            this.evict(entityManager);
+            return;
+        }
+    }
+
     private validate(
         newList: ReadonlyArray<any> | undefined
     ) {
@@ -179,40 +203,44 @@ class Appender {
     private position: (
         row: FlatRow<any>,
         rows: ReadonlyArray<FlatRow<any>>,
-        paginationDirection?: "forward" | "backward"
+        paginationDirection?: "forward" | "backward",
+        variables?: any
     ) => PositionType | undefined;
 
     private direction?: "forward" | "backward";
 
+    private filterVariables?: any;
+
     constructor(owner: AssociationListValue) {
         this.position = owner.association.field.associationProperties!.position;
         const style = owner.args?.paginationInfo?.style;
-        if (style === "forward") {
-            this.direction = "forward";
-        } else if (style === "backward") {
-            this.direction = "backward";
+        if (style !== "page") {
+            this.direction = style;
         }
+        this.filterVariables = owner.args?.filterVariables
     }
 
     appendTo(
         newElements: Array<Record>, 
         newElement: Record
-    ) {
+    ): number {
         const pos = newElements.length === 0 ? 
             0 : 
             this.position(
                 newElement.toRow(), 
                 newElements.map(e => e.toRow()), 
-                this.direction
+                this.direction,
+                this.filterVariables
             );
         if (pos === undefined) {
             throw { " $evict": true };
         }
-        const index = pos === "start" ? 0 : pos === "end" ? newElements.length : pos;
-        if (index >= newElements.length) {
+        const index = positionToIndex(pos, newElements.length);
+        if (index === newElements.length) {
             newElements.push(newElement);
         } else {
             newElements.splice(Math.max(0, index), 0, newElement);
         }
+        return index;
     }
 }

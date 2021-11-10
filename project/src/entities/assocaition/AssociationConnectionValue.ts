@@ -5,7 +5,7 @@ import { GRAPHQL_STATE_PAGINATION_INFO } from "../PaginationFetcherProcessor";
 import { Pagination, PaginationInfo } from "../QueryArgs";
 import { objectWithOnlyId, Record } from "../Record";
 import { AssociationValue } from "./AssocaitionValue";
-import { toRecordMap } from "./util";
+import { positionToIndex, toRecordMap } from "./util";
 import { ConnectionRange } from "../../meta/Configuration";
 
 export class AssociationConnectionValue extends AssociationValue {
@@ -39,9 +39,7 @@ export class AssociationConnectionValue extends AssociationValue {
         pagination?: Pagination
     ) {
         const oldValueForTriggger = this.getAsObject();
-        
         const oldIndexMap = this.indexMap;
-
         const arr = this.newValue(entityManager, value, pagination);
         if (arr === undefined) {
             return;
@@ -255,6 +253,35 @@ export class AssociationConnectionValue extends AssociationValue {
         return this.indexMap?.has(target.id) === true;
     }
 
+    protected reorder(entityManager: EntityManager, target: Record) {
+        const index = this.indexMap?.get(target.id);
+        if (index === undefined) {
+            throw new Error("Internal bug: cannot non-existing record");
+        }
+        if (this.connection?.edges!.length === 1) {
+            return;
+        }
+        const newEdeges = [...this.connection!.edges!];
+        newEdeges.splice(index, 1);
+        try {
+            const newIndex = new Appender(this).appendTo(newEdeges, target);
+            if (newIndex !== index) {
+                let newConnection: any = {
+                    ...this.connection,
+                    edges: newEdeges
+                };
+                this.standardizeValueForNewLink(newConnection);
+                this.set(entityManager, newConnection);
+            }
+        } catch (ex) {
+            if (!ex[" $evict"]) {
+                throw ex;
+            }
+            this.evict(entityManager);
+            return;
+        }
+    }
+
     private validate(value: ObjectConnection) {
         const association = this.association;
         if (value === undefined) {
@@ -373,43 +400,57 @@ class Appender {
     private position: (
         row: FlatRow<any>,
         rows: ReadonlyArray<FlatRow<any>>,
-        paginationDirection?: "forward" | "backward"
+        paginationDirection?: "forward" | "backward",
+        variables?: any
     ) => PositionType | undefined;
 
     private direction?: "forward" | "backward";
 
-    constructor(owner: AssociationValue) {
+    private filterVariables?: any;
+
+    private hasMore?: boolean;
+
+    constructor(owner: AssociationConnectionValue) {
         this.position = owner.association.field.associationProperties!.position;
         const style = owner.args?.paginationInfo?.style;
         if (style === "forward") {
             this.direction = "forward";
+            this.hasMore = owner.get().pageInfo?.hasNextPage;
         } else if (style === "backward") {
             this.direction = "backward";
+            this.hasMore = owner.get().pageInfo?.hasPreviousPage;
         }
+        this.filterVariables = owner.args?.filterVariables;
     }
 
     appendTo(
         newEdges: Array<RecordEdge>, 
         newNode: Record
-    ) {
+    ): number {
         const pos = newEdges.length === 0 ? 
             0 : 
-            this.position(newNode.toRow(), newEdges.map(e => e.node.toRow()), this.direction);
+            this.position(
+                newNode.toRow(), 
+                newEdges.map(e => e.node.toRow()), 
+                this.direction,
+                this.filterVariables
+            );
         if (pos === undefined) {
             throw { " $evict": true };
         }
-        const index = pos === "start" ? 0 : pos === "end" ? newEdges.length : pos;
-        if (index <= 0 && this.direction === "backward") {
+        const index = positionToIndex(pos, newEdges.length);
+        if (index === 0 && this.direction === "backward" && this.hasMore !== false) {
             throw { " $evict": true };
         }
-        if (index >= newEdges.length && this.direction === "forward") {
+        if (index === newEdges.length && this.direction === "forward" && this.hasMore !== false) {
             throw { " $evict": true };
         }
         const cursor = "";
-        if (index >= newEdges.length) {
+        if (index === newEdges.length) {
             newEdges.push({node: newNode, cursor });
         } else {
             newEdges.splice(Math.max(0, index), 0, { node: newNode, cursor });
         }
+        return index;
     }
 }

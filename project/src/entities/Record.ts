@@ -1,4 +1,5 @@
 import { TextWriter } from "graphql-ts-client-api";
+import { EntityChangeEvent, EntityEvictEvent } from "..";
 import { FlatRow } from "../meta/Configuration";
 import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
@@ -6,7 +7,7 @@ import { VariableArgs } from "../state/impl/Args";
 import { SpaceSavingMap } from "../state/impl/SpaceSavingMap";
 import { Association } from "./assocaition/Association";
 import { RecordConnection } from "./assocaition/AssociationConnectionValue";
-import { BackReferences } from "./BackReferences";
+import { BackReferences } from "./assocaition/BackReferences";
 import { EntityManager, Garbage } from "./EntityManager";
 import { Pagination } from "./QueryArgs";
 
@@ -76,15 +77,18 @@ export class Record {
     hasAssociation(field: FieldMetadata | string, args?: VariableArgs): boolean {
         const fieldMetadata = typeof field === "string" ? this.runtimeType.fieldMap.get(field) : field;
         if (fieldMetadata === undefined) {
-            throw new Error(`Illega asscoaition field: "${field}"`);
+            return false;
         }
         return this.associationMap.get(fieldMetadata)?.has(args) === true;
     }
 
-    getAssociation(field: FieldMetadata | string, args?: VariableArgs): Record | ReadonlyArray<Record | undefined> | RecordConnection | undefined {
+    getAssociation(
+        field: FieldMetadata | string, 
+        args?: VariableArgs
+    ): Record | ReadonlyArray<Record | undefined> | RecordConnection | undefined {
         const fieldMetadata = typeof field === "string" ? this.runtimeType.fieldMap.get(field) : field;
         if (fieldMetadata === undefined) {
-            throw new Error(`Illega asscoaition field: "${field}"`);
+            throw new Error(`Illegal asscoaition field: "${field}"`);
         }
         return this.associationMap.get(fieldMetadata)?.get(args);
     }
@@ -170,6 +174,13 @@ export class Record {
         return this.associationMap.get(field)?.contains(args, target, tryMoreStrictArgs) === true;
     }
 
+    anyValueContains(
+        field: FieldMetadata,
+        target: Record
+    ): boolean | undefined {
+        return this.associationMap.get(field)?.anyValueContains(target);
+    }
+
     evict(
         entityManager: EntityManager, 
         field: FieldMetadata,
@@ -244,10 +255,20 @@ export class Record {
     }
 
     private disposeAssocaitions(entityManager: EntityManager) {
-        this.associationMap.forEachValue(assocaition => { 
-            assocaition.dispose(entityManager); 
-        });
         this.associationMap.clear();
+    }
+
+    refreshByEvictEvent(entityManager: EntityManager, event: EntityEvictEvent) {
+        this.backReferences.forEach((field, _, ownerRecord) => {
+            // Duplicated invacaion, but not problem
+            // because Asscoaiton.refresh can ignore duplicated invocations
+            // by comparing EntityManager.modificationVersion
+            ownerRecord.associationMap.get(field)?.refresh(entityManager, event);
+        });
+    }
+
+    refreshByChangeEvent(entityManager: EntityManager, field: FieldMetadata, e: EntityChangeEvent) {
+        this.associationMap.get(field)?.refresh(entityManager, e);
     }
 
     gcVisit(field: FieldMetadata, args: VariableArgs | undefined) {

@@ -6,12 +6,14 @@ import { QueryResult } from "../../entities/QueryResult";
 import { Network } from "../../meta/Configuration";
 import { SchemaMetadata } from "../../meta/impl/SchemaMetadata";
 import { SchemaType } from "../../meta/SchemaType";
+import { ReleasePolicy } from "../State";
 import { StateManager, TransactionStatus } from "../StateManager";
 import { ScopedStateManager } from "./ScopedStateManager";
 import { StateValue } from "./StateValue";
 import { UndoManagerImpl } from "./UndoManagerImpl";
 export declare class StateManagerImpl<TSchema extends SchemaType> implements StateManager<TSchema> {
     readonly network?: Network | undefined;
+    releasePolicy: ReleasePolicy;
     private _rootScope;
     private _stateValueChangeListeners;
     private _queryResultChangeListeners;

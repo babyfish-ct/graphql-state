@@ -105,4 +105,17 @@ export class SpaceSavingMap<K, V> {
             }
         }
     }
+
+    cloneValues(): V[] {
+        const arr: V[] = [];
+        if (this.value !== undefined) {
+            arr.push(this.value);
+        }
+        if (this.valueMap !== undefined) {
+            for (const value of this.valueMap.values()) {
+                arr.push(value);
+            }
+        }
+        return arr;
+    }
 }

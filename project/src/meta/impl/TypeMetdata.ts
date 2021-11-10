@@ -20,6 +20,8 @@ export class TypeMetadata {
 
     private _idField?: FieldMetadata;
 
+    private _backRefFields: FieldMetadata[] = [];
+
     constructor(
         readonly schema: SchemaMetadata,
         fetchableType: FetchableType<string>
@@ -151,6 +153,10 @@ export class TypeMetadata {
         return false;
     }
 
+    get backRefFields(): ReadonlyArray<FieldMetadata> {
+        return this._backRefFields;
+    }
+
     setFieldMappedBy(name: string, oppositeFieldName: string) {
         this.schema.preChange();
         const field = this.fieldMap.get(name);
@@ -189,6 +195,14 @@ export class TypeMetadata {
         if (field.category === "ID") {
             this._idField = fieldMetadata;
         }
+    }
+
+    addBackRefField(backRefField: FieldMetadata) {
+        this.schema.preChange();
+        if (backRefField.targetType !== this) {
+            throw new Error("Internal bug: Illegal back ref field");
+        }
+        this._backRefFields.push(backRefField);
     }
 
     createObject(id: any): any {

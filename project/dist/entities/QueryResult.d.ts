@@ -1,4 +1,5 @@
 import { Loadable } from "../state/impl/StateValue";
+import { ReleasePolicy } from "../state/State";
 import { EntityManager } from "./EntityManager";
 import { QueryArgs } from "./QueryArgs";
 import { QueryService } from "./QueryService";
@@ -20,7 +21,7 @@ export declare class QueryResult {
     private _bindedRefetch;
     constructor(entityManager: EntityManager, queryArgs: QueryArgs, disposer: () => void);
     retain(): this;
-    release(maxDelayMillis: number): void;
+    release(releasePolicy?: ReleasePolicy): void;
     get promise(): Promise<any>;
     get loadable(): QueryLoadable<any>;
     private execute;

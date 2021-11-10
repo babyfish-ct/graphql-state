@@ -61,10 +61,15 @@ class FieldMetadata {
         if (targetMetadata === undefined) {
             throw new Error(`Illegal association field "${this.fullName}", its target type "${this._targetType}" is not exists`);
         }
-        if (targetMetadata.category !== "OBJECT") {
-            throw new Error(`Illegal association field "${this.fullName}", the category of its target type "${this._targetType}" is not "OBJECT"`);
+        if (targetMetadata.category === "OBJECT") {
+            this._targetType = targetMetadata;
+            if (this.declaringType.category === "OBJECT" && this.declaringType.name !== "Mutation") {
+                targetMetadata.addBackRefField(this);
+            }
         }
-        this._targetType = targetMetadata;
+        else {
+            this._targetType = undefined;
+        }
         return targetMetadata;
     }
     get oppositeField() {
@@ -144,7 +149,7 @@ function createDefaultAssociationProperties(field) {
             console.log(`Try to add new '${field.targetType.name}' object into the parameterized assocaition ${field.fullName}(${JSON.stringify(variables)}), but the assocaition properties of that parameterized assocition is not specified, ` +
                 `so the system does not known whether the new object should be added and evict that assocaition from cache`);
         },
-        position: (_1, _2, paginationDirection) => {
+        position: (_1, _2, paginationDirection, _4) => {
             return paginationDirection === "forward" ? "start" : "end";
         },
         dependencies: (variables) => {

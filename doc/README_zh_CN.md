@@ -1,4 +1,4 @@
-# [graphql-state](/)/文档
+# [graphql-state](https://github.com/babyfish-ct/graphql-state/)/文档
 
 ## 章节目录
 
@@ -9,12 +9,15 @@
   - [Effect](./simple-state/effect_zh_CN.md)
   - [作用域](./simple-state/scope_zh_CN.md)
 - [图状态](./graph-state/README_zh_CN.md)
-  - [查询](./graph-state/writable_zh_CN.md)
-    - [普通查询](./graph-state/writable_zh_CN.md)
-    - [分页查询](./graph-state/writable_zh_CN.md)
-    - [对象查询](./graph-state/writable_zh_CN.md)
-  - [智能更新](./graph-state/smart-mutation_zh_CN.md)
-  - [双向关联](./graph-state/bidirectional-association_zh_CN.md)
+  - [查询](./graph-state/query/README_zh_CN.md)
+    - [useQuery](./graph-state/query/useQuery_zh_CN.md)
+    - [usePaginationQuery](./graph-state/query/usePaginationQuery_zh_CN.md)
+    - [useObject&useObjects](./graph-state/query/useObject_zh_CN.md)
+  - [变更](./graph-state/mutation/README_zh_CN.md)
+    - [变更缓存](./graph-state/mutation/mutate-cache_zh_CN.md)
+    - [useMutation](./graph-state/mutation/mutate-cache_zh_CN.md)
+    - [智能更新](./graph-state/smart-mutation_zh_CN.md)
+    - [双向关联](./graph-state/bidirectional-association_zh_CN.md)
 - [HTTP优化](./http-optimization/README_zh_CN.md)
   - [异步削峰](./http-optimization/peak-clipping_zh_CN.md)
   - [碎片合并](./http-optimization/fragment-merge_zh_CN.md)

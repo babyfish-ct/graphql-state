@@ -44,7 +44,7 @@ export const BookList: FC = memo(() => {
 
     const stateManager = useStateManager<Schema>();
 
-    const [remove, {loading: removing}] = useMutation(
+    const { mutate: remove, loading: removing } = useMutation(
         mutation$.deleteBook(),
         {
             onSuccess: data => {

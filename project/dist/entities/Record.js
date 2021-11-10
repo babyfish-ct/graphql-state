@@ -5,7 +5,7 @@ const graphql_ts_client_api_1 = require("graphql-ts-client-api");
 const Args_1 = require("../state/impl/Args");
 const SpaceSavingMap_1 = require("../state/impl/SpaceSavingMap");
 const Association_1 = require("./assocaition/Association");
-const BackReferences_1 = require("./BackReferences");
+const BackReferences_1 = require("./assocaition/BackReferences");
 class Record {
     constructor(superRecord, staticType, runtimeType, id, deleted = false) {
         this.superRecord = superRecord;
@@ -51,7 +51,7 @@ class Record {
         var _a;
         const fieldMetadata = typeof field === "string" ? this.runtimeType.fieldMap.get(field) : field;
         if (fieldMetadata === undefined) {
-            throw new Error(`Illega asscoaition field: "${field}"`);
+            return false;
         }
         return ((_a = this.associationMap.get(fieldMetadata)) === null || _a === void 0 ? void 0 : _a.has(args)) === true;
     }
@@ -59,7 +59,7 @@ class Record {
         var _a;
         const fieldMetadata = typeof field === "string" ? this.runtimeType.fieldMap.get(field) : field;
         if (fieldMetadata === undefined) {
-            throw new Error(`Illega asscoaition field: "${field}"`);
+            throw new Error(`Illegal asscoaition field: "${field}"`);
         }
         return (_a = this.associationMap.get(fieldMetadata)) === null || _a === void 0 ? void 0 : _a.get(args);
     }
@@ -112,6 +112,10 @@ class Record {
     contains(field, args, target, tryMoreStrictArgs) {
         var _a;
         return ((_a = this.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.contains(args, target, tryMoreStrictArgs)) === true;
+    }
+    anyValueContains(field, target) {
+        var _a;
+        return (_a = this.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.anyValueContains(target);
     }
     evict(entityManager, field, args, includeMoreStrictArgs = false) {
         var _a;
@@ -176,10 +180,20 @@ class Record {
         // Add other behaviors in future
     }
     disposeAssocaitions(entityManager) {
-        this.associationMap.forEachValue(assocaition => {
-            assocaition.dispose(entityManager);
-        });
         this.associationMap.clear();
+    }
+    refreshByEvictEvent(entityManager, event) {
+        this.backReferences.forEach((field, _, ownerRecord) => {
+            var _a;
+            // Duplicated invacaion, but not problem
+            // because Asscoaiton.refresh can ignore duplicated invocations
+            // by comparing EntityManager.modificationVersion
+            (_a = ownerRecord.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.refresh(entityManager, event);
+        });
+    }
+    refreshByChangeEvent(entityManager, field, e) {
+        var _a;
+        (_a = this.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.refresh(entityManager, e);
     }
     gcVisit(field, args) {
         var _a;

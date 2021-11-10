@@ -1,4 +1,4 @@
-import { State } from "../State";
+import { ReleasePolicy, State } from "../State";
 import { VariableArgs } from "./Args";
 import { ComputedStateValue } from "./ComputedStateValue";
 import { ScopedStateManager } from "./ScopedStateManager";
@@ -27,8 +27,8 @@ export class StateInstance {
         return stateValue.retain();
     }
 
-    release(args: VariableArgs | undefined) {
-        this.valueMap.get(args?.key)?.release(60000);
+    release(args: VariableArgs | undefined, releasePolicy?: ReleasePolicy) {
+        this.valueMap.get(args?.key)?.release(releasePolicy);
     }
 
     dispose() {

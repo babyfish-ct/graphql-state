@@ -31,12 +31,15 @@ class ConfigurationImpl {
         return this;
     }
     buildStateManager() {
-        for (const [name, type] of this._schema.typeMap) {
+        for (const type of this._schema.typeMap.values()) {
             if (type.category === "OBJECT") {
                 type.idField;
             }
+            for (const field of type.declaredFieldMap.values()) {
+                field.targetType;
+            }
         }
-        return new StateManagerImpl_1.StateManagerImpl(this._schema, this._network);
+        return new StateManagerImpl_1.StateManagerImpl(this._schema.freeze(), this._network);
     }
     field(typeName, fieldName) {
         const typeMetadata = this._schema.typeMap.get(typeName);

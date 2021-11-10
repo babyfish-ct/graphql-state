@@ -39,7 +39,7 @@ export interface FieldMetadataOptions {
 }
 export interface AssocaitionProperties {
     readonly contains: (row: FlatRow<any>, variables?: any) => boolean | undefined;
+    readonly position: (row: FlatRow<any>, rows: ReadonlyArray<FlatRow<any>>, paginationDirection?: "forward" | "backward", variables?: any) => PositionType | undefined;
     readonly dependencies: (variables?: any) => ReadonlyArray<string> | undefined;
-    readonly position: (row: FlatRow<any>, rows: ReadonlyArray<FlatRow<any>>, paginationDirection?: "forward" | "backward") => PositionType | undefined;
     readonly range?: (range: ConnectionRange, delta: number, direction: "forward" | "backward") => void;
 }

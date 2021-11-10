@@ -1,7 +1,7 @@
-import { FieldMetadata } from "../meta/impl/FieldMetadata";
-import { SpaceSavingMap } from "../state/impl/SpaceSavingMap";
-import { Record } from "./Record";
-import { VariableArgs } from "../state/impl/Args";
+import { FieldMetadata } from "../../meta/impl/FieldMetadata";
+import { SpaceSavingMap } from "../../state/impl/SpaceSavingMap";
+import { Record } from "../Record";
+import { VariableArgs } from "../../state/impl/Args";
 
 export class BackReferences {
 
@@ -36,7 +36,7 @@ export class BackReferences {
         this.associationOwnerMap.forEach((field, subMap) => {
             subMap.forEachValue(set => {
                 set.forEach(record => {
-                    callback(field, set.variables, record);
+                    callback(field, set.args, record);
                 });
             });
         });
@@ -47,7 +47,7 @@ class ParameterizedRecordSet {
 
     private records = new Set<Record>();
 
-    constructor(readonly variables: any) {}
+    constructor(readonly args?: VariableArgs) {}
 
     add(record: Record) {
         this.records.add(record);
@@ -68,4 +68,4 @@ class ParameterizedRecordSet {
     }
 }
 
-type BackReferencesCallback = (field: FieldMetadata, variables: any, ownerRecord: Record) => void;
+type BackReferencesCallback = (field: FieldMetadata, args: VariableArgs | undefined, ownerRecord: Record) => void;

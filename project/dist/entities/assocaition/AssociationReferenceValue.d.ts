@@ -9,4 +9,5 @@ export declare class AssociationReferenceValue extends AssociationValue {
     link(entityManager: EntityManager, targets: ReadonlyArray<Record>): void;
     unlink(entityManager: EntityManager, targets: ReadonlyArray<Record>): void;
     contains(target: Record): boolean;
+    protected reorder(_1: EntityManager, _2: Record): void;
 }

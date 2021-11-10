@@ -1,11 +1,11 @@
+import { EntityChangeEvent } from "..";
 import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { VariableArgs } from "../state/impl/Args";
-import { EntityFieldVisitor, EntityManager, Garbage } from "./EntityManager";
+import { EntityManager, Garbage } from "./EntityManager";
 import { Pagination } from "./QueryArgs";
-import { QUERY_OBJECT_ID, Record } from "./Record";
+import { Record } from "./Record";
 import { RecordRef } from "./RecordRef";
-import { RuntimeShape } from "./RuntimeShape";
 
 export class RecordManager {
 
@@ -94,6 +94,12 @@ export class RecordManager {
     ) {
         const record = this.saveId(id, runtimeType);
         record.set(this.entityManager, field, args, value, pagination);
+    }
+
+    refresh(field: FieldMetadata, e: EntityChangeEvent) {
+        for (const record of this.recordMap.values()) {
+            record.refreshByChangeEvent(this.entityManager, field, e);
+        }
     }
 
     collectGarbages(output: Garbage[]) {

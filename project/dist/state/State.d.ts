@@ -100,3 +100,4 @@ export interface StateAccessingOptions {
 export interface ParameterizedStateAccessingOptions<TVariables> extends StateAccessingOptions {
     readonly variables: TVariables;
 }
+export declare type ReleasePolicy = (aliveTime: number) => number;

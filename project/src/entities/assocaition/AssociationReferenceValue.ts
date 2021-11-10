@@ -26,7 +26,8 @@ export class AssociationReferenceValue extends AssociationValue {
                 value["__typename"] ?? association.field.targetType!.name, 
                 value[association.field.targetType!.idField.name]
             ) : 
-            undefined;
+            undefined
+        ;
     
         if (oldReference?.id !== reference?.id) {
             this.releaseOldReference(entityManager, oldReference);
@@ -85,5 +86,7 @@ export class AssociationReferenceValue extends AssociationValue {
     contains(target: Record): boolean {
         return this.referfence?.id === target.id;
     }
+
+    protected reorder(_1: EntityManager, _2: Record) {}
 }
 

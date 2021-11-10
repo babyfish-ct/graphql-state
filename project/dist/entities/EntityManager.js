@@ -16,8 +16,8 @@ class EntityManager {
         this._queryResultMap = new Map();
         this._evictListenerMap = new Map();
         this._changeListenerMap = new Map();
-        this._associationValueObservers = new Set();
         this._bidirectionalAssociationManagementSuspending = false;
+        this._modificationVersion = 0;
         this.dataService = new MergedDataService_1.MergedDataService(new RemoteDataService_1.RemoteDataService(this));
         const queryType = schema.typeMap.get("Query");
         if (queryType !== undefined) {
@@ -47,6 +47,9 @@ class EntityManager {
         }
         return ctx;
     }
+    get modificationVersion() {
+        return this._modificationVersion;
+    }
     modify(action, forGC = false) {
         if (this._ctx !== undefined) {
             if (forGC) {
@@ -55,7 +58,7 @@ class EntityManager {
             return action();
         }
         else {
-            this._ctx = new ModificationContext_1.ModificationContext(this.linkToQuery.bind(this), this.publishEvictChangeEvent.bind(this), this.publishEntityChangeEvent.bind(this), forGC);
+            this._ctx = new ModificationContext_1.ModificationContext(() => { ++this._modificationVersion; }, this.publishEvictChangeEvent.bind(this), this.publishEntityChangeEvent.bind(this), forGC);
             try {
                 return action();
             }
@@ -72,6 +75,9 @@ class EntityManager {
     save(shape, objOrArray, pagination) {
         if (pagination !== undefined && shape.typeName !== 'Query') {
             throw new Error(`The save method cannot accept pagination when the type name of shape is not "Query"`);
+        }
+        if (shape.typeName === "Mutation") {
+            throw new Error(`save() does not accept object whose type is 'Mutation'`);
         }
         this.modify(() => {
             this.visit(shape, objOrArray, (id, runtimeType, field, args, value) => {
@@ -124,6 +130,9 @@ class EntityManager {
             if (type === undefined) {
                 throw new Error(`Cannot save object id for illegal type "${typeName}"`);
             }
+            if (typeName === "Mutation") {
+                throw new Error(`saveId() does not accept object whose type is 'Mutation'`);
+            }
             return this.recordManager(typeName).saveId(id, type);
         });
     }
@@ -149,9 +158,9 @@ class EntityManager {
         }
         return result.retain();
     }
-    release(args) {
+    release(args, releasePolicy) {
         const result = this._queryResultMap.get(args.key);
-        result === null || result === void 0 ? void 0 : result.release(60000);
+        result === null || result === void 0 ? void 0 : result.release(releasePolicy);
     }
     addEvictListener(typeName, listener) {
         if (listener !== undefined && listener !== null) {
@@ -171,9 +180,7 @@ class EntityManager {
         (_a = this._evictListenerMap.get(typeName)) === null || _a === void 0 ? void 0 : _a.delete(listener);
     }
     publishEvictChangeEvent(e) {
-        for (const observer of this._associationValueObservers) {
-            observer.onEntityEvict(this, e);
-        }
+        this.refreshByEvictEvent(e);
         for (const [, set] of this._evictListenerMap) {
             for (const listener of set) {
                 listener(e);
@@ -198,33 +205,23 @@ class EntityManager {
         (_a = this._changeListenerMap.get(typeName)) === null || _a === void 0 ? void 0 : _a.delete(listener);
     }
     publishEntityChangeEvent(e) {
-        for (const observer of this._associationValueObservers) {
-            observer.onEntityChange(this, e);
-        }
+        this.refreshByChangeEvent(e);
         for (const [, set] of this._changeListenerMap) {
             for (const listener of set) {
                 listener(e);
             }
         }
     }
-    linkToQuery(type, id) {
-        const qr = this._queryRecord;
-        if (qr !== undefined) {
-            const record = this.saveId(type.name, id);
-            for (const [, field] of qr.staticType.fieldMap) {
-                if (field.targetType !== undefined && field.targetType.isAssignableFrom(type)) {
-                    qr.link(this, field, record);
-                }
+    refreshByEvictEvent(e) {
+        var _a, _b;
+        (_b = (_a = this.recordManager(e.typeName).findRefById(e.id)) === null || _a === void 0 ? void 0 : _a.value) === null || _b === void 0 ? void 0 : _b.refreshByEvictEvent(this, e);
+    }
+    refreshByChangeEvent(e) {
+        for (let type = this.schema.typeMap.get(e.typeName); type !== undefined; type = type.superType) {
+            for (const field of type.backRefFields) {
+                this.recordManager(field.declaringType.name).refresh(field, e);
             }
         }
-    }
-    addAssociationValueObserver(observer) {
-        if (observer !== undefined && observer !== null) {
-            this._associationValueObservers.add(observer);
-        }
-    }
-    removeAssociationValueObserver(observer) {
-        this._associationValueObservers.delete(observer);
     }
     forEach(typeName, visitor) {
         this.recordManager(typeName).forEach(visitor);

@@ -5,6 +5,34 @@ import { newTypedConfiguration } from "../__generated_graphql_schema__";
 import { publishEntityLog } from "./log/EntityLog";
 import { createGraphQLNetwork } from "../common/Networks";
 
+export function createStateManager(withCustomerOptimization: boolean): StateManager<Schema> {
+
+    const cfg = newTypedConfiguration()
+
+        .bidirectionalAssociation("BookStore", "books", "store")
+        .bidirectionalAssociation("Book", "authors", "books")
+
+        .network(createGraphQLNetwork())
+    ;
+
+    if (withCustomerOptimization) {
+        cfg
+        .rootAssociationProperties("findBookStores", createNameFilterAssociationProperties())
+        .rootAssociationProperties("findBooks", createNameFilterAssociationProperties())
+        .rootAssociationProperties("findAuthors", createNameFilterAssociationProperties())
+        .associationProperties("BookStore", "books", createNameFilterAssociationProperties())
+        .associationProperties("Book", "authors", createNameFilterAssociationProperties())
+        .associationProperties("Author", "books", createNameFilterAssociationProperties())
+    }
+
+    const stateManager = cfg.buildStateManager();
+
+    stateManager.addEntityEvictListener(e => { publishEntityLog(e) });
+    stateManager.addEntityChangeListener(e => { publishEntityLog(e) });
+
+    return stateManager;
+}
+
 function createNameFilterAssociationProperties<
     TFlatType extends { readonly name: string }, 
     TVariables extends { readonly name?: string }
@@ -34,15 +62,19 @@ function createNameFilterAssociationProperties<
             row: FlatRow<TFlatType>, 
             rows: ReadonlyArray<FlatRow<TFlatType>>
         ): PositionType | undefined {
-            if (row.has("name")) {
+            if (row.has("name")) { // if name of new row is cached
                 const rowName = row.get("name");
                 for (let i = 0; i < rows.length; i++) {
-                    if (rows[i].has("name") && rows[i].get("name") > rowName) {
+                    if (!rows[i].has("name")) { // if name of existing row is not cached
+                        return undefined;
+                    }
+                    if (rows[i].get("name") > rowName) {
                         return i;
                     }
                 }
+                return "end";
             }
-            return "end";
+            return undefined;
         },
 
         // Does this association depend on some fields of target object?
@@ -53,9 +85,10 @@ function createNameFilterAssociationProperties<
         // 2. If an object is not in the association but it match the filter after change,
         //    this association will not contain it after automatic refetch
         dependencies: (variables?: TVariables): ReadonlyArray<keyof TFlatType> | undefined => {
+            return ["name"];
             // No filter, depends on nothing
             // If the name of filter is specified, depends on "name"
-            return variables?.name === undefined ? [] : ["name"];
+            // return variables?.name === undefined ? [] : ["name"];
         },
 
         range: (range: ConnectionRange, delta: number, direction: "forward" | "backward"): void => {
@@ -66,34 +99,6 @@ function createNameFilterAssociationProperties<
         }
     }
 };
-
-export function createStateManager(withCustomerOptimization: boolean): StateManager<Schema> {
-
-    const cfg = newTypedConfiguration()
-
-        .bidirectionalAssociation("BookStore", "books", "store")
-        .bidirectionalAssociation("Book", "authors", "books")
-
-        .network(createGraphQLNetwork())
-    ;
-
-    if (withCustomerOptimization) {
-        cfg
-        .rootAssociationProperties("findBookStores", createNameFilterAssociationProperties())
-        .rootAssociationProperties("findBooks", createNameFilterAssociationProperties())
-        .rootAssociationProperties("findAuthors", createNameFilterAssociationProperties())
-        .associationProperties("BookStore", "books", createNameFilterAssociationProperties())
-        .associationProperties("Book", "authors", createNameFilterAssociationProperties())
-        .associationProperties("Author", "books", createNameFilterAssociationProperties())
-    }
-
-    const stateManager = cfg.buildStateManager();
-
-    stateManager.addEntityEvictListener(e => { publishEntityLog(e) });
-    stateManager.addEntityChangeListener(e => { publishEntityLog(e) });
-
-    return stateManager;
-}
 
 function indexToCursor(index: number): string {
     return Buffer.from(index.toString(), 'utf-8').toString('base64');

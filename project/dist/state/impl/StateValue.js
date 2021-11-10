@@ -19,13 +19,13 @@ class StateValue {
         }
         return this;
     }
-    release(maxDelayMillis) {
+    release(releasePolicy) {
         if (--this._refCount === 0) {
-            if (maxDelayMillis <= 0) {
+            const millis = (releasePolicy !== null && releasePolicy !== void 0 ? releasePolicy : this.stateInstance.scopedStateManager.stateManager.releasePolicy)(new Date().getTime() - this._createdMillis);
+            if (millis <= 0) {
                 this.dispose(true);
                 return;
             }
-            const millis = Math.min(new Date().getTime() - this._createdMillis, maxDelayMillis);
             if (this._disposeTimerId !== undefined) {
                 clearTimeout(this._disposeTimerId);
             }
@@ -37,6 +37,10 @@ class StateValue {
         }
     }
     dispose(executeExternalDisposer) {
+        if (this._disposeTimerId !== undefined) {
+            clearTimeout(this._disposeTimerId);
+            this._disposeTimerId = undefined;
+        }
         try {
             if (executeExternalDisposer) {
                 this.disposer();
