@@ -1,7 +1,7 @@
-import { FieldMetadata } from "../meta/impl/FieldMetadata";
-import { SpaceSavingMap } from "../state/impl/SpaceSavingMap";
-import { Record } from "./Record";
-import { VariableArgs } from "../state/impl/Args";
+import { FieldMetadata } from "../../meta/impl/FieldMetadata";
+import { SpaceSavingMap } from "../../state/impl/SpaceSavingMap";
+import { Record } from "../Record";
+import { VariableArgs } from "../../state/impl/Args";
 
 export class BackReferences {
 

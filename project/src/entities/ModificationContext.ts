@@ -9,7 +9,6 @@ export class ModificationContext {
 
     constructor(
         private versionIncreaser: () => void,
-        private linkToQuery: (type: TypeMetadata, id: any) => void,
         private publishEvictEvent: (event: EntityEvictEvent) => void,
         private publishChangeEvent: (event: EntityChangeEvent) => void,
         private forGC: boolean
@@ -21,13 +20,6 @@ export class ModificationContext {
         while (true) {
             const pairMap = this.objPairMap;
             this.objPairMap = new Map<TypeMetadata, Map<any, ObjectPair>>();
-            for (const [type, subMap] of pairMap) {
-                for (const [id, pair] of subMap) {
-                    if (pair.oldObj === undefined && pair.newObj !== undefined) {
-                        this.linkToQuery(type, id);
-                    }
-                }
-            }
             for (const [type, subMap] of pairMap) {
                 for (const [id, pair] of subMap) {
                     this.publishEvents(type, id, pair);

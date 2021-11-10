@@ -62,12 +62,15 @@ class ConfigurationImpl<TSchema extends SchemaType> implements Configuration<TSc
     }
 
     buildStateManager(): StateManager<TSchema> {
-        for (const [name, type] of this._schema.typeMap) {
+        for (const type of this._schema.typeMap.values()) {
             if (type.category === "OBJECT") {
                 type.idField;
             }
+            for (const field of type.declaredFieldMap.values()) {
+                field.targetType;
+            }
         }
-        return new StateManagerImpl<TSchema>(this._schema, this._network);
+        return new StateManagerImpl<TSchema>(this._schema.freeze(), this._network);
     }
 
     private field(typeName: string, fieldName: string): FieldMetadata {

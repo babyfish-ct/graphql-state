@@ -8,6 +8,7 @@ class TypeMetadata {
         this._derivedTypes = new Set();
         this._declaredFieldMap = new Map();
         this._fieldMap = undefined;
+        this._backRefFields = [];
         this.name = fetchableType.name;
         this.category = fetchableType.category;
         switch (fetchableType.superTypes.length) {
@@ -131,6 +132,9 @@ class TypeMetadata {
         }
         return false;
     }
+    get backRefFields() {
+        return this._backRefFields;
+    }
     setFieldMappedBy(name, oppositeFieldName) {
         this.schema.preChange();
         const field = this.fieldMap.get(name);
@@ -167,6 +171,13 @@ class TypeMetadata {
         if (field.category === "ID") {
             this._idField = fieldMetadata;
         }
+    }
+    addBackRefField(backRefField) {
+        this.schema.preChange();
+        if (backRefField.targetType !== this) {
+            throw new Error("Internal bug: Illegal back ref field");
+        }
+        this._backRefFields.push(backRefField);
     }
     createObject(id) {
         return { [this.idField.name]: id };

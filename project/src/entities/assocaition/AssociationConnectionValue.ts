@@ -408,13 +408,17 @@ class Appender {
 
     private filterVariables?: any;
 
-    constructor(owner: AssociationValue) {
+    private hasMore?: boolean;
+
+    constructor(owner: AssociationConnectionValue) {
         this.position = owner.association.field.associationProperties!.position;
         const style = owner.args?.paginationInfo?.style;
         if (style === "forward") {
             this.direction = "forward";
+            this.hasMore = owner.get().pageInfo?.hasNextPage;
         } else if (style === "backward") {
             this.direction = "backward";
+            this.hasMore = owner.get().pageInfo?.hasPreviousPage;
         }
         this.filterVariables = owner.args?.filterVariables;
     }
@@ -435,10 +439,10 @@ class Appender {
             throw { " $evict": true };
         }
         const index = positionToIndex(pos, newEdges.length);
-        if (index === 0 && this.direction === "backward") {
+        if (index === 0 && this.direction === "backward" && this.hasMore !== false) {
             throw { " $evict": true };
         }
-        if (index === newEdges.length && this.direction === "forward") {
+        if (index === newEdges.length && this.direction === "forward" && this.hasMore !== false) {
             throw { " $evict": true };
         }
         const cursor = "";

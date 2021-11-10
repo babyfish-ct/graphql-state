@@ -7,6 +7,7 @@ import { toRuntimeShape } from "../../entities/RuntimeShape";
 import { Network } from "../../meta/Configuration";
 import { SchemaMetadata } from "../../meta/impl/SchemaMetadata";
 import { SchemaType } from "../../meta/SchemaType";
+import { ReleasePolicy } from "../State";
 import { StateManager, TransactionStatus } from "../StateManager";
 import { ScopedStateManager } from "./ScopedStateManager";
 import { StateValue } from "./StateValue";
@@ -14,6 +15,8 @@ import { UndoManagerImpl } from "./UndoManagerImpl";
 
 export class StateManagerImpl<TSchema extends SchemaType> implements StateManager<TSchema> {
 
+    releasePolicy: ReleasePolicy;
+    
     private _rootScope = new ScopedStateManager(this);
 
     private _stateValueChangeListeners = new Set<StateValueChangeListener>();
@@ -24,6 +27,12 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
 
     constructor(schema?: SchemaMetadata, readonly network?: Network) {
         this._entityManager = new EntityManager(this, schema ?? new SchemaMetadata());
+        this.releasePolicy = aliveTime => {
+            if (aliveTime < 1000) {
+                return 0;
+            }
+            return Math.min(aliveTime, 60_000);
+        }
     }
 
     get entityManager(): EntityManager {

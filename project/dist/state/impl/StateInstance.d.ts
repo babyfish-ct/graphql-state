@@ -1,4 +1,4 @@
-import { State } from "../State";
+import { ReleasePolicy, State } from "../State";
 import { VariableArgs } from "./Args";
 import { ScopedStateManager } from "./ScopedStateManager";
 import { StateValue } from "./StateValue";
@@ -8,6 +8,6 @@ export declare class StateInstance {
     private valueMap;
     constructor(scopedStateManager: ScopedStateManager, state: State<any>);
     retain(args: VariableArgs | undefined): StateValue;
-    release(args: VariableArgs | undefined): void;
+    release(args: VariableArgs | undefined, releasePolicy?: ReleasePolicy): void;
     dispose(): void;
 }

@@ -298,16 +298,18 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
 exports.AssociationConnectionValue = AssociationConnectionValue;
 class Appender {
     constructor(owner) {
-        var _a, _b, _c;
+        var _a, _b, _c, _d, _e;
         this.position = owner.association.field.associationProperties.position;
         const style = (_b = (_a = owner.args) === null || _a === void 0 ? void 0 : _a.paginationInfo) === null || _b === void 0 ? void 0 : _b.style;
         if (style === "forward") {
             this.direction = "forward";
+            this.hasMore = (_c = owner.get().pageInfo) === null || _c === void 0 ? void 0 : _c.hasNextPage;
         }
         else if (style === "backward") {
             this.direction = "backward";
+            this.hasMore = (_d = owner.get().pageInfo) === null || _d === void 0 ? void 0 : _d.hasPreviousPage;
         }
-        this.filterVariables = (_c = owner.args) === null || _c === void 0 ? void 0 : _c.filterVariables;
+        this.filterVariables = (_e = owner.args) === null || _e === void 0 ? void 0 : _e.filterVariables;
     }
     appendTo(newEdges, newNode) {
         const pos = newEdges.length === 0 ?
@@ -317,10 +319,10 @@ class Appender {
             throw { " $evict": true };
         }
         const index = util_1.positionToIndex(pos, newEdges.length);
-        if (index === 0 && this.direction === "backward") {
+        if (index === 0 && this.direction === "backward" && this.hasMore !== false) {
             throw { " $evict": true };
         }
-        if (index === newEdges.length && this.direction === "forward") {
+        if (index === newEdges.length && this.direction === "forward" && this.hasMore !== false) {
             throw { " $evict": true };
         }
         const cursor = "";

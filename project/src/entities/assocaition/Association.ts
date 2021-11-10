@@ -36,6 +36,36 @@ export class Association {
         return this.valueMap.get(args?.key)?.get();
     }
 
+    contains(args: VariableArgs | undefined, target: Record, tryMoreStrictArgs: boolean): boolean {
+        if (!tryMoreStrictArgs) {
+            return this.valueMap.get(args?.key)?.contains(target) === true;
+        }
+        let result = false;
+        this.valueMap.forEachValue(value => {
+            if (VariableArgs.contains(value.args, args)) {
+                if (value.contains(target)) {
+                    result = true;
+                    return false;
+                }
+            }
+        });
+        return result;
+    }
+
+    anyValueContains(target: Record): boolean | undefined {
+        let result = false;
+        this.valueMap.forEachValue(value => {
+            if (value.contains(target)) {
+                result = true;
+                return false;
+            }
+        });
+        if (result) {
+            return true;
+        }
+        return this.valueMap.get(undefined) !== undefined ? false : undefined;
+    }
+
     set(
         entityManager: EntityManager, 
         args: VariableArgs | undefined, 
@@ -73,22 +103,6 @@ export class Association {
         }
     }
 
-    contains(args: VariableArgs | undefined, target: Record, tryMoreStrictArgs): boolean {
-        if (!tryMoreStrictArgs) {
-            return this.valueMap.get(args?.key)?.contains(target) === true;
-        }
-        let result = false;
-        this.valueMap.forEachValue(value => {
-            if (VariableArgs.contains(value.args, args)) {
-                if (value.contains(target)) {
-                    result = true;
-                    return false;
-                }
-            }
-        });
-        return result;
-    }
-
     link(
         entityManager: EntityManager, 
         target: Record | ReadonlyArray<Record>,
@@ -97,7 +111,7 @@ export class Association {
     ) {
         this.refreshedVersion = entityManager.modificationVersion;
         this.changeLinks(() => {
-            this.valueMap.forEachValue(value => {
+            for (const value of this.valueMap.cloneValues()) {
                 if (insideModification && mostStringentArgs?.key === value.args?.key) {
                     return;
                 }
@@ -131,7 +145,7 @@ export class Association {
                         value.link(entityManager, exactRecords);
                     }
                 }
-            });
+            }
         });
     }
 
@@ -143,7 +157,7 @@ export class Association {
     ) {
         this.refreshedVersion = entityManager.modificationVersion;
         this.changeLinks(() => {
-            this.valueMap.forEachValue(value => {
+            for (const value of this.valueMap.cloneValues()) {
                 if (insideModification && leastStringentArgs?.key === value.args?.key) {
                     return;
                 }
@@ -180,7 +194,7 @@ export class Association {
                         value.unlink(entityManager, exactRecords);
                     }
                 }
-            });
+            }
         });
     }
 
@@ -190,12 +204,12 @@ export class Association {
     ) {
         this.refreshedVersion = entityManager.modificationVersion;
         this.changeLinks(() => {
-            this.valueMap.forEachValue(value => {
+            for (const value of this.valueMap.cloneValues()) {
                 value.unlink(
                     entityManager, 
                     [target]
                 );
-            });
+            }
         });
     }
 
@@ -236,9 +250,9 @@ export class Association {
     refresh(entityManager: EntityManager, event: EntityEvictEvent | EntityChangeEvent) {
         if (this.refreshedVersion !== entityManager.modificationVersion) {
             this.refreshedVersion = entityManager.modificationVersion;
-            this.valueMap.forEachValue(value => { 
+            for (const value of this.valueMap.cloneValues()) {
                 value.referesh(entityManager, event); 
-            });
+            }
         }
     }
 

@@ -3,9 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ModificationContext = void 0;
 const Args_1 = require("../state/impl/Args");
 class ModificationContext {
-    constructor(versionIncreaser, linkToQuery, publishEvictEvent, publishChangeEvent, forGC) {
+    constructor(versionIncreaser, publishEvictEvent, publishChangeEvent, forGC) {
         this.versionIncreaser = versionIncreaser;
-        this.linkToQuery = linkToQuery;
         this.publishEvictEvent = publishEvictEvent;
         this.publishChangeEvent = publishChangeEvent;
         this.forGC = forGC;
@@ -16,13 +15,6 @@ class ModificationContext {
         while (true) {
             const pairMap = this.objPairMap;
             this.objPairMap = new Map();
-            for (const [type, subMap] of pairMap) {
-                for (const [id, pair] of subMap) {
-                    if (pair.oldObj === undefined && pair.newObj !== undefined) {
-                        this.linkToQuery(type, id);
-                    }
-                }
-            }
             for (const [type, subMap] of pairMap) {
                 for (const [id, pair] of subMap) {
                     this.publishEvents(type, id, pair);

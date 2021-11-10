@@ -1,3 +1,4 @@
+import { ReleasePolicy } from "../State";
 import { VariableArgs } from "./Args";
 import { StateInstance } from "./StateInstance";
 export declare abstract class StateValue {
@@ -13,7 +14,7 @@ export declare abstract class StateValue {
     abstract get result(): any;
     abstract get loadable(): Loadable;
     retain(): this;
-    release(maxDelayMillis: number): void;
+    release(releasePolicy?: ReleasePolicy): void;
     protected abstract createMountContext(): any;
     dispose(executeExternalDisposer: boolean): void;
     private mount;

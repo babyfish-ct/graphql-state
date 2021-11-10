@@ -11,6 +11,7 @@ export declare class TypeMetadata {
     private _declaredFieldMap;
     private _fieldMap;
     private _idField?;
+    private _backRefFields;
     constructor(schema: SchemaMetadata, fetchableType: FetchableType<string>);
     get superType(): TypeMetadata | undefined;
     get derivedType(): ReadonlySet<TypeMetadata>;
@@ -19,8 +20,10 @@ export declare class TypeMetadata {
     get fieldMap(): ReadonlyMap<string, FieldMetadata>;
     get idField(): FieldMetadata;
     isAssignableFrom(type: TypeMetadata): boolean;
+    get backRefFields(): ReadonlyArray<FieldMetadata>;
     setFieldMappedBy(name: string, oppositeFieldName: string): void;
     private addField;
+    addBackRefField(backRefField: FieldMetadata): void;
     createObject(id: any): any;
 }
 export declare type TypeMetadataCategory = "OBJECT" | "EMBEDDED" | "CONNECTION" | "EDGE";

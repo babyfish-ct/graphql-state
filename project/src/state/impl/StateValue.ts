@@ -1,4 +1,4 @@
-import { ComputedStateCreationOptions, StateUnmoutHandler, WritableStateCreationOptions } from "../State";
+import { ComputedStateCreationOptions, ReleasePolicy, StateUnmoutHandler, WritableStateCreationOptions } from "../State";
 import { VariableArgs } from "./Args";
 import { StateInstance } from "./StateInstance";
 
@@ -36,13 +36,15 @@ export abstract class StateValue {
         return this;
     }
 
-    release(maxDelayMillis: number) {
+    release(releasePolicy?: ReleasePolicy) {
         if (--this._refCount === 0) {
-            if (maxDelayMillis <= 0) {
+            const millis = (releasePolicy ?? this.stateInstance.scopedStateManager.stateManager.releasePolicy)(
+                new Date().getTime() - this._createdMillis
+            );
+            if (millis <= 0) {
                 this.dispose(true);
                 return;
             }
-            const millis = Math.min(new Date().getTime() - this._createdMillis, maxDelayMillis)
             if (this._disposeTimerId !== undefined) {
                 clearTimeout(this._disposeTimerId);
             }
@@ -57,6 +59,10 @@ export abstract class StateValue {
     protected abstract createMountContext(): any;
 
     dispose(executeExternalDisposer: boolean) {
+        if (this._disposeTimerId !== undefined) {
+            clearTimeout(this._disposeTimerId);
+            this._disposeTimerId = undefined;
+        }
         try {
             if (executeExternalDisposer) {
                 this.disposer();

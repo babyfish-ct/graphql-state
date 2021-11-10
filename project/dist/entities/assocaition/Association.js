@@ -24,6 +24,35 @@ class Association {
         var _a;
         return (_a = this.valueMap.get(args === null || args === void 0 ? void 0 : args.key)) === null || _a === void 0 ? void 0 : _a.get();
     }
+    contains(args, target, tryMoreStrictArgs) {
+        var _a;
+        if (!tryMoreStrictArgs) {
+            return ((_a = this.valueMap.get(args === null || args === void 0 ? void 0 : args.key)) === null || _a === void 0 ? void 0 : _a.contains(target)) === true;
+        }
+        let result = false;
+        this.valueMap.forEachValue(value => {
+            if (Args_1.VariableArgs.contains(value.args, args)) {
+                if (value.contains(target)) {
+                    result = true;
+                    return false;
+                }
+            }
+        });
+        return result;
+    }
+    anyValueContains(target) {
+        let result = false;
+        this.valueMap.forEachValue(value => {
+            if (value.contains(target)) {
+                result = true;
+                return false;
+            }
+        });
+        if (result) {
+            return true;
+        }
+        return this.valueMap.get(undefined) !== undefined ? false : undefined;
+    }
     set(entityManager, args, value, pagination) {
         this.refreshedVersion = entityManager.modificationVersion;
         this.value(args).set(entityManager, value, pagination);
@@ -51,27 +80,11 @@ class Association {
             }
         }
     }
-    contains(args, target, tryMoreStrictArgs) {
-        var _a;
-        if (!tryMoreStrictArgs) {
-            return ((_a = this.valueMap.get(args === null || args === void 0 ? void 0 : args.key)) === null || _a === void 0 ? void 0 : _a.contains(target)) === true;
-        }
-        let result = false;
-        this.valueMap.forEachValue(value => {
-            if (Args_1.VariableArgs.contains(value.args, args)) {
-                if (value.contains(target)) {
-                    result = true;
-                    return false;
-                }
-            }
-        });
-        return result;
-    }
     link(entityManager, target, mostStringentArgs, insideModification = false) {
         this.refreshedVersion = entityManager.modificationVersion;
         this.changeLinks(() => {
-            this.valueMap.forEachValue(value => {
-                var _a, _b, _c;
+            var _a, _b, _c;
+            for (const value of this.valueMap.cloneValues()) {
                 if (insideModification && (mostStringentArgs === null || mostStringentArgs === void 0 ? void 0 : mostStringentArgs.key) === ((_a = value.args) === null || _a === void 0 ? void 0 : _a.key)) {
                     return;
                 }
@@ -107,14 +120,14 @@ class Association {
                         value.link(entityManager, exactRecords);
                     }
                 }
-            });
+            }
         });
     }
     unlink(entityManager, target, leastStringentArgs, insideModification = false) {
         this.refreshedVersion = entityManager.modificationVersion;
         this.changeLinks(() => {
-            this.valueMap.forEachValue(value => {
-                var _a, _b, _c;
+            var _a, _b, _c;
+            for (const value of this.valueMap.cloneValues()) {
                 if (insideModification && (leastStringentArgs === null || leastStringentArgs === void 0 ? void 0 : leastStringentArgs.key) === ((_a = value.args) === null || _a === void 0 ? void 0 : _a.key)) {
                     return;
                 }
@@ -150,15 +163,15 @@ class Association {
                         value.unlink(entityManager, exactRecords);
                     }
                 }
-            });
+            }
         });
     }
     unlinkAll(entityManager, target) {
         this.refreshedVersion = entityManager.modificationVersion;
         this.changeLinks(() => {
-            this.valueMap.forEachValue(value => {
+            for (const value of this.valueMap.cloneValues()) {
                 value.unlink(entityManager, [target]);
-            });
+            }
         });
     }
     appendTo(map) {
@@ -193,9 +206,9 @@ class Association {
     refresh(entityManager, event) {
         if (this.refreshedVersion !== entityManager.modificationVersion) {
             this.refreshedVersion = entityManager.modificationVersion;
-            this.valueMap.forEachValue(value => {
+            for (const value of this.valueMap.cloneValues()) {
                 value.referesh(entityManager, event);
-            });
+            }
         }
     }
     writeTo(writer) {

@@ -9,4 +9,5 @@ export declare class SpaceSavingMap<K, V> {
     clear(): void;
     forEach(callback: (key: K, value: V) => boolean | void): void;
     forEachValue(callback: (value: V) => boolean | void): void;
+    cloneValues(): V[];
 }

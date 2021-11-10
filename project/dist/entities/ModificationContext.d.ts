@@ -1,15 +1,13 @@
-import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { VariableArgs } from "../state/impl/Args";
 import { EntityChangeEvent, EntityEvictEvent } from "./EntityEvent";
 import { Record } from "./Record";
 export declare class ModificationContext {
     private versionIncreaser;
-    private linkToQuery;
     private publishEvictEvent;
     private publishChangeEvent;
     private forGC;
     private objPairMap;
-    constructor(versionIncreaser: () => void, linkToQuery: (type: TypeMetadata, id: any) => void, publishEvictEvent: (event: EntityEvictEvent) => void, publishChangeEvent: (event: EntityChangeEvent) => void, forGC: boolean);
+    constructor(versionIncreaser: () => void, publishEvictEvent: (event: EntityEvictEvent) => void, publishChangeEvent: (event: EntityChangeEvent) => void, forGC: boolean);
     close(): void;
     insert(record: Record): void;
     delete(record: Record): void;

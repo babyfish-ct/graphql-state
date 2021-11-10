@@ -15,9 +15,10 @@ export declare class Association {
     constructor(record: Record, field: FieldMetadata);
     has(args: VariableArgs | undefined): boolean;
     get(args: VariableArgs | undefined): Record | ReadonlyArray<Record | undefined> | RecordConnection | undefined;
+    contains(args: VariableArgs | undefined, target: Record, tryMoreStrictArgs: boolean): boolean;
+    anyValueContains(target: Record): boolean | undefined;
     set(entityManager: EntityManager, args: VariableArgs | undefined, value: any, pagination?: Pagination): void;
     evict(entityManager: EntityManager, args: VariableArgs | undefined, includeMoreStrictArgs: boolean): void;
-    contains(args: VariableArgs | undefined, target: Record, tryMoreStrictArgs: any): boolean;
     link(entityManager: EntityManager, target: Record | ReadonlyArray<Record>, mostStringentArgs: VariableArgs | undefined, insideModification?: boolean): void;
     unlink(entityManager: EntityManager, target: Record | ReadonlyArray<Record>, leastStringentArgs: VariableArgs | undefined, insideModification?: boolean): void;
     unlinkAll(entityManager: EntityManager, target: Record): void;

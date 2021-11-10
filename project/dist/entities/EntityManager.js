@@ -58,7 +58,7 @@ class EntityManager {
             return action();
         }
         else {
-            this._ctx = new ModificationContext_1.ModificationContext(() => { ++this._modificationVersion; }, this.linkToQuery.bind(this), this.publishEvictChangeEvent.bind(this), this.publishEntityChangeEvent.bind(this), forGC);
+            this._ctx = new ModificationContext_1.ModificationContext(() => { ++this._modificationVersion; }, this.publishEvictChangeEvent.bind(this), this.publishEntityChangeEvent.bind(this), forGC);
             try {
                 return action();
             }
@@ -158,9 +158,9 @@ class EntityManager {
         }
         return result.retain();
     }
-    release(args) {
+    release(args, releasePolicy) {
         const result = this._queryResultMap.get(args.key);
-        result === null || result === void 0 ? void 0 : result.release(60000);
+        result === null || result === void 0 ? void 0 : result.release(releasePolicy);
     }
     addEvictListener(typeName, listener) {
         if (listener !== undefined && listener !== null) {
@@ -180,8 +180,7 @@ class EntityManager {
         (_a = this._evictListenerMap.get(typeName)) === null || _a === void 0 ? void 0 : _a.delete(listener);
     }
     publishEvictChangeEvent(e) {
-        var _a, _b;
-        (_b = (_a = this.recordManager(e.typeName).findRefById(e.id)) === null || _a === void 0 ? void 0 : _a.value) === null || _b === void 0 ? void 0 : _b.refresh(this, e);
+        this.refreshByEvictEvent(e);
         for (const [, set] of this._evictListenerMap) {
             for (const listener of set) {
                 listener(e);
@@ -206,22 +205,21 @@ class EntityManager {
         (_a = this._changeListenerMap.get(typeName)) === null || _a === void 0 ? void 0 : _a.delete(listener);
     }
     publishEntityChangeEvent(e) {
-        var _a, _b;
-        (_b = (_a = this.recordManager(e.typeName).findRefById(e.id)) === null || _a === void 0 ? void 0 : _a.value) === null || _b === void 0 ? void 0 : _b.refresh(this, e);
+        this.refreshByChangeEvent(e);
         for (const [, set] of this._changeListenerMap) {
             for (const listener of set) {
                 listener(e);
             }
         }
     }
-    linkToQuery(type, id) {
-        const qr = this._queryRecord;
-        if (qr !== undefined) {
-            const record = this.saveId(type.name, id);
-            for (const [, field] of qr.staticType.fieldMap) {
-                if (field.targetType !== undefined && field.targetType.isAssignableFrom(type)) {
-                    qr.link(this, field, record);
-                }
+    refreshByEvictEvent(e) {
+        var _a, _b;
+        (_b = (_a = this.recordManager(e.typeName).findRefById(e.id)) === null || _a === void 0 ? void 0 : _a.value) === null || _b === void 0 ? void 0 : _b.refreshByEvictEvent(this, e);
+    }
+    refreshByChangeEvent(e) {
+        for (let type = this.schema.typeMap.get(e.typeName); type !== undefined; type = type.superType) {
+            for (const field of type.backRefFields) {
+                this.recordManager(field.declaringType.name).refresh(field, e);
             }
         }
     }
@@ -244,12 +242,12 @@ class EntityManager {
         }
     }
     gc() {
-        // if (this._gcTimerId === undefined) {
-        //     this._gcTimerId = setTimeout(() => {
-        //         this._gcTimerId = undefined;
-        //         this.onGC();
-        //     }, 0);
-        // }
+        if (this._gcTimerId === undefined) {
+            this._gcTimerId = setTimeout(() => {
+                this._gcTimerId = undefined;
+                this.onGC();
+            }, 0);
+        }
     }
     onGC() {
         for (const result of this._queryResultMap.values()) {

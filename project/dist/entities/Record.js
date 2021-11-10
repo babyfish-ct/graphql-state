@@ -5,7 +5,7 @@ const graphql_ts_client_api_1 = require("graphql-ts-client-api");
 const Args_1 = require("../state/impl/Args");
 const SpaceSavingMap_1 = require("../state/impl/SpaceSavingMap");
 const Association_1 = require("./assocaition/Association");
-const BackReferences_1 = require("./BackReferences");
+const BackReferences_1 = require("./assocaition/BackReferences");
 class Record {
     constructor(superRecord, staticType, runtimeType, id, deleted = false) {
         this.superRecord = superRecord;
@@ -113,6 +113,10 @@ class Record {
         var _a;
         return ((_a = this.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.contains(args, target, tryMoreStrictArgs)) === true;
     }
+    anyValueContains(field, target) {
+        var _a;
+        return (_a = this.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.anyValueContains(target);
+    }
     evict(entityManager, field, args, includeMoreStrictArgs = false) {
         var _a;
         if (field.declaringType !== this.staticType) {
@@ -178,7 +182,7 @@ class Record {
     disposeAssocaitions(entityManager) {
         this.associationMap.clear();
     }
-    refresh(entityManager, event) {
+    refreshByEvictEvent(entityManager, event) {
         this.backReferences.forEach((field, _, ownerRecord) => {
             var _a;
             // Duplicated invacaion, but not problem
@@ -186,6 +190,10 @@ class Record {
             // by comparing EntityManager.modificationVersion
             (_a = ownerRecord.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.refresh(entityManager, event);
         });
+    }
+    refreshByChangeEvent(entityManager, field, e) {
+        var _a;
+        (_a = this.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.refresh(entityManager, e);
     }
     gcVisit(field, args) {
         var _a;

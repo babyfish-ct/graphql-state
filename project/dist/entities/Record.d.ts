@@ -4,7 +4,7 @@ import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { VariableArgs } from "../state/impl/Args";
 import { RecordConnection } from "./assocaition/AssociationConnectionValue";
-import { BackReferences } from "./BackReferences";
+import { BackReferences } from "./assocaition/BackReferences";
 import { EntityManager, Garbage } from "./EntityManager";
 import { Pagination } from "./QueryArgs";
 export declare class Record {
@@ -29,6 +29,7 @@ export declare class Record {
     link(entityManager: EntityManager, associationField: FieldMetadata, record: Record): void;
     unlink(entityManager: EntityManager, associationField: FieldMetadata, record: Record): void;
     contains(field: FieldMetadata, args: VariableArgs | undefined, target: Record, tryMoreStrictArgs: boolean): boolean;
+    anyValueContains(field: FieldMetadata, target: Record): boolean | undefined;
     evict(entityManager: EntityManager, field: FieldMetadata, args: VariableArgs | undefined, includeMoreStrictArgs?: boolean): void;
     delete(entityManager: EntityManager): void;
     undelete(): boolean;
@@ -36,7 +37,8 @@ export declare class Record {
     createMap(): Map<string, any>;
     dispose(entityManager: EntityManager): void;
     private disposeAssocaitions;
-    refresh(entityManager: EntityManager, event: EntityEvictEvent | EntityChangeEvent): void;
+    refreshByEvictEvent(entityManager: EntityManager, event: EntityEvictEvent): void;
+    refreshByChangeEvent(entityManager: EntityManager, field: FieldMetadata, e: EntityChangeEvent): void;
     gcVisit(field: FieldMetadata, args: VariableArgs | undefined): void;
     collectGarbages(output: Garbage[]): void;
     toString(): string;

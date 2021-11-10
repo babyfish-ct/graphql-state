@@ -61,10 +61,15 @@ class FieldMetadata {
         if (targetMetadata === undefined) {
             throw new Error(`Illegal association field "${this.fullName}", its target type "${this._targetType}" is not exists`);
         }
-        if (targetMetadata.category !== "OBJECT") {
-            throw new Error(`Illegal association field "${this.fullName}", the category of its target type "${this._targetType}" is not "OBJECT"`);
+        if (targetMetadata.category === "OBJECT") {
+            this._targetType = targetMetadata;
+            if (this.declaringType.category === "OBJECT" && this.declaringType.name !== "Mutation") {
+                targetMetadata.addBackRefField(this);
+            }
         }
-        this._targetType = targetMetadata;
+        else {
+            this._targetType = undefined;
+        }
         return targetMetadata;
     }
     get oppositeField() {

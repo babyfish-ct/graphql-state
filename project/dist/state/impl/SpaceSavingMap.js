@@ -100,5 +100,17 @@ class SpaceSavingMap {
             }
         }
     }
+    cloneValues() {
+        const arr = [];
+        if (this.value !== undefined) {
+            arr.push(this.value);
+        }
+        if (this.valueMap !== undefined) {
+            for (const value of this.valueMap.values()) {
+                arr.push(value);
+            }
+        }
+        return arr;
+    }
 }
 exports.SpaceSavingMap = SpaceSavingMap;

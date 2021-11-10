@@ -7,7 +7,7 @@ import { VariableArgs } from "../state/impl/Args";
 import { SpaceSavingMap } from "../state/impl/SpaceSavingMap";
 import { Association } from "./assocaition/Association";
 import { RecordConnection } from "./assocaition/AssociationConnectionValue";
-import { BackReferences } from "./BackReferences";
+import { BackReferences } from "./assocaition/BackReferences";
 import { EntityManager, Garbage } from "./EntityManager";
 import { Pagination } from "./QueryArgs";
 
@@ -174,6 +174,13 @@ export class Record {
         return this.associationMap.get(field)?.contains(args, target, tryMoreStrictArgs) === true;
     }
 
+    anyValueContains(
+        field: FieldMetadata,
+        target: Record
+    ): boolean | undefined {
+        return this.associationMap.get(field)?.anyValueContains(target);
+    }
+
     evict(
         entityManager: EntityManager, 
         field: FieldMetadata,
@@ -251,13 +258,17 @@ export class Record {
         this.associationMap.clear();
     }
 
-    refresh(entityManager: EntityManager, event: EntityEvictEvent | EntityChangeEvent) {
+    refreshByEvictEvent(entityManager: EntityManager, event: EntityEvictEvent) {
         this.backReferences.forEach((field, _, ownerRecord) => {
             // Duplicated invacaion, but not problem
             // because Asscoaiton.refresh can ignore duplicated invocations
             // by comparing EntityManager.modificationVersion
             ownerRecord.associationMap.get(field)?.refresh(entityManager, event);
         });
+    }
+
+    refreshByChangeEvent(entityManager: EntityManager, field: FieldMetadata, e: EntityChangeEvent) {
+        this.associationMap.get(field)?.refresh(entityManager, e);
     }
 
     gcVisit(field: FieldMetadata, args: VariableArgs | undefined) {

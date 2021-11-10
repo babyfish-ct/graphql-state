@@ -61,7 +61,7 @@ export abstract class AssociationValue {
             this.association.unlink(entityManager, oldReference, this.args, true);
             if (!entityManager.isBidirectionalAssociationManagementSuspending) {
                 const oppositeField = this.association.field.oppositeField;
-                if (oppositeField !== undefined) {
+                if (oppositeField !== undefined && this.args === undefined) {
                     if (oldReference) {
                         oldReference.unlink(entityManager, oppositeField, self);
                     }
@@ -124,26 +124,32 @@ export abstract class AssociationValue {
         const targetType = this.association.field.targetType!;
         const actualType = entityManager.schema.typeMap.get(e.typeName)!;
         if (targetType!.isAssignableFrom(actualType) && 
-        e.changedType === "update" &&
+        e.changedType !== "delete" &&
         this.isTargetChanged(targetType, e.changedKeys)) {
             if (this.association.field.isContainingConfigured) {
                 const ref = entityManager.findRefById(targetType.name, e.id);
                 if (ref?.value !== undefined) {
-                    const result = this.association.field.associationProperties?.contains(
-                        new FlatRowImpl(ref.value),
-                        this.args?.filterVariables
-                    );
-                    if (result === true) {
-                        if (this.contains(ref.value)) {
-                            this.reorder(entityManager, ref.value);
-                        } else {
-                            this.link(entityManager, [ref.value]);
-                        }
+                    const belongToMe = this.belongToMe(ref.value);
+                    if (belongToMe === false) {
                         return;
                     }
-                    if (result === false) {
-                        this.unlink(entityManager, [ref.value]);
-                        return;
+                    if (belongToMe === true) { 
+                        const result = this.association.field.associationProperties?.contains(
+                            new FlatRowImpl(ref.value),
+                            this.args?.filterVariables
+                        );
+                        if (result === true) {
+                            if (this.contains(ref.value)) {
+                                this.reorder(entityManager, ref.value);
+                            } else {
+                                this.link(entityManager, [ref.value]);
+                            }
+                            return;
+                        }
+                        if (result === false) {
+                            this.unlink(entityManager, [ref.value]);
+                            return;
+                        }
                     }
                 }
             }
@@ -165,7 +171,24 @@ export abstract class AssociationValue {
         return false;
     }
 
-    protected evict(entityManager: EntityManager) {
+    private belongToMe(target: Record): boolean | undefined {
+        if (this.association.record.runtimeType.name === "Query") {
+            return true;
+        }
+        if (this.association.anyValueContains(target)) {
+            return true;
+        }
+        const oppositeField = this.association.field.oppositeField;
+        if (oppositeField !== undefined) {
+            const oppositeReferenceMe = target.anyValueContains(oppositeField, this.association.record);
+            if (oppositeReferenceMe !== undefined) {
+                return oppositeReferenceMe;
+            }
+        }
+        return undefined;
+    }
+
+    evict(entityManager: EntityManager) {
         this.association.evict(entityManager, this.args, false);
     }
 

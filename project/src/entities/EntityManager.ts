@@ -1,4 +1,3 @@
-import { string } from "yargs";
 import { EntityChangeEvent } from "..";
 import { AbstractDataService } from "../data/AbstractDataService";
 import { MergedDataService } from "../data/MergedDataService";
@@ -8,7 +7,7 @@ import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { VariableArgs } from "../state/impl/Args";
 import { StateManagerImpl } from "../state/impl/StateManagerImpl";
-import { AssociationValue } from "./assocaition/AssocaitionValue";
+import { ReleasePolicy } from "../state/State";
 import { EntityEvictEvent } from "./EntityEvent";
 import { ModificationContext } from "./ModificationContext";
 import { PaginationQueryResult } from "./PaginationQueryResult";
@@ -91,7 +90,6 @@ export class EntityManager {
         } else {
             this._ctx = new ModificationContext(
                 () => { ++this._modificationVersion },
-                this.linkToQuery.bind(this),
                 this.publishEvictChangeEvent.bind(this),
                 this.publishEntityChangeEvent.bind(this),
                 forGC
@@ -213,9 +211,9 @@ export class EntityManager {
         return result.retain();
     }
 
-    release(args: QueryArgs) {
+    release(args: QueryArgs, releasePolicy?: ReleasePolicy) {
         const result = this._queryResultMap.get(args.key);
-        result?.release(60000);
+        result?.release(releasePolicy);
     }
 
     addEvictListener(typeName: string | undefined, listener: (e: EntityEvictEvent) => void): void {
@@ -237,7 +235,7 @@ export class EntityManager {
     }
 
     private publishEvictChangeEvent(e: EntityEvictEvent) {
-        this.recordManager(e.typeName).findRefById(e.id)?.value?.refresh(this, e);
+        this.refreshByEvictEvent(e);
         for (const [, set] of this._evictListenerMap) {
             for (const listener of set) {
                 listener(e);
@@ -264,7 +262,7 @@ export class EntityManager {
     }
 
     private publishEntityChangeEvent(e: EntityChangeEvent) {
-        this.recordManager(e.typeName).findRefById(e.id)?.value?.refresh(this, e);
+        this.refreshByChangeEvent(e);
         for (const [, set] of this._changeListenerMap) {
             for (const listener of set) {
                 listener(e);
@@ -272,14 +270,14 @@ export class EntityManager {
         }
     }
 
-    private linkToQuery(type: TypeMetadata, id: any) {
-        const qr = this._queryRecord;
-        if (qr !== undefined) {
-            const record = this.saveId(type.name, id);
-            for (const [, field] of qr.staticType.fieldMap) {
-                if (field.targetType !== undefined && field.targetType.isAssignableFrom(type)) {
-                    qr.link(this, field, record);
-                }
+    private refreshByEvictEvent(e: EntityEvictEvent) {
+        this.recordManager(e.typeName).findRefById(e.id)?.value?.refreshByEvictEvent(this, e);
+    }
+
+    private refreshByChangeEvent(e: EntityChangeEvent) {
+        for (let type = this.schema.typeMap.get(e.typeName); type !== undefined; type = type.superType) {
+            for (const field of type.backRefFields) {
+                this.recordManager(field.declaringType.name).refresh(field, e);
             }
         }
     }
@@ -305,12 +303,12 @@ export class EntityManager {
     }
 
     gc() {
-        // if (this._gcTimerId === undefined) {
-        //     this._gcTimerId = setTimeout(() => {
-        //         this._gcTimerId = undefined;
-        //         this.onGC();
-        //     }, 0);
-        // }
+        if (this._gcTimerId === undefined) {
+            this._gcTimerId = setTimeout(() => {
+                this._gcTimerId = undefined;
+                this.onGC();
+            }, 0);
+        }
     }
 
     private onGC() {
