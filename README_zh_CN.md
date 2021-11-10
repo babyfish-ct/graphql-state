@@ -30,7 +30,7 @@
 让我们来看一个因用户不给予优化而导致无法通过仅修改本地缓存来完成变更的例子，GIF动画如下
 
 |![image](./unoptimized-mutation.gif "用户不给予优化时")|
--
+|---|
 
 当我们把"MANNING-1"修改成"MANNING-2"的时候，在缺少用户优化的情况下，带参数的两个缓存项被清除。所以，带参数的查询会自动从服务端重新获取新的数据。
 
@@ -38,7 +38,8 @@
 
 让我们来看一个因用户优化的支持而无需重新查询仅需修改本地缓存就可以完成变更的例子，GIF动画如下
 
-![image](./optimized-mutation.gif "用户给予优化时")
+|![image](./optimized-mutation.gif "用户给予优化时")|
+|---|
 
 当我们把"MANNING-1"修改成"MANNING-2"的时候，在用户优化的支持下，带参数的两个缓存项被直接更新，而不是被清除。所以，带参数的查询会马上呈现了最新结果，无需重新查询。
 
@@ -54,7 +55,8 @@
 
 如上面的GIF动画所示，graphql-state能自动根据数据的变更重新实施条件筛选。不仅如此，graphql-state还能自动根据数据的变更重新实施排序，如下GIF动画所示
 
-![image](./smart-sorting.gif "智能排序")
+|![image](./smart-sorting.gif "智能排序")|
+|---|
 
 本例中我们关心两个关联
 - Query.findBooks
@@ -72,7 +74,8 @@
 
 从业务上讲，BookStore.books和Book.store其实是同一个关联因视角不同而展现出的两面，因此，graphql-state允许你把这样的两个关系绑定为双向关联。一旦你完成了这种绑定，你就可以得到如下GIF动画所示的效果
 
-![image](./bidirectional-association.gif "双向关联")
+|![image](./bidirectional-association.gif "双向关联")|
+|---|
 
 在这个例子中，你执行的修改行为是
 ```
