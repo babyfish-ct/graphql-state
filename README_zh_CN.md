@@ -58,7 +58,7 @@
 
 如上面的GIF动画所示，系统能自动根据数据的变更重新实施条件筛选。不仅如此，系统还能自动根据数据的变更重新实施排序，如下GIF动画所示
 
-![image](./smarting-sorting.gif "智能排序")
+![image](./smart-sorting.gif "智能排序")
 
 本例中我们关心两个关联
 - Query.findBooks
