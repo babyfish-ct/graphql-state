@@ -1,7 +1,7 @@
 import { ObjectFetcher } from "graphql-ts-client-api";
 import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 import { OptionArgs, VariableArgs } from "../state/impl/Args";
-import { PaginationQueryOptions, PaginationStyle } from "../state/StateHook";
+import { PaginationQueryOptions, PaginationStyle } from "../state/Types";
 import { GRAPHQL_STATE_PAGINATION_INFO, PaginationFetcherProcessor } from "./PaginationFetcherProcessor";
 import { RuntimeShape, toRuntimeShape } from "./RuntimeShape";
 

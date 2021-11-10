@@ -3,11 +3,11 @@ import { Dispatch, SetStateAction } from "react";
 import { MutationResult } from "../../entities/MutationResult";
 import { QueryArgs } from "../../entities/QueryArgs";
 import { QueryResult } from "../../entities/QueryResult";
-import { ParameterizedStateAccessingOptions, State, StateAccessingOptions } from "../State";
-import { MutationOptions, QueryOptions } from "../StateHook";
+import { State } from "../State";
 import { QueryResultChangeEvent, StateManagerImpl, StateValueChangeEvent, StateValueChangeListener } from "./StateManagerImpl";
 import { StateValue } from "./StateValue";
 import { OptionArgs, VariableArgs } from "./Args";
+import { MutationOptions, ParameterizedStateAccessingOptions, QueryOptions, StateAccessingOptions } from "../Types";
 
 export class StateValueHolder {
 

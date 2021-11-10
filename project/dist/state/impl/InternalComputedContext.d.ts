@@ -1,6 +1,6 @@
 import { ObjectFetcher } from "graphql-ts-client-api";
-import { State, StateAccessingOptions } from "../State";
-import { ObjectQueryOptions, QueryOptions } from "../StateHook";
+import { State } from "../State";
+import { ObjectQueryOptions, QueryOptions, StateAccessingOptions } from "../Types";
 import { ComputedStateValue } from "./ComputedStateValue";
 import { ScopedStateManager } from "./ScopedStateManager";
 import { StateValue } from "./StateValue";

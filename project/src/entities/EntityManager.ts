@@ -7,7 +7,7 @@ import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { VariableArgs } from "../state/impl/Args";
 import { StateManagerImpl } from "../state/impl/StateManagerImpl";
-import { ReleasePolicy } from "../state/State";
+import { ReleasePolicy } from "../state/Types";
 import { EntityEvictEvent } from "./EntityEvent";
 import { ModificationContext } from "./ModificationContext";
 import { PaginationQueryResult } from "./PaginationQueryResult";
@@ -32,8 +32,6 @@ export class EntityManager {
 
     private _ctx?: ModificationContext;
 
-    private _queryRecord?: Record;
-
     private _bidirectionalAssociationManagementSuspending = false;
 
     private _gcTimerId?: NodeJS.Timeout;
@@ -47,7 +45,7 @@ export class EntityManager {
         this.dataService = new MergedDataService(new RemoteDataService(this));
         const queryType = schema.typeMap.get("Query");
         if (queryType !== undefined) {
-            this._queryRecord = this.saveId("Query", QUERY_OBJECT_ID);
+            this.saveId("Query", QUERY_OBJECT_ID);
         }
     }
 

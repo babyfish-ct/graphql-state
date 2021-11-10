@@ -1,4 +1,5 @@
-import { State, StateAccessingScope, StateCreationScope } from "../State";
+import { State, StateCreationScope } from "../State";
+import { StateAccessingScope } from "../Types";
 import { StateInstance } from "./StateInstance";
 import { StateManagerImpl } from "./StateManagerImpl";
 

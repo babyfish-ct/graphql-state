@@ -1,8 +1,7 @@
 import { createContext, FC, memo, PropsWithChildren, useContext, useEffect } from "react";
-import { useStateManager } from "..";
 import { StateManagerImpl } from "./impl/StateManagerImpl";
-import { ReleasePolicy } from "./State";
 import { StateManager } from "./StateManager";
+import { ReleasePolicy } from "./Types";
 
 export const StateManagerProvider: FC<
     PropsWithChildren<{

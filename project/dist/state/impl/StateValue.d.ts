@@ -1,4 +1,4 @@
-import { ReleasePolicy } from "../State";
+import { ReleasePolicy } from "../Types";
 import { VariableArgs } from "./Args";
 import { StateInstance } from "./StateInstance";
 export declare abstract class StateValue {

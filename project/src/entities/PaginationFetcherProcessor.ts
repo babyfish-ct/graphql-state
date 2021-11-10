@@ -1,6 +1,5 @@
-import { Fetcher, FetcherField, FieldOptions, ObjectFetcher, ParameterRef } from "graphql-ts-client-api"
+import { Fetcher, FetcherField, ObjectFetcher, ParameterRef } from "graphql-ts-client-api"
 import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
-import { PaginationStyle } from "../state/StateHook";
 
 export class PaginationFetcherProcessor {
 

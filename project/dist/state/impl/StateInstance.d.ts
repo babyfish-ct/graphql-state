@@ -1,4 +1,5 @@
-import { ReleasePolicy, State } from "../State";
+import { State } from "../State";
+import { ReleasePolicy } from "../Types";
 import { VariableArgs } from "./Args";
 import { ScopedStateManager } from "./ScopedStateManager";
 import { StateValue } from "./StateValue";

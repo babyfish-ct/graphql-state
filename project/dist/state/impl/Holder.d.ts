@@ -2,10 +2,10 @@ import { ObjectFetcher } from "graphql-ts-client-api";
 import { Dispatch, SetStateAction } from "react";
 import { MutationResult } from "../../entities/MutationResult";
 import { QueryResult } from "../../entities/QueryResult";
-import { State, StateAccessingOptions } from "../State";
-import { MutationOptions, QueryOptions } from "../StateHook";
+import { State } from "../State";
 import { StateManagerImpl } from "./StateManagerImpl";
 import { StateValue } from "./StateValue";
+import { MutationOptions, QueryOptions, StateAccessingOptions } from "../Types";
 export declare class StateValueHolder {
     private stateManager;
     private scopePath;

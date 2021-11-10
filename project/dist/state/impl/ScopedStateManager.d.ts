@@ -1,4 +1,5 @@
-import { State, StateAccessingScope } from "../State";
+import { State } from "../State";
+import { StateAccessingScope } from "../Types";
 import { StateInstance } from "./StateInstance";
 import { StateManagerImpl } from "./StateManagerImpl";
 export declare class ScopedStateManager {

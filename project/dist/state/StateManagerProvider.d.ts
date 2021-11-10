@@ -1,7 +1,7 @@
 import { FC, PropsWithChildren } from "react";
 import { StateManagerImpl } from "./impl/StateManagerImpl";
-import { ReleasePolicy } from "./State";
 import { StateManager } from "./StateManager";
+import { ReleasePolicy } from "./Types";
 export declare const StateManagerProvider: FC<PropsWithChildren<{
     stateManager?: StateManager<any>;
     releasePolicy?: ReleasePolicy;

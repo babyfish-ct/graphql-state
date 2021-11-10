@@ -1,5 +1,6 @@
 import { Fetcher } from "graphql-ts-client-api";
 import { EmptySchemaType, SchemaType } from "../meta/SchemaType";
+import { ParameterizedStateAccessingOptions, StateAccessingOptions } from "./Types";
 
 export function makeStateFactory<TSchema extends SchemaType = EmptySchemaType>(): StateFactory<TSchema> {
     return new StateFactoryImpl<TSchema>();
@@ -192,8 +193,6 @@ export interface ParameterizedAsyncContext<
     ): Promise<T>;
 }
 
-export type StateAccessingScope = "auto" | "local";
-
 class StateFactoryImpl<TSchema extends SchemaType> implements StateFactory<TSchema> {
 
     createState<T>(
@@ -317,16 +316,6 @@ export interface ComputedStateCreatingContext extends StateCreationOptions {
 export type StateUnmoutHandler = () => void;
 
 export type StateCreationScope = "global-scope-only" | "any-scope"; 
-
-export interface StateAccessingOptions {
-    readonly scope?: StateAccessingScope;
-}
-
-export interface ParameterizedStateAccessingOptions<TVariables> extends StateAccessingOptions {
-    readonly variables: TVariables;
-}
-
-export type ReleasePolicy = (aliveTime: number) => number;
 
 function unsupportedOperation() {
     throw new Error("UnsupportedOperationException");

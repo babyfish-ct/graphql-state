@@ -5,7 +5,7 @@ import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { VariableArgs } from "../state/impl/Args";
 import { StateManagerImpl } from "../state/impl/StateManagerImpl";
-import { ReleasePolicy } from "../state/State";
+import { ReleasePolicy } from "../state/Types";
 import { EntityEvictEvent } from "./EntityEvent";
 import { ModificationContext } from "./ModificationContext";
 import { Pagination, QueryArgs } from "./QueryArgs";
@@ -23,7 +23,6 @@ export declare class EntityManager {
     private _evictListenerMap;
     private _changeListenerMap;
     private _ctx?;
-    private _queryRecord?;
     private _bidirectionalAssociationManagementSuspending;
     private _gcTimerId?;
     private _modificationVersion;

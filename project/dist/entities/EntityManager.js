@@ -21,7 +21,7 @@ class EntityManager {
         this.dataService = new MergedDataService_1.MergedDataService(new RemoteDataService_1.RemoteDataService(this));
         const queryType = schema.typeMap.get("Query");
         if (queryType !== undefined) {
-            this._queryRecord = this.saveId("Query", Record_1.QUERY_OBJECT_ID);
+            this.saveId("Query", Record_1.QUERY_OBJECT_ID);
         }
     }
     recordManager(typeName) {

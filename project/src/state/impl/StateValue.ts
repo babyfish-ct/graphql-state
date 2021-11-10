@@ -1,4 +1,5 @@
-import { ComputedStateCreationOptions, ReleasePolicy, StateUnmoutHandler, WritableStateCreationOptions } from "../State";
+import { ComputedStateCreationOptions, StateUnmoutHandler, WritableStateCreationOptions } from "../State";
+import { ReleasePolicy } from "../Types";
 import { VariableArgs } from "./Args";
 import { StateInstance } from "./StateInstance";
 

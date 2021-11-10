@@ -1,5 +1,5 @@
 import { Loadable } from "../state/impl/StateValue";
-import { ReleasePolicy } from "../state/State";
+import { ReleasePolicy } from "../state/Types";
 import { EntityManager } from "./EntityManager";
 import { QueryArgs } from "./QueryArgs";
 import { QueryService } from "./QueryService";

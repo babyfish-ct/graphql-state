@@ -1,7 +1,7 @@
 import { ObjectFetcher } from "graphql-ts-client-api";
 import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 import { OptionArgs } from "../state/impl/Args";
-import { PaginationStyle } from "../state/StateHook";
+import { PaginationStyle } from "../state/Types";
 import { RuntimeShape } from "./RuntimeShape";
 export declare class QueryArgs {
     readonly shape: RuntimeShape;

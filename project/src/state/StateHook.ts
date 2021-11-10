@@ -1,14 +1,29 @@
 import { useContext, useEffect, useMemo, useState } from "react";
 import { 
-    StateAccessingOptions, 
-    State, 
+    AsyncOptions, 
+    AsyncPaginationReturnType, 
+    AsyncReturnType, 
+    AsyncStyle, 
+    MutationOptions, 
+    MutationReturnType, 
+    ObjectQueryOptions, 
+    ObjectReference, 
+    ObjectStyle, 
+    PaginationQueryOptions, 
     ParameterizedStateAccessingOptions, 
+    QueryOptions, 
+    StateAccessingOptions, 
+    StateAccessor, 
+    UseStateAsyncValueHookResult 
+} from "./Types";
+import { 
+    State, 
     SingleWritableState, 
     ParameterizedWritableState, 
     SingleAsyncState, 
     ParameterizedAsyncState, 
     SingleComputedState, 
-    ParameterizedComputedState 
+    ParameterizedComputedState
 } from "./State";
 import { StateManager } from "./StateManager";
 import { stateContext } from "./StateManagerProvider";
@@ -16,7 +31,7 @@ import { StateManagerImpl } from "./impl/StateManagerImpl";
 import { WritableStateValue } from "./impl/WritableStateValue";
 import { ComputedStateValue } from "./impl/ComputedStateValue";
 import { SchemaType } from "../meta/SchemaType";
-import { Fetcher, ObjectFetcher, TextWriter } from "graphql-ts-client-api";
+import { Fetcher, ObjectFetcher } from "graphql-ts-client-api";
 import { MutationResultHolder, QueryResultHolder, StateValueHolder } from "./impl/Holder";
 import { useScopePath } from "./StateScope";
 
@@ -47,11 +62,6 @@ export function useStateValue<T, TVariables, TAsyncStyle extends AsyncStyle = "s
     state: ParameterizedAsyncState<T, TVariables>,
     options: ParameterizedStateAccessingOptions<TVariables> & AsyncOptions<TAsyncStyle>
 ): AsyncReturnType<T, TAsyncStyle>;
-
-export function useStateValue<T, TVariables>(
-    state: ParameterizedWritableState<T, TVariables> | ParameterizedComputedState<T, TVariables>,
-    options: ParameterizedStateAccessingOptions<TVariables>
-): T;
 
 export function useStateValue<T>(
     state: State<T>,
@@ -107,65 +117,6 @@ export function useStateAccessor<T>(
         throw ex;
     }
 }
-
-export interface StateAccessor<T> {
-    (): T;
-    (value: T): void;
-}
-
-export interface AsyncOptions<TAsyncStyle extends AsyncStyle = "suspense"> {
-    readonly asyncStyle?: TAsyncStyle;
-}
-
-export type UseStateAsyncValueHookResult<T> = {
-    readonly data?: T;
-    readonly loading: boolean;
-    readonly error?: Error;
-    readonly refetch: () => void;
-};
-
-export type AsyncReturnType<T, TAsyncStyle extends AsyncStyle> =
-    TAsyncStyle extends "async-object" ?
-    UseStateAsyncValueHookResult<T> :
-    TAsyncStyle extends "refetchable-suspense" ?
-    { readonly data: T, readonly refetch: () => void} :
-    T
-;
-
-export type AsyncPaginationReturnType<T, TAsyncStyle extends AsyncStyle> =
-    (
-        TAsyncStyle extends "async-object" ? {
-            readonly loading: boolean,
-            readonly error: any,
-            readonly data?: T,
-        } : {
-            readonly data: T,
-        }
-    ) &
-    (
-        TAsyncStyle extends "suspense" ? {
-        } : {
-            readonly refetch: () => void
-        }
-    ) &
-    {  
-        readonly loadNext: () => void,
-        readonly loadPrevious: () => void,
-        readonly hasNext: boolean,
-        readonly hasPrevious: boolean,
-        readonly isLoadingNext: boolean,
-        readonly isLoadingPrevious: boolean
-    }
-;
-
-export interface MutationReturnType<T extends object, TVariables extends object> {
-    readonly mutate: (variables?: TVariables) => Promise<T>;
-    readonly data?: T;
-    readonly loading: boolean;
-    readonly error: any;
-}
-
-export type AsyncStyle = "suspense" | "refetchable-suspense" | "async-object";
 
 export function useQuery<
     T extends object,
@@ -285,43 +236,6 @@ export interface ManagedObjectHooks<TSchema extends SchemaType> {
         TAsyncStyle
     >;
 }
-
-export interface QueryOptions<TVariables extends object, TAsyncStyle extends AsyncStyle> {
-    readonly asyncStyle?: TAsyncStyle
-    readonly variables?: TVariables;
-    readonly mode?: QueryMode;
-}
-
-export interface PaginationQueryOptions<TVariables extends object, TAsyncStyle extends AsyncStyle> 
-extends QueryOptions<TVariables, TAsyncStyle> {
-    readonly windowId: string,
-    readonly initialSize: number;
-    readonly pageSize?: number;
-    readonly paginiationStyle?: PaginationStyle
-}
-
-export interface MutationOptions<T, TVariables extends object> {
-    readonly variables?: TVariables;
-    readonly onSuccess?: (data: T) => void;
-    readonly onError?: (error: any) => void;
-    readonly onCompelete?: (data: T | undefined, error: any) => void;
-}
-
-export type QueryMode = "cache-and-network" | "cache-only";
-
-export type ObjectStyle = "required" | "optional";
-
-export type PaginationStyle = "forward" | "backward" | "page";
-
-export interface ObjectQueryOptions<
-    TVariables extends object, 
-    TAsyncStyle extends AsyncStyle, 
-    TObjectStyle extends ObjectStyle
-> extends QueryOptions<TVariables, TAsyncStyle> {
-    readonly objectStyle: TObjectStyle;
-}
-
-type ObjectReference<T, TObjectStyle extends ObjectStyle> = TObjectStyle extends "required" ? T : T | undefined;
 
 class ManagedObjectHooksImpl<TSchema extends SchemaType> implements ManagedObjectHooks<TSchema> {
 
