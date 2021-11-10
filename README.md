@@ -142,7 +142,7 @@ This is a newly born framework. In order to make it more and more complete, the 
 
 #### Long-term goal
 1. Transactions, save points, undo/redo
-2. A Chrome extension to supports data visualization to facilitate debugging.
+2. A Chrome extension for data visualization.
 
 
 ### Change list
