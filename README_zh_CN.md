@@ -25,13 +25,13 @@
 
 然而，如果你愿意的话，你也可以干预抉择过程。您可以使用简单的API来帮助它优化，增加情况(A)的发生概率并降低情况(B)的发生概率。
 
-##### 2.1.1. When users do not optimize
+##### 2.1.1. 用户不给予优化时
 
-Let's take a look at an example where the mutation cannot be completed by only modifying the local cache because the user does not optimize it. The GIF animation is as follows
+让我们来看一个因用户不给予优化而导致无法通过仅修改本地缓存来完成变更的例子，GIF动画如下
 
-![image](./unoptimized-mutation.gif "When the user does not give optimization")
+![image](./unoptimized-mutation.gif "用户不给予优化时")
 
-When we changed "MANNING-1" to "MANNING-2", in the absence of user optimization, the two cache entries with parameters were cleared. Therefore, queries with parameters will automatically retrieve new data from the server again.
+当我们把"MANNING-1"修改成"MANNING-2"的时候，在缺少用户优化的情况下，带参数的两个缓存项被清除。所以，带参数的查询会自动从服务端重新获取新的数据。
 
 ##### 2.1.1. 用户给予优化时
 
