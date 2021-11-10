@@ -114,4 +114,4 @@ This is the first version 0.0.0, and there is still some work to be done in the 
 |0.0.1  |GC for built-in cache database|
 |0.0.2  |Support usePaginationQuery| 
 |0.0.3  |Smart-mutation became more smart|
-
+|0.0.4  |Support releasePolicy|
