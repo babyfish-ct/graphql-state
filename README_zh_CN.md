@@ -33,23 +33,44 @@
 
 > 注意
 > 
-> 此GIF动画中涉及了三个缓存数据
-> - Query.findBookStores()
-> - Query.findBookStores({name: "1"})
-> - Query.findBookStores({name: "2"})
+> - Query.findBooksStores()
+> - Query.findBooksStores({name: "1"})
+> - Query.findBooksStores({name: "2"})
 > 
 > 实际项目中，被UI抛弃的数据可能会再较短时间内被垃圾回收系统释放。在这个例子中，为了达到演示效果，调整了垃圾释放策略，让这三个数据都可以相对长时间地在缓存中同时存在。
 
-最初
-- Query.findBooksStores() 包含
+当我们把"MANNING-1"修改成"MANNING-2"的时候，**在缺少用户优化的情况下，带参数的两个缓存项被直接清除。所以，带参数的查询会自动从服务端重新获取数据。**
 
 ##### 2.1.1. 用户给予优化时
-![image](./optimized-mutation.gif "用户不给予优化时")
+![image](./optimized-mutation.gif "用户给予优化时")
+
+> 注意
+> 
+> - Query.findBooksStores()
+> - Query.findBooksStores({name: "1"})
+> - Query.findBooksStores({name: "2"})
+> 
+> 实际项目中，被UI抛弃的数据可能会再较短时间内被垃圾回收系统释放。在这个例子中，为了达到演示效果，调整了垃圾释放策略，让这三个数据都可以相对长时间地在缓存中同时存在。
+
+当我们把"MANNING-1"修改成"MANNING-2"的时候，**有了用户优化的支持，带参数的两个缓存项被更新，而不是被清除。所以，带参数的查询会马上呈现了新的结果，无需重新查询。**
+
+### 2.1.3 智能排序
+
+如上面的GIF动画所示，系统能自动根据数据的变更重新实施条件筛选。不仅如此，系统还能自动根据数据的变更重新实施排序，如下GIF动画所示
+
+![image](./smarting-sorting.gif "智能排序")
+
+本例中我们关心两个关联
+- Query.findBooks
+- BookStore.books
+
+这两个关系都是按照name升序排序，所以，当对象的name变化时，它们都被重新排序
 
 #### 2.2. 双向关联管理
 
-参考这样一个例子
+上文中，我们展示几个很酷的效果。事实上，框架还能处理不同数据关联之间的相互影响。这就是双向关联维护。
 
+参考这样一个例子
 - BookStore具备一个books关联属性，一个指向Book的one-to-many关联
 - Book具备一个store属性，一个指向BookSotre的many-to-one关联
 
@@ -95,6 +116,9 @@ LearningGraphQL.store = MANNING;
 ### 变更列表
 |版本|描述|graphql-ts-client所需版本|
 |-------|-----------|------------|
-|0.0.0  |首个版本|>=3.0.4|
-|0.0.1  |为内置的缓存数据库添加垃圾回收器|>=3.0.7|
+|0.0.4  |支持releasePolicy|>=3.0.8|
+|0.0.3  |让智能变更更智能|>=3.0.8|
 |0.0.2  |支持分页查询API：usePaginationQuery|>=3.0.8|
+|0.0.1  |为内置的缓存数据库添加垃圾回收器|>=3.0.7|
+|0.0.0  |首个版本|>=3.0.4|
+
