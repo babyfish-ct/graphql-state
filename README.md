@@ -36,20 +36,21 @@ Let's take a look at an example where the mutation cannot be completed by only m
 
 When we changed "MANNING-1" to "MANNING-2", in the absence of user optimization, the two cache entries with parameters were cleared. Therefore, queries with parameters will automatically retrieve new data from the server again.
 
-##### 2.1.1. 用户给予优化时
+##### 2.1.1. When users give optimization
 
 Let's take a look at an example where the change can be completed by modifying the local cache without re-query due to the support of user optimization. The GIF animation is as follows
+
 ![image](./optimized-mutation.gif "When the user gives optimization")
 
-当我们把"MANNING-1"修改成"MANNING-2"的时候，在用户优化的支持下，带参数的两个缓存项被直接更新，而不是被清除。所以，带参数的查询会马上呈现了最新结果，无需重新查询。
+When we change "MANNING-1" to "MANNING-2", with the support of user optimization, the two cache entries with parameters are directly updated instead of being cleared. Therefore, the query with parameters will immediately show the latest results, without the need to re-query.
 
-> 注意
+> Notes，there are 3 cache items involved here
 > 
 > - Query.findBooksStores()
 > - Query.findBooksStores({name: "1"})
 > - Query.findBooksStores({name: "2"})
 > 
-> 实际项目中，被UI抛弃的数据可能会在较短时间内被垃圾回收系统释放。在这个例子中，为了达到演示效果，故意调整了垃圾释放策略，让这三个数据都可以相对长时间地在缓存中同时存在。
+> In actual projects, the data discarded by the UI may be released by the garbage collection system in a relatively short period of time. In this example, in order to achieve the demonstration effect, the garbage release strategy is deliberately adjusted so that all three data can exist in the cache for a relatively long time.
 
 #### 3.2. Bidirectonal association maintenance
 
