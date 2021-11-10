@@ -2,7 +2,7 @@ import { ObjectFetcher } from "graphql-ts-client-api";
 import { QueryArgs } from "../../entities/QueryArgs";
 import { QueryResult } from "../../entities/QueryResult";
 import { State } from "../State";
-import { ObjectQueryOptions, ParameterizedStateAccessingOptions, QueryOptions, StateAccessingOptions } from "../Types";
+import { ObjectQueryOptions, ParameterizedStateAccessingOptions, QueryOptions, ReleasePolicyOptions, StateAccessingOptions } from "../Types";
 import { OptionArgs, VariableArgs } from "./Args";
 import { ComputedStateValue } from "./ComputedStateValue";
 import { ScopedStateManager } from "./ScopedStateManager";
@@ -114,29 +114,33 @@ export class InternalComputedContext {
         }
     }
 
-    object(fetcher: ObjectFetcher<string, object, object>, id: any, options?: ObjectQueryOptions<any, any, any>): Promise<any> {
+    query(
+        fetcher: ObjectFetcher<"Query", object, object>, 
+        options?: QueryOptions<any> & ReleasePolicyOptions
+    ): Promise<any> {
+        return this.queryImpl(fetcher, undefined, options);
+    }
+
+    object(
+        fetcher: ObjectFetcher<string, object, object>, 
+        id: any, 
+        options?: ObjectQueryOptions<any, any>
+    ): Promise<any> {
         return this.queryImpl(fetcher, [id], options)[0];
     }
 
     objects(
         fetcher: ObjectFetcher<string, object, object>, 
         ids: ReadonlyArray<any>, 
-        options?: ObjectQueryOptions<any, any, any>
+        options?: ObjectQueryOptions<any, any> & ReleasePolicyOptions
     ): Promise<ReadonlyArray<any>> {
         return this.queryImpl(fetcher, ids, options);
-    }
-
-    query(
-        fetcher: ObjectFetcher<"Query", object, object>, 
-        options?: QueryOptions<any, any>
-    ): Promise<any> {
-        return this.queryImpl(fetcher, undefined, options);
     }
 
     private queryImpl(
         fetcher: ObjectFetcher<string, object, object>, 
         ids: ReadonlyArray<string> | undefined, 
-        options?: QueryOptions<any, any>
+        options?: QueryOptions<any>
     ): Promise<any> {
         
         if (this.closed) {

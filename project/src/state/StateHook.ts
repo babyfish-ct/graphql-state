@@ -124,7 +124,7 @@ export function useQuery<
     TAsyncStyle extends AsyncStyle = "suspense"
 >(
     fetcher: ObjectFetcher<"Query", T, TVariables>,
-    options?: QueryOptions<TVariables, TAsyncStyle>
+    options?: QueryOptions<TVariables> & AsyncOptions<TAsyncStyle>
 ): AsyncReturnType<T, TAsyncStyle> {
     const queryResultHolder = useInternalQueryResultHolder(fetcher, undefined, undefined, options);
     try {
@@ -157,7 +157,7 @@ export function usePaginationQuery<
     TAsyncStyle extends AsyncStyle = "suspense"
 >(
     fetcher: ObjectFetcher<"Query", T, TVariables>,
-    options?: PaginationQueryOptions<TVariables, TAsyncStyle>,    
+    options?: PaginationQueryOptions<TVariables> & AsyncOptions<TAsyncStyle>,    
 ): AsyncPaginationReturnType<T, TAsyncStyle> {
     const queryResultHolder = useInternalQueryResultHolder(
         fetcher, options?.windowId, undefined, options
@@ -215,7 +215,7 @@ export interface ManagedObjectHooks<TSchema extends SchemaType> {
     >(
         fetcher: Fetcher<string, T, TVariables>,
         id: TSchema["entities"][TName][" $id"],
-        options?: ObjectQueryOptions<TVariables, TAsyncStyle, TObjectStyle>
+        options?: ObjectQueryOptions<TVariables, TObjectStyle> & AsyncOptions<TAsyncStyle>
     ): AsyncReturnType<
         ObjectReference<T, TObjectStyle>,
         TAsyncStyle
@@ -230,7 +230,7 @@ export interface ManagedObjectHooks<TSchema extends SchemaType> {
     >(
         fetcher: Fetcher<string, T, TVariables>,
         ids: ReadonlyArray<TSchema["entities"][TName][" $id"]>,
-        options?: ObjectQueryOptions<TVariables, TAsyncStyle, TObjectStyle>
+        options?: ObjectQueryOptions<TVariables, TObjectStyle> & AsyncOptions<TAsyncStyle>
     ): AsyncReturnType<
         ReadonlyArray<ObjectReference<T, TObjectStyle>>,
         TAsyncStyle
@@ -248,7 +248,7 @@ class ManagedObjectHooksImpl<TSchema extends SchemaType> implements ManagedObjec
     >(
         fetcher: ObjectFetcher<string, T, TVariables>,
         id: TSchema["entities"][TName][" $id"],
-        options?: ObjectQueryOptions<TVariables, TAsyncStyle, TObjectStyle>
+        options?: ObjectQueryOptions<TVariables, TObjectStyle> & AsyncOptions<TAsyncStyle>
     ): AsyncReturnType<
         ObjectReference<T, TObjectStyle>,
         TAsyncStyle
@@ -299,7 +299,7 @@ class ManagedObjectHooksImpl<TSchema extends SchemaType> implements ManagedObjec
     >(
         fetcher: ObjectFetcher<string, T, TVariables>,
         ids: ReadonlyArray<TSchema["entities"][TName][" $id"]>,
-        options?: ObjectQueryOptions<TVariables, TAsyncStyle, TObjectStyle>
+        options?: ObjectQueryOptions<TVariables, TObjectStyle> & AsyncOptions<TAsyncStyle>
     ): AsyncReturnType<
         ReadonlyArray<ObjectReference<T, TObjectStyle>>,
         TAsyncStyle
@@ -363,7 +363,7 @@ function useInternalQueryResultHolder(
     fetcher: ObjectFetcher<string, object, object>,
     windowId: string | undefined,
     ids?: ReadonlyArray<any>,
-    options?: QueryOptions<any, any>
+    options?: QueryOptions<any>
 ): QueryResultHolder {
 
     const stateManager = useStateManager() as StateManagerImpl<any>;

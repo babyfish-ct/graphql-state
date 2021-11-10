@@ -94,14 +94,14 @@ class InternalComputedContext {
             return stateValue.result;
         }
     }
+    query(fetcher, options) {
+        return this.queryImpl(fetcher, undefined, options);
+    }
     object(fetcher, id, options) {
         return this.queryImpl(fetcher, [id], options)[0];
     }
     objects(fetcher, ids, options) {
         return this.queryImpl(fetcher, ids, options);
-    }
-    query(fetcher, options) {
-        return this.queryImpl(fetcher, undefined, options);
     }
     queryImpl(fetcher, ids, options) {
         if (this.closed) {

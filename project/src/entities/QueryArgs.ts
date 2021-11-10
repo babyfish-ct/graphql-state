@@ -64,7 +64,7 @@ export class QueryArgs {
             const [connName, connAlias, paginationFetcher] = new PaginationFetcherProcessor(
                 pagination.schema
             ).process(fetcher);
-            const queryOptions = optionArgs!.options as PaginationQueryOptions<any, any>;
+            const queryOptions = optionArgs!.options as PaginationQueryOptions<any>;
 
             return new QueryArgs(
                 toRuntimeShape(fetcher, connName, optionArgs?.variableArgs?.variables), 

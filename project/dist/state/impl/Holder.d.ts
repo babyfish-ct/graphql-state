@@ -5,7 +5,7 @@ import { QueryResult } from "../../entities/QueryResult";
 import { State } from "../State";
 import { StateManagerImpl } from "./StateManagerImpl";
 import { StateValue } from "./StateValue";
-import { MutationOptions, QueryOptions, StateAccessingOptions } from "../Types";
+import { MutationOptions, QueryOptions, ReleasePolicyOptions, StateAccessingOptions } from "../Types";
 export declare class StateValueHolder {
     private stateManager;
     private scopePath;
@@ -13,24 +13,26 @@ export declare class StateValueHolder {
     private stateValue?;
     private previousOptionArgs?;
     private stateValueChangeListener?;
+    private releasePolicy?;
     private deferred?;
     constructor(stateManager: StateManagerImpl<any>, scopePath: string, localUpdater: Dispatch<SetStateAction<number>>);
     get(): StateValue;
     set(state: State<any>, scopePath: string, options?: StateAccessingOptions): void;
     release(): void;
+    private serializableOptions;
 }
 export declare class QueryResultHolder {
     private stateManager;
     private localUpdater;
     private queryResult?;
     private queryResultChangeListener?;
+    private releasePolicy?;
     private deferred?;
     constructor(stateManager: StateManagerImpl<any>, localUpdater: Dispatch<SetStateAction<number>>);
     get(): QueryResult;
-    set(fetcher: ObjectFetcher<string, object, object>, windowId: string | undefined, ids?: ReadonlyArray<any>, options?: QueryOptions<any, any>): void;
+    set(fetcher: ObjectFetcher<string, object, object>, windowId: string | undefined, ids?: ReadonlyArray<any>, options?: QueryOptions<any> & ReleasePolicyOptions): void;
     release(): void;
-}
-export declare class PaginationQueryResultHolder {
+    private serializableOptions;
 }
 export declare class MutationResultHolder {
     private stateManager;

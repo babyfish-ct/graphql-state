@@ -17,7 +17,10 @@ export const AuthorMultiSelect: FC<{
             ),
             options => options.alias("conn")
         ), 
-        {asyncStyle: "async-object"}
+        {
+            asyncStyle: "async-object",
+            releasePolicy: () => 3600_000
+        }
     );
 
     return (

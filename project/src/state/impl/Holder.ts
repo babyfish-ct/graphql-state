@@ -7,7 +7,7 @@ import { State } from "../State";
 import { QueryResultChangeEvent, StateManagerImpl, StateValueChangeEvent, StateValueChangeListener } from "./StateManagerImpl";
 import { StateValue } from "./StateValue";
 import { OptionArgs, VariableArgs } from "./Args";
-import { MutationOptions, ParameterizedStateAccessingOptions, QueryOptions, StateAccessingOptions } from "../Types";
+import { AsyncOptions, MutationOptions, ParameterizedStateAccessingOptions, QueryOptions, ReleasePolicy, ReleasePolicyOptions, StateAccessingOptions } from "../Types";
 
 export class StateValueHolder {
 
@@ -17,10 +17,12 @@ export class StateValueHolder {
 
     private stateValueChangeListener?: StateValueChangeListener;
 
+    private releasePolicy?: ReleasePolicy;
+
     private deferred?: {
         readonly state: State<any>;
         readonly scopePath: string;
-        readonly options?: StateAccessingOptions
+        readonly options?: StateAccessingOptions & ReleasePolicyOptions
     };
     
     constructor(
@@ -38,7 +40,9 @@ export class StateValueHolder {
     }
 
     set(state: State<any>, scopePath: string, options?: StateAccessingOptions) {
-        const optionArgs = OptionArgs.of(options);
+
+        const serializableOptions = this.serializableOptions(options);
+        const optionArgs = OptionArgs.of(serializableOptions);
 
         if (this.stateValue?.stateInstance?.state[" $name"] === state[" $name"] && 
             this.scopePath === scopePath &&
@@ -63,9 +67,9 @@ export class StateValueHolder {
         this.stateValue = this
             .stateManager
             .scope(scopePath)
-            .instance(state, options?.scope ?? "auto")
+            .instance(state, serializableOptions?.scope ?? "auto")
             .retain(
-                VariableArgs.of((options as Partial<ParameterizedStateAccessingOptions<any>>)?.variables)
+                VariableArgs.of((serializableOptions as Partial<ParameterizedStateAccessingOptions<any>>)?.variables)
             );
 
         this.stateValueChangeListener = (e: StateValueChangeEvent) => {
@@ -93,9 +97,28 @@ export class StateValueHolder {
             if (value !== undefined) {
                 this.stateValue = undefined;
                 this.previousOptionArgs = undefined;
-                value.stateInstance.release(value.args);
+                value.stateInstance.release(value.args, this.releasePolicy);
             }
         }
+    }
+
+    private serializableOptions(
+        options?: StateAccessingOptions & ReleasePolicyOptions
+    ): StateAccessingOptions | undefined {
+        if (options === undefined) {
+            this.releasePolicy = undefined;
+            return undefined;
+        }
+        const releasePolicy = (options as AsyncOptions<any>).releasePolicy;
+        if (releasePolicy === undefined) {
+            this.releasePolicy = undefined;
+            return options;
+        }
+
+        this.releasePolicy = releasePolicy;
+        const newOptions: any = { ...options };
+        newOptions.releasePolicy = undefined;
+        return newOptions;
     }
 }
 
@@ -105,11 +128,13 @@ export class QueryResultHolder {
 
     private queryResultChangeListener?: (e: QueryResultChangeEvent) => void;
 
+    private releasePolicy?: ReleasePolicy;
+
     private deferred?: {
         readonly fetcher: ObjectFetcher<string, object, object>;
         readonly windowId?: string;
         readonly ids?: ReadonlyArray<any>;
-        readonly options?: QueryOptions<any, any>;
+        readonly options?: QueryOptions<any> & ReleasePolicyOptions;
     };
 
     constructor(
@@ -129,8 +154,10 @@ export class QueryResultHolder {
         fetcher: ObjectFetcher<string, object, object>,
         windowId: string | undefined,
         ids?: ReadonlyArray<any>,
-        options?: QueryOptions<any, any>
+        options?: QueryOptions<any> & ReleasePolicyOptions
     ) {
+
+        const serializableOptions = this.serializableOptions(options);
 
         const oldQueryArgs = this.queryResult?.queryArgs;
         const newQueryArgs = QueryArgs.create(
@@ -139,7 +166,7 @@ export class QueryResultHolder {
             { schema: this.stateManager.entityManager.schema, loadMode: "initial" } :
             undefined,
             ids, 
-            OptionArgs.of(options)
+            OptionArgs.of(serializableOptions)
         );
 
         if (oldQueryArgs?.key === newQueryArgs.key) {
@@ -147,7 +174,12 @@ export class QueryResultHolder {
         }
 
         if (this.queryResult?.loadable.loading) { //Peak clipping
-            this.deferred = { fetcher, windowId, ids, options }; 
+            this.deferred = { 
+                fetcher, 
+                windowId, 
+                ids, 
+                options
+            }; 
             return;
         }
         
@@ -183,14 +215,29 @@ export class QueryResultHolder {
             const result = this.queryResult;
             if (result !== undefined) {
                 this.queryResult = undefined;
-                this.stateManager.entityManager.release(result.queryArgs);
+                this.stateManager.entityManager.release(result.queryArgs, this.releasePolicy);
             }
         }
     }
-}
 
-export class PaginationQueryResultHolder {
-    
+    private serializableOptions(
+        options?: QueryOptions<any> & ReleasePolicyOptions
+    ): QueryOptions<any> | undefined {
+        if (options === undefined) {
+            this.releasePolicy = undefined;
+            return undefined;
+        }
+        const releasePolicy = (options as AsyncOptions<any>).releasePolicy;
+        if (releasePolicy === undefined) {
+            this.releasePolicy = undefined;
+            return options;
+        }
+
+        this.releasePolicy = releasePolicy;
+        const newOptions: any = { ...options };
+        newOptions.releasePolicy = undefined;
+        return newOptions;
+    }
 }
 
 export class MutationResultHolder{

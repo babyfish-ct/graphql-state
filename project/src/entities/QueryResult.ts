@@ -203,7 +203,7 @@ export class QueryResult {
         if (this.queryArgs.ids !== undefined) {
             const objectStyle: ObjectStyle = 
                 (
-                    this.queryArgs.optionArgs?.options as ObjectQueryOptions<any, any, any> | undefined
+                    this.queryArgs.optionArgs?.options as ObjectQueryOptions<any, any> | undefined
                 )?.objectStyle 
                 ?? "required";
             if (objectStyle === "required") {

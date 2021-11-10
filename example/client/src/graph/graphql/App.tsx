@@ -1,4 +1,4 @@
-import { FC, memo } from "react";
+import { FC, memo, useCallback } from "react";
 import { StateManagerProvider } from "graphql-state";
 import { Card, Space, Tabs } from "antd";
 import { BookStoreList } from "./store/BookStoreList";
@@ -13,8 +13,17 @@ export const App: FC<{
 
     const stateManager = createStateManager(withCustomerOptimization);
 
+    const releasePolicy = useCallback((aliveTime: number) => {
+        if (aliveTime < 3000) {
+            return 0;
+        }
+        return 60_000;
+    }, []);
+
     return (
-        <StateManagerProvider stateManager={stateManager}>
+        <StateManagerProvider 
+        stateManager={stateManager}
+        releasePolicy={releasePolicy}>
             <Card>
                 <Space direction="vertical" style={{width: "100%"}}>
                     <Tabs>

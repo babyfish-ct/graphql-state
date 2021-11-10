@@ -5,27 +5,27 @@ export declare type StateAccessingScope = "auto" | "local";
 export interface ParameterizedStateAccessingOptions<TVariables> extends StateAccessingOptions {
     readonly variables: TVariables;
 }
-export interface AsyncOptions<TAsyncStyle extends AsyncStyle = "suspense"> {
-    readonly asyncStyle?: TAsyncStyle;
+export interface ReleasePolicyOptions {
     readonly releasePolicy?: ReleasePolicy;
+}
+export interface AsyncOptions<TAsyncStyle extends AsyncStyle = "suspense"> extends ReleasePolicyOptions {
+    readonly asyncStyle?: TAsyncStyle;
 }
 export declare type AsyncStyle = "suspense" | "refetchable-suspense" | "async-object";
 export declare type ReleasePolicy = (aliveTime: number) => number;
-export interface QueryOptions<TVariables extends object, TAsyncStyle extends AsyncStyle> {
-    readonly asyncStyle?: TAsyncStyle;
+export interface QueryOptions<TVariables extends object> {
     readonly variables?: TVariables;
     readonly mode?: QueryMode;
-    readonly releasePolicy?: ReleasePolicy;
 }
 export declare type QueryMode = "cache-and-network" | "cache-only";
-export interface PaginationQueryOptions<TVariables extends object, TAsyncStyle extends AsyncStyle> extends QueryOptions<TVariables, TAsyncStyle> {
+export interface PaginationQueryOptions<TVariables extends object> extends QueryOptions<TVariables> {
     readonly windowId: string;
     readonly initialSize: number;
     readonly pageSize?: number;
     readonly paginiationStyle?: PaginationStyle;
 }
 export declare type PaginationStyle = "forward" | "backward" | "page";
-export interface ObjectQueryOptions<TVariables extends object, TAsyncStyle extends AsyncStyle, TObjectStyle extends ObjectStyle> extends QueryOptions<TVariables, TAsyncStyle> {
+export interface ObjectQueryOptions<TVariables extends object, TObjectStyle extends ObjectStyle> extends QueryOptions<TVariables> {
     readonly objectStyle: TObjectStyle;
 }
 export declare type ObjectStyle = "required" | "optional";

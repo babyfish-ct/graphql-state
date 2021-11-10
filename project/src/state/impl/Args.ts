@@ -126,6 +126,9 @@ function standardizedValue0(value: any, emptyObjectToUndefined: boolean): any | 
     if (value === undefined || value === null) {
         return undefined;
     }
+    if (typeof value === "function") {
+        throw new Error("Internal bug: Cannot standardize json with function");
+    }
     if (typeof value === "object") {
         if (Array.isArray(value)) {
             return value.map(element => standardizedValue0(element, false));

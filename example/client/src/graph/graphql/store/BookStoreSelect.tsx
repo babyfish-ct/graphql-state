@@ -14,7 +14,10 @@ export const BookStoreSelect: FC<{
         query$.findBookStores(
             bookStore$.id.name
         ),
-        { asyncStyle: "async-object" }
+        { 
+            asyncStyle: "async-object",
+            releasePolicy: () => 3600_000
+        }
     );
 
     const onSelectChange = useCallback((value: string) => {

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MutationResultHolder = exports.PaginationQueryResultHolder = exports.QueryResultHolder = exports.StateValueHolder = void 0;
+exports.MutationResultHolder = exports.QueryResultHolder = exports.StateValueHolder = void 0;
 const MutationResult_1 = require("../../entities/MutationResult");
 const QueryArgs_1 = require("../../entities/QueryArgs");
 const Args_1 = require("./Args");
@@ -19,7 +19,8 @@ class StateValueHolder {
     }
     set(state, scopePath, options) {
         var _a, _b, _c, _d, _e, _f;
-        const optionArgs = Args_1.OptionArgs.of(options);
+        const serializableOptions = this.serializableOptions(options);
+        const optionArgs = Args_1.OptionArgs.of(serializableOptions);
         if (((_b = (_a = this.stateValue) === null || _a === void 0 ? void 0 : _a.stateInstance) === null || _b === void 0 ? void 0 : _b.state[" $name"]) === state[" $name"] &&
             this.scopePath === scopePath &&
             ((_c = this.previousOptionArgs) === null || _c === void 0 ? void 0 : _c.key) === (optionArgs === null || optionArgs === void 0 ? void 0 : optionArgs.key)) {
@@ -39,8 +40,8 @@ class StateValueHolder {
         this.stateValue = this
             .stateManager
             .scope(scopePath)
-            .instance(state, (_e = options === null || options === void 0 ? void 0 : options.scope) !== null && _e !== void 0 ? _e : "auto")
-            .retain(Args_1.VariableArgs.of((_f = options) === null || _f === void 0 ? void 0 : _f.variables));
+            .instance(state, (_e = serializableOptions === null || serializableOptions === void 0 ? void 0 : serializableOptions.scope) !== null && _e !== void 0 ? _e : "auto")
+            .retain(Args_1.VariableArgs.of((_f = serializableOptions) === null || _f === void 0 ? void 0 : _f.variables));
         this.stateValueChangeListener = (e) => {
             if (e.stateValue === this.stateValue) {
                 const deferred = this.deferred;
@@ -66,9 +67,24 @@ class StateValueHolder {
             if (value !== undefined) {
                 this.stateValue = undefined;
                 this.previousOptionArgs = undefined;
-                value.stateInstance.release(value.args);
+                value.stateInstance.release(value.args, this.releasePolicy);
             }
         }
+    }
+    serializableOptions(options) {
+        if (options === undefined) {
+            this.releasePolicy = undefined;
+            return undefined;
+        }
+        const releasePolicy = options.releasePolicy;
+        if (releasePolicy === undefined) {
+            this.releasePolicy = undefined;
+            return options;
+        }
+        this.releasePolicy = releasePolicy;
+        const newOptions = Object.assign({}, options);
+        newOptions.releasePolicy = undefined;
+        return newOptions;
     }
 }
 exports.StateValueHolder = StateValueHolder;
@@ -86,15 +102,21 @@ class QueryResultHolder {
     }
     set(fetcher, windowId, ids, options) {
         var _a, _b;
+        const serializableOptions = this.serializableOptions(options);
         const oldQueryArgs = (_a = this.queryResult) === null || _a === void 0 ? void 0 : _a.queryArgs;
         const newQueryArgs = QueryArgs_1.QueryArgs.create(fetcher, windowId ?
             { schema: this.stateManager.entityManager.schema, loadMode: "initial" } :
-            undefined, ids, Args_1.OptionArgs.of(options));
+            undefined, ids, Args_1.OptionArgs.of(serializableOptions));
         if ((oldQueryArgs === null || oldQueryArgs === void 0 ? void 0 : oldQueryArgs.key) === newQueryArgs.key) {
             return;
         }
         if ((_b = this.queryResult) === null || _b === void 0 ? void 0 : _b.loadable.loading) { //Peak clipping
-            this.deferred = { fetcher, windowId, ids, options };
+            this.deferred = {
+                fetcher,
+                windowId,
+                ids,
+                options
+            };
             return;
         }
         // Double check before release(entityManager can validate it too)
@@ -127,15 +149,27 @@ class QueryResultHolder {
             const result = this.queryResult;
             if (result !== undefined) {
                 this.queryResult = undefined;
-                this.stateManager.entityManager.release(result.queryArgs);
+                this.stateManager.entityManager.release(result.queryArgs, this.releasePolicy);
             }
         }
     }
+    serializableOptions(options) {
+        if (options === undefined) {
+            this.releasePolicy = undefined;
+            return undefined;
+        }
+        const releasePolicy = options.releasePolicy;
+        if (releasePolicy === undefined) {
+            this.releasePolicy = undefined;
+            return options;
+        }
+        this.releasePolicy = releasePolicy;
+        const newOptions = Object.assign({}, options);
+        newOptions.releasePolicy = undefined;
+        return newOptions;
+    }
 }
 exports.QueryResultHolder = QueryResultHolder;
-class PaginationQueryResultHolder {
-}
-exports.PaginationQueryResultHolder = PaginationQueryResultHolder;
 class MutationResultHolder {
     constructor(stateManager, localUpdater) {
         this.stateManager = stateManager;

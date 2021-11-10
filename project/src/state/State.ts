@@ -1,6 +1,6 @@
 import { Fetcher } from "graphql-ts-client-api";
 import { EmptySchemaType, SchemaType } from "../meta/SchemaType";
-import { ParameterizedStateAccessingOptions, StateAccessingOptions } from "./Types";
+import { ObjectQueryOptions, ObjectReference, ObjectStyle, ParameterizedStateAccessingOptions, QueryOptions, ReleasePolicyOptions, StateAccessingOptions } from "./Types";
 
 export function makeStateFactory<TSchema extends SchemaType = EmptySchemaType>(): StateFactory<TSchema> {
     return new StateFactoryImpl<TSchema>();
@@ -134,41 +134,43 @@ export interface ComputedContext<TSchema extends SchemaType> {
 
     <X>(
         state: SingleAsyncState<X>, 
-        options: StateAccessingOptions
+        options: StateAccessingOptions & ReleasePolicyOptions
     ): Promise<X>;
     
     <X, XVariables>(
         state: ParameterizedState<X, XVariables>, 
-        options: ParameterizedStateAccessingOptions<XVariables>
+        options: ParameterizedStateAccessingOptions<XVariables> & ReleasePolicyOptions
     ): Promise<X>;
-
-    object<
-        TName extends TSchema["entities"] & string,
-        T extends object,
-        TVaraibles extends object
-    >(
-        fetcher: Fetcher<TName, T, TVaraibles>,
-        id: TSchema["entities"][TName][" $id"],
-        options?: TVaraibles
-    ): Promise<T | undefined>;
-
-    objects<
-        TName extends TSchema["entities"] & string,
-        T extends object,
-        TVaraibles extends object
-    >(
-        fetcher: Fetcher<TName, T, TVaraibles>,
-        ids: ReadonlyArray<TSchema["entities"][TName][" $id"]>,
-        variables?: TVaraibles
-    ): Promise<ReadonlyArray<T | undefined>>;
 
     query<
         T extends object,
         TVaraibles extends object
     >(
         fetcher: Fetcher<"Query", T, TVaraibles>,
-        variables?: TVaraibles
+        options?: QueryOptions<TVaraibles> & ReleasePolicyOptions
     ): Promise<T>;
+    
+    object<
+        TName extends TSchema["entities"] & string,
+        T extends object,
+        TVaraibles extends object,
+        TObjectStyle extends ObjectStyle = "required"
+    >(
+        fetcher: Fetcher<TName, T, TVaraibles>,
+        id: TSchema["entities"][TName][" $id"],
+        options?: ObjectQueryOptions<TVaraibles, TObjectStyle> & ReleasePolicyOptions
+    ): Promise<ObjectReference<T, TObjectStyle>>;
+
+    objects<
+        TName extends TSchema["entities"] & string,
+        T extends object,
+        TVaraibles extends object,
+        TObjectStyle extends ObjectStyle = "required"
+    >(
+        fetcher: Fetcher<TName, T, TVaraibles>,
+        ids: ReadonlyArray<TSchema["entities"][TName][" $id"]>,
+        options?: ObjectQueryOptions<TVaraibles, TObjectStyle> & ReleasePolicyOptions
+    ): Promise<ReadonlyArray<T | undefined>>;
 }
 
 export interface ParameterizedComputedContext<
