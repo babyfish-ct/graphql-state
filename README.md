@@ -32,7 +32,8 @@ However, you can also intervene in the decision-making process if you wish. You 
 
 Let's take a look at an example where the mutation cannot be completed by only modifying the local cache because the user does not optimize it. The GIF animation is as follows
 
-![image](./unoptimized-mutation.gif "When the user does not give optimization")
+|![image](./unoptimized-mutation.gif "When the user does not give optimization")|
+|---|
 
 When we changed "MANNING-1" to "MANNING-2", in the absence of user optimization, the two cache entries with parameters were cleared. Therefore, queries with parameters will automatically retrieve new data from the server again.
 
@@ -40,7 +41,8 @@ When we changed "MANNING-1" to "MANNING-2", in the absence of user optimization,
 
 Let's take a look at an example where the change can be completed by modifying the local cache without re-query due to the support of user optimization. The GIF animation is as follows
 
-![image](./optimized-mutation.gif "When the user gives optimization")
+|![image](./optimized-mutation.gif "When the user gives optimization")|
+|---|
 
 When we change "MANNING-1" to "MANNING-2", with the support of user optimization, the two cache entries with parameters are directly updated instead of being cleared. Therefore, the query with parameters will immediately show the latest results, without the need to re-query.
 
@@ -56,7 +58,8 @@ When we change "MANNING-1" to "MANNING-2", with the support of user optimization
 
 As shown in the above GIF animation, graphql-state can automatically re-implement conditional filtering according to data changes. Not only that, graphql-state can also automatically re-sort according to data changes, as shown in the following GIF animation
 
-![image](./smart-sorting.gif "smart sorting")
+|![image](./smart-sorting.gif "smart sorting")|
+|---|
 
 In this example, we care about two associations
 -Query.findBooks
@@ -74,7 +77,8 @@ Refer to such an example
 
 From a business perspective, "BookStore.books" and "Book.store" are actually two sides of the same association due to different perspectives. Therefore, graphql-state allows you to bind these two associations into a bidirectional association. Once you have completed this binding, you can get the effect shown in the following GIF animation
 
-![image](./bidirectional-association.gif "bidirectional-association")
+|![image](./bidirectional-association.gif "bidirectional-association")|
+|---|
 
 In this example, the modification you performed is
 ```
@@ -125,25 +129,27 @@ Access http://localhost:3000
 
 [graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client) is another framework created by me a few months ago, it's TypeScript-DSL for GraphQL with full features.
 
-## Schedules
+## Other
 
-This is the first version 0.0.0, and there is still some work to be done in the future.
+This is a newly born framework. In order to make it more and more complete, the functions that will be implemented in the future are as follows
 
-### Short-term goal
-1. Doucment **(Emergency)**
-2. Cascade deleting for non-null many-to-assocaition
-3. Preload async state
-4. Support RestNework for REST server
+### future
+#### Short-term goals
 
-### Long-term goal
-1. Transaction, save point, undo/redo 
-2. Chrome extension for data visualization
+1. Support cascading deletion, this is the only option for non-nullable many-to-one associations
+2. Preload the query
+3. Simulate GraphQL services based on REST services, which is very useful for legacy server-side projects.
+
+#### Long-term goal
+1. Transactions, save points, undo/redo
+2. A Chrome extension to supports data visualization to facilitate debugging.
 
 
-## Change Log
-|Version|Description|
-|-------|-----------|
-|0.0.1  |GC for built-in cache database|
-|0.0.2  |Support usePaginationQuery| 
-|0.0.3  |Smart-mutation became more smart|
-|0.0.4  |Support releasePolicy|
+### Change list
+|Version|Description|Required version of graphql-ts-client|
+|-------|-----------|------------|
+|0.0.4 |Support releasePolicy|>=3.0.8|
+|0.0.3 |Make smart mutation smarter|>=3.0.8|
+|0.0.2 |Support paging query API: usePaginationQuery|>=3.0.8|
+|0.0.1 |Add a garbage collector to the built-in cache database|>=3.0.7|
+|0.0.0 |First version|>=3.0.4|
