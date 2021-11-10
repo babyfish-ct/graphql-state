@@ -26,7 +26,22 @@
 然而，如果你愿意的话，你也可以参与这个抉择进行优化干预。您可以使用简单的API来帮助它优化，增加情况(A)的发生概率并降低情况(B)的发生概率。
 
 ##### 2.1.1. 用户不给予优化时
+
+让我们来看一个如果用户不给予优化就无法仅通过修改本地缓存完成变更的例子，GIF动画如下
+
 ![image](./unoptimized-mutation.gif "用户不给予优化时")
+
+> 注意
+> 
+> 此GIF动画中涉及了三个缓存数据
+> - Query.findBookStores()
+> - Query.findBookStores({name: "1"})
+> - Query.findBookStores({name: "2"})
+> 
+> 实际项目中，被UI抛弃的数据可能会再较短时间内被垃圾回收系统释放。在这个例子中，为了达到演示效果，调整了垃圾释放策略，让这三个数据都可以相对长时间地在缓存中同时存在。
+
+最初
+- Query.findBooksStores() 包含
 
 ##### 2.1.1. 用户给予优化时
 ![image](./optimized-mutation.gif "用户不给予优化时")
