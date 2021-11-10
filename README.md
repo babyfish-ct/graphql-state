@@ -36,19 +36,7 @@ Let's take a look at an example where the mutation cannot be completed by only m
 
 When we changed "MANNING-1" to "MANNING-2", in the absence of user optimization, the two cache entries with parameters were cleared. Therefore, queries with parameters will automatically retrieve new data from the server again.
 
-### 2.1.3 Smart Sorting
-
-As shown in the above GIF animation, graphql-state can automatically re-implement conditional filtering according to data changes. Not only that, graphql-state can also automatically re-sort according to data changes, as shown in the following GIF animation
-
-![image](./smart-sorting.gif "smart sorting")
-
-In this example, we care about two associations
--Query.findBooks
--BookStore.books
-
-Both of them are sorted in ascending order by name. Therefore, when the name of the object is modified, these two associations will be reordered.
-
-##### 2.1.1. When users give optimization
+##### 2.1.2. When users give optimization
 
 Let's take a look at an example where the change can be completed by modifying the local cache without re-query due to the support of user optimization. The GIF animation is as follows
 
@@ -63,6 +51,18 @@ When we change "MANNING-1" to "MANNING-2", with the support of user optimization
 > - Query.findBooksStores({name: "2"})
 > 
 > In actual projects, the data discarded by the UI may be released by the garbage collection system in a relatively short period of time. In this example, in order to achieve the demonstration effect, the garbage release strategy is deliberately adjusted so that all three data can exist in the cache for a relatively long time.
+
+### 2.1.3 Smart Sorting
+
+As shown in the above GIF animation, graphql-state can automatically re-implement conditional filtering according to data changes. Not only that, graphql-state can also automatically re-sort according to data changes, as shown in the following GIF animation
+
+![image](./smart-sorting.gif "smart sorting")
+
+In this example, we care about two associations
+-Query.findBooks
+-BookStore.books
+
+Both of them are sorted in ascending order by name. Therefore, when the name of the object is modified, these two associations will be reordered.
 
 #### 3.2. Bidirectonal association maintenance
 
