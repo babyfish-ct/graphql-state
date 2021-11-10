@@ -101,6 +101,31 @@ LearningGraphQL.store = MANNING;
 
 3. 对于变量相同但形状不同的多个查询，形状较小的查询不会发出HTTP请求，它们会借用形状最大的查询的HTTP请求来共享响应数据。即使对于最大shape的查询的HTTP请求已经发送并且处于pending状态，这种优化仍然有效。 
 
+## 运行附带例子
+1. 克隆本项目
+```
+git clone https://github.com/babyfish-ct/graphql-state.git
+```
+2. 启动服务端
+```
+cd ${clonedDir}/example/server
+yarn start
+```
+服务端在内存中模拟数据库, 当它没重启时，所有数据会被还原.
+
+3. 启动客户端
+```
+cd ${clonedDir}/example/client
+yarn start
+```
+访问 http://localhost:3000
+
+## 依赖
+1. React, version >= 17.0.0
+2. [graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client), version >= 3.0.8
+
+[graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client) 是我数月前开发的另外一个框架, 它是针对GraphQL功能完整的的TypeScript-DSL。
+
 ## 文档
 
 [文档](./doc/README_zh_CN.md)
