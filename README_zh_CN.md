@@ -25,6 +25,12 @@
 
 然而，如果你愿意的话，你也可以参与这个抉择进行优化干预。您可以使用简单的API来帮助它优化，增加情况(A)的发生概率并降低情况(B)的发生概率。
 
+##### 2.1.1. 用户不给予优化时
+![image](http://https://github.com/babyfish-ct/graphql-state/unoptimized-mutation.png "用户不给予优化时")
+
+##### 2.1.1. 用户给予优化时
+![image](http://https://github.com/babyfish-ct/graphql-state/optimized-mutation.png "用户不给予优化时")
+
 #### 2.2. 双向关联管理
 
 参考这样一个例子
