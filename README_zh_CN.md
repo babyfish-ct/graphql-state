@@ -83,6 +83,10 @@ O'REILLY.books.remove(LearningGraphQL);
 LearningGraphQL.store = MANNING;
 ```
 
+# 2.3. 数据库风格的触发器
+
+内置缓存数据库支持触发器。不仅框架内部使用它来实现数据智能维护，触发器也作为公共API暴露出来，让开发者可以自定义更多的智能行为。
+
 ### 3. HTTP优化
 
 graphql-state会充分优化向服务端发送HTTP请求的行为，尽可能降低HTTP请求的数量，比如：合并碎片化的小请求，重用查询范围更大的现有请求。
