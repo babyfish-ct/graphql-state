@@ -64,13 +64,27 @@ In this example, we care about two associations
 
 Both of them are sorted in ascending order by name. Therefore, when the name of the object is modified, these two associations will be reordered.
 
-#### 3.2. Bidirectonal association maintenance
+#### 2.2. Bidirectonal association maintenance
 
-Although from the perspective of a single UI component, one-way associations between objects are concerned. However, the cache is shared by all UI components, and the data of these components will be merged inside the cache, and finally a two-way association will inevitably appear in the cache. If the two-way association cannot be handled well, data inconsistency will occur between different components. In fact, the maintenance of two-way association is one of the foundations of the intelligence of this framework.
+In the above, we showed a few cool effects. Not only that, graphql-state can also handle the interaction between different data associations. This is the bidirectional association maintenance.
 
-Bidirectonal association is supported and the symmetry of bidirectonal association is strictly guaranteed. Developers can modify one end of the  bidirectonal association at will. If the other end has been cached, the other one will be automatically updated to guarantee the symmetry of the association and the consistency of the data. 
+Refer to such an example
+- BookStore has a books field, it's an one-to-many association pointing to Book
+- In turn, Book has a store field, it's a many-to-one association pointing to BookStore
 
-![image](./bidirectional-association.gif "Bidirectional assocaition")
+From a business perspective, "BookStore.books" and "Book.store" are actually two sides of the same association due to different perspectives. Therefore, graphql-state allows you to bind these two associations into a bidirectional association. Once you have completed this binding, you can get the effect shown in the following GIF animation
+
+![image](./bidirectional-association.gif "bidirectional-association")
+
+In this example, the modification you performed is
+```
+MANNING.books.add(LearningGraphQL);
+```
+At the same time, graphql-state will perform two automatic updates for you
+```
+O'REILLY.books.remove(LearningGraphQL);
+LearningGraphQL.store = MANNING;
+```
 
 #### 3.3. Database style trigger
 The built-in cache database supports triggers. Not only does the framework use it internally to achieve the purpose of data intelligent maintenance, the triggers are also exposed as public APIs so that developers can customize more intelligent behaviors.
