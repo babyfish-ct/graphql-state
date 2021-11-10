@@ -37,7 +37,9 @@ Let's take a look at an example where the mutation cannot be completed by only m
 When we changed "MANNING-1" to "MANNING-2", in the absence of user optimization, the two cache entries with parameters were cleared. Therefore, queries with parameters will automatically retrieve new data from the server again.
 
 ##### 2.1.1. 用户给予优化时
-![image](./optimized-mutation.gif "用户给予优化时")
+
+Let's take a look at an example where the change can be completed by modifying the local cache without re-query due to the support of user optimization. The GIF animation is as follows
+![image](./optimized-mutation.gif "When the user gives optimization")
 
 当我们把"MANNING-1"修改成"MANNING-2"的时候，在用户优化的支持下，带参数的两个缓存项被直接更新，而不是被清除。所以，带参数的查询会马上呈现了最新结果，无需重新查询。
 
