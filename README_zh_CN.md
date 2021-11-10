@@ -41,7 +41,7 @@
 
 当我们把"MANNING-1"修改成"MANNING-2"的时候，在用户优化的支持下，带参数的两个缓存项被直接更新，而不是被清除。所以，带参数的查询会马上呈现了最新结果，无需重新查询。
 
-> 注意
+> 注意，这里涉及到了3个缓存项
 > 
 > - Query.findBooksStores()
 > - Query.findBooksStores({name: "1"})
