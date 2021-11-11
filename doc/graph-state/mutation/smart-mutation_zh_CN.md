@@ -587,7 +587,7 @@ stateManager.set(book$$, {id: "id1", 'effective typescript'});
 ```
 books({name: "typ"})的顺序发生了变化。
 这种情况的GIF动画演示是
-|![image](../../../smart-sorting.png "智能排序")|
+|![image](../../../smart-sorting.gif "智能排序")|
 |----|
 
 2. 执行
@@ -616,7 +616,7 @@ stateManager.set(book$$, {id: "id1", 'Effective GraphQL'});
 比上个例子变化更大，被修改的对象需要从"A BookStore".books({name: "typ"})中删除，再插入到"A BookStore".books({name: "gra"})中。即，数据在同族的字关系之间迁移。
 
 这种情况的GIF动画演示是
-|![image](../../../optimized-mutation.png "数据迁移")|
+|![image](../../../optimized-mutation.gif "数据迁移")|
 |----|
 
 如何让graphql-state实现上面这两种效果呢？
