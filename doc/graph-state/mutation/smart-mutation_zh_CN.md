@@ -102,7 +102,7 @@ books({name: "b"}).tryLink({
 
 > 同族内的子关联之间会相互影响; 任何一个被修改，其余的都会被执行unlink或link操作
 
-### 1.3. containsVariables
+### 1.3. 比较同族子关联的参数进行部分优化
 
 为了更好地判断是否可以直接修改缓存，引入了一个概念containsVariables，判断查询参数之间的包含关系。
 
