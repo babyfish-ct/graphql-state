@@ -558,7 +558,10 @@ stateManager.set(book$$, {id: "id1", 'effective typescript'});
                                       | id3 | Learning GraphQL       |
                                       +-----+------------------------+
 ```
-books({name: "typ"})的顺序发生了变化
+books({name: "typ"})的顺序发生了变化。
+这种情况的GIF动画演示是
+|![image](../../.../smart-sorting.png "智能排序")|
+|----|
 
 2. 执行
 ```ts
@@ -583,7 +586,11 @@ stateManager.set(book$$, {id: "id1", 'Effective GraphQL'});
                                   | id3 | Learning GraphQL       |
                                   +-----+------------------------+
 ```
-比上个例子变化更大，被修改的对象需要从"A BookStore".books({name: "typ"})中删除，再插入到"A BookStore".books({name: "gra"})中。
+比上个例子变化更大，被修改的对象需要从"A BookStore".books({name: "typ"})中删除，再插入到"A BookStore".books({name: "gra"})中。即，数据在同族的字关系之间迁移。
+
+这种情况的GIF动画演示是
+|![image](../../.../optimized-mutation.png "数据迁移")|
+|----|
 
 如何让graphql-state实现上面这两种效果呢？
 
@@ -615,6 +622,80 @@ function createStateManager() {
 > }
 > return [];
 > ```
+
+## 调整分页结果
+
+上文提到，未被直接修改的关联有可能被框架自动修改，tryLink行为可能插入新的数据，tryUnlink行为可能删除已有数据。这种情况下，分页结果将会被破坏，可能会影响后续翻页操作。
+
+有两种情况，需要调整分页结果
+
+- Connection类型中有表示分页前记录总条数的字段，比如附带例子中的totalCount字段
+- 分页是基于行数偏移量的分页，而非基于对象id
+
+associationProperties对象接受一个range函数来调整分页结果，其定义如下
+```
+range(
+    range: {
+        endCursor: string,
+        [key: string]: any
+    },
+    delta: number,
+    direction: "forward" | "backward"
+) => void;
+```
+参数:
+  - range: 分页范围，你需要在函数中修改此对象
+    - startCursor: 其实游标
+    - endCursor: 结束游标
+    - 其它任何字段
+  - delta
+    变化行数，正数表示新的数据被添加到当前关联中；负数表示有数据从当前关联中被移除
+  - direaction: 分页方向，forward或backward
+  > 不可能是page，因为page分页不可优化，总是重新查询。
+
+如果你的分页面是基于对象id的，你只需要调整totalCount
+```ts
+function createStateManager() {
+    return newTypedConfiguration()
+        .rootAssocaitionProperties("findBooks", {
+            contains: ...,
+            position: ...,
+            dependencies: ...,
+            range: range => {
+                range.totalCount += delta;
+            }
+        })
+        .network(...)
+        .buildStateManager();
+}
+```
+
+如果你的分页面是基于行数偏移的且分也方向为forward，你还需要调整endCursor
+```ts
+function createStateManager() {
+    return newTypedConfiguration()
+        .rootAssocaitionProperties("findBooks", {
+            contains: ...,
+            position: ...,
+            dependencies: ...,
+            range: range => {
+                range.totalCount += delta;
+                if (direction === "forward") {
+                    range.endCursor = indexToCursor(cursorToIndex(range.endCursor) + delta);
+                }
+            }
+        })
+        .network(...)
+        .buildStateManager();
+}
+function indexToCursor(index: number): string {
+    return Buffer.from(index.toString(), 'utf-8').toString('base64');
+}
+
+function cursorToIndex(cursor: string): number {
+    return parseInt(Buffer.from(cursor, 'base64').toString('utf-8'));
+}
+```
 
 
 --------------------------------
