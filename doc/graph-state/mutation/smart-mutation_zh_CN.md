@@ -77,7 +77,7 @@ stateManager.save(
 ```
 这段代码试图修改id为storeId的BookStore对象的子关联books({name: "a"})
 
-假设books({name: "a"})现在的旧值为[id1, id2]，而期望修改的新值为[id2, id3]。对比新旧数据，被删除的book为[id1]，被添加的书为[id3]。
+假设books({name: "a"})现在的旧值为[id1, id2]，而期望修改的新值为[id2, id3]。对比新旧数据，被删除的Book为[id1]，被添加的Book为[id3]。
 
 当前BookStore对象，除了具备当前的books({name: "a})这个子关联外，还有另外两个子同族的子关联books({})，books({name: "b"})，接下来，框架即将尝试
 ```ts
