@@ -267,8 +267,9 @@ function createStateManager() {
 
 > 注意：API是强类型设计，不用担心"findBookStores", "BookStore"和"authors"等字符串的拼写错误，错误会在编译时呈现。
 
-这里，我们以BookStore.books关系的assocaitionProperties来讲解如何优化BookStore.books
-> 为了清晰讲解，这里写出了所有类型，并未有任何省略，你在开发中可以省略。
+这里，我们以BookStore.books关系的assocaitionProperties来讲解如何优化BookStore.books。
+
+assocaitionProperties是一个对象，用户可以提供一个contains函数，第一个参数是数据对象，第二个参数是当前关联的参数，判断数据对象是否和关联参数的条件匹配。
 
 ```ts
 import { FlatRow } from 'graphql-state';
@@ -281,20 +282,25 @@ function createStateManager() {
                 row: FlatRow<BookFlatType>,
                 variables?: BookStoreArgs["books"]
             ) => boolean | undefined {
+            
                 if (variables?.name === undefined) {
+                    // 如果当前关联没有条件，即books({})，那么此关联一定可以包含row
                     return true; 
                 }
                 if (row.has("name")) { // 如果name被缓存，检查之
                     return row.get("name").toLowerCase()
                         .indexOf(variables.name.toLowerCase()) !== -1;
                 }
-                return undefined; // 如果name没有被缓存，不知道该如何优化
+                
+                // 如果row所代表的数据的name字段没有被缓存，不知道该如何优化
+                return undefined; 
             }
         })
         .network(...)
         .buildStateManager();
 }
 ```
+> 为了清晰讲解，这里写出了所有类型，并未有任何省略，你在开发中可以省略。
 
 这里
 - 先检查子关联的参数是否指定了name，如果没有，直接判定接受元素属于关联
@@ -303,23 +309,9 @@ function createStateManager() {
 
 > 注意：
 > 
-> 此处只需判断variables?.name是否为undefined，不用考虑null和""
+> 此处只需判断variables?.name是否为undefined，不用考虑null和""，因为
 > - null会被自动转化为undefined
-> - 如果参数为""，但GraphQL schema并没有定义改参数不能为空，自动转化为undefined
-
-这个优化是可选的，如果用户没有指定，框架默认的的contains行为如下
-```ts
-function defaultContains(
-    row: FlatRow<BookFlatType>,
-    variables?: BookStoreArgs["books"]
-) => boolean | undefined {
-    if (variables?.name === undefined) {
-        return true; 
-    }
-    return undefined; 
-}
-```
-即便是框架默认的优化器，对没有参数的子关联也是很友好的。
+> - 如果参数为""且GraphQL schema并没有定义改参数不能为空，自动转化为undefined
 
 至此，上文无法执行的三个操作的执行策略为
 
@@ -411,15 +403,33 @@ function defaultContains(
     </tbody>
 </table>
 
+这个优化是可选的，如果用户没有为assocationProperties指定contains函数，框架默认的的contains行为如下
+```ts
+function defaultContains(
+    row: FlatRow<BookFlatType>,
+    variables?: BookStoreArgs["books"]
+) => boolean | undefined {
+    if (variables === undefined) {
+        return true; 
+    }
+    return undefined; 
+}
+```
+
+如果关联的variables中所有字段都为undefined，则传递给contains函数的variables整体为undefined。
+
+默认contains的逻辑是，没有参数的关联可以包含任何数据对象。
+
+
 ## 2. 对象被插入位置
 
 ### 2.1. position决策
 
-由于各种原因，会导致对象被自动插入到并未被直接修改的集合关联中，这时我们决定其插入位置呢？关联是否有业务层面的排序呢？
+既然对象被自动link到并未被直接修改的集合关联中，这时我们决定其插入位置呢？关联是否有业务层面的排序呢？
 
 在[配套例子中](https://github.com/babyfish-ct/graphql-state/tree/master/example/client/src/graph/graphql)，所有关联数据是按照对象的name字段排序的。
 
-关联优化器支持一个position函数，我们可以这样来为被自动插入的对象自定义插入位置
+assocaitionProperties支持一个position函数，我们可以这样来为被自动插入的对象自定义插入位置
 
 ```ts
 import { FlatRow } from 'graphql-state';
@@ -435,10 +445,11 @@ function createStateManager() {
                 paginationDirection?: "forward" | "backward"
                 variables?: BookStoreArgs["books"]
             ) => number | "start" | "end" | undefined {
+            
                 if (row.has("name")) { // if name of new row is cached
                     const rowName = row.get("name");
                     for (let i = 0; i < rows.length; i++) {
-                        if (!rows[i].has("name")) { // if name of existing row is not cached
+                        if (!rows[i].has("name")) {
                             return undefined;
                         }
                         if (rows[i].get("name") > rowName) {
@@ -464,24 +475,26 @@ function createStateManager() {
   - backward: 当前connection关联使用了backward模式的分页
   - undefined: 当前connection关联并未使用分页
   
-  > paginationDirection不可能是"page"，page模式的分页无法进行优化以尝试判断其变更是否仅需要修改本地缓存
+  > 这里的paginationDirection不可能是"page"，因为page模式的分页无法被优化，总是重新查询。
   
-- variables: 查询参数
+- variables: 关联的查询参数
 
 返回值：
+  - start
+    插入到头部
+  - end
+    插入到尾部
   - 数字：
     - 如果 <= 0, 插入到头部
     - 如果 >= rows.length, 插入到尾部
     - 其它情况，插入到指定位置之前
-  - start
-    插入到头部
-  - end
-    插入到头部
   - undefined
     无法判断新对象应该插入到什么位置。缓存中数据作废，所有受此关联相关的UI查询自动刷新。
   > 注意
-  > - 如果使用forward分页，如果新数据被定位到尾部，优化行为终止，缓存中数据作废，所有受此关联相关的UI查询自动刷新。 
-  > - 如果使用backward分页，如果新数据被定位到头部，优化行为终止，缓存中数据作废，所有受此关联相关的UI查询自动刷新。
+  > - 如果使用forward分页，如果新数据被定位到尾部且当前页具有下一页，优化行为终止，缓存中数据作废，所有受此关联相关的UI查询自动刷新。 
+  > - 如果使用backward分页，如果新数据被定位到头部且当前页具有上一页，优化行为终止，缓存中数据作废，所有受此关联相关的UI查询自动刷新。
+
+使用position，可以轻松规定被link对象的位置。
 
 ### 2.2 默认的position
 
@@ -520,13 +533,13 @@ defaultPosition: (
                                   +-----+------------------------+
 ```
 
-下面开看两个案例
+让我们来看两个案例
 
 1. 执行
 ```ts
 stateManager.set(book$$, {id: "id1", 'effective typescript'});
 ```
-很明显, "effective typescript" > Programming TypeScript, 因此业务上期望的效果是这样的
+很明显, 修改后的"effective typescript" > Programming TypeScript, 因此业务上期望的效果是这样的
 ```
 +-------------+
 | A BookStore |
@@ -551,7 +564,7 @@ books({name: "typ"})的顺序发生了变化
 ```ts
 stateManager.set(book$$, {id: "id1", 'Effective GraphQL'});
 ```
-很明显, "Effective GraphQL"不在和查询条件{name: "typ"}匹配, 业务上期望的效果是这样的
+很明显, "Effective GraphQL"不再和查询条件{name: "typ"}匹配, 业务上期望的效果是这样的
 ```
 +-------------+
 | A BookStore |
@@ -570,11 +583,11 @@ stateManager.set(book$$, {id: "id1", 'Effective GraphQL'});
                                   | id3 | Learning GraphQL       |
                                   +-----+------------------------+
 ```
-比上个例子变化更大，被修改的数据所属于的关联变了。
+比上个例子变化更大，被修改的对象需要从"A BookStore".books({name: "typ"})中删除，再插入到"A BookStore".books({name: "gra"})中。
 
-如何让graphql-state实现上面这两个效果呢？
+如何让graphql-state实现上面这两种效果呢？
 
-答案很简单，让graphql-state知道books({...})依赖于其对象的name字段即可，这样，被依赖的对象字段发生变更的时候，contains和position的策略有机会被重新执行一次
+答案很简单，让graphql-state知道books({...})依赖于其对象的name字段即可，这样，被依赖的对象name字段发生变更的时候，graphql-state就可以利用associationProperties的contains和position函数，进行单个子关联内部重新排序，甚至不同子关联之间的数据迁移。
 
 ```ts
 function createStateManager() {
@@ -593,9 +606,9 @@ function createStateManager() {
 }
 ```
 
-> 这里name字段用于排序，所以对name的字段的依赖是无条件的。
+> 这个例子中，数据对象的name字段需要用于排序，所以对dependencies函数忽略当前关联的参数，无条件返回包含name的数组。
 > 
-> 假设name字段没有用于排序，仅仅用于按条件筛选，你可以使用如下代码
+> 又是，我们可能希望对象的name仅仅用于按关联条件筛选，而不会被用于排序，这时，你可以如此实现
 > ```
 > if (variables.name !== undefined) {
 >     return ["name"];
