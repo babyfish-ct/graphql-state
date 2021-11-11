@@ -11,7 +11,7 @@
 - 框架如何抉择只需修改本地数据还是需要重新查询?
 - 如果用户愿意介入抉择过程，他应该如何参与优化?
 
-## 1. 关联被修改
+## 1. 关联修改和associationProperties.contains函数
 
 ### 1.1. 关联族和子关联
 
@@ -269,7 +269,21 @@ function createStateManager() {
 
 这里，我们以BookStore.books关系的assocaitionProperties来讲解如何优化BookStore.books。
 
-assocaitionProperties是一个对象，用户可以提供一个contains函数，第一个参数是数据对象，第二个参数是当前关联的参数，判断数据对象是否和关联参数的条件匹配。
+assocaitionProperties是一个对象，用户可以提供一个contains函数，判断一个数据对象是否应该属于一个关联
+```ts
+import { FlatRow } from 'graphql-state';
+
+contains(
+    row: FlatRow<...GeneratedFlatType...>
+    variables: ...GeneratedVariablesType...
+) => boolean | undefined;
+```
+参数
+- row: 数据对象
+- variables: 当前关联的参数
+返回值 
+- boolean: 对象是否和关联参数的条件匹配
+- undefined: 无法判断，此举会导致优化失败。缓存中数据作废，所有和此关联相关的UI查询自动刷新
 
 ```ts
 import { FlatRow } from 'graphql-state';
@@ -334,7 +348,7 @@ function createStateManager() {
                 当前子关联无参数
                 <ul>
                     <li>
-                        <div>如果用户不参与优化</div>
+                        <div>如果用户不指定contains</div>
                         不做任何操作，旧对象不应该被移除
                         <div><i>
                             这是没问题的，如果对象在books({name: "a"})中的消失是是因为其它原因导致的
@@ -342,7 +356,7 @@ function createStateManager() {
                         </i></div>
                     </li>
                     <li>
-                        <div>如果用户参与优化</div>
+                        <div>如果用户指定了contains</div>
                         不做任何操作，旧对象不应该被移除（对于无参数子关联而言，上文中的用户在contains函数中实现的行为，其实和下文即将讨论的框架的默认行为是一样的）
                     </li>
                 </ul>
@@ -359,16 +373,16 @@ function createStateManager() {
                 当前子关联有参数
                 <ul>
                     <li>
-                        <div>如果用户不参与优化</div>
-                        <div>缓存中数据作废，所有受此关联相关的UI查询自动刷新</div>
+                        <div>如果用户不指定contains</div>
+                        <div>缓存中数据作废，所有和此关联相关的UI查询自动刷新</div>
                     </li>
                     <li>
-                        <div>如果用户参与优化</div>
+                        <div>如果用户指定了contains</div>
                         检查用户实现的contains函数的返回值
                         <ul>
                             <li>true: 不做任何操作</li>
                             <li>false: 从当前子关联删除元素</li>
-                            <li>undefined: 用户也无法判断。缓存中数据作废，所有受此关联相关的UI查询自动刷新</li>
+                            <li>undefined: 用户也无法判断。缓存中数据作废，所有和此关联相关的UI查询自动刷新</li>
                         </ul>
                     </li>
                 </ul>
@@ -385,16 +399,16 @@ function createStateManager() {
                 当前子关联有参数
                 <ul>
                     <li>
-                        <div>如果用户不参与优化</div>
-                        <div>缓存中数据作废，所有受此关联相关的UI查询自动刷新</div>
+                        <div>如果用户不指定contains</div>
+                        <div>缓存中数据作废，所有和此关联相关的UI查询自动刷新</div>
                     </li>
                     <li>
-                        <div>如果用户参与优化</div>
+                        <div>如果用户指定了contains</div>
                         检查用户实现的contains函数的返回值
                         <ul>
                             <li>true: 为当前子关联添加新元素</li>
                             <li>false: 不做任何操作</li>
-                            <li>undefined: 用户也无法判断。缓存中数据作废，所有受此关联相关的UI查询自动刷新</li>
+                            <li>undefined: 用户也无法判断。缓存中数据作废，所有和此关联相关的UI查询自动刷新</li>
                         </ul>
                     </li>
                 </ul>
@@ -421,7 +435,7 @@ function defaultContains(
 默认contains的逻辑是，没有参数的关联可以包含任何数据对象。
 
 
-## 2. 对象被插入位置
+## 2. 对象被插入位置和associationProperties.position函数
 
 ### 2.1. position决策
 
@@ -430,6 +444,45 @@ function defaultContains(
 假设所有关联数据是按照对象的name字段排序的，无论是Query.findBooks这样的根对象关联，还是BookStore.books这样的普通对象关联。
 
 assocaitionProperties支持一个position函数，我们可以这样来为被自动插入的对象自定义插入位置
+
+```ts
+import { FlatRow } from 'graphql-state';
+
+position(
+    row: FlatRow<...GeneratedFlatType...>,
+    rows: FlatRow<...GeneratedFlatType...>,
+    paginationDirection?: "forward" | "backward"
+    variables?: ...GeneratedVariablesType...
+) => number | "start" | "end" | undefined;
+```
+参数:
+- row: 即将被插入的新元素
+- rows: 现在已经存在的数据
+- paginationDirection:
+  - forward: 当前connection关联使用了forward模式的分页
+  - backward: 当前connection关联使用了backward模式的分页
+  - undefined: 当前connection关联并未使用分页
+  
+  > 这里的paginationDirection不可能是"page"，因为page模式的分页无法被优化，总是重新查询。
+  
+- variables: 关联的查询参数
+
+返回值：
+- start
+插入到头部
+- end
+插入到尾部
+- 数字：
+- 如果 <= 0, 插入到头部
+- 如果 >= rows.length, 插入到尾部
+- 其它情况，插入到指定位置之前
+- undefined
+无法判断新对象应该插入到什么位置。缓存中数据作废，所有和此关联相关的UI查询自动刷新。
+> 注意
+> - 如果使用forward分页，如果新数据被定位到尾部且当前页具有下一页，优化行为终止，缓存中数据作废，所有和此关联相关的UI查询自动刷新。 
+> - 如果使用backward分页，如果新数据被定位到头部且当前页具有上一页，优化行为终止，缓存中数据作废，所有和此关联相关的UI查询自动刷新。
+
+使用方法如下
 
 ```ts
 import { FlatRow } from 'graphql-state';
@@ -466,34 +519,6 @@ function createStateManager() {
 }
 ```
 
-这里，position函数为新对象指定插入位置
-参数:
-- row: 即将被插入的新元素
-- rows: 现在已经存在的数据
-- paginationDirection:
-  - forward: 当前connection关联使用了forward模式的分页
-  - backward: 当前connection关联使用了backward模式的分页
-  - undefined: 当前connection关联并未使用分页
-  
-  > 这里的paginationDirection不可能是"page"，因为page模式的分页无法被优化，总是重新查询。
-  
-- variables: 关联的查询参数
-
-返回值：
-  - start
-    插入到头部
-  - end
-    插入到尾部
-  - 数字：
-    - 如果 <= 0, 插入到头部
-    - 如果 >= rows.length, 插入到尾部
-    - 其它情况，插入到指定位置之前
-  - undefined
-    无法判断新对象应该插入到什么位置。缓存中数据作废，所有受此关联相关的UI查询自动刷新。
-  > 注意
-  > - 如果使用forward分页，如果新数据被定位到尾部且当前页具有下一页，优化行为终止，缓存中数据作废，所有受此关联相关的UI查询自动刷新。 
-  > - 如果使用backward分页，如果新数据被定位到头部且当前页具有上一页，优化行为终止，缓存中数据作废，所有受此关联相关的UI查询自动刷新。
-
 使用position，可以轻松规定被link对象的位置。
 
 ### 2.2 默认的position
@@ -511,7 +536,7 @@ defaultPosition: (
 ```
 即，forward分页下，插入到头部，其余情况，全部插入到尾部。
 
-## 3. 对象内容被修改后
+## 3. 修改对象和和associationProperties.dependencies函数
 
 假如现在有如下数据
 ```
@@ -560,7 +585,7 @@ stateManager.set(book$$, {id: "id1", 'effective typescript'});
 ```
 books({name: "typ"})的顺序发生了变化。
 这种情况的GIF动画演示是
-|![image](../../.../smart-sorting.png "智能排序")|
+|![image](../../../smart-sorting.png "智能排序")|
 |----|
 
 2. 执行
@@ -589,12 +614,27 @@ stateManager.set(book$$, {id: "id1", 'Effective GraphQL'});
 比上个例子变化更大，被修改的对象需要从"A BookStore".books({name: "typ"})中删除，再插入到"A BookStore".books({name: "gra"})中。即，数据在同族的字关系之间迁移。
 
 这种情况的GIF动画演示是
-|![image](../../.../optimized-mutation.png "数据迁移")|
+|![image](../../../optimized-mutation.png "数据迁移")|
 |----|
 
 如何让graphql-state实现上面这两种效果呢？
 
 答案很简单，让graphql-state知道books({...})依赖于其对象的name字段即可，这样，被依赖的对象name字段发生变更的时候，graphql-state就可以利用associationProperties的contains和position函数，进行单个子关联内部重新排序，甚至不同子关联之间的数据迁移。
+
+associationProperties支持一个dependencies函数，返回当前关联依赖其数据对象的那些字段
+```ts
+readonly dependencies?: (
+    variables?: ...GeneratedVariablesType...
+) => ReadonlyArray<keyof ...GeneratedFlatType...> | undefined;
+```
+参数
+- variables: 关联的查询参数
+
+返回值
+- array: 依赖字段集合
+- undefined: - undefined: 无法判断，此举会导致优化失败。缓存中数据作废，所有和此关联相关的UI查询自动刷新
+
+使用方式如下
 
 ```ts
 function createStateManager() {
@@ -616,12 +656,21 @@ function createStateManager() {
 > 这个例子中，数据对象的name字段需要用于排序，所以对dependencies函数忽略当前关联的参数，无条件返回包含name的数组。
 > 
 > 有时，项目需求可能不是这样的。我们可能希望对象的name仅仅用于按关联条件筛选，而不会被用于排序，这时，你可以如此实现
-> ```
+> ```ts
 > if (variables.name !== undefined) {
 >     return ["name"];
 > }
 > return [];
 > ```
+
+如果不指定dependences, 框架默认实现如下
+```ts
+dependencies: (
+    variables?: any
+): ReadonlyArray<string> | undefined => {
+    return variables === undefined ? [] : undefined;
+}
+```
 
 ## 调整分页结果
 
@@ -697,6 +746,20 @@ function cursorToIndex(cursor: string): number {
 }
 ```
 
+## 后续版本会改进的地方
+
+当前版本的实现并不完善，它依赖两个假设
+
+1. 没有任何参数的关联就代表所有数据
+2. 有参数的关联不一定能代表所有数据
+
+但是，有些时候，这两点假设是不成立的
+
+第一点的反例：假设有一个查询字段Query.findActiveUsers(), 虽然此关联没有任何参数，但是故名思义，它隐含了过滤逻辑。此关联仅代表所有active为true的数据，而非所有数据。
+
+第二点的反例：假设有一个查询字段Query.findRows(orderFieldName: string, descending: boolean), 这两个参数仅用于动态排序，没有过滤数据的意图，无论它们被如何指定，此关联都能代表所有数据。
+
+稍后的版本会处理这两种情况
 
 --------------------------------
 
