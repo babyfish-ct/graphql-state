@@ -1,4 +1,4 @@
-import { Modal, Form, Input, Collapse, Row, Col } from "antd";
+import { Modal, Form, Input, Collapse } from "antd";
 import { useForm } from "antd/lib/form/Form";
 import { ModelType } from "graphql-ts-client-api";
 import { FC, memo, useCallback, useEffect } from "react";
@@ -70,10 +70,18 @@ export const BookStoreDialog: FC<{
                 </Form.Item>
                 {BOOKS_DESCRIPTION_ITEM}
             </Form>
-            {OK_DESCRIPTION}
         </Modal>
     );
 });
+
+
+
+
+/************************************
+ * 
+ * Document embedded in UI
+ * 
+ ************************************/
 
 const BOOKS_DESCRIPTION_ITEM = (
     <Form.Item label=" " colon={false}>
@@ -108,24 +116,4 @@ const BOOKS_DESCRIPTION_ITEM = (
             </Collapse.Panel>
         </Collapse>
     </Form.Item>
-);
-
-const FOR_INSERTION = `
-Query.findBookStores.add(this);
-`;
-
-const OK_DESCRIPTION = (
-    <Row>
-        <Col flex={1}/>
-        <Col>
-            <Collapse ghost>
-                <Collapse.Panel key="title" header="Description of 'OK' button">
-                    <div className={INFORMATION_CLASS}>
-                        If this dialog is used to insert new object into cache
-                        <pre className={ACTION_CLASS}>{FOR_INSERTION}</pre>
-                    </div>
-                </Collapse.Panel>
-            </Collapse>
-        </Col>
-    </Row>
 );

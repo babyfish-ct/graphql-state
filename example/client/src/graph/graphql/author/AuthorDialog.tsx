@@ -77,9 +77,11 @@ export const AuthorDialog: FC<{
 
 
 
-/**
+/************************************
+ * 
  * Document embedded in UI
- */
+ * 
+ ************************************/
 
 const WITHOUT_ARGS = "{}";
 

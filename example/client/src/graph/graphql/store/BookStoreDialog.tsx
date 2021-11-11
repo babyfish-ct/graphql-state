@@ -78,9 +78,11 @@ export const BookStoreDialog: FC<{
 
 
 
-/*
+/************************************
+ * 
  * Document embedded in UI
- */
+ * 
+ ************************************/
 
 const WITHOUT_ARGS = "{}";
 
