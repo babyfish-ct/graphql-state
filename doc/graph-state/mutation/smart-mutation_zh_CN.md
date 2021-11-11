@@ -112,7 +112,7 @@ books({name: "b"}).tryLink({
 containsVariables(variables1, variables2): boolean
 ```
 改方法件判断variables1是否包含variables2，即variables2的所有字段都在variables1中存在且它们的值相等
-|Expression|Result|
+|例子|判断值|
 |--------|--------|
 |containsVariables({k1: 'A', k2: 'B'}, {k1: 'A'})|true|
 |containsVariables({k1: 'A'}, {k1: 'A', k2: 'B'})|false|
@@ -127,12 +127,18 @@ containsVariables(variables1, variables2): boolean
 |||
 |containsVariables(undefined, udefined)|true|
 
-> 一个重要的规律:
+> 一个重要的规律，可以框架内部优化
+> 
 > 如果contains(variables1, variables)成立，那么
 > 
 > someAssocaiton(variables1) ∈ someAssocaiton(variables2)。
 > 
-> 即，如果关联参数variable1比variables2更严格，那么variables1能查询到的数据一定是variables2能查询到的数据的一部分。
+> 即，如果关联参数variable1比variables2更严格，那么variables1能查询到的数据一定是variables2能查询到的数据的一部分。例如
+> 
+> books({name: "a"}) ∈ books({})
+> 
+> - 向books({name: "a"})中添加一个数据时，一定需要向books({})中添加数据
+> - 从books({})中删除数据时，一定需要从books({name: "a"})中删除数据
 
 因此，tryUnlink的逻辑如下
 ```ts
@@ -141,8 +147,16 @@ tryUnlink(oldId, reason) {
         return; //要删除的数据早已不存在, 不需要做任何事
     }
     if (containsVariables(this.variables, reason)) {
+    
+        /*
+         * 条件比我宽松的子关联都同意删除旧元素了，我当然同意
+         * 
+         * 例如: this.variables为{name: "a"}，而reason为{}
+         * 既然oldId可以从books({})中被删除，它也一定可以从books({name: "a"})被删除
+         */
         this.unlinkDirectly(oldId); 
-        return; //条件比我宽松的子关联都同意删除旧元素了，我当然同意
+        
+        return; 
     }
     ... 更多的代码 需要进一步判断 ....
 }
@@ -158,8 +172,16 @@ tryLink(newId, reason) {
         return; //要添加的新元素已经存在, 不需要做任何事
     }
     if (containsVariables(reason, this.variables)) {
+       
+        /*
+         * 条件比我严格的子关联同意添加新元素了，我当然同意
+         * 
+         * 例如: this.variables为{}，而reason为{name: "a"}
+         * 既然newId可以添加到books({name: "a"})中，它也一定可以添加到books({})中
+         */
         this.linkDirectly(newId); 
-        return; //条件比我严格的子关联同意添加新元素了，我当然同意
+        
+        return;
     }
     ... 更多的代码 需要进一步判断 ....
 }
