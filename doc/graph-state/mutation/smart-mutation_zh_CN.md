@@ -262,6 +262,7 @@ function createStateManager() {
 其中
 - rootAssociationProperites针对根对象Query的关联字段
 - assocaitionProperties针对其他对象的关联字段
+
 二者用法一样
 
 > 注意：API是强类型设计，不用担心"findBookStores", "BookStore"和"authors"等字符串的拼写错误，错误会在编译时呈现。
