@@ -219,8 +219,8 @@ tryLink(newId, reason) {
 });</pre>
             </td>
             <td>
-                contains({name: "a"}, {})为true，
-                既比当前子关联条件更严苛的其它同族子关联books({name: "a"})都同意接受新元素了，books({})当然也同意，此修改可以直接在本地缓存上之执行
+                因为containsVariables({name: "a"}, {})为true，
+                即，比当前子关联条件更严苛的其它同族子关联books({name: "a"})都同意接受新元素了，books({})当然也同意，此修改可以直接在本地缓存上之执行
             </td>
         </tr>
         <tr>
