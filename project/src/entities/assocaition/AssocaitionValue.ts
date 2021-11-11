@@ -140,7 +140,9 @@ export abstract class AssociationValue {
                         );
                         if (result === true) {
                             if (this.contains(ref.value)) {
-                                this.reorder(entityManager, ref.value);
+                                if (this.association.field.isPositionConfigured) {
+                                    this.reorder(entityManager, ref.value);
+                                }
                             } else {
                                 this.link(entityManager, [ref.value]);
                             }

@@ -85,7 +85,9 @@ class AssociationValue {
                         const result = (_a = this.association.field.associationProperties) === null || _a === void 0 ? void 0 : _a.contains(new Record_1.FlatRowImpl(ref.value), (_b = this.args) === null || _b === void 0 ? void 0 : _b.filterVariables);
                         if (result === true) {
                             if (this.contains(ref.value)) {
-                                this.reorder(entityManager, ref.value);
+                                if (this.association.field.isPositionConfigured) {
+                                    this.reorder(entityManager, ref.value);
+                                }
                             }
                             else {
                                 this.link(entityManager, [ref.value]);

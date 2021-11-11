@@ -222,7 +222,6 @@ export class AssociationConnectionValue extends AssociationValue {
         }
         const oldConnection = this.connection!;
         let range: ConnectionRange = {
-            startCursor: oldConnection.pageInfo!.startCursor,
             endCursor: oldConnection.pageInfo!.endCursor 
         };
         for (const key in newConnection) {

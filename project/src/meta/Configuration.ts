@@ -130,7 +130,6 @@ export interface FlatRow<TFlatType extends {readonly [key: string]: any}> {
 export type PositionType = number | "start" | "end";
 
 export interface ConnectionRange {
-    startCursor: string;
     endCursor: string;
     [key: string]: any;
 }

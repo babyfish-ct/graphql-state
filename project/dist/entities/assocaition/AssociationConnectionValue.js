@@ -164,7 +164,6 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
         }
         const oldConnection = this.connection;
         let range = {
-            startCursor: oldConnection.pageInfo.startCursor,
             endCursor: oldConnection.pageInfo.endCursor
         };
         for (const key in newConnection) {

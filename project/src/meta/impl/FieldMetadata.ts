@@ -26,6 +26,8 @@ export class FieldMetadata {
 
     private _containingConfigured = false;
 
+    private _positionConfiguered = false;
+
     constructor(
         readonly declaringType: TypeMetadata,
         field: FetchableField
@@ -116,6 +118,10 @@ export class FieldMetadata {
         return this._containingConfigured;
     }
 
+    get isPositionConfigured(): boolean {
+        return this._positionConfiguered;
+    }
+
     setOppositeFieldName(oppositeFieldName: string) {
         this.declaringType.schema.preChange();
         if (this._oppositeField !== undefined) {
@@ -141,6 +147,7 @@ export class FieldMetadata {
             range: properties.range ?? defaultProperites.range
         };
         this._containingConfigured = properties.contains !== undefined;
+        this._positionConfiguered = properties.position !== undefined;
     }
 
     " $resolveInversedAssociation"() {

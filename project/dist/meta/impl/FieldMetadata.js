@@ -6,6 +6,7 @@ class FieldMetadata {
         this.declaringType = declaringType;
         this._inversed = false;
         this._containingConfigured = false;
+        this._positionConfiguered = false;
         this.name = field.name;
         this.category = field.category;
         this.fullName = `${declaringType.name}.${field.name}`;
@@ -82,6 +83,9 @@ class FieldMetadata {
     get isContainingConfigured() {
         return this._containingConfigured;
     }
+    get isPositionConfigured() {
+        return this._positionConfiguered;
+    }
     setOppositeFieldName(oppositeFieldName) {
         this.declaringType.schema.preChange();
         if (this._oppositeField !== undefined) {
@@ -107,6 +111,7 @@ class FieldMetadata {
             range: (_d = properties.range) !== null && _d !== void 0 ? _d : defaultProperites.range
         };
         this._containingConfigured = properties.contains !== undefined;
+        this._positionConfiguered = properties.position !== undefined;
     }
     " $resolveInversedAssociation"() {
         var _a;

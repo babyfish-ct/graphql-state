@@ -40,7 +40,6 @@ function createNameFilterAssociationProperties<
     
     return {
 
-        // Is the object allowed to be inserted into association?
         contains: (
             row: FlatRow<TFlatType>, 
             variables?: TVariables
@@ -77,18 +76,14 @@ function createNameFilterAssociationProperties<
             return undefined;
         },
 
-        // Does this association depend on some fields of target object?
-        // If some dependencies fields of some objects are changed, the current association be evict
-        // from cache and affected UI will reload the data from server.
-        // 1. If an object is already in this association but it does not match the filter after change,
-        //    the association will not contain it after automatic refetch
-        // 2. If an object is not in the association but it match the filter after change,
-        //    this association will not contain it after automatic refetch
-        dependencies: (variables?: TVariables): ReadonlyArray<keyof TFlatType> | undefined => {
+        dependencies: (_?: TVariables): ReadonlyArray<keyof TFlatType> | undefined => {
+            // "_" is used here, an array contains "name" is always returned
+            // because "name" is not only used to filter rows, but also used to sort rows.
+            //
+            // if "name" is only used to filter rows, please implement it like this
+            // 
+            // return _.name !== undefined ? ["name"] : [];
             return ["name"];
-            // No filter, depends on nothing
-            // If the name of filter is specified, depends on "name"
-            // return variables?.name === undefined ? [] : ["name"];
         },
 
         range: (range: ConnectionRange, delta: number, direction: "forward" | "backward"): void => {
