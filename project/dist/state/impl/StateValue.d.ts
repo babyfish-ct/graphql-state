@@ -9,12 +9,12 @@ export declare abstract class StateValue {
     private _mounted;
     private _unmountHandler?;
     private _disposeTimerId?;
-    private _createdMillis;
+    private _retainedMillis;
     constructor(stateInstance: StateInstance, args: VariableArgs | undefined, disposer: () => void);
     abstract get result(): any;
     abstract get loadable(): Loadable;
     retain(): this;
-    release(releasePolicy?: ReleasePolicy): void;
+    release(releasePolicy?: ReleasePolicy<any>): void;
     protected abstract createMountContext(): any;
     dispose(executeExternalDisposer: boolean): void;
     private mount;

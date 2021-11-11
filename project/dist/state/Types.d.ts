@@ -5,14 +5,14 @@ export declare type StateAccessingScope = "auto" | "local";
 export interface ParameterizedStateAccessingOptions<TVariables> extends StateAccessingOptions {
     readonly variables: TVariables;
 }
-export interface ReleasePolicyOptions {
-    readonly releasePolicy?: ReleasePolicy;
+export interface ReleasePolicyOptions<TVariables extends object> {
+    readonly releasePolicy?: ReleasePolicy<TVariables>;
 }
-export interface AsyncOptions<TAsyncStyle extends AsyncStyle = "suspense"> extends ReleasePolicyOptions {
+export interface AsyncOptions<TAsyncStyle extends AsyncStyle = "suspense", TVariables extends object = {}> extends ReleasePolicyOptions<TVariables> {
     readonly asyncStyle?: TAsyncStyle;
 }
 export declare type AsyncStyle = "suspense" | "refetchable-suspense" | "async-object";
-export declare type ReleasePolicy = (aliveTime: number) => number;
+export declare type ReleasePolicy<TVariables extends object> = (aliveTime: number, variables?: TVariables) => number;
 export interface QueryOptions<TVariables extends object> {
     readonly variables?: TVariables;
     readonly mode?: QueryMode;

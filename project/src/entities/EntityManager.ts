@@ -209,7 +209,7 @@ export class EntityManager {
         return result.retain();
     }
 
-    release(args: QueryArgs, releasePolicy?: ReleasePolicy) {
+    release(args: QueryArgs, releasePolicy?: ReleasePolicy<any>) {
         const result = this._queryResultMap.get(args.key);
         result?.release(releasePolicy);
     }

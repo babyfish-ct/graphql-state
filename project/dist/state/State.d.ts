@@ -62,13 +62,13 @@ export interface ParameterizedAsyncState<T, TVariables> {
     " $supressWarnings"(_1: T, _2: TVariables): void;
 }
 export interface ComputedContext<TSchema extends SchemaType> {
-    <X>(state: SingleWritableState<X> | SingleComputedState<X>, options?: StateAccessingOptions): X;
-    <X, XVariables>(state: ParameterizedWritableState<X, XVariables> | ParameterizedComputedState<X, XVariables>, options: ParameterizedStateAccessingOptions<XVariables>): X;
-    <X>(state: SingleAsyncState<X>, options: StateAccessingOptions & ReleasePolicyOptions): Promise<X>;
-    <X, XVariables>(state: ParameterizedState<X, XVariables>, options: ParameterizedStateAccessingOptions<XVariables> & ReleasePolicyOptions): Promise<X>;
-    query<T extends object, TVaraibles extends object>(fetcher: Fetcher<"Query", T, TVaraibles>, options?: QueryOptions<TVaraibles> & ReleasePolicyOptions): Promise<T>;
-    object<TName extends TSchema["entities"] & string, T extends object, TVaraibles extends object, TObjectStyle extends ObjectStyle = "required">(fetcher: Fetcher<TName, T, TVaraibles>, id: TSchema["entities"][TName][" $id"], options?: ObjectQueryOptions<TVaraibles, TObjectStyle> & ReleasePolicyOptions): Promise<ObjectReference<T, TObjectStyle>>;
-    objects<TName extends TSchema["entities"] & string, T extends object, TVaraibles extends object, TObjectStyle extends ObjectStyle = "required">(fetcher: Fetcher<TName, T, TVaraibles>, ids: ReadonlyArray<TSchema["entities"][TName][" $id"]>, options?: ObjectQueryOptions<TVaraibles, TObjectStyle> & ReleasePolicyOptions): Promise<ReadonlyArray<T | undefined>>;
+    <T>(state: SingleWritableState<T> | SingleComputedState<T>, options?: StateAccessingOptions): T;
+    <T, TVariables extends object>(state: ParameterizedWritableState<T, TVariables> | ParameterizedComputedState<T, TVariables>, options: ParameterizedStateAccessingOptions<TVariables>): T;
+    <T>(state: SingleAsyncState<T>, options: StateAccessingOptions & ReleasePolicyOptions<any>): Promise<T>;
+    <T, TVariables extends object>(state: ParameterizedState<T, TVariables>, options: ParameterizedStateAccessingOptions<TVariables> & ReleasePolicyOptions<TVariables>): Promise<T>;
+    query<T extends object, TVaraibles extends object>(fetcher: Fetcher<"Query", T, TVaraibles>, options?: QueryOptions<TVaraibles> & ReleasePolicyOptions<TVaraibles>): Promise<T>;
+    object<TName extends TSchema["entities"] & string, T extends object, TVaraibles extends object, TObjectStyle extends ObjectStyle = "required">(fetcher: Fetcher<TName, T, TVaraibles>, id: TSchema["entities"][TName][" $id"], options?: ObjectQueryOptions<TVaraibles, TObjectStyle> & ReleasePolicyOptions<TVaraibles>): Promise<ObjectReference<T, TObjectStyle>>;
+    objects<TName extends TSchema["entities"] & string, T extends object, TVaraibles extends object, TObjectStyle extends ObjectStyle = "required">(fetcher: Fetcher<TName, T, TVaraibles>, ids: ReadonlyArray<TSchema["entities"][TName][" $id"]>, options?: ObjectQueryOptions<TVaraibles, TObjectStyle> & ReleasePolicyOptions<TVaraibles>): Promise<ReadonlyArray<T | undefined>>;
 }
 export interface ParameterizedComputedContext<TSchema extends SchemaType, T, TVariables> extends ComputedContext<TSchema> {
     self(options: ParameterizedStateAccessingOptions<TVariables>): T;

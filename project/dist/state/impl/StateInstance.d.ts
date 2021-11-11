@@ -9,6 +9,6 @@ export declare class StateInstance {
     private valueMap;
     constructor(scopedStateManager: ScopedStateManager, state: State<any>);
     retain(args: VariableArgs | undefined): StateValue;
-    release(args: VariableArgs | undefined, releasePolicy?: ReleasePolicy): void;
+    release(args: VariableArgs | undefined, releasePolicy?: ReleasePolicy<any>): void;
     dispose(): void;
 }

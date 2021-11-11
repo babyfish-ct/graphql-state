@@ -18,9 +18,9 @@ export declare class InternalComputedContext {
     getSelf(options?: StateAccessingOptions): any;
     get(state: State<any>, options?: StateAccessingOptions): any;
     get0(stateValue: StateValue): any;
-    query(fetcher: ObjectFetcher<"Query", object, object>, options?: QueryOptions<any> & ReleasePolicyOptions): Promise<any>;
+    query(fetcher: ObjectFetcher<"Query", object, object>, options?: QueryOptions<any> & ReleasePolicyOptions<any>): Promise<any>;
     object(fetcher: ObjectFetcher<string, object, object>, id: any, options?: ObjectQueryOptions<any, any>): Promise<any>;
-    objects(fetcher: ObjectFetcher<string, object, object>, ids: ReadonlyArray<any>, options?: ObjectQueryOptions<any, any> & ReleasePolicyOptions): Promise<ReadonlyArray<any>>;
+    objects(fetcher: ObjectFetcher<string, object, object>, ids: ReadonlyArray<any>, options?: ObjectQueryOptions<any, any> & ReleasePolicyOptions<any>): Promise<ReadonlyArray<any>>;
     private queryImpl;
     private onStateValueChange;
     private onQueryResultChange;

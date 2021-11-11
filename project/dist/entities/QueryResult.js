@@ -23,7 +23,7 @@ class QueryResult {
         this._refetching = false;
         this._currentAsyncRequestId = 0;
         this._disposeTimerId = undefined;
-        this._createdMillis = new Date().getTime();
+        this._retainedMillis = 0;
         this._evictListener = this.onEntityEvict.bind(this);
         this._changeListener = this.onEntityChange.bind(this);
         entityManager.addEvictListener(undefined, this._evictListener);
@@ -32,12 +32,15 @@ class QueryResult {
         this._loadable = this.createLoadable(true, undefined, undefined);
     }
     retain() {
-        this._refCount++;
+        if (this._refCount++ === 0) {
+            this._retainedMillis = new Date().getTime();
+        }
         return this;
     }
     release(releasePolicy) {
+        var _a, _b;
         if (--this._refCount === 0) {
-            const millis = (releasePolicy !== null && releasePolicy !== void 0 ? releasePolicy : this.entityManager.stateManager.releasePolicy)(new Date().getTime() - this._createdMillis);
+            const millis = (releasePolicy !== null && releasePolicy !== void 0 ? releasePolicy : this.entityManager.stateManager.releasePolicy)(new Date().getTime() - this._retainedMillis, (_b = (_a = this.queryArgs.optionArgs) === null || _a === void 0 ? void 0 : _a.variableArgs) === null || _b === void 0 ? void 0 : _b.filterArgs);
             if (millis <= 0) {
                 this.dispose();
                 return;

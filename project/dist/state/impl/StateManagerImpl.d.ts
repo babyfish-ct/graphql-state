@@ -13,7 +13,7 @@ import { StateValue } from "./StateValue";
 import { UndoManagerImpl } from "./UndoManagerImpl";
 export declare class StateManagerImpl<TSchema extends SchemaType> implements StateManager<TSchema> {
     readonly network?: Network | undefined;
-    releasePolicy: ReleasePolicy;
+    releasePolicy: ReleasePolicy<any>;
     private _rootScope;
     private _stateValueChangeListeners;
     private _queryResultChangeListeners;

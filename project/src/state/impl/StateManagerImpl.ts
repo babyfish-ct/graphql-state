@@ -15,7 +15,7 @@ import { UndoManagerImpl } from "./UndoManagerImpl";
 
 export class StateManagerImpl<TSchema extends SchemaType> implements StateManager<TSchema> {
 
-    releasePolicy: ReleasePolicy;
+    releasePolicy: ReleasePolicy<any>;
     
     private _rootScope = new ScopedStateManager(this);
 
@@ -27,9 +27,12 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
 
     constructor(schema?: SchemaMetadata, readonly network?: Network) {
         this._entityManager = new EntityManager(this, schema ?? new SchemaMetadata());
-        this.releasePolicy = aliveTime => {
+        this.releasePolicy = (aliveTime, variables) => {
             if (aliveTime < 1000) {
                 return 0;
+            }
+            if (variables !== undefined) {
+                return Math.min(aliveTime, 30_000);    
             }
             return Math.min(aliveTime, 60_000);
         }

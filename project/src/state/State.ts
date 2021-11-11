@@ -122,32 +122,32 @@ export interface ParameterizedAsyncState<T, TVariables> {
 
 export interface ComputedContext<TSchema extends SchemaType> {
     
-    <X>(
-        state: SingleWritableState<X> | SingleComputedState<X>, 
+    <T>(
+        state: SingleWritableState<T> | SingleComputedState<T>, 
         options?: StateAccessingOptions
-    ): X;
+    ): T;
 
-    <X, XVariables>(
-        state: ParameterizedWritableState<X, XVariables> | ParameterizedComputedState<X, XVariables>, 
-        options: ParameterizedStateAccessingOptions<XVariables>
-    ): X;
+    <T, TVariables extends object>(
+        state: ParameterizedWritableState<T, TVariables> | ParameterizedComputedState<T, TVariables>, 
+        options: ParameterizedStateAccessingOptions<TVariables>
+    ): T;
 
-    <X>(
-        state: SingleAsyncState<X>, 
-        options: StateAccessingOptions & ReleasePolicyOptions
-    ): Promise<X>;
+    <T>(
+        state: SingleAsyncState<T>, 
+        options: StateAccessingOptions & ReleasePolicyOptions<any>
+    ): Promise<T>;
     
-    <X, XVariables>(
-        state: ParameterizedState<X, XVariables>, 
-        options: ParameterizedStateAccessingOptions<XVariables> & ReleasePolicyOptions
-    ): Promise<X>;
+    <T, TVariables extends object>(
+        state: ParameterizedState<T, TVariables>, 
+        options: ParameterizedStateAccessingOptions<TVariables> & ReleasePolicyOptions<TVariables>
+    ): Promise<T>;
 
     query<
         T extends object,
         TVaraibles extends object
     >(
         fetcher: Fetcher<"Query", T, TVaraibles>,
-        options?: QueryOptions<TVaraibles> & ReleasePolicyOptions
+        options?: QueryOptions<TVaraibles> & ReleasePolicyOptions<TVaraibles>
     ): Promise<T>;
     
     object<
@@ -158,7 +158,7 @@ export interface ComputedContext<TSchema extends SchemaType> {
     >(
         fetcher: Fetcher<TName, T, TVaraibles>,
         id: TSchema["entities"][TName][" $id"],
-        options?: ObjectQueryOptions<TVaraibles, TObjectStyle> & ReleasePolicyOptions
+        options?: ObjectQueryOptions<TVaraibles, TObjectStyle> & ReleasePolicyOptions<TVaraibles>
     ): Promise<ObjectReference<T, TObjectStyle>>;
 
     objects<
@@ -169,7 +169,7 @@ export interface ComputedContext<TSchema extends SchemaType> {
     >(
         fetcher: Fetcher<TName, T, TVaraibles>,
         ids: ReadonlyArray<TSchema["entities"][TName][" $id"]>,
-        options?: ObjectQueryOptions<TVaraibles, TObjectStyle> & ReleasePolicyOptions
+        options?: ObjectQueryOptions<TVaraibles, TObjectStyle> & ReleasePolicyOptions<TVaraibles>
     ): Promise<ReadonlyArray<T | undefined>>;
 }
 

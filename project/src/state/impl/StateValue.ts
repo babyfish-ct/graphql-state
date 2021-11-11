@@ -13,7 +13,7 @@ export abstract class StateValue {
 
     private _disposeTimerId?: NodeJS.Timeout;
 
-    private _createdMillis: number;
+    private _retainedMillis = 0;
 
     constructor(
         readonly stateInstance: StateInstance,
@@ -23,7 +23,6 @@ export abstract class StateValue {
         if (!stateInstance.state[" $parameterized"] && args !== undefined) {
             throw new Error("Cannot create state value with varibles for single state without parameters");
         }
-        this._createdMillis = new Date().getTime();
     }
 
     abstract get result(): any;
@@ -32,15 +31,16 @@ export abstract class StateValue {
 
     retain(): this {
         if (this._refCount++ === 0) {
+            this._retainedMillis = new Date().getTime();
             this.mount();
         }
         return this;
     }
 
-    release(releasePolicy?: ReleasePolicy) {
+    release(releasePolicy?: ReleasePolicy<any>) {
         if (--this._refCount === 0) {
             const millis = (releasePolicy ?? this.stateInstance.scopedStateManager.stateManager.releasePolicy)(
-                new Date().getTime() - this._createdMillis
+                new Date().getTime() - this._retainedMillis, this.args?.filterArgs
             );
             if (millis <= 0) {
                 this.dispose(true);

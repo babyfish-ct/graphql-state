@@ -8,20 +8,22 @@ class StateValue {
         this.disposer = disposer;
         this._refCount = 0;
         this._mounted = false;
+        this._retainedMillis = 0;
         if (!stateInstance.state[" $parameterized"] && args !== undefined) {
             throw new Error("Cannot create state value with varibles for single state without parameters");
         }
-        this._createdMillis = new Date().getTime();
     }
     retain() {
         if (this._refCount++ === 0) {
+            this._retainedMillis = new Date().getTime();
             this.mount();
         }
         return this;
     }
     release(releasePolicy) {
+        var _a;
         if (--this._refCount === 0) {
-            const millis = (releasePolicy !== null && releasePolicy !== void 0 ? releasePolicy : this.stateInstance.scopedStateManager.stateManager.releasePolicy)(new Date().getTime() - this._createdMillis);
+            const millis = (releasePolicy !== null && releasePolicy !== void 0 ? releasePolicy : this.stateInstance.scopedStateManager.stateManager.releasePolicy)(new Date().getTime() - this._retainedMillis, (_a = this.args) === null || _a === void 0 ? void 0 : _a.filterArgs);
             if (millis <= 0) {
                 this.dispose(true);
                 return;

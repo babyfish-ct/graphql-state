@@ -10,16 +10,20 @@ export interface ParameterizedStateAccessingOptions<TVariables> extends StateAcc
     readonly variables: TVariables;
 }
 
-export interface ReleasePolicyOptions {
-    readonly releasePolicy?: ReleasePolicy;
+export interface ReleasePolicyOptions<TVariables extends object> {
+    readonly releasePolicy?: ReleasePolicy<TVariables>;
 }
 
-export interface AsyncOptions<TAsyncStyle extends AsyncStyle = "suspense"> extends ReleasePolicyOptions {
+export interface AsyncOptions<
+    TAsyncStyle extends AsyncStyle = "suspense",
+    TVariables extends object = {}
+> extends ReleasePolicyOptions<TVariables> {
     readonly asyncStyle?: TAsyncStyle;
 }
 
 export type AsyncStyle = "suspense" | "refetchable-suspense" | "async-object";
-export type ReleasePolicy = (aliveTime: number) => number;
+
+export type ReleasePolicy<TVariables extends object> = (aliveTime: number, variables?: TVariables) => number;
 
 export interface QueryOptions<TVariables extends object> {
     readonly variables?: TVariables;

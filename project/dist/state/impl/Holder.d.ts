@@ -30,7 +30,7 @@ export declare class QueryResultHolder {
     private deferred?;
     constructor(stateManager: StateManagerImpl<any>, localUpdater: Dispatch<SetStateAction<number>>);
     get(): QueryResult;
-    set(fetcher: ObjectFetcher<string, object, object>, windowId: string | undefined, ids?: ReadonlyArray<any>, options?: QueryOptions<any> & ReleasePolicyOptions): void;
+    set(fetcher: ObjectFetcher<string, object, object>, windowId: string | undefined, ids?: ReadonlyArray<any>, options?: QueryOptions<any> & ReleasePolicyOptions<any>): void;
     release(): void;
     private serializableOptions;
 }

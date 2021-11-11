@@ -7,7 +7,15 @@ import { State } from "../State";
 import { QueryResultChangeEvent, StateManagerImpl, StateValueChangeEvent, StateValueChangeListener } from "./StateManagerImpl";
 import { StateValue } from "./StateValue";
 import { OptionArgs, VariableArgs } from "./Args";
-import { AsyncOptions, MutationOptions, ParameterizedStateAccessingOptions, QueryOptions, ReleasePolicy, ReleasePolicyOptions, StateAccessingOptions } from "../Types";
+import { 
+    AsyncOptions, 
+    MutationOptions, 
+    ParameterizedStateAccessingOptions, 
+    QueryOptions, 
+    ReleasePolicy, 
+    ReleasePolicyOptions, 
+    StateAccessingOptions 
+} from "../Types";
 
 export class StateValueHolder {
 
@@ -17,12 +25,12 @@ export class StateValueHolder {
 
     private stateValueChangeListener?: StateValueChangeListener;
 
-    private releasePolicy?: ReleasePolicy;
+    private releasePolicy?: ReleasePolicy<any>;
 
     private deferred?: {
         readonly state: State<any>;
         readonly scopePath: string;
-        readonly options?: StateAccessingOptions & ReleasePolicyOptions
+        readonly options?: StateAccessingOptions & ReleasePolicyOptions<any>
     };
     
     constructor(
@@ -103,7 +111,7 @@ export class StateValueHolder {
     }
 
     private serializableOptions(
-        options?: StateAccessingOptions & ReleasePolicyOptions
+        options?: StateAccessingOptions & ReleasePolicyOptions<any>
     ): StateAccessingOptions | undefined {
         if (options === undefined) {
             this.releasePolicy = undefined;
@@ -128,13 +136,13 @@ export class QueryResultHolder {
 
     private queryResultChangeListener?: (e: QueryResultChangeEvent) => void;
 
-    private releasePolicy?: ReleasePolicy;
+    private releasePolicy?: ReleasePolicy<any>;
 
     private deferred?: {
         readonly fetcher: ObjectFetcher<string, object, object>;
         readonly windowId?: string;
         readonly ids?: ReadonlyArray<any>;
-        readonly options?: QueryOptions<any> & ReleasePolicyOptions;
+        readonly options?: QueryOptions<any> & ReleasePolicyOptions<any>;
     };
 
     constructor(
@@ -154,7 +162,7 @@ export class QueryResultHolder {
         fetcher: ObjectFetcher<string, object, object>,
         windowId: string | undefined,
         ids?: ReadonlyArray<any>,
-        options?: QueryOptions<any> & ReleasePolicyOptions
+        options?: QueryOptions<any> & ReleasePolicyOptions<any>
     ) {
 
         const serializableOptions = this.serializableOptions(options);
@@ -221,7 +229,7 @@ export class QueryResultHolder {
     }
 
     private serializableOptions(
-        options?: QueryOptions<any> & ReleasePolicyOptions
+        options?: QueryOptions<any> & ReleasePolicyOptions<any>
     ): QueryOptions<any> | undefined {
         if (options === undefined) {
             this.releasePolicy = undefined;

@@ -6,7 +6,7 @@ import { ReleasePolicy } from "./Types";
 export const StateManagerProvider: FC<
     PropsWithChildren<{
         stateManager?: StateManager<any>,
-        releasePolicy?: ReleasePolicy
+        releasePolicy?: ReleasePolicy<any>
     }>
 > = memo(({stateManager, releasePolicy, children}) => {
 

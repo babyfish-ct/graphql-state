@@ -116,7 +116,7 @@ export class InternalComputedContext {
 
     query(
         fetcher: ObjectFetcher<"Query", object, object>, 
-        options?: QueryOptions<any> & ReleasePolicyOptions
+        options?: QueryOptions<any> & ReleasePolicyOptions<any>
     ): Promise<any> {
         return this.queryImpl(fetcher, undefined, options);
     }
@@ -132,7 +132,7 @@ export class InternalComputedContext {
     objects(
         fetcher: ObjectFetcher<string, object, object>, 
         ids: ReadonlyArray<any>, 
-        options?: ObjectQueryOptions<any, any> & ReleasePolicyOptions
+        options?: ObjectQueryOptions<any, any> & ReleasePolicyOptions<any>
     ): Promise<ReadonlyArray<any>> {
         return this.queryImpl(fetcher, ids, options);
     }

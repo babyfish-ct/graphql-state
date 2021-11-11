@@ -48,7 +48,7 @@ export function useStateValue<T>(
     options?: StateAccessingOptions
 ): T;
 
-export function useStateValue<T, TVariables>(
+export function useStateValue<T, TVariables extends object>(
     state: ParameterizedWritableState<T, TVariables> | ParameterizedComputedState<T, TVariables>,
     options: ParameterizedStateAccessingOptions<TVariables>
 ): T;
@@ -58,9 +58,9 @@ export function useStateValue<T, TAsyncStyle extends AsyncStyle = "suspense">(
     options?: StateAccessingOptions & AsyncOptions<TAsyncStyle>
 ): AsyncReturnType<T, TAsyncStyle>;
 
-export function useStateValue<T, TVariables, TAsyncStyle extends AsyncStyle = "suspense">(
+export function useStateValue<T, TVariables extends object, TAsyncStyle extends AsyncStyle = "suspense">(
     state: ParameterizedAsyncState<T, TVariables>,
-    options: ParameterizedStateAccessingOptions<TVariables> & AsyncOptions<TAsyncStyle>
+    options: ParameterizedStateAccessingOptions<TVariables> & AsyncOptions<TAsyncStyle, TVariables>
 ): AsyncReturnType<T, TAsyncStyle>;
 
 export function useStateValue<T>(
@@ -74,7 +74,7 @@ export function useStateValue<T>(
             return stateValue.result;
         }
         const loadable = (stateValue as ComputedStateValue).loadable as UseStateAsyncValueHookResult<T>;
-        const asyncStyle = (options as AsyncOptions<any> | undefined)?.asyncStyle;
+        const asyncStyle = (options as AsyncOptions<any, any> | undefined)?.asyncStyle;
         if (asyncStyle === "async-object") {
             return loadable;
         }
@@ -124,7 +124,7 @@ export function useQuery<
     TAsyncStyle extends AsyncStyle = "suspense"
 >(
     fetcher: ObjectFetcher<"Query", T, TVariables>,
-    options?: QueryOptions<TVariables> & AsyncOptions<TAsyncStyle>
+    options?: QueryOptions<TVariables> & AsyncOptions<TAsyncStyle, TVariables>
 ): AsyncReturnType<T, TAsyncStyle> {
     const queryResultHolder = useInternalQueryResultHolder(fetcher, undefined, undefined, options);
     try {
@@ -157,7 +157,7 @@ export function usePaginationQuery<
     TAsyncStyle extends AsyncStyle = "suspense"
 >(
     fetcher: ObjectFetcher<"Query", T, TVariables>,
-    options?: PaginationQueryOptions<TVariables> & AsyncOptions<TAsyncStyle>,    
+    options?: PaginationQueryOptions<TVariables> & AsyncOptions<TAsyncStyle, TVariables>,    
 ): AsyncPaginationReturnType<T, TAsyncStyle> {
     const queryResultHolder = useInternalQueryResultHolder(
         fetcher, options?.windowId, undefined, options
@@ -215,7 +215,7 @@ export interface ManagedObjectHooks<TSchema extends SchemaType> {
     >(
         fetcher: Fetcher<string, T, TVariables>,
         id: TSchema["entities"][TName][" $id"],
-        options?: ObjectQueryOptions<TVariables, TObjectStyle> & AsyncOptions<TAsyncStyle>
+        options?: ObjectQueryOptions<TVariables, TObjectStyle> & AsyncOptions<TAsyncStyle, TVariables>
     ): AsyncReturnType<
         ObjectReference<T, TObjectStyle>,
         TAsyncStyle
@@ -230,7 +230,7 @@ export interface ManagedObjectHooks<TSchema extends SchemaType> {
     >(
         fetcher: Fetcher<string, T, TVariables>,
         ids: ReadonlyArray<TSchema["entities"][TName][" $id"]>,
-        options?: ObjectQueryOptions<TVariables, TObjectStyle> & AsyncOptions<TAsyncStyle>
+        options?: ObjectQueryOptions<TVariables, TObjectStyle> & AsyncOptions<TAsyncStyle, TVariables>
     ): AsyncReturnType<
         ReadonlyArray<ObjectReference<T, TObjectStyle>>,
         TAsyncStyle
@@ -248,7 +248,7 @@ class ManagedObjectHooksImpl<TSchema extends SchemaType> implements ManagedObjec
     >(
         fetcher: ObjectFetcher<string, T, TVariables>,
         id: TSchema["entities"][TName][" $id"],
-        options?: ObjectQueryOptions<TVariables, TObjectStyle> & AsyncOptions<TAsyncStyle>
+        options?: ObjectQueryOptions<TVariables, TObjectStyle> & AsyncOptions<TAsyncStyle, TVariables>
     ): AsyncReturnType<
         ObjectReference<T, TObjectStyle>,
         TAsyncStyle
@@ -299,7 +299,7 @@ class ManagedObjectHooksImpl<TSchema extends SchemaType> implements ManagedObjec
     >(
         fetcher: ObjectFetcher<string, T, TVariables>,
         ids: ReadonlyArray<TSchema["entities"][TName][" $id"]>,
-        options?: ObjectQueryOptions<TVariables, TObjectStyle> & AsyncOptions<TAsyncStyle>
+        options?: ObjectQueryOptions<TVariables, TObjectStyle> & AsyncOptions<TAsyncStyle, TVariables>
     ): AsyncReturnType<
         ReadonlyArray<ObjectReference<T, TObjectStyle>>,
         TAsyncStyle

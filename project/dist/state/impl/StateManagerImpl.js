@@ -12,9 +12,12 @@ class StateManagerImpl {
         this._stateValueChangeListeners = new Set();
         this._queryResultChangeListeners = new Set();
         this._entityManager = new EntityManager_1.EntityManager(this, schema !== null && schema !== void 0 ? schema : new SchemaMetadata_1.SchemaMetadata());
-        this.releasePolicy = aliveTime => {
+        this.releasePolicy = (aliveTime, variables) => {
             if (aliveTime < 1000) {
                 return 0;
+            }
+            if (variables !== undefined) {
+                return Math.min(aliveTime, 30000);
             }
             return Math.min(aliveTime, 60000);
         };

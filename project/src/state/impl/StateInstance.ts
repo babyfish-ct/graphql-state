@@ -28,7 +28,7 @@ export class StateInstance {
         return stateValue.retain();
     }
 
-    release(args: VariableArgs | undefined, releasePolicy?: ReleasePolicy) {
+    release(args: VariableArgs | undefined, releasePolicy?: ReleasePolicy<any>) {
         this.valueMap.get(args?.key)?.release(releasePolicy);
     }
 

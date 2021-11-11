@@ -37,7 +37,7 @@ export declare class EntityManager {
     evict(typeName: string, idOrArray: any): void;
     saveId(typeName: string, id: any): Record;
     retain(args: QueryArgs): QueryResult;
-    release(args: QueryArgs, releasePolicy?: ReleasePolicy): void;
+    release(args: QueryArgs, releasePolicy?: ReleasePolicy<any>): void;
     addEvictListener(typeName: string | undefined, listener: (e: EntityEvictEvent) => void): void;
     removeEvictListener(typeName: string | undefined, listener: (e: EntityEvictEvent) => void): void;
     private publishEvictChangeEvent;

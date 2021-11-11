@@ -17,11 +17,11 @@ export declare class QueryResult {
     protected _currentAsyncRequestId: number;
     private _dependencies?;
     private _disposeTimerId?;
-    private _createdMillis;
+    private _retainedMillis;
     private _bindedRefetch;
     constructor(entityManager: EntityManager, queryArgs: QueryArgs, disposer: () => void);
     retain(): this;
-    release(releasePolicy?: ReleasePolicy): void;
+    release(releasePolicy?: ReleasePolicy<any>): void;
     get promise(): Promise<any>;
     get loadable(): QueryLoadable<any>;
     private execute;
