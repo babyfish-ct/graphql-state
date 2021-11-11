@@ -608,7 +608,7 @@ function createStateManager() {
 
 > 这个例子中，数据对象的name字段需要用于排序，所以对dependencies函数忽略当前关联的参数，无条件返回包含name的数组。
 > 
-> 又是，我们可能希望对象的name仅仅用于按关联条件筛选，而不会被用于排序，这时，你可以如此实现
+> 有时，项目需求可能不是这样的。我们可能希望对象的name仅仅用于按关联条件筛选，而不会被用于排序，这时，你可以如此实现
 > ```
 > if (variables.name !== undefined) {
 >     return ["name"];
