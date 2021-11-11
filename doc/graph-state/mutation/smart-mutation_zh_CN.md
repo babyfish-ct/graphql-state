@@ -721,7 +721,7 @@ function createStateManager() {
 }
 ```
 
-如果你的分页面是基于行数偏移的且分也方向为forward，你还需要调整endCursor
+如果你的分页面是基于行数偏移的且分页方向为forward，你还需要调整endCursor
 ```ts
 function createStateManager() {
     return newTypedConfiguration()
