@@ -427,7 +427,7 @@ function defaultContains(
 
 既然对象被自动link到并未被直接修改的集合关联中，这时我们决定其插入位置呢？关联是否有业务层面的排序呢？
 
-在[配套例子中](https://github.com/babyfish-ct/graphql-state/tree/master/example/client/src/graph/graphql)，所有关联数据是按照对象的name字段排序的。
+假设所有关联数据是按照对象的name字段排序的，无论是Query.findBooks这样的根对象关联，还是BookStore.books这样的普通对象关联。
 
 assocaitionProperties支持一个position函数，我们可以这样来为被自动插入的对象自定义插入位置
 
