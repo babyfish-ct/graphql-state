@@ -104,7 +104,9 @@ books({name: "b"}).tryLink({
 
 ### 1.3. containsVariables
 
-为了更好地判断是否可以直接修改缓存，引入了一个概念variables contains，判断查询参数之间的包含关系
+为了更好地判断是否可以直接修改缓存，引入了一个概念containsVariables，判断查询参数之间的包含关系。
+
+> 其中，variables指关联的参数，如同上文中的{}, { name: "a"}, {name: "b"}
 
 ```ts
 containsVariables(variables1, variables2): boolean
