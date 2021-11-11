@@ -83,19 +83,19 @@ stateManager.save(
 ```ts
 books({}).tryUnlink({
     id: id1, 
-    reason: {name: "a}
+    reason: {name: "a} // books({})被books({name: "a"})的变更影响
 });
 books({}).tryLink({
     id: id3, 
-    reason: {name: "a}
+    reason: {name: "a} // books({})被books({name: "a"})的变更影响
 });
 books({name: "b"}).tryUnlink({
     id: id1, 
-    reason: {name: "a}
+    reason: {name: "a} // books({name: "b"})被books({name: "a"})的变更影响
 });
 books({name: "b"}).tryLink({
     id: id3, 
-    reason: {name: "a}
+    reason: {name: "a} // books({name: "b"})被books({name: "a"})的变更影响
 });
 ```
 这说明，books({name: "a"})的变化有可能对books()和books({name: "b"})形成影响。即
