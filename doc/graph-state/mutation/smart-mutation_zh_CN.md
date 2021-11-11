@@ -267,7 +267,7 @@ function createStateManager() {
 
 > 注意：API是强类型设计，不用担心"findBookStores", "BookStore"和"authors"等字符串的拼写错误，错误会在编译时呈现。
 
-这里，我们以assocaitionProperties来讲解如何优化BookStore.books
+这里，我们以BookStore.books关系的assocaitionProperties来讲解如何优化BookStore.books
 > 为了清晰讲解，这里写出了所有类型，并未有任何省略，你在开发中可以省略。
 
 ```ts
