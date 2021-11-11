@@ -8,9 +8,14 @@ export const INFORMATION_CLASS = css({
     backgroundColor: "#ffe"
 });
 
-export const PSEUDO_CODE_CLASS = css({
+export const ACTION_CLASS = css({
     borderLeft: "solid 3px gray",
     paddingLeft: "1rem"
+});
+
+export const NOTE_CLASS = css({
+    fontStyle: "italic",
+    color: "gray"
 });
 
 export const DELETE_CONFIRM_CLASS = css({

@@ -37,7 +37,7 @@ export declare class Record {
     createMap(): Map<string, any>;
     dispose(entityManager: EntityManager): void;
     private disposeAssocaitions;
-    refreshByEvictEvent(entityManager: EntityManager, event: EntityEvictEvent): void;
+    refreshBackReferencesByEvictEvent(entityManager: EntityManager, event: EntityEvictEvent): void;
     refreshByChangeEvent(entityManager: EntityManager, field: FieldMetadata, e: EntityChangeEvent): void;
     gcVisit(field: FieldMetadata, args: VariableArgs | undefined): void;
     collectGarbages(output: Garbage[]): void;

@@ -5,7 +5,7 @@ import { FC, memo, useCallback, useEffect } from "react";
 import UUIDClass from "uuidjs";
 import { book$, bookStore$$ } from "../../__generated_local_schema__/fetchers";
 import { BookMultiSelect } from "../book/BookMultiSelect";
-import { INFORMATION_CLASS, PSEUDO_CODE_CLASS } from "../Css";
+import { ACTION_CLASS, INFORMATION_CLASS  } from "../Css";
 import { useTypedStateManager } from "../../__generated_local_schema__";
 
 const BOOK_STORE_EDIT_INFO =
@@ -75,24 +75,6 @@ export const BookStoreDialog: FC<{
     );
 });
 
-const FOR_REMOVED_BOOK = `
-if (cached(removedBook.store)) {
-    removedBook.store = undefined;
-}
-`;
-
-const FOR_ADDED_BOOK = `
-if (cached(addedBook.store)) {
-    addBook.store = this;
-} else {
-    for (const otherStore of cache.bookStores) {
-        if (otherStore !== this && cached(otherStore.books)) {
-            otherStore.books.remove(addedBook);
-        }
-    }
-}
-`;
-
 const BOOKS_DESCRIPTION_ITEM = (
     <Form.Item label=" " colon={false}>
         <Collapse ghost>
@@ -102,11 +84,24 @@ const BOOKS_DESCRIPTION_ITEM = (
                     <ul>
                         <li>
                             For each removed book, this action will be executed automatically
-                            <pre className={PSEUDO_CODE_CLASS}>{FOR_REMOVED_BOOK}</pre>
+                            <div className={ACTION_CLASS}>
+                                If "removedBook.store" is cacched, set it to undefined
+                            </div>
                         </li>
                         <li>
                             For each added book, this action will be executed automatically
-                            <pre  className={PSEUDO_CODE_CLASS}>{FOR_ADDED_BOOK}</pre>
+                            <div className={ACTION_CLASS}>
+                                <ul>
+                                    <li>
+                                        If "addedBook.store" is cacched, set it to current object
+                                    </li>
+                                    <li>
+                                        For each OTHER "BookStore" object in the cache,
+                                        if "otherStore.books" is cached, 
+                                        Remove "addedBook" from "otherStore.books"
+                                    </li>
+                                </ul>
+                            </div>
                         </li>
                     </ul>
                 </div>
@@ -127,7 +122,7 @@ const OK_DESCRIPTION = (
                 <Collapse.Panel key="title" header="Description of 'OK' button">
                     <div className={INFORMATION_CLASS}>
                         If this dialog is used to insert new object into cache
-                        <pre className={PSEUDO_CODE_CLASS}>{FOR_INSERTION}</pre>
+                        <pre className={ACTION_CLASS}>{FOR_INSERTION}</pre>
                     </div>
                 </Collapse.Panel>
             </Collapse>

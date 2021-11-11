@@ -13,7 +13,7 @@ export const INFORMATION_CLASS = css({
     textAlign: "left"
 });
 
-export const PSEUDO_CODE_CLASS = css({
+export const ACTION_CLASS = css({
     borderLeft: "solid 3px gray",
     paddingLeft: "1rem"
 });

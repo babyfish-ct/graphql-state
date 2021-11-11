@@ -5,7 +5,7 @@ import { FC, memo, useCallback, useEffect } from "react";
 import UUIDClass from "uuidjs";
 import { author$$, book$ } from "../../__generated_local_schema__/fetchers";
 import { BookMultiSelect } from "../book/BookMultiSelect";
-import { INFORMATION_CLASS, PSEUDO_CODE_CLASS } from "../Css";
+import { INFORMATION_CLASS, ACTION_CLASS } from "../Css";
 import { useTypedStateManager } from "../../__generated_local_schema__";
 
 const AUTHOR_EDIT_INFO =
@@ -93,11 +93,11 @@ const BOOKS_DESCRIPTION_ITEM = (
                     <ul>
                         <li>
                             For each removed book, this behavior will be executed automatically
-                            <pre className={PSEUDO_CODE_CLASS}>{FOR_REMOVED_BOOK}</pre>
+                            <pre className={ACTION_CLASS}>{FOR_REMOVED_BOOK}</pre>
                         </li>
                         <li>
                             For each add book, this behavior will be executed automatically
-                            <pre className={PSEUDO_CODE_CLASS}>{FOR_ADDED_BOOK}</pre>
+                            <pre className={ACTION_CLASS}>{FOR_ADDED_BOOK}</pre>
                         </li>
                     </ul>
                 </div>
@@ -118,7 +118,7 @@ const OK_DESCRIPTION = (
                 <Collapse.Panel key="title" header="Description of 'OK' button">
                     <div className={INFORMATION_CLASS}>
                         If this dialog is used to insert new object into cache
-                        <pre className={PSEUDO_CODE_CLASS}>{FOR_INSERTION}</pre>
+                        <pre className={ACTION_CLASS}>{FOR_INSERTION}</pre>
                     </div>
                 </Collapse.Panel>
             </Collapse>

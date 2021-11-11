@@ -6,7 +6,7 @@ import UUIDClass from "uuidjs";
 import { book$, bookStore$$, mutation$ } from "../../__generated_graphql_schema__/fetchers";
 import { BookStoreInput } from "../../__generated_graphql_schema__/inputs";
 import { BookMultiSelect } from "../book/BookMultiSelect";
-import { INFORMATION_CLASS, PSEUDO_CODE_CLASS } from "../Css";
+import { INFORMATION_CLASS, ACTION_CLASS, NOTE_CLASS } from "../Css";
 import { useMutation } from "graphql-state";
 import { useTypedStateManager } from "../../__generated_graphql_schema__";
 
@@ -75,30 +75,16 @@ export const BookStoreDialog: FC<{
     );
 });
 
-const FOR_NEW_NAME = `
-for (const parameterizedStores of 
-    cache.get(Query.findBookStores({...}))
-) {
-    // user optimizer or default optimizer
-    const optimizer = assocaitionProperties["Query.findBookStores"];
 
-    const dependencies = optimizer.dependencies(
-        parameterizedStores.variables
-    );
 
-    if (dependencies === undefined || dependencies.has("name)) {
-        const contains = optimizer.contains(this with newName);
-        if (contains === true) {
-            parameterizedStores.addIfAbsent(this);
-        } else (contains === false) {
-            parameterizedStores.removeIfExists(this);
-        } else {
-            cache.evict(parameterizedStores);
-            // Affected UI will reload data from server later
-        }
-    }
-}
-`;
+
+/*
+ * Document embedded in UI
+ */
+
+const WITHOUT_ARGS = "{}";
+
+const WITH_ARGS = "{name: ...}";
 
 const NAME_DESCRIPTION_ITEM = (
     <Form.Item label=" " colon={false}>
@@ -110,78 +96,108 @@ const NAME_DESCRIPTION_ITEM = (
                         <li>insert: undefined -&gt; newName</li>
                         <li>update: oldName -&gt; newName</li>
                     </ul>
-                    (delete will be handed by other rules)
-                    <pre className={PSEUDO_CODE_CLASS}>{FOR_NEW_NAME}</pre>
+                    <p>
+                        (deleting is handled by other logic, we don't dicuss it here)
+                    </p>
+
+                    <div>For new name, this action will be executed automatically</div>
+                    <div className={ACTION_CLASS}>
+                        <ol>
+                            <li>
+                                Re-filtering
+                                <ol>
+                                    <li>
+                                        If the optimization strategy "Query.findBookStores.associationProperties.dependencies",
+                                        returns undefined or an array contains "name",
+                                        re-implement filtering for the association "Query.findBookStores({WITH_ARGS})"
+                                        <ul>
+                                            <li>
+                                                If the optimization strategy "Query.findBookStores.associationProperties.contains" is not specified,
+                                                upgrade to re-query
+                                            </li>
+                                            <li>
+                                                Otherwise, ask the user optimization strategy whether the name of the "Book" matches the filtering rules
+                                                <ul>
+                                                    <li>true: add it into "Query.findBookStores({WITH_ARGS})" if it's not exists</li>
+                                                    <li>false: remove it from "Query.findBookStores({WITH_ARGS})" if it's exists</li>
+                                                    <li>undefined: upgrade to re-query</li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ol>
+                            </li>
+                            <li>
+                                Re-sorting
+                                <ol>
+                                    <li>
+                                        If the optimization strategy "Query.findBookStores.associationProperties.dependencies",
+                                        returns undefined or an array contains "name",
+                                        <ol>
+                                            <li>
+                                                Re-implement sorting for the association "Query.findBookStores({WITHOUT_ARGS})"
+                                            </li>
+                                            <li>
+                                                Re-implement sorting for the association "Query.findBookStores({WITH_ARGS})"
+                                            </li>
+                                        </ol>
+                                        <p className={NOTE_CLASS}>
+                                            If the optimization strategy "Query.findBookStore.associationProperties.position" returns undefined,
+                                            upgrade to re-query.
+                                        </p>
+                                    </li>
+                                </ol>
+                            </li>
+                        </ol>
+                    </div>
                 </div>
             </Collapse.Panel>
         </Collapse>
     </Form.Item>
 );
 
-const FOR_REMOVED_BOOK = `
-
-// Remove it from other similar assocaitons with parameters
-for (const parameterizedBooks of cache.get(this.books({...}))) {
-    parameterizedBooks.remove(removedBook);
-}
-
-// Change opposite endpoint if it's cached
-if (cached(removedBook.store)) {
-    removedBook.store = undefined;
-}
-`;
-
-const FOR_ADDED_BOOK = `
-
-// Add it into similar assocaitons with parameters
-for (const parameterizedBooks of cache.get(this.books({...}))) {
-
-    // user optimizer or default optimizer
-    const optimizer = assocaitionProperties["BookStore.books"];
-
-    const contains = optimizer.contains(
-        parameterizedBooks.variables, 
-        addedBook
-    );
-    if (contains === true) {
-        parameterizedBooks.insert(..., addedBook);
-    } else if (contains === false) {
-        // do nothing
-    } else {
-        cahce.evict(parameterizedBooks);
-        // Affected UI will reload data from server later
-    }
-}
-
-if (cached(addedBook.store)) {
-    // Change opposite endpoint if it's cached
-    addBook.store = this;
-} else {
-    // Remove it from assocaitions of any other BookStore
-    for (const otherStore of cache.bookStores) {
-        if (otherStore !== this) {
-            if (cached(otherStore.books({...}))) {
-                otherStore.books({...}).remove(addedBook);
-            }
-        }
-    }
-}
-`;
-
 const BOOKS_DESCRIPTION_ITEM = (
     <Form.Item label=" " colon={false}>
         <Collapse ghost>
             <Collapse.Panel key="title" header="Description of 'BookStore.books'">
-                <div className={INFORMATION_CLASS}>
+            <div className={INFORMATION_CLASS}>
                     If you change this association "BookStore.books"
                     <ul>
                         <li>
                             For each removed book, this action will be executed automatically
-                            <pre className={PSEUDO_CODE_CLASS}>{FOR_REMOVED_BOOK}</pre>
+                            <div className={ACTION_CLASS}>
+                                <ol>
+                                    <li>
+                                        If "removedBook.store" is cached, set it to undefined
+                                    </li>
+                                    <li>
+                                        If "currentStore.books({WITH_ARGS}) is cached", remove "removedBook" from it.
+                                    </li>
+                                </ol>
+                            </div>
                         </li>
                         <li>
                             For each added book, this action will be executed automatically
-                            <pre  className={PSEUDO_CODE_CLASS}>{FOR_ADDED_BOOK}</pre>
+                            <div className={ACTION_CLASS}>
+                                <ol>
+                                    <li>
+                                        If "addedBook.store" is cached, set it to current object
+                                    </li>
+                                    <li>
+                                        For each OTHER "BookStore" object in the cache
+                                        <ol>
+                                            <li>
+                                               If "otherStore.books({WITHOUT_ARGS})" is cached, 
+                                               Remove "addedBook" from "otherStore.books({WITHOUT_ARGS})"
+                                            </li>
+                                            <li>
+                                               If "otherStore.books({WITH_ARGS})" is cached, 
+                                               Remove "addedBook" from "otherStore.books({WITH_ARGS})"
+                                            </li> 
+                                        </ol>
+                                    </li>
+                                </ol>
+                            </div>
                         </li>
                     </ul>
                 </div>

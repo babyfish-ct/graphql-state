@@ -5,7 +5,7 @@ import { FC, memo, useCallback, useEffect } from "react";
 import UUIDClass from "uuidjs";
 import { author$, book$$, bookStore$ } from "../../__generated_local_schema__/fetchers";
 import { AuthorMultiSelect } from "../author/AuthorMultiSelect";
-import { INFORMATION_CLASS, PSEUDO_CODE_CLASS } from "../Css";
+import { INFORMATION_CLASS, ACTION_CLASS } from "../Css";
 import { BookStoreSelect } from "../store/BookStoreSelect";
 import { useTypedStateManager } from "../../__generated_local_schema__";
 
@@ -102,11 +102,11 @@ const STORE_DESCRITPION_ITEM = (
                     <ul>
                         <li>
                             For the old store, this action will be executed automatically
-                            <pre className={PSEUDO_CODE_CLASS}>{FOR_OLD_STORE}</pre>
+                            <pre className={ACTION_CLASS}>{FOR_OLD_STORE}</pre>
                         </li>
                         <li>
                             For the new store, this action will be executed automatically
-                            <pre className={PSEUDO_CODE_CLASS}>{FOR_NEW_STORE}</pre>
+                            <pre className={ACTION_CLASS}>{FOR_NEW_STORE}</pre>
                         </li>
                     </ul>
                 </div>
@@ -134,11 +134,11 @@ const AUTHORS_DESCRIPTION_ITEM = (
                     <ul>
                         <li>
                             For each removed author, this action will be executed automatically
-                            <pre className={PSEUDO_CODE_CLASS}>{FOR_REMOVED_AUTHOR}</pre>
+                            <pre className={ACTION_CLASS}>{FOR_REMOVED_AUTHOR}</pre>
                         </li>
                         <li>
                             For each added author, this action will be executed automatically
-                            <pre className={PSEUDO_CODE_CLASS}>{FOR_ADDED_AUTHOR}</pre>
+                            <pre className={ACTION_CLASS}>{FOR_ADDED_AUTHOR}</pre>
                         </li>
                     </ul>
                 </div>
@@ -159,7 +159,7 @@ const OK_DESCRIPTION = (
                 <Collapse.Panel key="title" header="Description of 'OK' button">
                     <div className={INFORMATION_CLASS}>
                         If this dialog is used to insert new object into cache
-                        <pre className={PSEUDO_CODE_CLASS}>{FOR_INSERTION}</pre>
+                        <pre className={ACTION_CLASS}>{FOR_INSERTION}</pre>
                     </div>
                 </Collapse.Panel>
             </Collapse>

@@ -5,13 +5,6 @@ import { Schema } from "../__generated_local_schema__";
 
 export function initializeDefaultData(stateManager: StateManager<Schema>) {
 
-    stateManager.suspendBidirectionalAssociationManagement(() => {
-        initializeDefaultDataImpl(stateManager);
-    });
-}
-
-function initializeDefaultDataImpl(stateManager: StateManager<Schema>) {
-
     stateManager.save(
         query$.bookStores(
             bookStore$$

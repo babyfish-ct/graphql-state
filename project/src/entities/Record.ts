@@ -258,12 +258,12 @@ export class Record {
         this.associationMap.clear();
     }
 
-    refreshByEvictEvent(entityManager: EntityManager, event: EntityEvictEvent) {
-        this.backReferences.forEach((field, _, ownerRecord) => {
+    refreshBackReferencesByEvictEvent(entityManager: EntityManager, event: EntityEvictEvent) {
+        this.backReferences.forEach((field, _, backReferenceRecord) => {
             // Duplicated invacaion, but not problem
             // because Asscoaiton.refresh can ignore duplicated invocations
             // by comparing EntityManager.modificationVersion
-            ownerRecord.associationMap.get(field)?.refresh(entityManager, event);
+            backReferenceRecord.associationMap.get(field)?.refresh(entityManager, event);
         });
     }
 

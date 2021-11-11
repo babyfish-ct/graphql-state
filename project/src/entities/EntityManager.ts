@@ -269,7 +269,7 @@ export class EntityManager {
     }
 
     private refreshByEvictEvent(e: EntityEvictEvent) {
-        this.recordManager(e.typeName).findRefById(e.id)?.value?.refreshByEvictEvent(this, e);
+        this.recordManager(e.typeName).findRefById(e.id)?.value?.refreshBackReferencesByEvictEvent(this, e);
     }
 
     private refreshByChangeEvent(e: EntityChangeEvent) {

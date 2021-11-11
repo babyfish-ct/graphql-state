@@ -6,7 +6,7 @@ import UUIDClass from "uuidjs";
 import { author$$, book$, mutation$ } from "../../__generated_graphql_schema__/fetchers";
 import { AuthorInput } from "../../__generated_graphql_schema__/inputs";
 import { BookMultiSelect } from "../book/BookMultiSelect";
-import { INFORMATION_CLASS, PSEUDO_CODE_CLASS } from "../Css";
+import { INFORMATION_CLASS, ACTION_CLASS, NOTE_CLASS } from "../Css";
 import { useMutation } from "graphql-state";
 import { useTypedStateManager } from "../../__generated_graphql_schema__";
 
@@ -75,118 +75,173 @@ export const AuthorDialog: FC<{
 });
 
 
-const FOR_NEW_NAME = `
-for (const parameterizedAuthors of 
-    cache.get(Query.findAuthors({...}))
-) {
-    // user optimizer or default optimizer
-    const optimizer = assocaitionProperties["Query.findAuthors"];
 
-    const dependencies = optimizer.dependencies(
-        parameterizedAuthors.variables
-    );
 
-    if (dependencies === undefined || dependencies.has("name)) {
-        const contains = optimizer.contains(this with newName);
-        if (contains === true) {
-            parameterizedAuthors.addIfAbsent(this);
-        } else (contains === false) {
-            parameterizedAuthors.removeIfExists(this);
-        } else {
-            cache.evict(parameterizedAuthors);
-            // Affected UI will reload data from server later
-        }
-    }
+/**
+ * Document embedded in UI
+ */
 
-    for (const parameterizedAuthors of 
-        cache.get(Book::authors({...}))
-    ) {
+const WITHOUT_ARGS = "{}";
 
-        // user optimizer or default optimizer
-        const optimizer = assocaitionProperties["Book.authors"];
-
-        const dependencies = optimizer.dependencies(
-            parameterizedAuthors.variables
-        );
-    
-        if (dependencies === undefined || dependencies.has("name)) {
-            cache.evict(parameterizedAuthors);
-            // Affected UI will reload data from server later
-        }
-    }
-}
-`;
-
+const WITH_ARGS = "{name: ...}";
+ 
 const NAME_DESCRIPTION_ITEM = (
     <Form.Item label=" " colon={false}>
         <Collapse ghost>
-            <Collapse.Panel key="title" header="Description of 'Book.name'">
+            <Collapse.Panel key="title" header="Description of 'Author.name'">
                 <div className={INFORMATION_CLASS}>
-                    If you change this scalar field "BookStore.name" by any of the following ways
+                    If you change this scalar field "Author.name" by any of the following ways
                     <ul>
                         <li>insert: undefined -&gt; newName</li>
                         <li>update: oldName -&gt; newName</li>
                     </ul>
-                    (delete will be handed by other rules)
-                    <pre className={PSEUDO_CODE_CLASS}>{FOR_NEW_NAME}</pre>
+                    <p>
+                        (deleting is handled by other logic, we don't dicuss it here)
+                    </p>
+
+                    <div>For new name, this action will be executed automatically</div>
+                    <div className={ACTION_CLASS}>
+                        <ol>
+                            <li>
+                                Re-filtering
+                                <ol>
+                                    <li>
+                                        If the optimization strategy "Query.findAuthors.associationProperties.dependencies" 
+                                        returns undefined or an array contains "name",
+                                        re-implement filtering for the association "Query.findAuthors({WITH_ARGS})".
+                                        <ul>
+                                            <li>
+                                                If the optimization strategy "Query.findAuthors.associationProperties.contains" is not specified,
+                                                upgrade to re-query
+                                            </li>
+                                            <li>
+                                                Otherwise, ask the user optimization strategy whether the name of the "Book" matches the filtering rules
+                                                <ul>
+                                                    <li>true: add it into "Query.findAuthors({WITH_ARGS})" if it's not exists</li>
+                                                    <li>false: remove it from "Query.findAuthors({WITH_ARGS})" if it's exists</li>
+                                                    <li>undefined: upgrade to re-query</li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        If the optimization strategy "Book.authors.associationProperties.dependencies" 
+                                        returns undefined or an array contains "name",
+                                        re-implement filtering for the associations "Book.authors({WITH_ARGS})" of affected "Book" objects.
+                                        <ul>
+                                            <li>
+                                                If the optimization strategy "Book.authors.associationProperties.contains" is not specified,
+                                                upgrade to re-query
+                                            </li>
+                                            <li>
+                                                Otherwise, ask the user optimization strategy whether the name of the "Book" matches the filtering rules
+                                                <ul>
+                                                    <li>true: add it into "Book.authors({WITH_ARGS})" if it's not exists</li>
+                                                    <li>false: remove it from "Book.authors({WITH_ARGS})" if it's exists</li>
+                                                    <li>undefined: upgrade to re-query</li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ol>
+                            </li>
+                            <li>
+                                Re-sorting
+                                <ol>
+                                    <li>
+                                        If the optimization strategy "Query.findAuthors.associationProperties.dependencies" 
+                                        returns undefined or an array contains "name",
+                                        <ol>
+                                            <li>Re-implement sorting for the association "Query.findAuthors({WITHOUT_ARGS})"</li>
+                                            <li>Re-implement sorting for the association "Query.findAuthors({WITH_ARGS})"</li>
+                                        </ol>
+                                        <p className={NOTE_CLASS}>
+                                            <ul>
+                                                <li>
+                                                    If the optimization strategy "Query.findAuthors.associationProperties.position" 
+                                                    returns undefined, upgrade to re-query.
+                                                </li>
+                                                <li>
+                                                    After re-sorting, if the moved object is the last row of connection whose "hasNext" is true,
+                                                    upgrade to re-query.
+                                                </li>
+                                            </ul>
+                                        </p>
+                                    </li>
+                                    <li>
+                                        If the optimization strategy "Book.authors.associationProperties.dependencies" 
+                                        returns undefined or an array contains "name",
+                                        <ol>
+                                            <li>
+                                                Re-implement sorting for the associations "Book.authors({WITHOUT_ARGS})" 
+                                                of affected "BookStore" objects
+                                            </li>
+                                            <li>
+                                                Re-implement sorting for the associations "Book.authors({WITH_ARGS})" 
+                                                of affected "BookStore" objects
+                                            </li>
+                                        </ol>
+                                        <p className={NOTE_CLASS}>
+                                            If the optimization strategy "BookStore.books.associationProperties.position" returns undefined,
+                                            upgrade to re-query.
+                                        </p>
+                                    </li>
+                                </ol>
+                            </li>
+                        </ol>
+                    </div>
                 </div>
             </Collapse.Panel>
         </Collapse>
     </Form.Item>
 );
-
-const FOR_REMOVED_BOOK = `
-
-// Remove it from similar assocaitons with parameters
-for (const parameterizedBooks of cache.get(this.books({...}))) {
-    parameterizedBooks.remove(removedBook);
-}
-
-if (cached(removeBook.authors)) {
-    removeBook.authors.remove(this);
-}`;
-
-const FOR_ADDED_BOOK = `
-
-// Add it into similar assocaitons with parameters
-for (const parameterizedBooks of cache.get(this.books({...}))) {
-
-    // user optimizer or default optimizer
-    const optimizer = assocaitionProperties["Author.books"];
-
-    const contains = optimizer.contains(
-        parameterizedBooks.variables, 
-        addedBook
-    );
-    if (contains === true) {
-        parameterizedBooks.insert(..., addedBook);
-    } else if (contains === false) {
-        // do nothing
-    } else {
-        cahce.evict(parameterizedBooks);
-        // Affected UI will reload data from server later
-    }
-}
-
-// Change opposite endpoint if it's cached
-if (cached(addedBook.authors({...}))) {
-    addedBook.authors({...}).add(this);
-}`;
-
+  
 const BOOKS_DESCRIPTION_ITEM = (
     <Form.Item label=" " colon={false}>
         <Collapse ghost>
             <Collapse.Panel key="title" header="Description of 'Author.books'">
-                <div className={INFORMATION_CLASS}>
+            <div className={INFORMATION_CLASS}>
                     If you change this association "Author.books"
                     <ul>
                         <li>
-                            For each removed book, this behavior will be executed automatically
-                            <pre className={PSEUDO_CODE_CLASS}>{FOR_REMOVED_BOOK}</pre>
+                            For each removed book, this action will be executed automatically
+                            <div className={ACTION_CLASS}>
+                                <ol>
+                                    <li>
+                                        If "removedBook.authors({WITHOUT_ARGS})" is cached, remove current object form it
+                                    </li>
+                                    <li>
+                                        If "removedBook.authors({WITH_ARGS})" is cached, remove current object form it.
+                                    </li>
+                                </ol>
+                            </div>
                         </li>
                         <li>
-                            For each add book, this behavior will be executed automatically
-                            <pre className={PSEUDO_CODE_CLASS}>{FOR_ADDED_BOOK}</pre>
+                            For each added book, this action will be executed automatically
+                            <div className={ACTION_CLASS}>
+                                <ol>
+                                    <li>
+                                        If "addedBook.authors({WITHOUT_ARGS})" is cached, add current object into it
+                                    </li>
+                                    <li>
+                                        If "addedBook.authors({WITH_ARGS})" is cached, TRY to add current object into it.
+                                        <ul>
+                                            <li>
+                                                If the optimization strategy "Book.authors.associationProperties.contains" is not specified, 
+                                                upgrade to re-query
+                                            </li>
+                                            <li>
+                                                Otherwise, ask the user optimization strategy whether the name of the "Book" matches the filtering rules
+                                                <ul>
+                                                    <li>true: do it</li>
+                                                    <li>false: ignore it</li>
+                                                    <li>undefined: upgrade to re-query behavior</li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ol>
+                            </div>
                         </li>
                     </ul>
                 </div>
@@ -194,3 +249,4 @@ const BOOKS_DESCRIPTION_ITEM = (
         </Collapse>
     </Form.Item>
 );
+ 

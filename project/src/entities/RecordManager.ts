@@ -98,7 +98,9 @@ export class RecordManager {
 
     refresh(field: FieldMetadata, e: EntityChangeEvent) {
         for (const record of this.recordMap.values()) {
-            record.refreshByChangeEvent(this.entityManager, field, e);
+            if (!record.isDeleted) {
+                record.refreshByChangeEvent(this.entityManager, field, e);
+            }
         }
     }
 
