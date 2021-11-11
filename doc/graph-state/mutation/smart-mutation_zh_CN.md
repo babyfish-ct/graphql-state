@@ -105,6 +105,7 @@ books({name: "b"}).tryLink({
 ### 1.3. containsVariables
 
 为了更好地判断是否可以直接修改缓存，引入了一个概念variables contains，判断查询参数之间的包含关系
+
 ```ts
 containsVariables(variables1, variables2): boolean
 ```
@@ -124,7 +125,14 @@ containsVariables(variables1, variables2): boolean
 |||
 |containsVariables(undefined, udefined)|true|
 
-借助辅助这个函数，tryUnlink的逻辑如下
+> 一个重要的规律:
+> 如果contains(variables1, variables)成立，那么
+> 
+> someAssocaiton(variables1) ∈ someAssocaiton(variables2)。
+> 
+> 即，如果关联参数variable1比variables2更严格，那么variables1能查询到的数据一定是variables2能查询到的数据的一部分。
+
+因此，tryUnlink的逻辑如下
 ```ts
 tryUnlink(oldId, reason) {
     if (!this.ids.contains(oldId)) {
