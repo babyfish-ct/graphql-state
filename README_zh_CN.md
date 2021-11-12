@@ -139,7 +139,7 @@ yarn start
     - [useQuery](./doc/graph-state/query/useQuery_zh_CN.md)
     - [usePaginationQuery](./doc/graph-state/query/usePaginationQuery_zh_CN.md)
     - [useObject&useObjects](./doc/graph-state/query/useObject_zh_CN.md)
-  - [变更](/doc./graph-state/mutation/README_zh_CN.md)
+  - [变更](./doc/graph-state/mutation/README_zh_CN.md)
     - [变更缓存](./doc/graph-state/mutation/mutate-cache_zh_CN.md)
     - [useMutation](./doc/graph-state/mutation/mutate-cache_zh_CN.md)
     - [智能更新](./doc/graph-state/smart-mutation_zh_CN.md)
