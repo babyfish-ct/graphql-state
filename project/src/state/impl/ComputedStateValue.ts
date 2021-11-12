@@ -151,7 +151,7 @@ export class ComputedStateValue extends StateValue {
                             })
                         }
                     } finally {
-                        this.stateInstance.release(this.args); // Self holding during Async computing
+                        this.stateInstance.release(this.args, asyncLoadingReleasePolicy); // Self holding during Async computing
                     }
                 });
         }
@@ -186,4 +186,8 @@ function objectsFormContext(fetcher: ObjectFetcher<string, object, object>, ids:
 function queryFormContext(fetcher: ObjectFetcher<"Query", object, object>, variables?: any): Promise<any> {
     const ctx = this as InternalComputedContext;
     return ctx.query(fetcher, variables);
+}
+
+function asyncLoadingReleasePolicy() {
+    return 0;
 }

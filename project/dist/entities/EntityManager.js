@@ -73,8 +73,10 @@ class EntityManager {
         }
     }
     save(shape, objOrArray, pagination) {
-        this.save0(shape, objOrArray, false, pagination);
-        this.save0(shape, objOrArray, true, pagination);
+        this.modify(() => {
+            this.save0(shape, objOrArray, false, pagination);
+            this.save0(shape, objOrArray, true, pagination);
+        });
     }
     save0(shape, objOrArray, forAssociation, pagination) {
         if (pagination !== undefined && shape.typeName !== 'Query') {
@@ -83,13 +85,11 @@ class EntityManager {
         if (shape.typeName === "Mutation") {
             throw new Error(`save() does not accept object whose type is 'Mutation'`);
         }
-        this.modify(() => {
-            this.visit(shape, objOrArray, (id, runtimeType, field, args, value) => {
+        this.visit(shape, objOrArray, (id, runtimeType, field, args, value) => {
+            if (field.isAssociation === forAssociation) {
                 const manager = this.recordManager(field.declaringType.name);
-                if (field.isAssociation === forAssociation) {
-                    manager.set(id, runtimeType, field, args, value, runtimeType.name === 'Query' ? pagination : undefined);
-                }
-            });
+                manager.set(id, runtimeType, field, args, value, runtimeType.name === 'Query' ? pagination : undefined);
+            }
         });
     }
     delete(typeName, idOrArray) {

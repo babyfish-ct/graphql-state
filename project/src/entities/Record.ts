@@ -103,7 +103,7 @@ export class Record {
         if (field.declaringType !== this.staticType) {
             throw new Error(`'${field.fullName}' is not field of the type '${this.staticType.name}' of current record`);
         }
-        if (field?.isAssociation) {
+        if (field.isAssociation) {
             if (field.category === "REFERENCE" && args?.variables !== undefined && this.runtimeType.name !== "Query") {
                 throw new Error('reference fields of entity object does not support variables');
             }

@@ -128,7 +128,7 @@ class ComputedStateValue extends StateValue_1.StateValue {
                     }
                 }
                 finally {
-                    this.stateInstance.release(this.args); // Self holding during Async computing
+                    this.stateInstance.release(this.args, asyncLoadingReleasePolicy); // Self holding during Async computing
                 }
             });
         }
@@ -159,4 +159,7 @@ function objectsFormContext(fetcher, ids, variables) {
 function queryFormContext(fetcher, variables) {
     const ctx = this;
     return ctx.query(fetcher, variables);
+}
+function asyncLoadingReleasePolicy() {
+    return 0;
 }

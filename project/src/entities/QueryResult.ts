@@ -144,7 +144,7 @@ export class QueryResult {
                     });
                 }
             } finally {
-                this.entityManager.release(this.queryArgs); // Self holding during Async computing
+                this.entityManager.release(this.queryArgs, asyncLoadingReleasePolicy); // Self holding during Async computing
             }
         }
     }
@@ -373,4 +373,8 @@ class TypeDependency {
 export interface QueryLoadable<T> extends Loadable<T> {
 
     refetch: () => void;
+}
+
+function asyncLoadingReleasePolicy() {
+    return 0;
 }

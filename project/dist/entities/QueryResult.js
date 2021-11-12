@@ -121,7 +121,7 @@ class QueryResult {
                     }
                 }
                 finally {
-                    this.entityManager.release(this.queryArgs); // Self holding during Async computing
+                    this.entityManager.release(this.queryArgs, asyncLoadingReleasePolicy); // Self holding during Async computing
                 }
             }
         });
@@ -321,4 +321,7 @@ class TypeDependency {
         }
         return false;
     }
+}
+function asyncLoadingReleasePolicy() {
+    return 0;
 }

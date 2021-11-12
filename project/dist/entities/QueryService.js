@@ -36,12 +36,10 @@ class QueryService {
                     throw ex;
                 }
                 const reason = ex["reason"];
-                if (useDataService) {
-                    console.debug(reason);
-                }
-                else {
+                if (!useDataService) {
                     throw new Error(reason);
                 }
+                console.debug(reason);
             }
         }
         if (useDataService) {
