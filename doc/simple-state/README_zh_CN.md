@@ -1,4 +1,4 @@
-# [grpahql-state](../../)/[文档](../README_zh_CN.md)/简单状态
+# [grpahql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../README_zh_CN.md)/简单状态
 
 简单状态使用方式非常类似于recoil，但是它可以和图状态配合使用。
 
@@ -67,4 +67,4 @@ import {
 5. [作用域](./scope_zh_CN.md)
 
 ---------------------------------------
-[返回上级](../README_zh_CN.md)|[下一篇：图状态](../graph-state/README_zh_CN.md)
+[返回上级](../README_zh_CN.md) | [下一篇：图状态 >](../graph-state/README_zh_CN.md)

@@ -1,4 +1,4 @@
-# [graphql-state](/)/[文档](../README_zh_CN.md)/[简单状态](./README_zh_CN.md)/异步状态
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../README_zh_CN.md)/[简单状态](./README_zh_CN.md)/异步状态
 
 异步状态是计算状态的一种，和计算状态相比，唯一的不同在于其计算函数是一步。
 

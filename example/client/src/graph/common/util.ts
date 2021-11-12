@@ -2,9 +2,9 @@ export function format(date: Date) {
     return `${
         date.getFullYear()
     }-${
-        date.getMonth()
+        date.getMonth() + 1
     }-${
-        date.getDay()
+        date.getDate()
     } ${
         date.getHours()
     }:${
