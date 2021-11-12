@@ -102,7 +102,7 @@ books({name: "b"}).tryLink({
 
 > 同族内的子关联之间会相互影响; 任何一个被修改，其余的都会被执行unlink或link操作
 
-### 1.3. 比较同族子关联的参数进行部分优化
+### 1.3. 内部优化，对比同族内子关联的参数
 
 > 这部分内容是graphql-state内部优化，可以让上文中的
 > ```
@@ -252,7 +252,7 @@ tryLink(newId, reason) {
     </tbody>
 </table>
 
-### 1.4. 默认优化器和用户优化器
+### 1.4. associationProperties.contains
 
 在创建全局的StateManager时，可以为对象之间的关联设置优化器
 
