@@ -102,7 +102,15 @@ books({name: "b"}).tryLink({
 
 > 同族内的子关联之间会相互影响; 任何一个被修改，其余的都会被执行unlink或link操作
 
-### 1.3. 比较同族子关联的参数进行部分优化
+### 1.3. 内部优化，对比同族内子关联的参数
+
+> 这部分内容是graphql-state内部优化，可以让上文中的
+> ```
+> books({}).tryLink(id: id3, reason: {name: "a"})
+> ```
+> 的判断过程得到简化。
+> 
+> 这种内部优化行为对用户而言透明，如果不感兴趣，可以直接跳到1.4
 
 为了更好地判断是否可以直接修改缓存，引入了一个概念containsVariables，判断查询参数之间的包含关系。
 
@@ -244,7 +252,7 @@ tryLink(newId, reason) {
     </tbody>
 </table>
 
-### 1.4. 默认优化器和用户优化器
+### 1.4. associationProperties.contains
 
 在创建全局的StateManager时，可以为对象之间的关联设置优化器
 
