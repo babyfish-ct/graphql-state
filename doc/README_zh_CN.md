@@ -20,5 +20,5 @@
     - [双向关联](./graph-state/bidirectional-association_zh_CN.md)
 - [HTTP优化](./http-optimization/README_zh_CN.md)
   - [异步削峰](./http-optimization/peak-clipping_zh_CN.md)
-  - [碎片合并](./http-optimization/fragment-merge_zh_CN.md)
+  - [碎片合并](./http-optimization/merge_fragment_zh_CN.md)
   - [请求重用](./http-optimization/reuse-request_zh_CN.md)
