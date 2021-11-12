@@ -1,6 +1,6 @@
 {
   "name": "graphql-state",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "New react state managment framework",
   "author": "ChenTao",
   "license": "MIT",
