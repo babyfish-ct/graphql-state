@@ -54,4 +54,4 @@ function createStateManager() {
 
 -----------
 
-[< 上一篇：智能变更](../smart-mutation_zh_CN.md) | [返回上级：变更](../README_zh_CN.md) 
+[< 上一篇：智能变更](./smart-mutation_zh_CN.md) | [返回上级：变更](../README_zh_CN.md) 
