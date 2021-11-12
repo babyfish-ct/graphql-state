@@ -13,7 +13,7 @@ export abstract class StateValue {
 
     private _disposeTimerId?: NodeJS.Timeout;
 
-    private _retainedMillis = 0;
+    private _createdMillis = new Date().getTime();
 
     constructor(
         readonly stateInstance: StateInstance,
@@ -31,7 +31,6 @@ export abstract class StateValue {
 
     retain(): this {
         if (this._refCount++ === 0) {
-            this._retainedMillis = new Date().getTime();
             this.mount();
         }
         return this;
@@ -40,7 +39,7 @@ export abstract class StateValue {
     release(releasePolicy?: ReleasePolicy<any>) {
         if (--this._refCount === 0) {
             const millis = (releasePolicy ?? this.stateInstance.scopedStateManager.stateManager.releasePolicy)(
-                new Date().getTime() - this._retainedMillis, this.args?.filterArgs
+                new Date().getTime() - this._createdMillis, this.args?.filterArgs
             );
             if (millis <= 0) {
                 this.dispose(true);

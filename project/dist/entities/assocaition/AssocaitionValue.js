@@ -71,37 +71,34 @@ class AssociationValue {
         var _a, _b;
         const targetType = this.association.field.targetType;
         const actualType = entityManager.schema.typeMap.get(e.typeName);
-        if (targetType.isAssignableFrom(actualType) &&
-            e.changedType !== "delete" &&
-            this.isTargetChanged(targetType, e.changedKeys)) {
-            if (this.association.field.isContainingConfigured) {
-                const ref = entityManager.findRefById(targetType.name, e.id);
-                if ((ref === null || ref === void 0 ? void 0 : ref.value) !== undefined) {
-                    const belongToMe = this.belongToMe(ref.value);
-                    if (belongToMe === false) {
+        if (targetType.isAssignableFrom(actualType) && ((e.changedType === "update" && this.isTargetChanged(targetType, e.changedKeys)) ||
+            e.changedType === "insert")) {
+            const ref = entityManager.findRefById(targetType.name, e.id);
+            if ((ref === null || ref === void 0 ? void 0 : ref.value) !== undefined) {
+                const belongToMe = this.belongToMe(ref.value);
+                if (belongToMe === false) {
+                    return;
+                }
+                if (belongToMe === true) {
+                    const result = (_a = this.association.field.associationProperties) === null || _a === void 0 ? void 0 : _a.contains(new Record_1.FlatRowImpl(ref.value), (_b = this.args) === null || _b === void 0 ? void 0 : _b.filterVariables);
+                    if (result === true) {
+                        if (this.contains(ref.value)) {
+                            if (this.association.field.isPositionConfigured) {
+                                this.reorder(entityManager, ref.value);
+                            }
+                        }
+                        else {
+                            this.link(entityManager, [ref.value]);
+                        }
                         return;
                     }
-                    if (belongToMe === true) {
-                        const result = (_a = this.association.field.associationProperties) === null || _a === void 0 ? void 0 : _a.contains(new Record_1.FlatRowImpl(ref.value), (_b = this.args) === null || _b === void 0 ? void 0 : _b.filterVariables);
-                        if (result === true) {
-                            if (this.contains(ref.value)) {
-                                if (this.association.field.isPositionConfigured) {
-                                    this.reorder(entityManager, ref.value);
-                                }
-                            }
-                            else {
-                                this.link(entityManager, [ref.value]);
-                            }
-                            return;
-                        }
-                        if (result === false) {
-                            this.unlink(entityManager, [ref.value]);
-                            return;
-                        }
+                    if (result === false) {
+                        this.unlink(entityManager, [ref.value]);
+                        return;
                     }
                 }
+                this.evict(entityManager);
             }
-            this.evict(entityManager);
         }
     }
     isTargetChanged(targetType, keys) {

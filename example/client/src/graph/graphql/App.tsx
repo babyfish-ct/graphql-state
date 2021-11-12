@@ -14,7 +14,7 @@ export const App: FC<{
     const stateManager = createStateManager(withCustomerOptimization);
 
     const releasePolicy = useCallback((aliveTime: number) => {
-        if (aliveTime < 3000) {
+        if (aliveTime < 1000) {
             return 0;
         }
         return 60_000;

@@ -148,6 +148,7 @@ This is a newly born framework. In order to make it more and more complete, the 
 ### Change list
 |Version|Description|Required version of graphql-ts-client|
 |-------|-----------|------------|
+|0.0.6 |**Important version!!! Emergency bug fix**|>=3.0.8|
 |0.0.5 |Internal change|>=3.0.8|
 |0.0.4 |Support releasePolicy|>=3.0.8|
 |0.0.3 |Make smart mutation smarter|>=3.0.8|

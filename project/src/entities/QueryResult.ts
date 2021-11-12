@@ -32,7 +32,7 @@ export class QueryResult {
 
     private _disposeTimerId?: NodeJS.Timeout = undefined;
 
-    private _retainedMillis = 0;
+    private _createdMillis = new Date().getTime();
 
     private _bindedRefetch: () => void;
 
@@ -50,16 +50,14 @@ export class QueryResult {
     }
 
     retain(): this {
-        if (this._refCount++ === 0) {
-            this._retainedMillis = new Date().getTime();
-        }
+        this._refCount++;
         return this;
     }
 
     release(releasePolicy?: ReleasePolicy<any>) {
         if (--this._refCount === 0) {
             const millis = (releasePolicy ?? this.entityManager.stateManager.releasePolicy)(
-                new Date().getTime() - this._retainedMillis, this.queryArgs.optionArgs?.variableArgs?.filterArgs
+                new Date().getTime() - this._createdMillis, this.queryArgs.optionArgs?.variableArgs?.filterArgs
             );
             if (millis <= 0) {
                 this.dispose();
