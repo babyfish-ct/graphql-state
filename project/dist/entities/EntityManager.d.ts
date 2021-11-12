@@ -33,6 +33,7 @@ export declare class EntityManager {
     get modificationVersion(): number;
     modify<T>(action: () => T, forGC?: boolean): T;
     save(shape: RuntimeShape, objOrArray: object | readonly object[], pagination?: Pagination): void;
+    private save0;
     delete(typeName: string, idOrArray: any): void;
     evict(typeName: string, idOrArray: any): void;
     saveId(typeName: string, id: any): Record;

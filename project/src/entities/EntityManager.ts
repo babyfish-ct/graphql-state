@@ -109,6 +109,16 @@ export class EntityManager {
         objOrArray: object | readonly object[],
         pagination?: Pagination
     ): void {
+        this.save0(shape, objOrArray, false, pagination);
+        this.save0(shape, objOrArray, true, pagination);
+    }
+
+    private save0(
+        shape: RuntimeShape,
+        objOrArray: object | readonly object[],
+        forAssociation: boolean,
+        pagination?: Pagination
+    ): void {
         if (pagination !== undefined && shape.typeName !== 'Query') {
             throw new Error(`The save method cannot accept pagination when the type name of shape is not "Query"`);
         }
@@ -118,14 +128,16 @@ export class EntityManager {
         this.modify(() => {
             this.visit(shape, objOrArray, (id, runtimeType, field, args, value) => {
                 const manager = this.recordManager(field.declaringType.name);
-                manager.set(
-                    id, 
-                    runtimeType,
-                    field, 
-                    args,
-                    value,
-                    runtimeType.name === 'Query' ? pagination : undefined
-                );
+                if (field.isAssociation === forAssociation) {
+                    manager.set(
+                        id, 
+                        runtimeType,
+                        field, 
+                        args,
+                        value,
+                        runtimeType.name === 'Query' ? pagination : undefined
+                    );
+                }
             })
         });
     }
