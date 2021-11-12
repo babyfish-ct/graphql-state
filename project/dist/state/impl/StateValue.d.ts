@@ -9,7 +9,7 @@ export declare abstract class StateValue {
     private _mounted;
     private _unmountHandler?;
     private _disposeTimerId?;
-    private _retainedMillis;
+    private _createdMillis;
     constructor(stateInstance: StateInstance, args: VariableArgs | undefined, disposer: () => void);
     abstract get result(): any;
     abstract get loadable(): Loadable;

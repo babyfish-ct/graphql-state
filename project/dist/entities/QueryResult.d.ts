@@ -17,7 +17,7 @@ export declare class QueryResult {
     protected _currentAsyncRequestId: number;
     private _dependencies?;
     private _disposeTimerId?;
-    private _retainedMillis;
+    private _createdMillis;
     private _bindedRefetch;
     constructor(entityManager: EntityManager, queryArgs: QueryArgs, disposer: () => void);
     retain(): this;
