@@ -58,6 +58,11 @@ export const DisplayView: FC = memo(() => {
 
 这个例子是基于计算状态实现的。其实，基于可写状态也可以达到一样的效果。此演示包含在配套example中，此处不再赘述。
 
+## Effect在配套例子中的应用
+
+1. 在[example/client/src/graphq/common/HttpLog.ts](https://github.com/babyfish-ct/graphql-state/blob/master/example/client/src/graph/common/HttpLog.ts)中，使用Effect构建HTTP请求日志状态，让所有需要和服务端通信的例子呈现HTTP请求日志。
+
+2. 在[/example/client/src/graph/graphql/log/EntityLog.ts](https://github.com/babyfish-ct/graphql-state/blob/master/example/client/src/graph/graphql/log/EntityLog.ts)中，使用Effect构建GraphState缓存数据库触发器事件日志状态，让相关例子呈现GraphState缓存数据库触发器时间列表。
 ------------------------------------------
 
 [< 上一篇：异步状态](./async_zh_CN.md) | [返回上级：简单状态](./README_zh_CN.md) | [下一篇：作用域 >](./scope_zh_CN.md)
