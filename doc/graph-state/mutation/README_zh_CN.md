@@ -6,7 +6,7 @@
 
 - [变更缓存](./mutate-cache_zh_CN.md)
 - [useMutation](./mutate-cache_zh_CN.md)
-- [智能更新](./smart-mutation_zh_CN.md)
+- [智能变更](./smart-mutation_zh_CN.md)
 - [双向关联](./bidirectional-association_zh_CN.md)
 
 --------------------------
