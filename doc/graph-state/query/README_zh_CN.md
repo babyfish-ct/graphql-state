@@ -26,4 +26,4 @@ import { useObject, useObjects } from '../__generated';
 - [useObject&useObjects](./useObject_zh_CN.md)
 
 ---------------
-[< 上一篇：State Manager](../state-manager_zh_CN.md) | [返回上级：图状态](../README_zh_CN.md) | [下一篇：更新 >](../mutation/README_zh_CN.md)
+[< 上一篇：State Manager](../state-manager_zh_CN.md) | [返回上级：图状态](../README_zh_CN.md) | [下一篇：变更 >](../mutation/README_zh_CN.md)
