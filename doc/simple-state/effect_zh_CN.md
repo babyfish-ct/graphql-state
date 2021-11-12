@@ -1,4 +1,4 @@
-[graphql-state](/)/[文档](../README_zh_CN.md)/[简单状态](./README_zh_CN.md)/Effect
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../README_zh_CN.md)/[简单状态](./README_zh_CN.md)/Effect
 
 创建简单状态时，可以为其设置Effect逻辑，类似于react的mount/unmount行为。
 
