@@ -1,4 +1,4 @@
-# [graphql-state](../../../README_zh_CN.md)/[文档](../../README_zh_CN.md)/[图状态](../README_zh_CN.md)/[变更](./README_zh_CN.md)/双向关联
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../../README_zh_CN.md)/[图状态](../README_zh_CN.md)/[变更](./README_zh_CN.md)/双向关联
 
 
 参考这样一个例子
