@@ -129,6 +129,12 @@ Access http://localhost:3000
 
 [graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client) is another framework created by me a few months ago, it's TypeScript-DSL for GraphQL with full features.
 
+## Document
+WILL COME SOON
+
+## Get started
+WILL COME SOON
+
 ## Other
 
 This is a newly born framework. In order to make it more and more complete, the functions that will be implemented in the future are as follows
@@ -148,6 +154,7 @@ This is a newly born framework. In order to make it more and more complete, the 
 ### Change list
 |Version|Description|Required version of graphql-ts-client|
 |-------|-----------|------------|
+|0.0.7 |Tiny bug fix|>=3.0.8|
 |0.0.6 |**Important version!!! Emergency bug fix**|>=3.0.8|
 |0.0.5 |Internal change|>=3.0.8|
 |0.0.4 |Support releasePolicy|>=3.0.8|
