@@ -15,7 +15,8 @@
   - [useQuery](./query/useQuery_zh_CN.md)
   - [usePaginationQuery](./query/usePaginationQuery_zh_CN.md)
   - [useObject/useObjects](./query/useObject_zh_CN.md)
-- 变更
-  - StateManager & useMutation
-  - 智能更新
-  - 双向关联
+- [变更](./mutation/README_zh_CN.md)
+  - 变更缓存(./mutation/README_zh_CN.md)
+  - useMutation(./mutation/useMutation_zh_CN.md)
+  - 智能更新(./mutation/README_zh_CN.md)
+  - 双向关联(./mutation/bidirectional-association_zh_CN.md)
