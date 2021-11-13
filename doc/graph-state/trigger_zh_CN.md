@@ -92,5 +92,68 @@ export type BookEntityFields =
 ```
 和EntityChangeEvent类型的作用一样，只是这个类型的类型更精确而已。其字段的含义也并无差异，此处不在赘述。
 
+## 1.2 添加对象变更事件
+
+1. 基于通用事件类型
+
+```ts
+import { FC, memo } from 'react';
+import { EntityChangeEvent } from 'graphql-state';
+import { useTypedStateManager } from './__generated';
+
+export const MyComponent: FC = memo(() => {
+    const stateManager = useTypedStateManager();
+    useEffect(() => {
+        const onChange = (e: EntityChangeEvent) => {
+            if (e.typeName === "BookStore") {
+                // TODO
+            } else if (e.typeName === "Book") {
+                // TODO
+            } else if (e.typeName === "Author") {
+                // TODO:
+            }
+        };
+        stateManager.addEntityChangeListener(onChange);
+        return () => {
+            stateManager.removeEntityChangeListener(onChange);
+        }
+    }, [stateManager]);
+    
+    return ...;
+});
+
+2. 基于专用事件类型
+
+```ts
+import { FC, memo } from 'react';
+import { useTypedStateManager } from './__generated';
+import { BookStoreChangeEvent, BookChangeEvent, AuthorChangeEvent } from './__generated/triggers';
+
+export const MyComponent: FC = memo(() => {
+    const stateManager = useTypedStateManager();
+    useEffect(() => {
+        const listeners = {
+            "BookStore": (e: BookStoreChangeEvent) => {
+                // TODO
+            },
+            "Book": (e: BookChangeEvent) => {
+                // TODO
+            },
+            "Author": (e: AuthorChangeEvent) => {
+                // TODO
+            }
+        };
+        stateManager.addEntityChangeListeners(listeners);
+        return () => {
+            stateManager.removeEntityChangeListeners(listeners);
+        }
+    }, [stateManager]);
+    
+    return ...;
+});
+
+
+```
+
 ----------
 [< 上一篇：变更](./mutation/README_zh_CN.md) | [返回上级：图状态](./README_zh_CN.md)
