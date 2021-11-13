@@ -1,4 +1,4 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../README_zh_CN.md)/[HTTP优化器](./README_zh_CN.md)/异步削峰
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../README_zh_CN.md)/[HTTP优化](./README_zh_CN.md)/异步削峰
 
 某些时候，用户对查询条件的修改可能很快
 
@@ -72,4 +72,4 @@ export const BookStoreList: FC = memo(() => {
 
 -----------------
 
-[返回上级：HTTP优化器](./README_zh_CN.md) | [下一篇：碎片合并>](./merge-fragment_zh_CN.md)
+[返回上级：HTTP优化](./README_zh_CN.md) | [下一篇：碎片合并>](./merge-fragment_zh_CN.md)
