@@ -41,22 +41,22 @@ EntityChangeEvent表示实体对象被修改的事件
   - changedKey: 字段，分两种情况
     - 无参数字段：一个字符串即可
     - 参数化字段：传递一个对象，包含两个对象
-      - name: 字段名
-      - variables: 参数对象
+      - name: 字段的名称
+      - variables: 字段的参数对象
 - oldValue: 取得一个字段被修改前的旧值，如果changedType为"insert"或同样的参数会导致has函数返回false, 将会导致异常
   参数：
   - changedKey: 字段，分两种情况
     - 参数为无参数字段：一个字符串即可
     - 参数化字段：传递一个对象，包含两个对象
-      - name: 字段名
-      - variables: 参数对象
+      - name: 字段的名称
+      - variables: 字段的参数对象
 - newValue: 取得一个字段被修改后的新值，如果changedType为"delete"或同样的参数会导致has函数返回false, 将会导致异常
   参数：
   - changedKey: 字段，分两种情况
     - 无参数字段：一个字符串即可
     - 参数化字段：传递一个对象，包含两个对象
-      - name: 字段名
-      - variables: 参数对象
+      - name: 字段的名称
+      - variables: 字段的参数对象
  
 2. 针对特定对象类型的专用时间定义（被代码生成器生成，这里使用为例[example/client/src/graph/__generated_graphql_schema__/triggers/BookChangeEvent.ts](https://github.com/babyfish-ct/graphql-state/blob/master/example/client/src/graph/__generated_graphql_schema__/triggers/BookChangeEvent.ts)）
 ```ts
