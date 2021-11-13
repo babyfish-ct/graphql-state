@@ -58,7 +58,7 @@ useObjects<
 - |options?.objectStyle ?? "required" | id | ids |
   |----|----|----|
   |required| Id type of T | ReadonlyArray&lt;Id type of T&gt; |
-  |optional| Id type of T &#124; undefined | ReadonlyArray&lt;Id type of T&gt; &#124; undefined |
+  |optional| Id type of T &#124; undefined | ReadonlyArray&lt;Id type of T &#124; undefined &gt; |
 - options:
   一个可选对象，包含如下字段
   - mode: 和useQuery中此参数的用法相同，此处不再赘述
