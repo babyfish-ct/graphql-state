@@ -125,7 +125,31 @@ const data = useQuery(
           \---->| name |
                 +------+
 ```
-形状A中Query.findBookStore的参数为{name: "a"}，形状C中Query.findBookStore的参数为{name: "NotA"}，参数不匹配。所以，A和C是好不相关的两个形状，不能说A包含C或A大于C。
+形状A中Query.findBookStore的参数为{name: "a"}，形状C中Query.findBookStore的参数为{name: "NotA"}，参数不匹配。所以，A和C是毫不相干的两个形状，不能说A包含C或A大于C。
+
+假如一个形状D
+```
++-------+
+| Query |
++-+-----+
+  |
+  |     +-----------------------------+
+  \---->| findBookStores({name: "a"}) |
+        +-+---------------------------+
+          |
+          |     +----+
+          +---->| id |
+          |     +----+
+          |
+          |     +------+
+          +---->| name |
+          |     +------+
+          |
+          |     +----------+
+          \---->| location |
+                +----------+
+```
+形状D中Query.findBookStores.location字段在形状A中存在。所以，A和D是毫不相干的两个形状，不能说A包含D或A大于D。
 
 ## 下级文档
 - [异步削峰](./peak-clipping_zh_CN.md)
