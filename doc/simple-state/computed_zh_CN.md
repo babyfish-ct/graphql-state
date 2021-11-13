@@ -1,6 +1,6 @@
 # [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../README_zh_CN.md)/[简单状态](./README_zh_CN.md)/计算状态
 
-##1. 简单计算依赖
+## 1. 简单计算依赖
 
 我们来计算两个数的平均数
 
