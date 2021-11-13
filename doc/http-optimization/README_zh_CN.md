@@ -16,7 +16,8 @@ const data = useQuery(
             { name: ParameterRef.of("bookName") },
             book$$
             .authors(
-                { name: ParameterRef.of("authorName") }
+                { name: ParameterRef.of("authorName") },
+                author$$
             )
         )
     ),
