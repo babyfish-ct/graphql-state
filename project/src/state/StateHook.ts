@@ -7,7 +7,7 @@ import {
     MutationOptions, 
     MutationReturnType, 
     ObjectQueryOptions, 
-    ObjectReference, 
+    TypeReference, 
     ObjectStyle, 
     PaginationQueryOptions, 
     ParameterizedStateAccessingOptions, 
@@ -214,10 +214,10 @@ export interface ManagedObjectHooks<TSchema extends SchemaType> {
         TObjectStyle extends ObjectStyle = "required",
     >(
         fetcher: Fetcher<string, T, TVariables>,
-        id: TSchema["entities"][TName][" $id"],
+        id: TypeReference<TSchema["entities"][TName][" $id"], TObjectStyle>,
         options?: ObjectQueryOptions<TVariables, TObjectStyle> & AsyncOptions<TAsyncStyle, TVariables>
     ): AsyncReturnType<
-        ObjectReference<T, TObjectStyle>,
+        TypeReference<T, TObjectStyle>,
         TAsyncStyle
     >;
 
@@ -229,10 +229,10 @@ export interface ManagedObjectHooks<TSchema extends SchemaType> {
         TObjectStyle extends ObjectStyle = "required"
     >(
         fetcher: Fetcher<string, T, TVariables>,
-        ids: ReadonlyArray<TSchema["entities"][TName][" $id"]>,
+        ids: ReadonlyArray<TypeReference<TSchema["entities"][TName][" $id"], TObjectStyle>>,
         options?: ObjectQueryOptions<TVariables, TObjectStyle> & AsyncOptions<TAsyncStyle, TVariables>
     ): AsyncReturnType<
-        ReadonlyArray<ObjectReference<T, TObjectStyle>>,
+        ReadonlyArray<TypeReference<T, TObjectStyle>>,
         TAsyncStyle
     >;
 }
@@ -250,7 +250,7 @@ class ManagedObjectHooksImpl<TSchema extends SchemaType> implements ManagedObjec
         id: TSchema["entities"][TName][" $id"],
         options?: ObjectQueryOptions<TVariables, TObjectStyle> & AsyncOptions<TAsyncStyle, TVariables>
     ): AsyncReturnType<
-        ObjectReference<T, TObjectStyle>,
+    TypeReference<T, TObjectStyle>,
         TAsyncStyle
     > {
         const queryResultHolder = useInternalQueryResultHolder(fetcher, undefined, [id], options);
@@ -261,7 +261,7 @@ class ManagedObjectHooksImpl<TSchema extends SchemaType> implements ManagedObjec
                     ...queryResult.loadable,
                     data: queryResult.loadable.data !== undefined ? queryResult.loadable.data[0] : undefined
                 } as AsyncReturnType<
-                    ObjectReference<T, TObjectStyle>,
+                    TypeReference<T, TObjectStyle>,
                     TAsyncStyle
                 >;
             }
@@ -276,12 +276,12 @@ class ManagedObjectHooksImpl<TSchema extends SchemaType> implements ManagedObjec
                     data: queryResult.loadable.data[0], 
                     refetch: queryResult.loadable.refetch
                 } as AsyncReturnType<
-                    ObjectReference<T, TObjectStyle>,
+                    TypeReference<T, TObjectStyle>,
                     TAsyncStyle
                 >;
             }
             return queryResult.loadable.data[0] as AsyncReturnType<
-                ObjectReference<T, TObjectStyle>,
+                TypeReference<T, TObjectStyle>,
                 TAsyncStyle
             >;
         } catch (ex) {
@@ -301,7 +301,7 @@ class ManagedObjectHooksImpl<TSchema extends SchemaType> implements ManagedObjec
         ids: ReadonlyArray<TSchema["entities"][TName][" $id"]>,
         options?: ObjectQueryOptions<TVariables, TObjectStyle> & AsyncOptions<TAsyncStyle, TVariables>
     ): AsyncReturnType<
-        ReadonlyArray<ObjectReference<T, TObjectStyle>>,
+        ReadonlyArray<TypeReference<T, TObjectStyle>>,
         TAsyncStyle
     > {
         const queryResultHolder = useInternalQueryResultHolder(fetcher, undefined, ids, options);
@@ -309,7 +309,7 @@ class ManagedObjectHooksImpl<TSchema extends SchemaType> implements ManagedObjec
             const queryResult = queryResultHolder.get();
             if (options?.asyncStyle === "async-object") {
                 return queryResult.loadable as AsyncReturnType<
-                    ReadonlyArray<ObjectReference<T, TObjectStyle>>,
+                    ReadonlyArray<TypeReference<T, TObjectStyle>>,
                     TAsyncStyle
                 >;
             }
@@ -324,12 +324,12 @@ class ManagedObjectHooksImpl<TSchema extends SchemaType> implements ManagedObjec
                     data: queryResult.loadable.data, 
                     refetch: queryResult.loadable.refetch
                 } as AsyncReturnType<
-                ReadonlyArray<ObjectReference<T, TObjectStyle>>,
+                ReadonlyArray<TypeReference<T, TObjectStyle>>,
                     TAsyncStyle
                 >;
             }
             return queryResult.loadable.data as AsyncReturnType<
-            ReadonlyArray<ObjectReference<T, TObjectStyle>>,
+            ReadonlyArray<TypeReference<T, TObjectStyle>>,
                 TAsyncStyle
             >;
         } catch (ex) {

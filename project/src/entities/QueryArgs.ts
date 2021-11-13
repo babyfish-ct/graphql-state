@@ -1,7 +1,7 @@
 import { ObjectFetcher } from "graphql-ts-client-api";
 import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 import { OptionArgs, VariableArgs } from "../state/impl/Args";
-import { PaginationQueryOptions, PaginationStyle } from "../state/Types";
+import { ObjectQueryOptions, PaginationQueryOptions, PaginationStyle } from "../state/Types";
 import { GRAPHQL_STATE_PAGINATION_INFO, PaginationFetcherProcessor } from "./PaginationFetcherProcessor";
 import { RuntimeShape, toRuntimeShape } from "./RuntimeShape";
 
@@ -83,11 +83,19 @@ export class QueryArgs {
             ).withPaginationInfo();
         }
 
+        let filteredIds = ids;
+        if (ids !== undefined) {
+            filteredIds = ids.filter(id => id !== undefined && id !== null);
+            if (filteredIds.length < ids.length && (optionArgs?.options as ObjectQueryOptions<any, any> | undefined)?.objectStyle !== "optional") {
+                throw new Error("undefined or null id not acceptable for object query whose object style is 'required'");
+            }
+        }
+
         return new QueryArgs(
             toRuntimeShape(fetcher, undefined, optionArgs?.variableArgs?.variables), 
             fetcher, 
             undefined,
-            ids,
+            filteredIds,
             optionArgs
         );
     }

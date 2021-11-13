@@ -58,7 +58,8 @@ export class ComputedStateValue extends StateValue {
 
     protected createMountContext(): any {
         return {
-            invalidate: this.invalidate.bind(this)
+            invalidate: this.invalidate.bind(this),
+            stateManager: this.stateInstance.scopedStateManager.stateManager
         };
     }
 

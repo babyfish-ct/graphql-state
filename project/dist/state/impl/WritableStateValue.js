@@ -32,7 +32,9 @@ class WritableStateValue extends StateValue_1.StateValue {
         }
     }
     createMountContext() {
-        return this.accessor;
+        const clonedFun = this.accessor.bind({});
+        clonedFun.stateManager = this.stateInstance.scopedStateManager.stateManager;
+        return clonedFun;
     }
 }
 exports.WritableStateValue = WritableStateValue;

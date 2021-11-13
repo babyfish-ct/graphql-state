@@ -27,7 +27,7 @@ class QueryArgs {
         return this._key;
     }
     static create(fetcher, pagination, ids, optionArgs) {
-        var _a, _b, _c, _d;
+        var _a, _b, _c, _d, _e;
         if (fetcher.fetchableType.name === 'Query' && ids !== undefined) {
             throw new Error("Generic query does not support id");
         }
@@ -47,7 +47,14 @@ class QueryArgs {
                 pageSize: (_c = queryOptions.pageSize) !== null && _c !== void 0 ? _c : queryOptions.initialSize
             }, ids, optionArgs).withPaginationInfo();
         }
-        return new QueryArgs(RuntimeShape_1.toRuntimeShape(fetcher, undefined, (_d = optionArgs === null || optionArgs === void 0 ? void 0 : optionArgs.variableArgs) === null || _d === void 0 ? void 0 : _d.variables), fetcher, undefined, ids, optionArgs);
+        let filteredIds = ids;
+        if (ids !== undefined) {
+            filteredIds = ids.filter(id => id !== undefined && id !== null);
+            if (filteredIds.length < ids.length && ((_d = optionArgs === null || optionArgs === void 0 ? void 0 : optionArgs.options) === null || _d === void 0 ? void 0 : _d.objectStyle) !== "optional") {
+                throw new Error("undefined or null id not acceptable for object query whose object style is 'required'");
+            }
+        }
+        return new QueryArgs(RuntimeShape_1.toRuntimeShape(fetcher, undefined, (_e = optionArgs === null || optionArgs === void 0 ? void 0 : optionArgs.variableArgs) === null || _e === void 0 ? void 0 : _e.variables), fetcher, undefined, filteredIds, optionArgs);
     }
     newArgs(ids) {
         if (this.ids === undefined) {

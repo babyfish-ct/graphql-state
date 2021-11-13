@@ -77,8 +77,8 @@ export abstract class StateValue {
             this._mounted = true;
             const state = this.stateInstance.state;
             const mount: Mount | undefined = state[" $stateType"] === "WRITABLE" ? 
-                (state[" $options"] as WritableStateCreationOptions<any> | undefined)?.mount :
-                (state[" $options"] as ComputedStateCreationOptions | undefined)?.mount;
+                (state[" $options"] as WritableStateCreationOptions<any, any> | undefined)?.mount :
+                (state[" $options"] as ComputedStateCreationOptions<any> | undefined)?.mount;
             if (mount !== undefined) {
                 const ctx = this.createMountContext();
                 this._unmountHandler = mount(ctx) as StateUnmoutHandler | undefined;

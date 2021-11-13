@@ -65,7 +65,7 @@ export declare type AsyncPaginationReturnType<T, TAsyncStyle extends AsyncStyle>
     readonly isLoadingNext: boolean;
     readonly isLoadingPrevious: boolean;
 };
-export declare type ObjectReference<T, TObjectStyle extends ObjectStyle> = TObjectStyle extends "required" ? T : T | undefined;
+export declare type TypeReference<T, TObjectStyle extends ObjectStyle> = TObjectStyle extends "required" ? T : T | undefined;
 export interface MutationReturnType<T extends object, TVariables extends object> {
     readonly mutate: (variables?: TVariables) => Promise<T>;
     readonly data?: T;

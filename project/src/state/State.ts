@@ -1,6 +1,15 @@
 import { Fetcher } from "graphql-ts-client-api";
+import { StateManager } from "..";
 import { EmptySchemaType, SchemaType } from "../meta/SchemaType";
-import { ObjectQueryOptions, ObjectReference, ObjectStyle, ParameterizedStateAccessingOptions, QueryOptions, ReleasePolicyOptions, StateAccessingOptions } from "./Types";
+import { 
+    ObjectQueryOptions, 
+    TypeReference, 
+    ObjectStyle, 
+    ParameterizedStateAccessingOptions, 
+    QueryOptions, 
+    ReleasePolicyOptions, 
+    StateAccessingOptions 
+} from "./Types";
 
 export function makeStateFactory<TSchema extends SchemaType = EmptySchemaType>(): StateFactory<TSchema> {
     return new StateFactoryImpl<TSchema>();
@@ -11,37 +20,37 @@ export interface StateFactory<TSchema extends SchemaType> {
     createState<T>(
         name: string,
         defaultValue: T,
-        options?: WritableStateCreationOptions<T>
+        options?: WritableStateCreationOptions<TSchema, T>
     ): SingleWritableState<T>;
 
     createParameterizedState<T, TVariables>(
         name: string,
         defaultValue: T | ((variables: TVariables) => T),
-        options?: WritableStateCreationOptions<T>
+        options?: WritableStateCreationOptions<TSchema, T>
     ): ParameterizedWritableState<T, TVariables>;
 
     createComputedState<T>(
         name: string,
         valueSupplier: (ctx: ComputedContext<TSchema>) => T,
-        options?: ComputedStateCreationOptions
+        options?: ComputedStateCreationOptions<TSchema>
     ): SingleComputedState<T>;
 
     createParameterizedComputedState<T, TVariables>(
         name: string,
         valueSupplier: (ctx: ParameterizedComputedContext<TSchema, T, TVariables>, variables: TVariables) => T,
-        options?: ComputedStateCreationOptions
+        options?: ComputedStateCreationOptions<TSchema>
     ): ParameterizedComputedState<T, TVariables>;
     
     createAsyncState<T>(
         name: string, 
         valueSupplier: (ctx: ComputedContext<TSchema>) => Promise<T>,
-        options?: ComputedStateCreationOptions
+        options?: ComputedStateCreationOptions<TSchema>
     ): SingleAsyncState<T>;
 
     createParameterizedAsyncState<T, TVariables>( 
         name: string,
         valueSupplier: (ctx: ParameterizedAsyncContext<TSchema, T, TVariables>, variables: TVariables) => Promise<T>,
-        options?: ComputedStateCreationOptions
+        options?: ComputedStateCreationOptions<TSchema>
     ): ParameterizedAsyncState<T, TVariables>;
 }
 
@@ -83,7 +92,7 @@ export interface SingleComputedState<T> {
     readonly " $parameterized": false;
 
     readonly " $valueSupplier": (ctx: ComputedContext<any>) => T;
-    readonly " $options"?: ComputedStateCreationOptions;
+    readonly " $options"?: ComputedStateCreationOptions<any>;
     " $supressWarnings"(_: T): void;
 }
 
@@ -94,7 +103,7 @@ export interface ParameterizedComputedState<T, TVariables> {
     readonly " $parameterized": true;
 
     readonly " $valueSupplier": (ctx: ComputedContext<any>, variables: TVariables) => T;
-    readonly " $options"?: ComputedStateCreationOptions;
+    readonly " $options"?: ComputedStateCreationOptions<any>;
     " $supressWarnings"(_1: T, _2: TVariables): void;
 }
 
@@ -105,7 +114,7 @@ export interface SingleAsyncState<T> {
     readonly " $parameterized": false;
     
     readonly " $valueSupplier": (ctx: ComputedContext<any>) => Promise<T>;
-    readonly " $options"?: ComputedStateCreationOptions;
+    readonly " $options"?: ComputedStateCreationOptions<any>;
     " $supressWarnings"(_: T): void;
 }
 
@@ -116,7 +125,7 @@ export interface ParameterizedAsyncState<T, TVariables> {
     readonly " $parameterized": true;
     
     readonly " $valueSupplier": (ctx: ComputedContext<any>, variables: TVariables) => Promise<T>;
-    readonly " $options"?: ComputedStateCreationOptions;
+    readonly " $options"?: ComputedStateCreationOptions<any>;
     " $supressWarnings"(_1: T, _2: TVariables): void;
 }
 
@@ -157,9 +166,9 @@ export interface ComputedContext<TSchema extends SchemaType> {
         TObjectStyle extends ObjectStyle = "required"
     >(
         fetcher: Fetcher<TName, T, TVaraibles>,
-        id: TSchema["entities"][TName][" $id"],
+        id: TypeReference<TSchema["entities"][TName][" $id"], TObjectStyle>,
         options?: ObjectQueryOptions<TVaraibles, TObjectStyle> & ReleasePolicyOptions<TVaraibles>
-    ): Promise<ObjectReference<T, TObjectStyle>>;
+    ): Promise<TypeReference<T, TObjectStyle>>;
 
     objects<
         TName extends TSchema["entities"] & string,
@@ -168,7 +177,7 @@ export interface ComputedContext<TSchema extends SchemaType> {
         TObjectStyle extends ObjectStyle = "required"
     >(
         fetcher: Fetcher<TName, T, TVaraibles>,
-        ids: ReadonlyArray<TSchema["entities"][TName][" $id"]>,
+        ids: ReadonlyArray<TypeReference<TSchema["entities"][TName][" $id"], TObjectStyle>>,
         options?: ObjectQueryOptions<TVaraibles, TObjectStyle> & ReleasePolicyOptions<TVaraibles>
     ): Promise<ReadonlyArray<T | undefined>>;
 }
@@ -232,7 +241,7 @@ class StateFactoryImpl<TSchema extends SchemaType> implements StateFactory<TSche
     createComputedState<T>(
         name: string,
         valueSupplier: (ctx: ComputedContext<TSchema>) => T,
-        options?: ComputedStateCreationOptions
+        options?: ComputedStateCreationOptions<TSchema>
     ): SingleComputedState<T> {
         stateRegistry.register(name);
         return {
@@ -248,7 +257,7 @@ class StateFactoryImpl<TSchema extends SchemaType> implements StateFactory<TSche
     createParameterizedComputedState<T, TVariables>(
         name: string,
         valueSupplier: (ctx: ParameterizedComputedContext<TSchema, T, TVariables>, variables: TVariables) => T,
-        options?: ComputedStateCreationOptions
+        options?: ComputedStateCreationOptions<TSchema>
     ): ParameterizedComputedState<T, TVariables> {
         stateRegistry.register(name);
         return {
@@ -264,7 +273,7 @@ class StateFactoryImpl<TSchema extends SchemaType> implements StateFactory<TSche
     createAsyncState<T>( 
         name: string,
         valueSupplier: (ctx: ComputedContext<TSchema>) => Promise<T>,
-        options?: ComputedStateCreationOptions
+        options?: ComputedStateCreationOptions<TSchema>
     ): SingleAsyncState<T> {
         stateRegistry.register(name);
         return {
@@ -280,7 +289,7 @@ class StateFactoryImpl<TSchema extends SchemaType> implements StateFactory<TSche
     createParameterizedAsyncState<T, TVariables>( 
         name: string,
         valueSupplier: (ctx: ParameterizedAsyncContext<TSchema, T, TVariables>, variables: TVariables) => Promise<T>,
-        options?: ComputedStateCreationOptions
+        options?: ComputedStateCreationOptions<TSchema>
     ): ParameterizedAsyncState<T, TVariables> {
         stateRegistry.register(name);
         return {
@@ -298,21 +307,23 @@ export interface StateCreationOptions {
     readonly scope?: StateCreationScope;
 }
 
-export interface WritableStateCreationOptions<T> extends StateCreationOptions {
-    readonly mount?: (ctx: WritableStateCreatingContext<T>) => StateUnmoutHandler | undefined | void;
+export interface WritableStateCreationOptions<TSchema extends SchemaType, T> extends StateCreationOptions {
+    readonly mount?: (ctx: WritableStateCreatingContext<TSchema, T>) => StateUnmoutHandler | undefined | void;
 }
 
-export interface ComputedStateCreationOptions extends StateCreationOptions {
-    readonly mount?: (ctx: ComputedStateCreatingContext) => StateUnmoutHandler | undefined | void;
+export interface ComputedStateCreationOptions<TSchema extends SchemaType> extends StateCreationOptions {
+    readonly mount?: (ctx: ComputedStateCreatingContext<TSchema>) => StateUnmoutHandler | undefined | void;
 }
 
-export interface WritableStateCreatingContext<T> {
+export interface WritableStateCreatingContext<TSchema extends SchemaType, T> {
     (): T;
     (value: T): void;
+    readonly stateManager: StateManager<TSchema>;
 }
 
-export interface ComputedStateCreatingContext extends StateCreationOptions {
+export interface ComputedStateCreatingContext<TSchema extends SchemaType> extends StateCreationOptions {
     invalidate(): void;
+    readonly stateManager: StateManager<TSchema>;
 }
 
 export type StateUnmoutHandler = () => void;

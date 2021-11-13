@@ -48,7 +48,9 @@ export class WritableStateValue extends StateValue {
     }
 
     protected createMountContext(): any {
-        return this.accessor;
+        const clonedFun = this.accessor.bind({});
+        clonedFun.stateManager = this.stateInstance.scopedStateManager.stateManager;
+        return clonedFun;
     }
 }
 

@@ -106,7 +106,7 @@ export type AsyncPaginationReturnType<T, TAsyncStyle extends AsyncStyle> =
     }
 ;
 
-export type ObjectReference<T, TObjectStyle extends ObjectStyle> = TObjectStyle extends "required" ? T : T | undefined;
+export type TypeReference<T, TObjectStyle extends ObjectStyle> = TObjectStyle extends "required" ? T : T | undefined;
 
 
 export interface MutationReturnType<T extends object, TVariables extends object> {
