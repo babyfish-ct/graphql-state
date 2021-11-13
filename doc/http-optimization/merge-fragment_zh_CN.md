@@ -86,7 +86,7 @@ function createStateManager() {
 新运的是，这三个hook查询的形状一样
 > 注意
 > 
-> [HTTP优化器](./README_zh_CN.md)中讨论过，
+> [HTTP优化](./README_zh_CN.md)中讨论过，
 > ```
 > shape = fetcher + variables
 > ```
