@@ -1,6 +1,6 @@
 # [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../README_zh_CN.md)/[HTTP优化器](./README_zh_CN.md)/请求重用
 
-```
+```ts
 import { FC, memo, Suspense } form 'react';
 import { useQuery, StateManagerProvider } from 'graphql-state';
 import { query$, bookStore$$, book$$, author$$ } from './generated';
@@ -65,4 +65,4 @@ function createStateManager() {
 
 -------------------------
 
-[< 上一篇: 碎片合并](./merge-fragment_zh_CN.md) | [返回上级：HTTP优化器]
+[< 上一篇: 碎片合并](./merge-fragment_zh_CN.md) | [返回上级：HTTP优化器](./README_zh_CN.md)
