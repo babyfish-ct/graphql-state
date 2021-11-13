@@ -323,7 +323,7 @@ export const MyComponent: FC = memo(() => {
 });
 ```
 
-### 3. 应用举例
+### 3. 实际应用举例
 
 我们尝试定义个简单状态selectedBookId
 
@@ -335,7 +335,7 @@ export const selectedBookIdState = createState<string | undefined>("selectedBook
     mount: ctx => {
         const listners = {
             "Book": (e: BookChangeEvent) => {
-                if (e.id === ctx()) {
+                if (e.changeType === "delete" && e.id === ctx()) {
                     ctx(undefined); // reset this simple state when current book is deleted
                 }
             }
@@ -348,9 +348,9 @@ export const selectedBookIdState = createState<string | undefined>("selectedBook
 });
 ```
 
-这里，我们使用简单状态的effect相应触发器，如果当前状态所指的对象从缓存中被删除，那么清除简单状态
+这里，我们使用简单状态的effect注册/注销触发器，如果当前状态所指的对象从缓存中被删除，那么将简单状态设置为undefined。
 
-selectedBookId只是一个id，而非Book对象，要拿到selectedBook对象, 有两种方法
+selectedBookId只是一个id，而非Book对象，要将之转换为selectedBook对象, 有两种方法
 
 1. 如果其他页面对selectedBook对象的形状要求差别很大，可以在其他页面中使用useObject，例如
   ```ts
@@ -360,17 +360,22 @@ selectedBookId只是一个id，而非Book对象，要拿到selectedBook对象, �
   import { book$$, author$$ } from './__generated';
 
   export const MyComponent: FC = memo(() => {
+      
       const selectedBookId = useStateValue(selectedBookIdState);
+      
       const { data: selectedBook, loading } = useObject(
+          
           book$$
           .authors(
               author$$
           ),
+          
           selectedBookId,
+          
           {
               asyncStyle: "async-object",
 
-              objectStyle: "optional" //重要，否则selectedBookId不得为undefined
+              objectStyle: "optional" //重要，否则useObject的第二个参数不得为undefined
           }
       );
 
@@ -379,7 +384,7 @@ selectedBookId只是一个id，而非Book对象，要拿到selectedBook对象, �
   ```
   > 注意
   > 
-  > 代码中objectStyle为undefined，否则useObject的第二个参数不允许为undefined，将会导致编译错误
+  > 代码中objectStyle为"optional"很重要，否则useObject的第二个参数不允许为undefined，将会导致编译错误
     
 2. 如果其他页面对selectedBook对象的形状要求差别不大，可以selectedBook包装为一个简单对象，方便各页面复用，例如
   ```
@@ -395,9 +400,17 @@ selectedBookId只是一个id，而非Book对象，要拿到selectedBook对象, �
   export const selectedBookState = createAsyncState<
       ModelType<typeof SELECTED_BOOK_SHAPE>
   >("selectedBook", ctx => {
-      return ctx.object(ctx(selectedBookIdState));
+      return ctx.object(
+          ctx(selectedBookIdState),
+          {
+              objectStyle: "optional" //重要，否则ctx.object首个参数不得为undefined
+          }
+      );
   });
   ```
-
+  > 注意
+  > 
+  > 代码中objectStyle为"optional"很重要，否则ctx.object的第一个参数不允许为undefined，将会导致编译错误
+  
 ----------
 [< 上一篇：变更](./mutation/README_zh_CN.md) | [返回上级：图状态](./README_zh_CN.md)
