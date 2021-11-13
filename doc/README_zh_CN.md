@@ -19,7 +19,7 @@
     - [智能变更](./graph-state/mutation/smart-mutation_zh_CN.md)
     - [双向关联](./graph-state/mutation/bidirectional-association_zh_CN.md)
   - [触发器](./graph-state/trigger_zh_CN.md)
-  - [释放策略](./release-policy_zh_CN.md)
+- [释放策略](./release-policy_zh_CN.md)
 - [HTTP优化](./http-optimization/README_zh_CN.md)
   - [异步削峰](./http-optimization/peak-clipping_zh_CN.md)
   - [碎片合并](./http-optimization/merge-fragment_zh_CN.md)
