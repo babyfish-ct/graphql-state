@@ -57,8 +57,19 @@ export const BookStoreList: FC = memo(() => {
 |1000ms  | MANNI   |Loading|findBookStore({name: "MANNI"})|findBookStores({name: "M"})返回后，忽略findBookStores({name: "M"}), findBookStores({name: "MA"}), findBookStores({name: "MAN"}), findBookStores({name: "MANN"})直接执行findBookStores({name: "MANNI"})。因为只有最新的查询参数才有意义|
 |1200ms  | MANNIN  |Loading|findBookStore({name: "MANNI"})|不执行findBookStores({name: "MANNIN"})，因为存在未返回的请求|
 |1400ms  | MANNING |Loading|findBookStore({name: "MANNI"})|不执行findBookStores({name: "MANNING"})，因为存在未返回的请求|
+|1400ms  | MANNING |Loading|findBookStore({name: "MANNI"})|不执行findBookStores({name: "MANNING"})，因为存在未返回的请求|
 |2000ms  | MANNING |Loading|findBookStore({name: "MANNING"})|不执行findBookStores({name: "MANNI"})返回后，忽略findBookStores({name: "MANNIN"})，直接执行findBookStores({name: "MANNING"})。因为只有最新的查询参数才有意义|
 |3000ms  | MANNING |findBookStore({name: "MANNING"})的结果|||
+
+> 注意
+> 
+> graphql-state的异步数据hook支持一个options.async-object参数，具备如下三个取值
+> - suspense
+> - suspense-refetch
+> - async-object
+> 
+> **仅async-object支持异步削峰优化**
+
 -----------------
 
-[< 返回上级：HTTP优化器](./README_zh_CN.md) | [下一篇：碎片合并>]
+[< 返回上级：HTTP优化器](./README_zh_CN.md) | [下一篇：碎片合并>](./merge-fragment_zh_CN.md)
