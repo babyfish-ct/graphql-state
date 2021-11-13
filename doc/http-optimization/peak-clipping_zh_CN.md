@@ -72,4 +72,4 @@ export const BookStoreList: FC = memo(() => {
 
 -----------------
 
-[< 返回上级：HTTP优化器](./README_zh_CN.md) | [下一篇：碎片合并>](./merge-fragment_zh_CN.md)
+[返回上级：HTTP优化器](./README_zh_CN.md) | [下一篇：碎片合并>](./merge-fragment_zh_CN.md)
