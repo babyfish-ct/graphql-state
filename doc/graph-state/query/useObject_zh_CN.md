@@ -57,7 +57,7 @@ useObjects<
 - id/ids: 单个id或ids数组
 - |options?.objectStyle ?? "required" | id | ids |
   |----|----|----|
-  |required| Id type of T | ReadonlyArray&lt;Id type of T&t; |
+  |required| Id type of T | ReadonlyArray&lt;Id type of T&gt; |
   |optional| Id type of T &#124; undefined | ReadonlyArray&lt;Id type of T&gt; &#124; undefined |
 - options:
   一个可选对象，包含如下字段
