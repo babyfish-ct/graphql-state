@@ -10,7 +10,7 @@ import { StateManagerProvider } from "graphql-state";
 import { useObject } from "../../__generated";
 import { author$$, book$$ } from "../../__generated/fetchers";
 
-export const SingleBookReference: FC<{
+const SingleBookReference: FC<{
     readonly id: string,
 }> = memo(({id}) => {
 
@@ -27,7 +27,7 @@ export const SingleBookReference: FC<{
     );
 });
 
-export const MultipleBookReferences: FC<{
+const MultipleBookReferences: FC<{
     readonly ids: ReadonlyArray<string>,
 }> = memo(({ids}) => {
 
@@ -47,7 +47,7 @@ export const MultipleBookReferences: FC<{
     );
 });
 
-export const App: FC = memo(() => {
+const App: FC = memo(() => {
 
     const stateManager = createStateManager();
     
