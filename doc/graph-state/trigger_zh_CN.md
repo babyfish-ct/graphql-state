@@ -6,7 +6,9 @@
 
 ## 1. EntityChangeEvent
 
-### 1.1. 时间类型定义
+EntityChangeEvent表示实体对象被修改的事件
+
+### 1.1. 事件类型定义
 
 1. 针对任意对象类型的通用事件的定义
   ```ts
@@ -92,7 +94,7 @@ export type BookEntityFields =
 ```
 和EntityChangeEvent类型的作用一样，只是这个类型的类型更精确而已。其字段的含义也并无差异，此处不在赘述。
 
-## 1.2 添加对象变更事件
+### 1.2 添加对象变更事件
 
 1. 基于通用事件类型
 
