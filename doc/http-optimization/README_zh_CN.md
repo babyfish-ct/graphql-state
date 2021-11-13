@@ -2,13 +2,13 @@
 
 ## 基本概念
 
-所有和HTTP优化的功能，都基于一个重要的概念：shape
+大部分和HTTP优化的功能，都基于一个重要的概念：shape
 ```
 shape = fetcher + variables
 ```
 
 例如
-```
+```ts
 const data = useQuery(
     query$.findBookStores(
         bookStore$$
