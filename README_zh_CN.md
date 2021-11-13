@@ -144,6 +144,7 @@ yarn start
     - [useMutation](./doc/graph-state/mutation/mutate-cache_zh_CN.md)
     - [智能变更](./doc/graph-state/mutation/smart-mutation_zh_CN.md)
     - [双向关联](./doc/graph-state/mutation/bidirectional-association_zh_CN.md)
+  - [触发器](./doc/graph-state/trigger_zh_CN.md)
 - [HTTP优化](./doc/http-optimization/README_zh_CN.md)
   - [异步削峰](./doc/http-optimization/peak-clipping_zh_CN.md)
   - [碎片合并](./doc/http-optimization/merge-fragment_zh_CN.md)
