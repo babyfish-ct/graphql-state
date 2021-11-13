@@ -48,8 +48,8 @@ export const InputView: FC = memo(() => {
 ```
 
 和返回状态值的useStateValue不同，useStateAccessor返回一个函数。
-- 不带参数调用次函数，比如"count()"，表示读取状态的值
-- 带参数调哟过此函数，比如"count(3)"，表示修改状态的值
+- 不带参数调用此函数，比如"count()"，表示读取状态的值
+- 带参数调用过此函数，比如"count(3)"，表示修改状态的值
 
 例子中的"count(count() + 1)"表示读取状态的旧值，加上1，在设置为状态的新值
 
