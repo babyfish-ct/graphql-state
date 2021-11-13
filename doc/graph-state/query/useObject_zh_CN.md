@@ -25,7 +25,7 @@ useObject<
     TObjectStyle extends "required" | "optional" = "required"
 >(
     fetcher: ObjectFetcher<...Any type except Query..., T, TVariables>,
-    id: Id type of T,
+    id: ...,
     options?: {
         mode?: "cache-and-network" | "cache-only",
         variables?: TVariables,
@@ -41,7 +41,7 @@ useObjects<
     TObjectStyle extends "required" | "optional" = "required"
 >(
     fetcher: ObjectFetcher<...Any type except Query..., T, TVariables>,
-    ids: ReadonlyArray<Id type of T>
+    ids: ReadonlyArray<...>
     options?: {
         mode?: "cache-and-network" | "cache-only",
         variables?: TVariables,
@@ -52,9 +52,14 @@ useObjects<
 ```
 
 ## 1. 参数解释
-1. fetcher: 
+- fetcher: 
   [grahql-ts-client](https://github.com/babyfish-ct/graphql-ts-client)的Fetcher，根对象类型不能为"Query"
-2. options:
+- id/ids: 单个id或ids数组
+- |options?.objectStyle ?? "required" | id | ids |
+  |----|----|----|
+  |required| Id type of T | ReadonlyArray<Id type of T> |
+  |optional| Id type of T &#124; undefined | ReadonlyArray<Id type of T> &#124; undefined |
+- options:
   一个可选对象，包含如下字段
   - mode: 和useQuery中此参数的用法相同，此处不再赘述
   - asyncStyle: 和useQuery中此参数的用法相同，此处不再赘述
