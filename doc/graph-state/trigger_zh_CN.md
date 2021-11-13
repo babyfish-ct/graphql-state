@@ -51,7 +51,7 @@
     - variables: 参数对象
  
 2. 针对特定对象类型的专用时间定义（被代码生成器生成，这里使用为例[example/client/src/graph/__generated_graphql_schema__/triggers/BookChangeEvent.ts](https://github.com/babyfish-ct/graphql-state/blob/master/example/client/src/graph/__generated_graphql_schema__/triggers/BookChangeEvent.ts)）
-```
+```ts
 import {ImplementationType} from '../CommonTypes';
 import {BookArgs, BookFlatType} from '../fetchers/BookFetcher';
 
