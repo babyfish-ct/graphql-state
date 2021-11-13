@@ -123,6 +123,7 @@ export const MyComponent: FC = memo(() => {
     
     return ...;
 });
+```
 
 2. 基于专用事件类型
 
