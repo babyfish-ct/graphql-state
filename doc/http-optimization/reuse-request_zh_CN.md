@@ -1,4 +1,4 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../README_zh_CN.md)/[HTTP优化器](./README_zh_CN.md)/请求重用
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../README_zh_CN.md)/[HTTP优化](./README_zh_CN.md)/请求重用
 
 ```ts
 import { FC, memo, Suspense } form 'react';
@@ -51,7 +51,7 @@ function createStateManager() {
 
 ```
 
-在[HTTP优化器](./README_zh_CN.md)中我们讨论了形状，以及形状之间的包哈关系。
+在[HTTP优化](./README_zh_CN.md)中我们讨论了形状，以及形状之间的包哈关系。
 
 很明显，在这个例子，BiggerShapeComponent内部查询的形状包含SmallerShapeComponent内部查询的形状，SmallerShapeComponent内部查询能查到的数据一定包含在BiggerShapeComponent内部查询返回的数据中。
 
@@ -65,4 +65,4 @@ function createStateManager() {
 
 -------------------------
 
-[< 上一篇: 碎片合并](./merge-fragment_zh_CN.md) | [返回上级：HTTP优化器](./README_zh_CN.md)
+[< 上一篇: 碎片合并](./merge-fragment_zh_CN.md) | [返回上级：HTTP优化](./README_zh_CN.md)
