@@ -37,20 +37,26 @@ EntityChangeEvent表示实体对象被修改的事件
   - "update": 表示缓存中的对象被修改，此时，oldValue和newValue函数都可以被调用
   - "delete": 表示缓存中的对象被删除，此时，oldValue函数可以被调用，但newValue会抛出异常
 - has: 判断一个字段是否被修改，只有被修改的字段才可以作为oldValue和newValue函数的参数，否则会导致异常
-  - 指定参数为无参数字段：一个字符串即可
-  - 指定参数为有参数字段：传递一个对象，包含两个对象
-    - name: 字段名
-    - variables: 参数对象
+  参数：
+  - changedKey: 字段，分两种情况
+    - 无参数字段：一个字符串即可
+    - 参数化字段：传递一个对象，包含两个对象
+      - name: 字段名
+      - variables: 参数对象
 - oldValue: 取得一个字段被修改前的旧值，如果changedType为"insert"或同样的参数会导致has函数返回false, 将会导致异常
-  - 指定参数为无参数字段：一个字符串即可
-  - 指定参数为有参数字段：传递一个对象，包含两个对象
-    - name: 字段名
-    - variables: 参数对象
+  参数：
+  - changedKey: 字段，分两种情况
+    - 参数为无参数字段：一个字符串即可
+    - 参数化字段：传递一个对象，包含两个对象
+      - name: 字段名
+      - variables: 参数对象
 - newValue: 取得一个字段被修改后的新值，如果changedType为"delete"或同样的参数会导致has函数返回false, 将会导致异常
-  - 指定参数为无参数字段：一个字符串即可
-  - 指定参数为有参数字段：传递一个对象，包含两个对象
-    - name: 字段名
-    - variables: 参数对象
+  参数：
+  - changedKey: 字段，分两种情况
+    - 无参数字段：一个字符串即可
+    - 参数化字段：传递一个对象，包含两个对象
+      - name: 字段名
+      - variables: 参数对象
  
 2. 针对特定对象类型的专用时间定义（被代码生成器生成，这里使用为例[example/client/src/graph/__generated_graphql_schema__/triggers/BookChangeEvent.ts](https://github.com/babyfish-ct/graphql-state/blob/master/example/client/src/graph/__generated_graphql_schema__/triggers/BookChangeEvent.ts)）
 ```ts
