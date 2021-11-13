@@ -20,6 +20,7 @@
   - [useMutation](./mutation/useMutation_zh_CN.md)
   - [智能更新](./mutation/README_zh_CN.md)
   - [双向关联](./mutation/bidirectional-association_zh_CN.md)
+- [触发器](./trigger_zh_CN.md)
 
 -------
 
