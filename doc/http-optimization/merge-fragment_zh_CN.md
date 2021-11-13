@@ -92,7 +92,7 @@ function createStateManager() {
 > ```
 > 但useObject/useObjects的id/ids参数不属于variables，所以，这些请求的形状一样
 
-形状一样的useObject/useObjects会被合并为一个请求。这些hook共享合并后的请求返回的数据，并各自选区自己需要的数据。
+形状一样的useObject/useObjects会被合并为一个请求。这些hook共享合并后的请求返回的数据，并各自选取自己需要的数据。
 
 最终，实际只像服务端发送一个HTTP请求
 **Body**
