@@ -1,4 +1,4 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../README.md)/图状态
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/图状态
 
 所谓图状态，并非一定需要GraphQL服务端，而是可以被GraphQL风格的API读写的缓存的数据。
 
@@ -24,4 +24,4 @@
 
 -------
 
-[< 上一篇: 简单状态](../simple-state/README.md) | [返回上级: 文档](../README.md) | [下一篇: 释放策略 >](../release-policy.md)
+[< Previous: 简单状态](../simple-state/README.md) | [Back to parent: 文档](../README.md) | [Next: 释放策略 >](../release-policy.md)

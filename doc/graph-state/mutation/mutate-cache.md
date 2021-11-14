@@ -1,4 +1,4 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../../README.md)/[图状态](../README.md)/[变更](./README.md)/变更缓存
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../../README.md)/[图状态](../README.md)/[变更](./README.md)/变更缓存
 
 要变更缓存，首选需要获取StateManager，请使用被生成代码中的useTypedStateManager函数
 
@@ -212,4 +212,4 @@ stateManager.delete(
 > API是强类型的，不用担心字符串"Book"拼写错误
 
 -----------------------
-[返回上级: 变更](./README.md) | [下一篇: useMutation >](./useMutation.md)
+[Back to parent: 变更](./README.md) | [Next: useMutation >](./useMutation.md)

@@ -1,4 +1,4 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../../README.md)/[图状态](../README.md)/查询
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../../README.md)/[图状态](../README.md)/查询
 
 本框架支持四个函数，用于从缓存或服务端查询数据
 
@@ -26,4 +26,4 @@ import { useObject, useObjects } from '../__generated';
 - [useObject&useObjects](./useObject.md)
 
 ---------------
-[< 上一篇: State Manager](../state-manager.md) | [返回上级: 图状态](../README.md) | [下一篇: 变更 >](../mutation/README.md)
+[< Previous: State Manager](../state-manager.md) | [Back to parent: 图状态](../README.md) | [Next: 变更 >](../mutation/README.md)

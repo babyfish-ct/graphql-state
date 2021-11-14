@@ -1,4 +1,4 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../../README.md)/[图状态](../README.md)/[查询](./README.md)/useQuery
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../../README.md)/[图状态](../README.md)/[查询](./README.md)/useQuery
 
 ## 1. 基本用法
 
@@ -165,4 +165,4 @@ export const BookStoreList:FC = memo(() => {
 
 ----------------------------
 
-[返回上级: 查询](./README.md) | [下一篇: usePaginationQuery >](./usePaginationQuery.md)
+[Back to parent: 查询](./README.md) | [Next: usePaginationQuery >](./usePaginationQuery.md)

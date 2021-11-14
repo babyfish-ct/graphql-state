@@ -1,4 +1,4 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../README.md)/[简单状态](./README.md)/异步状态
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/[简单状态](./README.md)/异步状态
 
 异步状态是计算状态的一种，和计算状态相比，唯一的不同在于其计算函数是异步的。
 
@@ -144,4 +144,4 @@ export const App: FC = memo(() => {
 });
 ```
 
-[< 上一篇: 计算状态](./computed.md) | [返回上级: 简单状态](./README.md) | [下一篇: Effect >](./effect.md)
+[< Previous: 计算状态](./computed.md) | [Back to parent: 简单状态](./README.md) | [Next: Effect >](./effect.md)

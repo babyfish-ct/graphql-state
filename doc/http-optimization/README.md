@@ -1,4 +1,4 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../README.md)/HTTP优化
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/HTTP优化
 
 ## 基本概念
 
@@ -161,4 +161,4 @@ const data = useQuery(
 - [请求重用](./reuse-request.md)
 
 --------------
-[< 上一篇: 释放策略](../release-policy.md) | [返回上级: 文档](../README.md)
+[< Previous: 释放策略](../release-policy.md) | [Back to parent: 文档](../README.md)

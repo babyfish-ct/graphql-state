@@ -1,4 +1,4 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../../README.md)/[图状态](../README.md)/[变更](./README.md)/双向关联
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../../README.md)/[图状态](../README.md)/[变更](./README.md)/双向关联
 
 
 参考这样一个例子
@@ -54,4 +54,4 @@ function createStateManager() {
 
 -----------
 
-[< 上一篇: 智能变更](./smart-mutation.md) | [返回上级: 变更](./README.md) 
+[< Previous: 智能变更](./smart-mutation.md) | [Back to parent: 变更](./README.md) 

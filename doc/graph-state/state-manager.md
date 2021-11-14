@@ -1,4 +1,4 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../README.md)/[图状态](./README.md)/StateManager
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/[图状态](./README.md)/StateManager
 
 ## 1. 创建StateManager
 
@@ -108,4 +108,4 @@ export const SomeComponent: FC = memo(() => {
 
 ----------------------------------
 
-[< 上一篇: 整合graphql-ts-client](./graphql-ts-client.md) | [返回上级: 图状态](./README.md) | [下一篇: 查询 >](./query/README.md)
+[< Previous: 整合graphql-ts-client](./graphql-ts-client.md) | [Back to parent: 图状态](./README.md) | [Next: 查询 >](./query/README.md)

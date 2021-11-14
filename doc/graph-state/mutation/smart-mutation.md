@@ -1,4 +1,4 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../../README.md)/[图状态](../README.md)/[变更](./README.md)/智能变更
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../../README.md)/[图状态](../README.md)/[变更](./README.md)/智能变更
 
 智能更新更新流程如下
 
@@ -773,4 +773,4 @@ function cursorToIndex(cursor: string): number {
 
 --------------------------------
 
-[< 上一篇: useMutation](./useMutation.md) | [返回上级: 变更](./README.md) | [下一篇: 双向关联 >](./bidirectional-association.md)
+[< Previous: useMutation](./useMutation.md) | [Back to parent: 变更](./README.md) | [Next: 双向关联 >](./bidirectional-association.md)

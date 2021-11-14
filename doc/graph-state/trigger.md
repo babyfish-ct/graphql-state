@@ -1,4 +1,4 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../README.md)/[图状态](./README.md)/触发器
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/[图状态](./README.md)/触发器
 
 内置的缓存数据库支持触发器，支持如下两类事件
 - EntityChangeEvent: 表示数据被修改
@@ -413,4 +413,4 @@ selectedBookId只是一个id，而非Book对象，要将之转换为selectedBook
   > 代码中objectStyle为"optional"很重要，否则ctx.object的第一个参数不允许为undefined，将会导致编译错误
   
 ----------
-[< 上一篇: 变更](./mutation/README.md) | [返回上级: 图状态](./README.md)
+[< Previous: 变更](./mutation/README.md) | [Back to parent: 图状态](./README.md)

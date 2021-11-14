@@ -1,4 +1,4 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../README.md)/[HTTP优化](./README.md)/碎片合并
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/[HTTP优化](./README.md)/碎片合并
 
 useObject和useObjects根据id/ids查询对象/对象集合，虽然方便，但容易导致请求碎片化。
 
@@ -131,4 +131,4 @@ query(
 
 
 -----------
-[< 上一篇: 异步削峰](./peak-clipping.md) | [返回上级: HTTP优化](./README.md) | [下一篇: 请求重用 >](./reuse-request.md)
+[< Previous: 异步削峰](./peak-clipping.md) | [Back to parent: HTTP优化](./README.md) | [Next: 请求重用 >](./reuse-request.md)

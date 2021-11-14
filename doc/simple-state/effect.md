@@ -1,4 +1,4 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../README.md)/[简单状态](./README.md)/Effect
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/[简单状态](./README.md)/Effect
 
 创建简单状态时，可以为其设置Effect逻辑，类似于react的mount/unmount行为。
 
@@ -65,6 +65,6 @@ export const DisplayView: FC = memo(() => {
 2. 在[/example/client/src/graph/graphql/log/EntityLog.ts](https://github.com/babyfish-ct/graphql-state/blob/master/example/client/src/graph/graphql/log/EntityLog.ts)中，使用Effect构建GraphState缓存数据库触发器事件日志状态，让相关例子呈现GraphState缓存数据库触发器事件列表。
 ------------------------------------------
 
-[< 上一篇: 异步状态](./async.md) | [返回上级: 简单状态](./README.md) | [下一篇: 作用域 >](./scope.md)
+[< Previous: 异步状态](./async.md) | [Back to parent: 简单状态](./README.md) | [Next: 作用域 >](./scope.md)
 
     

@@ -1,4 +1,4 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../README.md)/[简单状态](./README.md)/可写状态
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/[简单状态](./README.md)/可写状态
 
 # 1. 无参数可写状态
 
@@ -167,5 +167,5 @@ export const App: FC = memo(() => {
 - 如果使用一个有参数的状态，不必在编译时刻知道子状态的数量，编译时只是定义了未知数量的多个子状态的一个族。运行时的自动决定所需子状态的数量。所传递的参数的取值越多，族内被维护的子状态就越多。
 
 -------------------------------------------------------------
-[返回上级: 简单状态](./README.md) | [下一篇: 计算状态 >](./computed.md)
+[Back to parent: 简单状态](./README.md) | [Next: 计算状态 >](./computed.md)
 

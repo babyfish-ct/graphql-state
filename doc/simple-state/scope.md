@@ -1,4 +1,4 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../README.md)/[简单状态](./README.md)/作用域
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/[简单状态](./README.md)/作用域
 
 和其它react状态管理框架不同，graphql-state不仅支持全局状态，也可以使用作用域
 
@@ -117,4 +117,4 @@ export const InputView: FC = memo(() => {
 
 ---------
 
-[< 上一篇: Effect](./effect.md) | [返回上级:简单状态](./README.md)
+[< Previous: Effect](./effect.md) | [Back to parent:简单状态](./README.md)

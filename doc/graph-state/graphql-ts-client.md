@@ -1,4 +1,4 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../README.md)/[图状态](./README.md)/整合graphql-ts-client
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/[图状态](./README.md)/整合graphql-ts-client
 
 ## 1. 添加依赖
 
@@ -106,4 +106,4 @@ yarn codegen
 
 --------------------------------------
 
-[返回上级: 图状态](./README.md) | [下一篇: StateManager >](./state-manager.md)
+[Back to parent: 图状态](./README.md) | [Next: StateManager >](./state-manager.md)

@@ -1,4 +1,4 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../README.md)/[简单状态](./README.md)/计算状态
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/[简单状态](./README.md)/计算状态
 
 ## 1. 简单计算依赖
 
@@ -233,5 +233,5 @@ export const App: FC = memo(() => {
 
 -------------------------
 
-[< 上一篇: 可写状态](./writable.md) | [返回上级: 简单状态](./README.md) | [下一篇: 异步状态 >](./async.md)
+[< Previous: 可写状态](./writable.md) | [Back to parent: 简单状态](./README.md) | [Next: 异步状态 >](./async.md)
 

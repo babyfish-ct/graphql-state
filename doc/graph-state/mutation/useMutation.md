@@ -1,4 +1,4 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../../README.md)/[图状态](../README.md)/[变更](./README.md)/useMutation
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../../README.md)/[图状态](../README.md)/[变更](./README.md)/useMutation
 
 useMutation函数用于向服务端提交变更
 
@@ -166,4 +166,4 @@ export const BookMutationComponent: FC = memo(() => {
 当用户点击Save按钮后，提交变更到服务端，并根据服务的的返回结果更新本地缓存
 
 --------------
-[< 上一篇: 变更缓存](./mutate-cache.md) | [返回上级: 变更](./README.md) | [下一篇: 智能变更 >](./smart-mutation.md)
+[< Previous: 变更缓存](./mutate-cache.md) | [Back to parent: 变更](./README.md) | [Next: 智能变更 >](./smart-mutation.md)

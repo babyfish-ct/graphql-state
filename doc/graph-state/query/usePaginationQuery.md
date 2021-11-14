@@ -1,4 +1,4 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../../README.md)/[图状态](../README.md)/[查询](./README.md)/usePaginationQuery
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../../README.md)/[图状态](../README.md)/[查询](./README.md)/usePaginationQuery
 
 usePaginationQuery用于支持分页面查询，其定义如下
 
@@ -428,4 +428,4 @@ const BookList: FC = memo(() => {
 
 -------------
 
-[< 上一篇: useQuery](./useQuery.md) | [返回上级: 查询](./README.md) | [下一篇: useObject&useObjects](./useObject.md)
+[< Previous: useQuery](./useQuery.md) | [Back to parent: 查询](./README.md) | [Next: useObject&useObjects](./useObject.md)

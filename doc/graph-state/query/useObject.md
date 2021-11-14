@@ -1,4 +1,4 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../../README.md)/[图状态](../README.md)/[查询](./README.md)/useObject&useObjects
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../../README.md)/[图状态](../README.md)/[查询](./README.md)/useObject&useObjects
 
 在实际项目中，有两种查询非常常见
 - 根据一个id查询一个对象
@@ -283,4 +283,4 @@ type Author implements Any {...}
 如果ids参数中某些id无法查找到对象，允许服务端返回的数组长度小于ids参数的长度。
 
 ------------------------------
-[< 上一篇: usePaginationQuery](./usePaginationQuery.md) | [返回上级: 查询](./README.md)
+[< Previous: usePaginationQuery](./usePaginationQuery.md) | [Back to parent: 查询](./README.md)

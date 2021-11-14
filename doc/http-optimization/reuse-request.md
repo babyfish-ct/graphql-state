@@ -1,4 +1,4 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../README.md)/[HTTP优化](./README.md)/请求重用
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/[HTTP优化](./README.md)/请求重用
 
 ```ts
 import { FC, memo, Suspense } form 'react';
@@ -65,4 +65,4 @@ function createStateManager() {
 
 -------------------------
 
-[< 上一篇: 碎片合并](./merge-fragment.md) | [返回上级: HTTP优化](./README.md)
+[< Previous: 碎片合并](./merge-fragment.md) | [Back to parent: HTTP优化](./README.md)
