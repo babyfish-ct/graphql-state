@@ -15,9 +15,10 @@ export const App: FC = memo(() => {
     );
 });
 ```
-这里的&lt;StateManagerProvider/&gt;并指定任何属性。事实上，&lt;StateManagerProvider/&gt;具备一个stateManager属性。
 
-该属性是可选的，对简单状态而言，默认的StateManager已经足够了；但是，对于图状态而言，必须明确地传递我们自己的StateManager。
+No properties of &lt;StateManagerProvider/&gt; is specified here. In fact, <StateManagerProvider/> has a "stateManager" property.
+
+This property is optional. For simple states, the default StateManager is sufficient; however, for graph states, we must explicitly specify our own StateManager.
 
 ```ts
 import { FC, memo } from 'react';
@@ -35,12 +36,12 @@ export const App: FC = memo(() => {
 });
 
 function createStateManager() {
-    // TODO: 后文讨论此函数如何实现
+    // TODO: How to implement this function will be discussed later
 }
 
 ```
 
-### 1.1 不基于GraphQL服务端
+### 1.1 Not based on GraphQL server
 
 如果你的开发并不基于GraphQL服务端，就如同[本地示例](https://github.com/babyfish-ct/graphql-state/tree/master/example/client/src/graph/local)一样，上文中的createStateManager函数应该如下实现
 
