@@ -61,9 +61,9 @@ useObjects<
   |optional| Id type of T &#124; undefined | ReadonlyArray&lt;Id type of T &#124; undefined &gt; |
 - options:
   一个可选对象，包含如下字段
-  - mode: 和useQuery中此参数的用法相同，此处不再赘述
-  - asyncStyle: 和useQuery中此参数的用法相同，此处不再赘述
-  - variables: 和useQuery中此参数的用法相同，此处不再赘述
+  - mode: 和[useQuery](./useQuery_zh_CN.md)中此参数的用法相同，此处不再赘述
+  - asyncStyle: 和[useQuery](./useQuery_zh_CN.md)中此参数的用法相同，此处不再赘述
+  - variables: 和[useQuery](./useQuery_zh_CN.md)中此参数的用法相同，此处不再赘述
   - objectStyle: 对象风格，有两种取值，可选，默认required
     - required: 指定id的对象必须存在，否则抛出异常
     - optional: 如果指定指定id的对象不存在，认为对象是undefined
