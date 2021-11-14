@@ -1,10 +1,10 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/[简单状态](./README.md)/计算状态
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/[Simple state](./README.md)/Computed state
 
-## 1. 简单计算依赖
+## 1. Basic calculation dependency
 
-我们来计算两个数的平均数
+Let's calculate the average of two numbers
 
-1. 在State.ts中定义三个状态，两个可写状态，一个计算字段
+1. Define three states in "State.ts", two writable states, and one computed state
 ```ts
 import { makeStateFactory } from 'graphql-state';
 
@@ -17,9 +17,9 @@ export const averageNumberState = createComputedState("averageNumber", ctx => {
     return (ctx(firstNumberState) + ctx(secondNumberState)) / 2;
 });
 ```
-firstNumberState和secondNumberState是两个可写状态，averageNumberState是依赖它们的一个计算状态，计算它们的平均值
+"firstNumberState" and "secondNumberState" are two writable states, "averageNumberState" is computed state depends on on them, and calculate their average
 
-通过这这样一段代码，状态之间的计算依赖如下
+Through this piece of code, the calculation dependencies between states are as follows
 ```
 +--------------------+
 | averageNumberState |
@@ -33,9 +33,9 @@ firstNumberState和secondNumberState是两个可写状态，averageNumberState�
      \----> | secondNumberState |
             +-------------------+
 ```
-当firstNumberState和secondNumberState中任何一个变化时，averageNumberState就会自动重新计算
+When any one of "firstNumberState" and "secondNumberState" is changed, "averageNumberState" will automatically recalculate
 
-2. 在InputView.tsx中编辑两个可写状态
+2. Edit those two writable states in "InputView.tsx"
 ```ts
 import { FC, ChangeEvent, memo, useCallback } from 'react';
 import { useStateAccessor } from 'graphql-state';
@@ -68,7 +68,7 @@ export const InputView: FC = memo(() => {
 });
 ```
 
-3. 在OutputView.tsx呈现计算状态
+3. Present the computed state in "OutputView.tsx"
 ```ts
 import { FC, memo } from 'react';
 import { useStateValue } from 'graphql-state';
@@ -80,11 +80,11 @@ export const OutputView: FC = memo(() => {
     return <div>The average number is {averageNumber}</div>;    
 });
 ```
-> 注意
-> 
-> 计算状态是只读的，所以只能使用useStateValue，不能对其使用useStateAccessor
+> Attention
+>
+> The computed state is read-only, so only "useStateValue" can be used, "useStateAccessor" cannot be used
 
-4. 在App.tsx中整合它们
+4. Integrate all in "App.tsx"
 ```ts
 import { FC, memo } from 'react';
 import { StateManagerProvider } from 'graphql-state';
@@ -100,19 +100,19 @@ export const App: FC = memo(() => {
     );
 });
 ```
-运行起来，我们会发现，firstNumberState和secondNumberState中任何一个变更，averageNumberState机会变更
+When running, we will find that if any one of "firstNumberState" and "secondNumberState" changes, averageNumberState will change.
 
-## 2. 递归计算依赖
+## 2. Recursive calculation dependency
 
-在上面的例子中，我们演示了计算属性，但是有三个细节并未演示
+In the above example, we demonstrated the computed state, but there are three details not demonstrated
 
-- 计算状态不仅可以依赖于可写状态，也可以依赖于其它计算状态
-- 计算状态的依赖的层次可以很深，理论上可以达到无限
-- 计算状态可以被参数化
+- The computed state can not only depend on the writable state, but also on other computed states
+- The level of dependency of computed state can be very deep, theoretically it can reach infinite
+- The calculation state can be parameterized
 
-为此，接下来我们用一个阶乘递归实现的例子演示上述所有细节
+To this end, let’s use an example of factorial recursive implementation to demonstrate all the above details.
 
-1. 在State.ts中定义状态
+1. Define states in "State.ts"
 ```ts
 import { makeStateFactory } from 'graphql-state';
 
@@ -137,12 +137,13 @@ export const factorialResultState = createComputedState("factorialResult", ctx =
     });
 });
 ```
-> 上面的代码中
-> - "ctx(numberState)"表示当前计算状态依赖于可写状态
-> - "ctx(factorialState)表示当前计算状态依赖于另外一个计算状态"
-> - "ctx.self(...)"表示当前参数化计算状态依赖于其自身的另外不同参数所代表一个子状态
+> In the above code
+> 
+>- "ctx(numberState)" means that the current computed state depends on the writable state
+>- "ctx(factorialState) indicates that the current computed state depends on another computed state
+>- "ctx.self(...)" means that the current parameterized computed state depends on its own sub-state represented by other different parameters
 
-通过这这样一段代码，状态之间的计算依赖如下
+Through this piece of code, the calculation dependencies between states are as follows
 ```
 +----------------------+
 | factorialResultState |
@@ -170,9 +171,9 @@ export const factorialResultState = createComputedState("factorialResult", ctx =
                                                 +-------------------+
 ```
 
-如果numberState发生变化，factorialResultState重新计算阶乘
+If numberState changes, factorialResultState recalculates factorial
 
-2. 在InputView.tsx中编辑可写状态numberState
+2. Edit the writable state "numberState" in "InputView.tsx"
 ```ts
 import { FC, ChangeEvent, memo, useCallback } from 'react';
 import { useStateAccessor } from 'graphql-state';
@@ -197,7 +198,7 @@ export const InputView: FC = memo(() => {
 });
 ```
 
-3. 在OutputView.tsx呈现计算状态
+3. Present the calculation results in OutputView.tsx
 ```ts
 import { FC, memo } from 'react';
 import { useStateValue } from 'graphql-state';
@@ -209,11 +210,11 @@ export const OutputView: FC = memo(() => {
     return <div>The factorial result is {factorialResult}</div>;    
 });
 ```
-> 注意
-> 
-> 计算状态是只读的，所以只能使用useStateValue，不能对其使用useStateAccessor
+> Attention
+>
+> The computed state is read-only, so only "useStateValue" can be used, "useStateAccessor" cannot be used
 
-4. 在App.tsx中整合它们
+4. Integrate all in "App.tsx"
 ```ts
 import { FC, memo } from 'react';
 import { StateManagerProvider } from 'graphql-state';
@@ -229,9 +230,9 @@ export const App: FC = memo(() => {
     );
 });
 ```
-运行起来，我们会发现，如果numberState发生变化，factorialResultState重新计算阶乘
+After running, we will find that if the "numberState" changes, "factorialResultState" recalculates the factorial
 
 -------------------------
 
-[< Previous: 可写状态](./writable.md) | [Back to parent: 简单状态](./README.md) | [Next: 异步状态 >](./async.md)
+[< Previous: WritableState](./writable.md) | [Back to parent: Simple state](./README.md) | [Next: Async >](./async.md)
 
