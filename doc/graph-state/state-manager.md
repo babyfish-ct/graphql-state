@@ -1,8 +1,8 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/[图状态](./README.md)/StateManager
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/[Graph State](./README.md)/StateManager
 
-## 1. 创建StateManager
+## 1. Create StateManager
 
-在讨论简单状态时已经说明过顶层组件需要使用&lt;StateManagerProvider&gt;
+When discussing simple states, it has been stated that the top-level components need to use &lt;StateManagerProvider&gt;
 ```ts
 import { FC, memo } from 'react';
 import { StateManagerProvider } from 'graphql-state';
