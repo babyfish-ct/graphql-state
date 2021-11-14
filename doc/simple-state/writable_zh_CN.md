@@ -70,7 +70,8 @@ export const App: FC = memo(() => {
 });
 ```
 > 注意
-> 使用状态管理的的前提，顶层需要用&lt;StateManagerProvider/&gt;包裹
+> 
+> 使用状态管理的的前提是顶层需要用&lt;StateManagerProvider/&gt;包裹
 
 运行后，可以发现，IuputView对状态的变更，实时地体现在OutputView中，状态完成了跨越组件的信息传递。
 
