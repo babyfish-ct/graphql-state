@@ -17,7 +17,7 @@ export const App: FC = memo(() => {
 ```
 这里的&lt;StateManagerProvider/&gt;并指定任何属性。事实上，&lt;StateManagerProvider/&gt;具备一个stateManager属性。
 
-该属性是可选的，因为对简单状态而言，默认的StateManager已经足够了；但是，对于图状态而言，必须制定我们自己的StateManager。
+该属性是可选的，对简单状态而言，默认的StateManager已经足够了；但是，对于图状态而言，必须明确地传递我们自己的StateManager。
 
 ```ts
 import { FC, memo } from 'react';
