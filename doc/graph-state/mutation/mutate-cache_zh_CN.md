@@ -19,7 +19,7 @@ export const SomeComponent: FC = memo(() => {
 StateManager支持save函数用于保存数据，它合并了insert和update操作，你不用区分insert和update
 
 ```ts
-save<TName extends (<EntityTypeNames> | "Query", T extends object, TVariables extends object = {}>(
+save<TName extends <EntityTypeNames> | "Query", T extends object, TVariables extends object = {}>(
     fetcher: ObjectFetcher<TName, T, any>,
     obj: T,
     variables?: TVariables
