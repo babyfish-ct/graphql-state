@@ -26,7 +26,7 @@ export const BookStoreList:FC = memo(() => {
 ```
 > 注意：
 >
-> 这种例子的代码需要外部React组件使用&lt;Suspense/&gt;
+> 这个例子的代码需要外部React组件使用&lt;Suspense/&gt;
 
 ## 2. 参数
 useQuery定义如下
@@ -48,7 +48,7 @@ useQuery<
 2. 第二个参数options可选，一个JSON对象，包含如下字段
   - variables: 可选，一个JOSN对象，表示查询参数
   - mode: 具备两个取值，可选，默认"cache-and-network"
-    1. "cache-and-network": 先尝试从缓存中查询数据，如果缓存数据不全，从服务的查询数据并更新缓存
+    1. "cache-and-network": 先尝试从缓存中查询数据，如果缓存数据不全，从服务器查询数据并更新缓存
     2. "cache-only": 只从缓存中查询数据，如果缓存数据不全，抛出异常
   - asyncStyle: 可选，默认"suspense"
     1. "suspense": 稍后讨论
@@ -95,7 +95,7 @@ export const BookStoreList:FC = memo(() => {
 
 ## 3. 返回类型
 
-随着options.asyncStyle取值的不同，useQuery的返回值也不相同。
+**随着options.asyncStyle取值的不同，useQuery的返回类型也不相同**
 
 其行为和[AsyncValue](../../simple-state/async_zh_CN.md)中讨论过的useStateValue完全一致，这里不做重复讨论，仅仅给出asyncStyle和返回类型的对应关系（假设Fetcher参数返回类型为T）
 
