@@ -1,8 +1,8 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/[简单状态](./README.md)/可写状态
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/[Simple state](./README.md)/Writable state
 
-# 1. 无参数可写状态
+# 1. Writable state without parameter
 
-1. 新建一个State.ts文件，定义状态
+1. Create a new "State.ts" file to define the state
 ```ts
 import { makeStateFactory } from "graphql-state";
 
@@ -10,10 +10,10 @@ const { createState } = makeStateFactory();
 
 export const countState = createState("count", 1);
 ```
-- 第一个参数无实际意义，保证每个状态都有一个唯一的name即可
-- 第二个参数表示可写状态的默认值
+- The first parameter has no practical meaning, just ensure that each state has a unique name
+- The second parameter represents the default value of the writable state
 
-2. 新建一个OutputView.tsx，显示此状态
+2. Create "OutputView.tsx" to display this state
 ```ts
 import { FC, memo } from "react";
 import { useStateValue } from "graphql-state";
@@ -27,9 +27,9 @@ export const InputView: FC = memo(() => {
 });
 
 ```
-useStateValue函数用于从状态读取值
+The "useStateValue" function is used to read the value from the state
 
-3. 新建一个InputView.tsx，修改此状态
+3. Create "InputView.tsx" to change this state
 ```ts
 import { FC, memo, useCallback } from "react";
 import { useStateAccessor } from "graphql-state";
@@ -47,20 +47,19 @@ export const InputView: FC = memo(() => {
 });
 ```
 
-和返回状态值的useStateValue不同，useStateAccessor返回一个函数。
-- 不带参数调用此函数，比如"count()"，表示读取状态的值
-- 带参数调用过此函数，比如"count(3)"，表示修改状态的值
+Unlike "useStateValue" which returns value of state, "useStateAccessor" returns a function.
+- Call this function without parameters, such as "count()", means reading the value of state
+- Called this function with parameters, such as "count(3)", means writing the value of state
 
-例子中的"count(count() + 1)"表示读取状态的旧值，加上1，再设置为状态的新值
+The "count(count() + 1)" in the example means reading the old value of the state, adding 1, and then setting result to the state
 
-4. 在App.tsx中，整合所有
-
+4. Integrate all in "App.tsx"
+```ts
 import { FC, memo } from "react";
 import { StateManagerProvider } from "graphql-state";
 import { OutputView } from "./OutputView";
 import { InputView } from "./InputView";
 
-```ts
 export const App: FC = memo(() => {
     return (
         <StateManagerProvider>
@@ -70,16 +69,16 @@ export const App: FC = memo(() => {
     );
 });
 ```
-> 注意
-> 使用状态管理的的前提，顶层需要用&lt;StateManagerProvider/&gt;包裹
+> Attention
+> The premise of using state management is that the top layer needs to be wrapped with &lt;StateManagerProvider/&gt;
 
-运行后，可以发现，IuputView对状态的变更，实时地体现在OutputView中，状态完成了跨越组件的信息传递。
+After running, it can be found that IuputView's changes to the state are reflected in the OutputView in real time, and the state completes the information transfer across components.
 
-# 2. 参数化的可写状态
+# 2. Parameterized writable state
 
-参数化的状态不在是一个单独的状态, 而是多个状态形成的一个族, 每一个参数都对应到族中一个子状态.
+The parameterized state is no longer a single state, but a family formed by multiple states, and each parameter corresponds to a sub-state in the family.
 
-1. 新建一个State.ts文件，定义状态
+1. Create "State.ts" to define the state
 ```ts
 import { makeStateFactory } from "graphql-state";
 
@@ -89,12 +88,12 @@ export const countState = createParameterizedState<number, {
     readonly parameter: string
 }>("count", 1);
 ```
-- 第一个范型参数number，表示所有子状态的类型都是数字。
-- 第一个范型参数{ readonly parameter: string; }，表示状态的参数为一个具备parameter字段的对象
+- The first paradigm parameter: number, indicates that the types of all sub-states are numbers.
+- The first paradigm parameter: {readonly parameter: string; }, the parameter representing the state is an object with a "parameter" field
 
-> 参数必须是对象类型
+> The parameter must be an object type
 
-2. 新建一个OutputView.tsx，显示特定参数所对应的状态
+2. Create "OutputView.tsx" to display the state corresponding to specific parameters
 ```ts
 import { FC, memo } from "react";
 import { useStateValue } from "graphql-state";
@@ -113,7 +112,7 @@ export const InputView: FC<{
 
 ```
 
-3. 新建一个InputView.tsx，修改特定参数所对应的状态
+3. Create "InputView.tsx" to modify the state corresponding to specific parameters
 ```ts
 import { FC, memo, useCallback } from "react";
 import { useStateAccessor } from "graphql-state";
@@ -135,7 +134,7 @@ export const InputView: FC<{
 });
 ```
 
-4. 在App.tsx中，整合所有
+4. Integrate all in "App.tsx"
 
 import { FC, memo } from "react";
 import { StateManagerProvider } from "graphql-state";
@@ -160,12 +159,12 @@ export const App: FC = memo(() => {
     );
 });
 ```
-运行后，可以发现，在两个区域内各自有一个状态彼此地工作，看起来就如同使用了两个不同的状态。
+After running, it can be found that each of the two parameters has a state that works normally, which looks like two different states are used.
 
-虽然参数化的状态看起来很像多个无参数的状态，但是它们还有明显的区别
-- 如果定义多个无参数的状态，那么状态的数量必须在编译时刻确定
-- 如果使用一个有参数的状态，不必在编译时刻知道子状态的数量，编译时只是定义了未知数量的多个子状态的一个族。运行时的自动决定所需子状态的数量。所传递的参数的取值越多，族内被维护的子状态就越多。
+Although the parameterized state looks a lot like multiple states without parameters, there are obvious differences between them
+- If multiple states without parameters are defined, the number of states must be determined at compile time
+- If you use a state with parameters, you don't need to know the number of sub-states at compile time. Only a family of multiple sub-states with an unknown number is defined at compile time. The number of required sub-states is automatically determined at runtime. The more values of the parameters passed, the more sub-states are maintained in the family.
 
 -------------------------------------------------------------
-[Back to parent: 简单状态](./README.md) | [Next: 计算状态 >](./computed.md)
+[Back to parent: Simple state](./README.md) | [Next: Computed state >](./computed.md)
 
