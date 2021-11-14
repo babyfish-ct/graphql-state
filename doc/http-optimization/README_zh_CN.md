@@ -153,7 +153,7 @@ const data = useQuery(
           \---->| location |
                 +----------+
 ```
-形状D中Query.findBookStores.location字段在形状A中存在。所以，A和D是毫不相干的两个形状，不能说A包含D或A大于D。
+形状D中Query.findBookStores.location字段在形状A中不存在。所以，A和D是毫不相干的两个形状，不能说A包含D或A大于D。
 
 ## 下级文档
 - [异步削峰](./peak-clipping_zh_CN.md)
