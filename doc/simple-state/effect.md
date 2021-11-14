@@ -1,12 +1,12 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/[简单状态](./README.md)/Effect
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/[Simple state](./README.md)/Effect
 
-创建简单状态时，可以为其设置Effect逻辑，类似于react的mount/unmount行为。
+When creating a simple state, you can set the Effect logic for it, similar to react's mount/unmount behavior.
 
-通过这种方式，简单状态不但可以管理应用内部的数据，还可以把应用外部数据同步到状态管理器中，一视同仁地对待。
+In this way, the simple state can not only manage the data inside the application, but also synchronize the external data of the application to the state manager and treat it the same.
 
-在这个例子中，我们尝试把浏览器窗口的大小同步到状态管理中
+In this example, we try to synchronize the size of the browser window to the state management
 
-1. 在State.ts中定义状态和其Effect
+1. Define the state and its effect in "State.ts"
 
 ```ts
 import { makeStateFactory } from 'graphql-state';
@@ -25,19 +25,26 @@ export const windowSizeState = createComputedState<WindowSize>(
     }, 
     {
         mount: ctx => {
-            const onResize = () => { 
-                ctx.invalidate(); // 用户改变浏览器窗口大小时，当前计算属性需要重新计算
+        
+            const onResize = () => {
+                // When the user changes the size of the browser window, 
+                // the current computed state needs to be recalculated
+                ctx.invalidate(); 
             };
-            window.addEventListener("resize", onResize); // 当前状态被mount
+            
+            // The current state is mounted
+            window.addEventListener("resize", onResize);
+            
             return () => {
-                window.removeEventListener("resize", onResize); // 当前状态被unmount
+                // The current state is unmounted
+                window.removeEventListener("resize", onResize); 
             }
         }
     }
 );
 ```
 
-接下来我们就可以在任何组件中引用浏览器窗口大小了，就如同使用应用内部状态一样
+Next, we can reference the browser window size in any component, just like using the internal state of the application
 
 ```ts
 import { FC, memo } from 'react';
@@ -56,15 +63,15 @@ export const DisplayView: FC = memo(() => {
 });
 ```
 
-这个例子是基于计算状态实现的。其实，基于可写状态也可以达到一样的效果。此演示包含在配套example中，此处不再赘述。
+This example is based on the computed state. In fact, the same effect can be achieved based on the writable state. This demo is included in the supporting example, so I won’t repeat it here.
 
-## Effect在配套例子中的应用
+## Application of Effect in supporting examples
 
-1. 在[example/client/src/graphq/common/HttpLog.ts](https://github.com/babyfish-ct/graphql-state/blob/master/example/client/src/graph/common/HttpLog.ts)中，使用Effect构建HTTP请求日志状态，让所有需要和服务端通信的例子呈现HTTP请求日志。
+1. In [example/client/src/graphq/common/HttpLog.ts](https://github.com/babyfish-ct/graphql-state/blob/master/example/client/src/graph/common/HttpLog.ts), we use effect to synchronize the HTTP request log status, so that all the examples that need to communicate with the server show the HTTP request log.
 
-2. 在[/example/client/src/graph/graphql/log/EntityLog.ts](https://github.com/babyfish-ct/graphql-state/blob/master/example/client/src/graph/graphql/log/EntityLog.ts)中，使用Effect构建GraphState缓存数据库触发器事件日志状态，让相关例子呈现GraphState缓存数据库触发器事件列表。
+2. In [/example/client/src/graph/graphql/log/EntityLog.ts](https://github.com/babyfish-ct/graphql-state/blob/master/example/client/src/graph/graphql/log/EntityLog.ts), we use Effect to build the GraphState cache database trigger event log state, and let related examples present a list of GraphState cache database trigger events.
 ------------------------------------------
 
-[< Previous: 异步状态](./async.md) | [Back to parent: 简单状态](./README.md) | [Next: 作用域 >](./scope.md)
+[< Previous: Async state](./async.md) | [Back to parent: Simple state](./README.md) | [Next: Scopes >](./scope.md)
 
     
