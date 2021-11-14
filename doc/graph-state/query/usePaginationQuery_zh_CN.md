@@ -57,7 +57,7 @@ usePaginationQuery<
 
 ## 2. 返回类型
 
-**随着options.asyncStyle取值的不同，usePaginationQuery的返回值也不相同**
+**随着options.asyncStyle取值的不同，usePaginationQuery的返回类型也不相同**
 
 其行为和[AsyncValue](../../simple-state/async_zh_CN.md)中讨论过的useStateValue完全一致，这里不做重复讨论，仅仅给出asyncStyle和返回类型的对应关系（假设Fetcher参数返回类型为T）
 
@@ -113,7 +113,7 @@ usePaginationQuery<
 
 ## 3. 分页风格
 
-options.paginationStyle为分页风格分页方式，有三种取值
+options.paginationStyle有三种取值
   - forward: 可累积的，由前到后逐段加载的分页
   - backward: 可累积的，由后到前逐段加载的分页
   - page: 经典的，记录条数固定，能前后自由导航的分页
@@ -428,4 +428,4 @@ const BookList: FC = memo(() => {
 
 -------------
 
-[< 上一篇：useQuery](./useQuery_zh_CN.md) | [返回上级：查询](./README_zh_CN.md) | [下一篇：useObject&useObjects](./useObject_zh_CN.md)
+[< 上一篇：useQuery](./useQuery_zh_CN.md) | [返回上级：查询](./README_zh_CN.md) | [下一篇：useObject&useObjects >](./useObject_zh_CN.md)
