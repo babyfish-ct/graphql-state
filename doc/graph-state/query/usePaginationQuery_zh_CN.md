@@ -37,7 +37,8 @@ usePaginationQuery<
     > 
     > 不能指定分页参数first, after, last, before；否则，抛出异常
   - windowId: 指定一个标识名称
-    > 任何界面都可以使用usePaginationQuery, 都会得到相应的分页结果
+    > 任何界面都可以使用usePaginationQuery, 都会得到相应的分页结果。
+    > 
     > 对于不同的分页结果，如果以下条件全部满足
     > - windowId相同
     > - paginationStyle相同
