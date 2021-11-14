@@ -54,8 +54,8 @@ stateManager.save(
 );
 ```
 
-### 1.1 保存使用字段别名的对象
-```
+### 1.2 保存使用字段别名的对象
+```ts
 stateManager.save(
     
     book$
@@ -66,8 +66,8 @@ stateManager.save(
 );
 ```
 
-### 1.2 保存带关联的对象
-```
+### 1.3 保存带关联的对象
+```ts
 stateManager.save(
     
     book$$
@@ -86,10 +86,36 @@ stateManager.save(
 );
 ```
 
-### 1.3 保存带参数的对象（参数化的关联）
+### 1.4 只修改关联，不修改被关联对象
+
+上例中，我们不久修改了Book，还修改了Author，比如Author.name被修改了。但是，很多时候，我们只想修改Book和Author之间的关联，不想修改被关联对象的其他属性。
+
+要达到此目录，让被关联对象只包含id即可
+
+```ts
+stateManager.save(
+    
+    book$$
+    .store(bookStore$$)
+    .authors(author$$),
+    
+    { 
+        id: "e110c564-23cc-4811-9e81-d587a13db634", 
+        name: "Learning GraphQL",
+        store: {id: "d38c10da-6be8-4924-b9b9-5e81899612a0", name: "O'REILLY"},
+        authors: [
+            {id: "fd6bb6cf-336d-416c-8005-1ae11a6694b5"}, // 只提供id
+            {id: "1e93da94-af84-44f4-82d1-d8a9fd52ea94"} // 只提供id
+        ]
+    }
+);
+```
+**此用法很重要，在配套例子中频繁使用**
+
+### 1.5 保存带参数的对象（参数化的关联）
 
 最直观，但是不推荐的方式
-```
+```ts
 stateManager.save(
     
     book$$
@@ -110,7 +136,7 @@ stateManager.save(
 );
 ```
 更推荐的方式
-```
+```ts
 stateManager.save(
     
     book$$
@@ -139,10 +165,9 @@ stateManager.save(
 > 
 > 这是一个参数化的关联。所以仅仅给save函数传递需要保存的数据对象是不够的。此例很好地解释了为什么save函数的第一个参数要指定[graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client)的fetcher。
 
+### 1.6 保存多个对象
 
-### 1.5 保存多个对象
-
-```
+```ts
 stateManager.save(
     book$$
     .authors(
@@ -167,10 +192,6 @@ stateManager.save(
     ]
 );
 ```
-
-> **注意**
-> 
-> 在这个例子中，在关系属性authors中，对Author对象只保存其id字段。这表示，不想修改Author对象的任何字段，只想修改Book和Author之间的关系
 
 ## 2. 删除
 
