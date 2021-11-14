@@ -1,26 +1,26 @@
-# [grpahql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../README.md)/简单状态
+# [grpahql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/Simple state
 
-简单状态使用方式非常类似于recoil，但是它可以和图状态配合使用。
+The use of simple state is very similar to recoil, but it can be used in conjunction with graph state.
 
-框架支持三种简单状态
+The framework supports three simple states
 
-1. 可写状态
-2. 计算状态
-3. 异步状态
+1. Writable state
+2. Computed state
+3. Async state
 
-## 1. 创建状态的API
+## 1. Create state API
 
-这些函数用于创建状态，相当于编程语言中的变量定义。它们的返回值应该被全局变量记录，以便于在整个应用范围内共享。
+These functions are used to create states, which are equivalent to variable definitions in programming languages. Their return values should be recorded by global variables so that they can be shared throughout the application.
 
-||无参数|有参数|
+||No parameters|With parameters|
 |---|---|---|
-|可写状态|createState|createParameterizedState|
-|计算状态|createComputedState|createParameterizedComputedState|
-|异步状态|createAsyncState|createParameterizedAsycState|
+|Writable state|createState|createParameterizedState|
+|Computed state|createComputedState|createParameterizedComputedState|
+|Async state|createAsyncState|createParameterizedAsycState|
 
-这些函数的使用方法在更细节的文档中有详细的讨论，这里讨论如何导入他们，分两种情况
+The use of these functions is discussed in detail in the more detailed documentation, here is how to import them, divided into two cases
 
-1. 如果你的应用仅仅使用了简单状态，并没有使用图状态
+1. If your application only uses simple states, and does not use graph states
 ```ts
 import { makeStateFactory } from "graphql-state";
 
@@ -34,7 +34,7 @@ const {
 } = makeStateFactory();
 ```
 
-2. 如果你的应用使用了图状态，在相关代码被生成后，如下代码是更好的选择
+2. If your application uses graph state, after the relevant code is generated, the following code is a better choice
 ```ts
 import { 
     createState, 
@@ -43,13 +43,13 @@ import {
     createParameterizedState,
     createParameterizedComputedState,
     createParameterizedAsyncState
-} from "<被生成代码的根目录的相对路径>";
+} from "<The relative path of the root directory of the generated code>";
 
 ```
 
-## 2. 使用被定义状态的API
+## 2. Use defined state API
 
-使用状态的API只有两个: useStateValue和useStateAccessor
+There are only two APIs for using state: useStateValue和useStateAccessor
 
 ```ts
 import { 
@@ -58,13 +58,13 @@ import {
 } from 'graphql-state';
 ```
 
-## 3. 下级章节
+## 3. Child chapters
 
-1. [可写状态](./writable.md)
-2. [计算状态](./computed.md)
-3. [异步状态](./async.md)
+1. [Writable state](./writable.md)
+2. [Computed state](./computed.md)
+3. [Async state](./async.md)
 4. [Effect](./effect.md)
-5. [作用域](./scope.md)
+5. [Scopes](./scope.md)
 
 ---------------------------------------
 [返回上级](../README.md) | [下一篇: 图状态 >](../graph-state/README.md)
