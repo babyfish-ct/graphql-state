@@ -1,14 +1,14 @@
 # [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../../README_zh_CN.md)/[图状态](../README_zh_CN.md)/[查询](./README_zh_CN.md)/useObject&useObjects
 
 在实际项目中，有两种查询非常常见
-- 根据id查询一个对象
+- 根据一个id查询一个对象
 - 根据多个id查询多个对象
 
 框架使用useObject和useObjects函数来实现这两个功能。
 
 > 注意：
 >
-> 1. 按照普通的思维莫斯来想，根据单个id查询单个对象，很容易导致出现大量碎片化的小请求，进而导致性能问题。
+> 1. 按照普通的思维模式来想，根据id查询对象，很容易导致出现大量碎片化的小请求，进而导致性能问题。
 > 
 > 别担心，配套[HTTP优化](../../http-optimization/README_zh_CN.md)能应对这种情况，碎片化的小请求都会被合并一个大的批量请求
 >
