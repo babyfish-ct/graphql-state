@@ -1,6 +1,6 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/图状态
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/Graph state
 
-所谓图状态，并非一定需要GraphQL服务端，而是可以被GraphQL风格的API读写的缓存的数据。
+Graph state does not necessarily require a GraphQL server, but cached data that can be read and written by GraphQL-style APIs.
 
 > - 配套的demo中，[本地数据例子](https://github.com/babyfish-ct/graphql-state/tree/master/example/client/src/graph/local)是不需要GraphQL服务器的，其所有缓存数据都采用GraphQL风格的API进行读取
 > - 未来，本框架会基于REST服务端模拟GraphQL服务，REST服务也可以通过GraphQL风格的API来读写，这对一些遗留的服务端项目很有用
