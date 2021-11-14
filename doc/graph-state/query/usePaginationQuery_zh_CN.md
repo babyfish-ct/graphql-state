@@ -57,7 +57,7 @@ usePaginationQuery<
 
 ## 2. 返回类型
 
-随着options.asyncStyle取值的不同，useQuery的返回值也不相同。
+**随着options.asyncStyle取值的不同，usePaginationQuery的返回值也不相同**
 
 其行为和[AsyncValue](../../simple-state/async_zh_CN.md)中讨论过的useStateValue完全一致，这里不做重复讨论，仅仅给出asyncStyle和返回类型的对应关系（假设Fetcher参数返回类型为T）
 
