@@ -45,6 +45,7 @@ generator.generate();
 ```
 yarn codegen
 ```
+即可在src/__generated下生成DSL所需相关代码
 
 #### 2.2. 不基于GraphQL服务端
 
@@ -97,7 +98,11 @@ generator.generate();
 "codegen": "node scripts/codegen.js
 ```
 
-4. 首次开发，或schema.sdl文件变更时，执行"yarn codegen"生成代码
+4. 首次开发，或schema.sdl文件变更时，执行
+```
+yarn codegen
+```
+即可在src/__generated下生成DSL所需相关代码
 
 --------------------------------------
 
