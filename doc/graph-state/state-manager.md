@@ -43,7 +43,7 @@ function createStateManager() {
 
 ### 1.1 Not based on GraphQL server
 
-如果你的开发并不基于GraphQL服务端，就如同[本地示例](https://github.com/babyfish-ct/graphql-state/tree/master/example/client/src/graph/local)一样，上文中的createStateManager函数应该如下实现
+If your development is not based on the GraphQL server, just like the [local example](https://github.com/babyfish-ct/graphql-state/tree/master/example/client/src/graph/local), the createStateManager function above should be implemented as follows
 
 ```ts
 
@@ -54,13 +54,13 @@ function createStateManager() {
 }
 ```
 
-这里的newTypedConfiguration是graphql-ts-client-codegen自动在src/__generated中生成代码中的一个函数，newTypedConfiguration()返回一个配置对象，这个配置对象可以创建一个StateManager。
+The "newTypedConfiguration" here is a function generated in "src/__generated" by graphql-ts-client-codegen. newTypedConfiguration() returns a configuration object, which can create a StateManager.
 
-这里的代码很简单，配置对象未经过任何处理就直接用于创建StateManager。随着我们的深入了解，后续文档会让配置对象的操作丰富起来。
+The code here is very simple, the configuration object is directly used to create the StateManager without any processing. With our in-depth understanding, follow-up documents will enrich the operations of configuration objects.
 
-### 1.2 基于GraphQL服务端
+### 1.2 Based on GraphQL server
 
-如果你的开发基于GraphQL服务端，上文中的createStateManager函数应该如下实现
+If your development is based on the GraphQL server, the createStateManager function above should be implemented as follows
 
 ```ts
 import { GraphQLNetwork } from "graphql-state";
@@ -88,13 +88,13 @@ function createStateManager() {
 }
 ```
 
-这里传入的GraphQLNetwork对象指定如何和服务端通信
+The GraphQLNetwork object passed in here specifies how to communicate with the server
 
-（未来，框架会支持一个RESTNetwork将REST服务模拟成GraphQL服务）
+(In the future, the framework will support a RESTNetwork to simulate REST services as GraphQL services)
 
-## 2. 获取StateManager
+## 2. Get StateManager
 
-要在React组件内部获取StateManager，比较好的方式是调用自动生成的代码中的函数useTypedStateManager
+To get the StateManager inside the React component, a better way is to call the function "useTypedStateManager" in the automatically generated code
 ```ts
 import { FC, memo } from 'react';
 import { useTypedStateManager } from './__generated';
@@ -109,4 +109,4 @@ export const SomeComponent: FC = memo(() => {
 
 ----------------------------------
 
-[< Previous: 整合graphql-ts-client](./graphql-ts-client.md) | [Back to parent: 图状态](./README.md) | [Next: 查询 >](./query/README.md)
+[< Previous: Integrate graphql-ts-client](./graphql-ts-client.md) | [Back to parent: Graph state](./README.md) | [Next: Query >](./query/README.md)
