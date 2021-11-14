@@ -16,7 +16,7 @@ The framework uses the useObject and useObjects functions to achieve these two f
 >
 > import {useObject, useObjects} from'./__generated';
 
-useObject和useObjects的定义如下
+The definitions of "useObject" and "useObjects" are as follows
 ```ts
 useObject<
     T, 
@@ -51,30 +51,30 @@ useObjects<
 );
 ```
 
-## 1. 参数解释
+## 1. Parameter
 - fetcher: 
-  [grahql-ts-client](https://github.com/babyfish-ct/graphql-ts-client)的Fetcher，根对象类型不能为"Query"
-- id/ids: 单个id或ids数组
+  Fetcher of [grahql-ts-client](https://github.com/babyfish-ct/graphql-ts-client), the root object type cannot be "Query"
+- id/ids: Single id or array for ids
 - |options?.objectStyle ?? "required" | id | ids |
   |----|----|----|
   |required| Id type of T | ReadonlyArray&lt;Id type of T&gt; |
   |optional| Id type of T &#124; undefined | ReadonlyArray&lt;Id type of T &#124; undefined &gt; |
 - options:
-  一个可选对象，包含如下字段
-  - mode: 和[useQuery](./useQuery.md)中此参数的用法相同，此处不再赘述
-  - asyncStyle: 和[useQuery](./useQuery.md)中此参数的用法相同，此处不再赘述
-  - variables: 和[useQuery](./useQuery.md)中此参数的用法相同，此处不再赘述
-  - objectStyle: 对象风格，有两种取值，可选，默认required
-    - required: 指定id的对象必须存在，否则抛出异常
-    - optional: 如果指定指定id的对象不存在，认为对象是undefined
+  An optional object containing the following fields
+  - mode: The usage of this parameter is the same as [useQuery](./useQuery.md), so I won’t repeat it here
+  - asyncStyle: The usage of this parameter is the same as [useQuery](./useQuery.md), so I won’t repeat it here
+  - variables: The usage of this parameter is the same as [useQuery](./useQuery.md), so I won’t repeat it here
+  - objectStyle: Optional, there are two choices, default "required"
+    - required: The object with the specified id must exist, otherwise an exception will be thrown
+    - optional: If the object with the specified id does not exist, use undefined as the result
     
-## 2. 返回类型
+## 2. Return Type
 
-options.asyncStyle和options.objectStyle这两个参数都会影响useObject/useObjects的返回类型，这里罗列出所有情况
+The two parameters "options.asyncStyle" and "options.objectStyle" will affect the return type of useObject/useObjects. Here are all situations
 
-假设fetcher查询的类型为T
+Assuming that the type of fetcher query is T
 
-1. useObject的返回类型为
+1. Return type of "useObject"
 
 <table>
   <thead>
@@ -82,7 +82,7 @@ options.asyncStyle和options.objectStyle这两个参数都会影响useObject/use
        <th></th>
        <th>objectStyle: required</th>
        <th>objectStyle: optional</th>
-       <th>备注</th>
+       <th>Remark</th>
     </tr>
   </thead>
   <tbody>
@@ -90,7 +90,7 @@ options.asyncStyle和options.objectStyle这两个参数都会影响useObject/use
       <td><b>asyncStyle: suspense</b></td>
       <td>T</td>
       <td>T | undefined</td>
-      <td>需要外部组件使用&lt;Suspendse/&gt;</td>
+      <td>External components need to use &lt;Suspendse/&gt;</td>
     </tr>
     <tr>
       <td><b>asyncStyle: suspense-refetch</b></td>
@@ -102,7 +102,7 @@ options.asyncStyle和options.objectStyle这两个参数都会影响useObject/use
     readonly data?: T,
     readonly refetch: () => void
 }</pre></td>
-      <td>需要外部组件使用&lt;Suspendse/&gt;</td>
+      <td>External components need to use &lt;Suspendse/&gt;</td>
     </tr>
     <tr>
       <td><b>asyncStyle: async-object</b></td>
@@ -118,12 +118,12 @@ options.asyncStyle和options.objectStyle这两个参数都会影响useObject/use
     readonly error: any,
     readonly refetch: () => void
 }</pre></td>
-      <td>如果loading为true或error存在，data必为undefined</td>
+      <td>If "loading" is true or "error" exists, "data" must be undefined</td>
     </tr>
   </tbody>
 </table>
 
-2. useObjects的返回类型为
+2. Return type of "useObjects"
 
 <table>
   <thead>
@@ -131,7 +131,7 @@ options.asyncStyle和options.objectStyle这两个参数都会影响useObject/use
        <th></th>
        <th>objectStyle: "required"</th>
        <th>objectStyle: "optional"</th>
-       <th>备注</th>
+       <th>Remark</th>
     </tr>
   </thead>
   <tbody>
@@ -139,7 +139,7 @@ options.asyncStyle和options.objectStyle这两个参数都会影响useObject/use
       <td><b>asyncStyle: suspense</b></td>
       <td>ReadonlyArray&lt;T&gt;</td>
       <td>ReadonlyArray&lt;T | undefined&gt;</td>
-      <td>需要外部组件使用&lt;Suspendse/&gt;</td>
+      <td>External components need to use &lt;Suspendse/&gt;</td>
     </tr>
     <tr>
       <td><b>asyncStyle: suspense-refetch</b></td>
@@ -153,7 +153,7 @@ options.asyncStyle和options.objectStyle这两个参数都会影响useObject/use
         ReadonlyArray&lt;T | undefined&gt;,
     readonly refetch: () => void
 }</pre></td>
-      <td>需要外部组件使用&lt;Suspendse/&gt;</td>
+      <td>External components need to use &lt;Suspendse/&gt;</td>
     </tr>
     <tr>
       <td><b>asyncStyle: async-object</b></td>
@@ -171,7 +171,7 @@ options.asyncStyle和options.objectStyle这两个参数都会影响useObject/use
     readonly error: any,
     readonly refetch: () => void
 }</pre></td>
-      <td>如果loading为true或error存在，data必为undefined</td>
+      <td>If "loading" is true or "error" exists, "data" must be undefined</td>
     </tr>
   </tbody>
 </table>
