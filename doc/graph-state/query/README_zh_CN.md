@@ -7,7 +7,7 @@
 - useObject
 - useObjects
 
-注意
+它们的导入方式不同
 
 1. useQuery和usePaginationQuery从'graphql-state'中直接导入
 ```ts
