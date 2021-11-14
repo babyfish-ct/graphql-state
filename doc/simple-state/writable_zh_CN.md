@@ -54,13 +54,12 @@ export const InputView: FC = memo(() => {
 例子中的"count(count() + 1)"表示读取状态的旧值，加上1，再设置为状态的新值
 
 4. 在App.tsx中，整合所有
-
+```ts
 import { FC, memo } from "react";
 import { StateManagerProvider } from "graphql-state";
 import { OutputView } from "./OutputView";
 import { InputView } from "./InputView";
 
-```ts
 export const App: FC = memo(() => {
     return (
         <StateManagerProvider>
@@ -137,12 +136,12 @@ export const InputView: FC<{
 
 4. 在App.tsx中，整合所有
 
+```ts
 import { FC, memo } from "react";
 import { StateManagerProvider } from "graphql-state";
 import { OutputView } from "./OutputView";
 import { InputView } from "./InputView";
 
-```ts
 export const App: FC = memo(() => {
     return (
         <StateManagerProvider>
