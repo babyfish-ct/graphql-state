@@ -1,20 +1,20 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../../README.md)/[图状态](../README.md)/[查询](./README.md)/useObject&useObjects
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../../README.md)/[Graph state](../README.md)/[Query](./README.md)/useObject&useObjects
 
-在实际项目中，有两种查询非常常见
-- 根据一个id查询一个对象
-- 根据多个id查询多个对象
+In actual projects, there are two kinds of queries that are very common
+- Query an object based on an id
+- Query multiple objects based on multiple ids
 
-框架使用useObject和useObjects函数来实现这两个功能。
+The framework uses the useObject and useObjects functions to achieve these two functions.
 
-> 注意: 
+> Note:
 >
-> 1. 按照普通的思维模式来想，根据id查询对象，很容易导致出现大量碎片化的小请求，进而导致性能问题。
-> 
-> 别担心，配套[HTTP优化](../../http-optimization/README.md)能应对这种情况，碎片化的小请求都会被合并变成一个大的批量请求
+> 1. Think about it according to the normal mode of thinking. Querying object based on id can easily lead to a large number of fragmented small http requests, which can lead to performance problems.
 >
-> 2. 这两个函数不能直接从graphql-state导入，需要从生成的代码中导入，例如
-> 
-> import { useObject, useObjects } from './__generated';
+> Don’t worry, the supporting [HTTP optimization](../../http-optimization/README.md) can cope with this situation, fragmented small http requests will be merged into a large batch request
+>
+> 2. These two functions cannot be imported directly from graphql-state, they need to be imported from the generated code, for example
+>
+> import {useObject, useObjects} from'./__generated';
 
 useObject和useObjects的定义如下
 ```ts
