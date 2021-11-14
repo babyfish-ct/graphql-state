@@ -67,7 +67,7 @@ export const InputView: FC = memo(() => {
 >
 > This means that the state of the global scope is not used, but the state of the current scope is used.
 >
-> Note: Only the state created in the "any-scope" mode supports specifying the scope as "local" in useStateAccessor or useStateValue, otherwise it will cause runtime exceptions. The purpose of this design is to prevent excessive freedom.
+> Note: Only the state created in the "any-scope" mode supports specifying the scope as "local" in useStateAccessor or useStateValue, otherwise it will cause runtime exception. The purpose of this design is to prevent excessive freedom.
 
 Similarly, implement OutputView
 ```ts
