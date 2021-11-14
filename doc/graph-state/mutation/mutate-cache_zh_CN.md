@@ -2,7 +2,7 @@
 
 要变更缓存，首选需要获取StateManager，请使用被生成代码中的useTypedStateManager函数
 
-```
+```ts
 import { FC, memo } form 'react';
 import { useTypedStateManager } from './__generated';
 
