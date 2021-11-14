@@ -41,13 +41,13 @@ options: 一个可选的对象，包含如下字段
 > 
 > 有两种方法可以指定请求参数
 > 1. 在调用此Hook时指定options.variables，例如
->   ```
+>   ```ts
 >   const { mutate} = useMutation(..., {
 >      variables: { input: ...}
 >   });
 >   ```
 > 2. 在调用此Hook返回的muate函数时指定参数
->   ```
+>   ```ts
 >   const { mutate } = useMutation(..., {});
 >   const onSubmitClick = useCallback(() => {
 >       mutate({input: ...});
@@ -89,7 +89,7 @@ mergeBook字段接受一个BookInput，返回Book，可以利用这个返回值�
 > 无论如何，这是一个很常见且通用的设计方法
 
 如此，我们期望执行的变更操作的fetcher看起来应该是这个样子
-```
+```ts
 const MUTATION_FETCHER = mutation$.mergeBook(
     { input: ... },
     book$$
@@ -99,13 +99,13 @@ const MUTATION_FETCHER = mutation$.mergeBook(
 ```
 
 其中
-```
+```ts
     book$$
     .store(bookStore$.id)
     .authors(author$.id)
 ```
 既要用与指定mutation的返回格式，又要用于更新本地数据。我们可以稍微修改一下代码，把这部分独立出来，如下
-```
+```ts
 const BOOK_MUATION_INFO = book$$
     .store(bookStore$.id)
     .authors(author$.id)
@@ -119,7 +119,7 @@ const MUTATION_FETCHER = mutation$.mergeBook(
 
 好了，现在，我们给出useMutation的示例代码
 
-```
+```ts
 import { FC, memo } from 'react';
 import { useMutation } from 'graphql-state';
 import { useTypedStateManager } from './__generated/fetchers';
@@ -140,6 +140,9 @@ export const BookMutationComponent: FC = memo(() => {
         {
             onSuccess: data => {
                 stateManager.save(BOOK_MUTATION_INFO, data);
+            },
+            onError: () => {
+                alert("Error");
             }
         }
     );
@@ -152,7 +155,7 @@ export const BookMutationComponent: FC = memo(() => {
     return (
         <>
             ...more code, UI form...
-            <button onClick={onSaveClick}>
+            <button onClick={onSaveClick} disabled={loading}>
                 {loading ? "Saving" : "Save"}
             </button>
         </>
