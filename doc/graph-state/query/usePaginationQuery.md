@@ -1,6 +1,6 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../../README.md)/[图状态](../README.md)/[查询](./README.md)/usePaginationQuery
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../../README.md)/[Graph state](../README.md)/[Query](./README.md)/usePaginationQuery
 
-usePaginationQuery用于支持分页面查询，其定义如下
+usePaginationQuery is used to support pagiatnion query, which is defined as follows
 
 ```ts
 usePaginationQuery<
@@ -20,49 +20,49 @@ usePaginationQuery<
     }
 );
 ```
-## 1. 参数解释
+## 1. Parameters
 1. fetcher: 
-  [grahql-ts-client](https://github.com/babyfish-ct/graphql-ts-client)的Fetcher，根对象类型必须为"Query"
+  A Fetcher of [grahql-ts-client](https://github.com/babyfish-ct/graphql-ts-client)的Fetcher，the root object type must be "Query"
 
-  和useQuery不同，usePaginationQuery的fetcher参数必须且只能拥有一个connection分页字段，否则会导致异常。
-
-  > 关于Connection字段，请参考https://graphql.org/learn/pagination/#complete-connection-model
+  > Unlike "useQuery", the fetcher parameter of "usePaginationQuery" must and can only have one connection field, otherwise it will cause an exception.
+  >
+  > For the connection field, please refer to https://graphql.org/learn/pagination/#complete-connection-model
 
 2. options:
-  一个可选对象，包含如下字段
-  - variables: 和[useQuery](./useQuery.md)中此参数的用法相同，此处不再赘述
-    > 注意: 
+  An optional object containing the following fields
+  - variables: The usage of this parameter is the same as [useQuery](./useQuery.md), so I won’t repeat it here
+    > Note: 
     > 
-    > 不能指定分页参数first, after, last, before；否则，抛出异常
-  - mode: 和[useQuery](./useQuery.md)中此参数的用法相同，此处不再赘述
-  - asyncStyle: 和[useQuery](./useQuery.md)中此参数的用法相同，此处不再赘述
-  - windowId: 指定一个标识名称
-    > 任何界面都可以使用usePaginationQuery, 都会得到相应的分页结果。
-    > 
-    > 对于不同的分页结果，如果以下条件全部满足
-    > - windowId相同
-    > - paginationStyle相同
-    > - initialSize相同
-    > 
-    > 那么它们将会共享相同缓存中同一项数据，包括页码等分页相关的临时状态。
-  - initialSize: 初始记录条数
-  - pageSize: 每次翻页要加载的记录条数。可选，默认等于initialSize
-    > 注意: 
-    > 
-    > 如果paginationStyle为"page"，则pageSize要么不指定，要么等于initialSize，否则会导致异常
-  - paginationStyle: 分页方式，有三种取值
-    - forward: 可累积的，由前到后逐段加载的分页
-    - backward: 可累积的，由后到前逐段加载的分页
-    - page: 经典的，记录条数固定，能前后自由导航的分页
+    > The pagination variables "first", "after", "last" and "before" cannot be specified; otherwise, an exception will be thrown
+  - mode: The usage of this parameter is the same as [useQuery](./useQuery.md), so I won’t repeat it here
+  - asyncStyle: The usage of this parameter is the same as [useQuery](./useQuery.md), so I won’t repeat it here
+  - windowId: Specify an identifying name
+    > "usePaginationQuery" can be used in any UI components, each UI component can get a result.
+    >
+    > For the results of different UI components, if the following conditions are all met
+    >- same windowId
+    >- same paginationStyle
+    >- same initialSize
+    >
+    > Then they will share the same data in cache, including page numbers and other temporary state related to pagination.
+  - initialSize: Initial number of records
+  - pageSize: The number of records to be loaded each time the page is turned. Optional, the default is equal to initialSize
+    > Note: 
+    >
+    > If "paginationStyle" is "page", then "pageSize" is either not specified or equal to "initialSize", otherwise it will cause an exception
+  - paginationStyle: there are three values
+    - forward: accumulative pagitation by segment loading from front to back
+    - backward: accumulative pagitation by segment loading from back to front
+    - page: classic pagination, the number of displayed records is fixed, and the page can be freely navigated
 
-## 2. 返回类型
+## 2. Return Type
 
-随着options.asyncStyle取值的不同，useQuery的返回值也不相同。
+With the different values of "options.asyncStyle", the return type of "usePaginationQuery" is also different
 
-其行为和[AsyncValue](../../simple-state/async.md)中讨论过的useStateValue完全一致，这里不做重复讨论，仅仅给出asyncStyle和返回类型的对应关系（假设Fetcher参数返回类型为T）
+Its behavior is exactly the same as the "useStateValue" discussed in [AsyncValue](../../simple-state/async.md). I will not repeat the discussion here, but only give the correspondence between "asyncStyle"
 
 - suspense:
-  - 返回类型: 
+  - Return Type: 
     ```
     {
         readonly data: T,
@@ -75,9 +75,9 @@ usePaginationQuery<
         readonly isLoadingPrevious: boolean
     }
     ```
-  - 备注: 外部React组件需要使用&lt;Suspense/&gt;
+  - Remark: External React components need to use &lt;Suspense/&gt;
 - suspense-refetch:
-  - 返回类型: 
+  - Return Type: 
     ```
     {
         readonly data: T,
@@ -91,9 +91,9 @@ usePaginationQuery<
         readonly isLoadingPrevious: boolean
     }
     ```
-  - 备注: 外部React组件需要使用&lt;Suspense/&gt;
+  - Remark: External React components need to use &lt;Suspense/&gt;
 - async-object:
-  - 返回类型: 
+  - Return Type: 
     ```
     {
         readonly data?: T,
@@ -109,14 +109,14 @@ usePaginationQuery<
         readonly isLoadingPrevious: boolean
     }
     ```
-  - 备注: data可以为undefined，当loading为true或error存在时，data必为undefined
+  - Remark: "data" can be undefined, when "loading" is true or "error" exists, "data" must be undefined
 
-## 3. 分页风格
+## 3. Pagination style
 
-options.paginationStyle为分页风格分页方式，有三种取值
-  - forward: 可累积的，由前到后逐段加载的分页
-  - backward: 可累积的，由后到前逐段加载的分页
-  - page: 经典的，记录条数固定，能前后自由导航的分页
+there are three choices for "options.paginationStyle"
+- forward: accumulative pagitation by segment loading from front to back
+- backward: accumulative pagitation by segment loading from back to front
+- page: classic pagination, the number of displayed records is fixed, and the page can be freely navigated
     
 ### 3.1. forward
 ```ts
@@ -166,7 +166,7 @@ const BookList: FC = memo(() => {
 });
 ```
 
-1. 运行后，初始界面如下
+1. After running, the initial UI is as follows
   ```
   +---------------------+
   | row-1               |
@@ -178,7 +178,7 @@ const BookList: FC = memo(() => {
   | Load more |
   +-----------+
   ```
-2. 点击"Load more"按钮，界面变为
+2. Click the "Load more" button, the UI changes to
   ```
   +---------------------+
   | row-1               |
@@ -190,7 +190,7 @@ const BookList: FC = memo(() => {
   | Loading...   |
   +--------------+
   ```
-3. HTTP请求返回后，界面变为
+3. After the HTTP request is completed, the UI becomes
 
   ```
   +---------------------+
@@ -256,7 +256,7 @@ const BookList: FC = memo(() => {
 });
 ```
 
-1. 运行后，初始界面如下(假设总记录100条)
+1. After running, the initial UI is as follows(Assuming a total of 100 records)
   ```
   +-----------+
   | Load more |
@@ -268,7 +268,7 @@ const BookList: FC = memo(() => {
   | row-100             |
   +---------------------+
   ```
-2. 点击"Load more"按钮，界面变为
+2. Click the "Load more" button, the UI changes to
   ```
   +--------------+
   | Loading...   |
@@ -280,7 +280,7 @@ const BookList: FC = memo(() => {
   | row-100             |
   +---------------------+
   ```
-3. HTTP请求返回后，界面变为
+3. After the HTTP request is completed, the UI becomes
 
   ```
   +-----------+
@@ -362,7 +362,7 @@ const BookList: FC = memo(() => {
 });
 ```
 
-1. 运行后，初始界面如下
+1. After running, the initial UI is as follows
   ```
   +---------------------+
   | row-1               |
@@ -374,7 +374,7 @@ const BookList: FC = memo(() => {
   | < Previous | | Next > |
   +------------+ +--------+
   ```
-2. 点击"Next >"按钮，界面变为
+2. Click the "Next >" button, the UI changes to
   ```
   +---------------------+
   | row-1               |
@@ -386,7 +386,7 @@ const BookList: FC = memo(() => {
   | < Previous | | Loading next...   |
   +------------+ +-------------------+
   ```
-3. HTTP请求返回后，界面变为
+3. After the HTTP request is completed, the UI becomes
 
   ```
   +---------------------+
@@ -400,7 +400,7 @@ const BookList: FC = memo(() => {
   +------------+ +--------+
   ```
 
-4. 点击"< Previous"按钮，界面变为
+4. Click the "< Previous" button, the UI changes to
 
   ```
   +---------------------+
@@ -413,7 +413,7 @@ const BookList: FC = memo(() => {
   | Loading previous...   | | Next > |
   +-----------------------+ +--------+
   ```
-5. HTTP请求返回后，界面变为
+5. After the HTTP request is completed, the UI becomes
   ```
   +---------------------+
   | row-1               |
@@ -428,4 +428,4 @@ const BookList: FC = memo(() => {
 
 -------------
 
-[< Previous: useQuery](./useQuery.md) | [Back to parent: 查询](./README.md) | [Next: useObject&useObjects](./useObject.md)
+[< Previous: useQuery](./useQuery.md) | [Back to parent: Query](./README.md) | [Next: useObject&useObjects](./useObject.md)
