@@ -6,23 +6,23 @@ Graph state does not necessarily require a GraphQL server, but cached data that 
 
 - In the future, this framework will simulate GraphQL services based on the REST server. REST services can also be read and written through GraphQL-style APIs. This is useful for some legacy server projects.
 
-图状态是针对复杂对象类型的缓存，通过[graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client)(一个基于TypeScript的GraphQL DSL)进行访问，因此graphql-state依赖于graphql-ts-client。
+Graph state is a cache for complex object types, accessed through [graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client)(a GraphQL DSL based on TypeScript), so graphql-state depends on graphql-ts-client.
 
-## 下级章节
+## Child chapters
 
-- [整合graphql-ts-client](./graphql-ts-client.md)
+- [Integrate graphql-ts-client](./graphql-ts-client.md)
 - [StateManager](./state-manager.md)
-- [查询](./query/README.md)
+- [Query](./query/README.md)
   - [useQuery](./query/useQuery.md)
   - [usePaginationQuery](./query/usePaginationQuery.md)
   - [useObject/useObjects](./query/useObject.md)
-- [变更](./mutation/README.md)
-  - [变更缓存](./mutation/mutate-cache.md)
+- [Mutation](./mutation/README.md)
+  - [Muate cache](./mutation/mutate-cache.md)
   - [useMutation](./mutation/useMutation.md)
-  - [智能更新](./mutation/README.md)
-  - [双向关联](./mutation/bidirectional-association.md)
-- [触发器](./trigger.md)
+  - [Smart mutation](./mutation/README.md)
+  - [Bidirectional association](./mutation/bidirectional-association.md)
+- [Trigger](./trigger.md)
 
 -------
 
-[< Previous: 简单状态](../simple-state/README.md) | [Back to parent: 文档](../README.md) | [Next: 释放策略 >](../release-policy.md)
+[< Previous: Simple state](../simple-state/README.md) | [Back to parent: Documentation](../README.md) | [Next: Release policy >](../release-policy.md)
