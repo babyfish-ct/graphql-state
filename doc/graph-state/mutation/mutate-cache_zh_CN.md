@@ -18,6 +18,20 @@ export const SomeComponent: FC = memo(() => {
 
 StateManager支持save函数用于保存数据，它合并了insert和update操作，你不用区分insert和update
 
+```ts
+save<TName extends (<EntityTypeNames> | "Query", T extends object, TVariables extends object = {}>(
+    fetcher: ObjectFetcher<TName, T, any>,
+    obj: T,
+    variables?: TVariables
+): void;
+
+save<TName extends <EntityTypeNames>, T extends object, TVariables extends object = {}>(
+    fetcher: ObjectFetcher<TName, T, any>,
+    objs: readonly T[],
+    variables?: TVariables
+): void;
+```
+
 > 注意：
 > 
 > 1. 为了简化例子，后续所有代码都隐了这些import语句
@@ -27,7 +41,7 @@ StateManager支持save函数用于保存数据，它合并了insert和update操�
 >   ```
 > 2. 后续代码硬编码了大量的JSON字面量。在实际项目中，不可能对需要保存数据的JSON进行硬编码，而本文档如此只是为了简化讨论
 > 
-> 3. save函数的第一个参数是[graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client)的fetcher，第二个参数是要保存的对象图或对象图集合，第三个参数可选的fetcher参数。由于[graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client)的类型安全性，如果第二个和第三个参数如果出现任何拼写错误，将会在编译期报错。
+> 3. save函数的第一个参数是[graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client)的fetcher，第二个参数是要保存的对象图或对象图集合，第三个参数可选的查询参数。由于[graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client)的类型安全性，如果第二个和第三个参数如果出现任何拼写错误，将会在编译期报错。
 
 ### 1.1 保存简单对象
 ```
