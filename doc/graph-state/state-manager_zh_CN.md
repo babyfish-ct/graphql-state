@@ -2,7 +2,7 @@
 
 ## 1. 创建StateManager
 
-在讨论简单状态时已经说明过顶层空间需要使用&lt;StateManagerProvider&gt;标签
+在讨论简单状态时已经说明过顶层组件需要使用&lt;StateManagerProvider&gt;
 ```ts
 import { FC, memo } from 'react';
 import { StateManagerProvider } from 'graphql-state';
