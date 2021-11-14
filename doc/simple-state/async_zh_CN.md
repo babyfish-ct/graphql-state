@@ -45,7 +45,7 @@ export const DelayedView: FC = memo(() => {
     return <div>The delayed value is {delayed}</div>;
 });
 ```
-在suspend模式，useStateValue的返回值就是异步结果，看起来似乎和非异步状态无异。但需要更外围的组件使用&lt;Suspense/&gt;，否则将会导致运行时异常。
+对suspend模式而言，useStateValue的返回值就是异步结果，看起来似乎和非异步状态无异。但需要更外围的组件使用&lt;Suspense/&gt;，否则将会导致运行时异常。
 App.tsx的实现应该如下
 ```
 import { FC, memo, Suspense } from 'react';
