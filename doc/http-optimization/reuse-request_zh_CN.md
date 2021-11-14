@@ -55,7 +55,7 @@ function createStateManager() {
 
 很明显，在这个例子，BiggerShapeComponent内部查询的形状包含SmallerShapeComponent内部查询的形状，SmallerShapeComponent内部查询能查到的数据一定包含在BiggerShapeComponent内部查询返回的数据中。
 
-最终，SmallerShapeComponent并不会发出HTTP请求，它会重用BiggerShapeComponent内部的查询的HTTP请求，盗用其返回数据并从中选取直接要的结果。
+最终，SmallerShapeComponent并不会发出HTTP请求，它会重用BiggerShapeComponent内部的查询的HTTP请求，盗用其返回数据并从中选取自己要的结果。
 
 > 注意
 > 
