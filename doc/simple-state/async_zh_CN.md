@@ -103,7 +103,7 @@ export const DelayedView: FC = memo(() => {
 ```
 > 注意
 >
-> 和suspense-refetch模式下useStateValue返回对象的data字段不同，这里的data字段被"?"修饰，这是一个可以为undefined的字段。当loading为true时，data必然为undefined。
+> 和suspense-refetch模式下useStateValue返回对象的data字段不同，这里的data字段被"?"修饰，这是一个可以为undefined的字段。当loading为true时或error存在时，data必然为undefined。
 
 在DelayedView.tsx中以"async-object"模式使用useStateValue函数
 ```ts
