@@ -20,7 +20,7 @@
     - [Bidirectional association](./graph-state/mutation/bidirectional-association.md)
   - [Trigger](./graph-state/trigger.md)
 - [Release policy](./release-policy.md)
-- [HTTP优化](./http-optimization/README.md)
+- [HTTP optimization](./http-optimization/README.md)
   - [Peak clipping](./http-optimization/peak-clipping.md)
   - [Merge fragments](./http-optimization/merge-fragment.md)
   - [Reuse request](./http-optimization/reuse-request.md)
