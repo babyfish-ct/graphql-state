@@ -100,11 +100,11 @@ export const App: FC = memo(() => {
     );
 });
 ```
-运行起来，我们会发现，firstNumberState和secondNumberState中任何一个变更，averageNumberState机会变更
+运行起来，我们会发现，firstNumberState和secondNumberState中任何一个变更，averageNumberState就会变更
 
 ## 2. 递归计算依赖
 
-在上面的例子中，我们演示了计算属性，但是有三个细节并未演示
+在上面的例子中，我们演示了计算状态，但是有三个细节并未演示
 
 - 计算状态不仅可以依赖于可写状态，也可以依赖于其它计算状态
 - 计算状态的依赖的层次可以很深，理论上可以达到无限
@@ -139,7 +139,7 @@ export const factorialResultState = createComputedState("factorialResult", ctx =
 ```
 > 上面的代码中
 > - "ctx(numberState)"表示当前计算状态依赖于可写状态
-> - "ctx(factorialState)表示当前计算状态依赖于另外一个计算状态"
+> - "ctx(factorialState)"表示当前计算状态依赖于另外一个计算状态
 > - "ctx.self(...)"表示当前参数化计算状态依赖于其自身的另外不同参数所代表一个子状态
 
 通过这这样一段代码，状态之间的计算依赖如下
@@ -197,7 +197,7 @@ export const InputView: FC = memo(() => {
 });
 ```
 
-3. 在OutputView.tsx呈现计算状态
+3. 在OutputView.tsx呈现计算结果
 ```ts
 import { FC, memo } from 'react';
 import { useStateValue } from 'graphql-state';
