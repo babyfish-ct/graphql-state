@@ -93,7 +93,7 @@ export const InputView: FC = memo(() => {
 
 ## 嵌套作用域
 
-作用域可以无限嵌套,比如
+作用域可以无限嵌套, 比如
 
 ```ts
 <Scope name="levelOne">
