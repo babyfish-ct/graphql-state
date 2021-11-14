@@ -27,7 +27,7 @@ function delay(millis: number): Promise<void> {
 2. suspense-refetch
 3. async-object
 
-**随着asyncStyle参数的不同，useStateValue函数的返回类型也不同**，对应到三种不同的异步值获取模式
+**随着asyncStyle参数的不同，useStateValue函数的返回类型也不同**
 
 ## 1. suspense
 这是默认的模式，即使调用useStateValue时不指定asyncStyle，也采用此模式。
