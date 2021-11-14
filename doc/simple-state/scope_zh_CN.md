@@ -45,7 +45,7 @@ export const App: FC = memo(() => {
 3. InutView和OutptuView
 
 先在InputView.tsx中实现InputView
-```
+```ts
 import { FC, memo useCallback } from 'react';
 import { useStateAccessor } from 'graphql-state';
 import { countState } from './State';
@@ -70,7 +70,7 @@ export const InputView: FC = memo(() => {
 > 注意：如果被访问状态在被创建时并未将scope设置为"any-scope"，此举将会导致运行时异常，这样设计的目的是为了防止过度自由。
 
 同理，实现OutputView
-```
+```ts
 import { FC, memo useCallback } from 'react';
 import { useStateValue } from 'graphql-state';
 import { countState } from './State';
