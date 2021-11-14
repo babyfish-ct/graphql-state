@@ -18,11 +18,12 @@ graphql-ts-client is a strongly typed DSL that requires code generation.
 
 #### 2.1. Based on GraphQL server
 
-如果你的开发针对一个GraphQL服务端，就如同[graphql示例](https://github.com/babyfish-ct/graphql-state/tree/master/example/client/src/graph/graphql)一般，你需要这样做
+If your development is aimed at a GraphQL server, just like the [graphql example](https://github.com/babyfish-ct/graphql-state/tree/master/example/client/src/graph/graphql), you need to do this
 
-1. 确保服务端已经启动
+1. Ensure that the server has been started
 
-2. 在"react项目目录/scripts"下创建一个名称随意的NodeJS文件，这里假设文件名为"codegen.js"，编辑其内容如下
+2. Create a NodeJS file with any name under "react-project-directory/scripts", here assume the file name is "codegen.js", edit its content as follows
+
 ```js
 const { GraphQLStateGenerator, loadRemoteSchema } = require("graphql-ts-client-codegen");
 const path = require("path");
@@ -36,18 +37,18 @@ const generator = new GraphQLStateGenerator({
 generator.generate();
 ```
 
-3. 在react项目的package.json配置codegen命令，找到此json文件的"scripts"对象属性，添加一个子属性
+3. Configure the "codegen" command in the "package.json" of the react project, find the "scripts" attribute of this json file, and add a sub-attribute
 ```
 "codegen": "node scripts/codegen.js
 ```
 
-4. 首次开发，或服务端团队告知你他们的接口发生变更时，执行
+4. Execute 
 ```
 yarn codegen
 ```
-即可在src/__generated下生成DSL所需相关代码
+for the first development, or when the server team informs you that their interface has changed, the relevant code required by the DSL can be generated under "src/__generated"
 
-#### 2.2. 不基于GraphQL服务端
+#### 2.2. Not based on GraphQL server
 
 如果你的开发不针对一个GraphQL服务端，就如同[本地数据示例](https://github.com/babyfish-ct/graphql-state/tree/master/example/client/src/graph/local)一般，你需要这样做
 
