@@ -4,9 +4,9 @@
 
 ## 使用方法
 
-1. 让状态支持作作用域
+1. 让状态支持任何作用域
 
-默认情况下，状态只支持全局作用域，需要明确地让其支持作用域
+默认情况下，状态只支持全局作用域，需要明确地让其支持其它作用域
 ```ts
 import { makeStateFactory } from 'graphql-state';
 const { createState } = makeStateFactory();
@@ -16,9 +16,9 @@ export const countState = createState("anyScopeCount", 0, {
 });
 ```
 
-如果，这里不指定scope为"any-scope"，默认就是"global-scope-only"
+如果这里不指定scope为"any-scope"，默认就是"global-scope-only"
 
-2. 建立作用作用域
+2. 建立新的作用域
 
 ```ts
 import { FC, memo } from 'react';
@@ -67,7 +67,7 @@ export const InputView: FC = memo(() => {
 > 
 > 这表示不使用全局作用域的状态，而使用当前作用域的状态。
 > 
-> 注意：如果被访问状态在被创建时并未将scope设置为"any-scope"，此举将会导致运行时异常，这样设计的目的是为了防止过度自由。
+> 注意：只有以"any-scope"模式被创建的状态，才支持在useStateAccessor或useStateValue中将scope指定为"local"，否则会导致运行时异常，这样设计的目的是为了防止过度自由。
 
 同理，实现OutputView
 ```ts
