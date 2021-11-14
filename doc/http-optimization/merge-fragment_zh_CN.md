@@ -39,7 +39,7 @@ const MultipleBookReferences: FC<{
 
     return (
         <ul>
-            <RawValueView value={books}/>
+            <RawValueView value={books.filter(book => book !== undefined)}/>
             {books.map(book => <li key={book.id}>
               {JSON.stringify(book)}
             </li>)}
