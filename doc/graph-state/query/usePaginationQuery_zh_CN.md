@@ -157,7 +157,7 @@ const BookList: FC = memo(() => {
                         ) }
                     </table>
                     <button disabled={!hasNext} onClick={loadNext}>
-                        { isLoadingNext ? "Loading more": "Load more" }
+                        { isLoadingNext ? "Loading...": "Load more" }
                     </button>
                 </> 
             }
@@ -187,7 +187,7 @@ const BookList: FC = memo(() => {
   +---------------------+
 
   +--------------+
-  | Loading more |
+  | Loading...   |
   +--------------+
   ```
 3. HTTP请求返回后，界面变为
@@ -240,7 +240,7 @@ const BookList: FC = memo(() => {
             { 
                 data && <>
                     <button disabled={!hasPrevious} onClick={loadPrevious}>
-                        { isLoadingPrevious ? "Loading more": "Load more" }
+                        { isLoadingPrevious ? "Loading...": "Load more" }
                     </button>
                     <table>
                         { data.conn.edges.map(edge =>
@@ -271,7 +271,7 @@ const BookList: FC = memo(() => {
 2. 点击"Load more"按钮，界面变为
   ```
   +--------------+
-  | Loading more |
+  | Loading...   |
   +--------------+
 
   +---------------------+
@@ -350,10 +350,10 @@ const BookList: FC = memo(() => {
                         ) }
                     </table>
                     <button disabled={!hasPrevious} onClick={loadPrevious}>
-                        { isLoadingPrevious ? "Loading pervious page": "< Previous" }
+                        { isLoadingPrevious ? "Loading pervious...": "< Previous" }
                     </button>
                     <button disabled={!hasNext} onClick={loadNext}>
-                        { isLoadingNext ? "Loading next page": "Next >" }
+                        { isLoadingNext ? "Loading next...": "Next >" }
                     </button>
                 </> 
             }
@@ -383,7 +383,7 @@ const BookList: FC = memo(() => {
   +---------------------+
 
   +------------+ +-------------------+
-  | < Previous | | Loading next page |
+  | < Previous | | Loading next...   |
   +------------+ +-------------------+
   ```
 3. HTTP请求返回后，界面变为
@@ -410,7 +410,7 @@ const BookList: FC = memo(() => {
   +---------------------+
 
   +-----------------------+ +--------+
-  | Loading previous page | | Next > |
+  | Loading previous...   | | Next > |
   +-----------------------+ +--------+
   ```
 5. HTTP请求返回后，界面变为
