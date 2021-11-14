@@ -67,4 +67,4 @@ import {
 5. [Scopes](./scope.md)
 
 ---------------------------------------
-[Back to parent](../README.md) | [Next: 图状态 >](../graph-state/README.md)
+[Back to parent](../README.md) | [Next: Graph state >](../graph-state/README.md)
