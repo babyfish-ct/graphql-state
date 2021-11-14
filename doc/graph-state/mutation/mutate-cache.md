@@ -161,7 +161,7 @@ stateManager.save(
 
 > The association saved in this example is not "Book.authors", but "Book.authors({name: "eve"})"
 >
-> This is a parameterized association, so just passing the data object that needs to be saved to the save function is not enough. This example explains well why the first parameter of the save function should specify the fetcher of [graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client).
+> This is a parameterized association, so just passing the data object that needs to be saved to the "save" function is not enough. This example explains well why the first parameter of the save function should specify the fetcher of [graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client).
 
 ### 1.6 Save multiple objects
 
