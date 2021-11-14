@@ -1,12 +1,12 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/[简单状态](./README.md)/作用域
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/[Simple state](./README.md)/Scopes
 
-和其它react状态管理框架不同，graphql-state不仅支持全局状态，也可以使用作用域
+Unlike other react state management frameworks, graphql-state not only supports global state, but also any other scope
 
-## 使用方法
+## Usage
 
-1. 让状态支持作作用域
+1. Make state support any scope
 
-默认情况下，状态只支持全局作用域，需要明确地让其支持作用域
+By default, the state only supports the global scope, and you need to explicitly make it support the other scope
 ```ts
 import { makeStateFactory } from 'graphql-state';
 const { createState } = makeStateFactory();
@@ -16,9 +16,9 @@ export const countState = createState("anyScopeCount", 0, {
 });
 ```
 
-如果，这里不指定scope为"any-scope"，默认就是"global-scope-only"
+If the scope is not specified here as "any-scope", the default is "global-scope-only"
 
-2. 建立作用作用域
+2. Create new scopes
 
 ```ts
 import { FC, memo } from 'react';
@@ -40,11 +40,11 @@ export const App: FC = memo(() => {
     );
 });
 ```
-缺失的InputView和OutputView在下文给出。但是我们看到，有两组InputView和OutputView，分别属于两个不同的作用域
+The missing InputView and OutputView are given below. But we see that there are two sets of InputView and OutputView, which belong to two different scopes.
 
-3. InutView和OutptuView
+3. InutView and OutptuView
 
-先在InputView.tsx中实现InputView
+First implement InputView in "InputView.tsx"
 ```ts
 import { FC, memo useCallback } from 'react';
 import { useStateAccessor } from 'graphql-state';
@@ -63,13 +63,13 @@ export const InputView: FC = memo(() => {
     return <button>Increase</button>;
 }); 
 ```
-> 这里，我们调用useStateAccessor将scope指定为"local"，而非默认的"auto"。
-> 
-> 这表示不使用全局作用域的状态，而使用当前作用域的状态。
-> 
-> 注意: 如果被访问状态在被创建时并未将scope设置为"any-scope"，此举将会导致运行时异常，这样设计的目的是为了防止过度自由。
+> Here, we call useStateAccessor to specify the scope as "local" instead of the default "auto".
+>
+> This means that the state of the global scope is not used, but the state of the current scope is used.
+>
+> Note: Only the state created in the "any-scope" mode supports specifying the scope as "local" in useStateAccessor or useStateValue, otherwise it will cause runtime exceptions. The purpose of this design is to prevent excessive freedom.
 
-同理，实现OutputView
+Similarly, implement OutputView
 ```ts
 import { FC, memo useCallback } from 'react';
 import { useStateValue } from 'graphql-state';
@@ -85,15 +85,15 @@ export const InputView: FC = memo(() => {
 }); 
 ```
 
-4. 运行效果
+4. Running result
 
-上面代码运行起来后
-- 每个作用域内部，InputView和OutputView可以利用状态互通信息
-- 两个作用域之间彼此隔离，就如同两个不同的站点一样。
+After the above code runs
+- Inside each scope, InputView and OutputView can use state to communicate information
+- The two scopes are isolated from each other, just like two different web sites.
 
-## 嵌套作用域
+## Nested scope
 
-作用域可以无限嵌套, 比如
+Scopes can be nested infinitely, such as
 
 ```ts
 <Scope name="levelOne">
@@ -117,4 +117,4 @@ export const InputView: FC = memo(() => {
 
 ---------
 
-[< Previous: Effect](./effect.md) | [Back to parent:简单状态](./README.md)
+[< Previous: Effect](./effect.md) | [Back to parent:Simple state](./README.md)
