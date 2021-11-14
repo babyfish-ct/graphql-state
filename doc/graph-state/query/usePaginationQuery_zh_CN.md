@@ -24,8 +24,8 @@ usePaginationQuery<
 1. fetcher: 
   [grahql-ts-client](https://github.com/babyfish-ct/graphql-ts-client)的Fetcher，根对象类型必须为"Query"
 
-  和useQuery不同，usePaginationQuery的fetcher参数必须且只能拥有一个connection分页字段，否则会导致异常。
-
+  > 和useQuery不同，usePaginationQuery的fetcher参数必须且只能拥有一个connection分页字段，否则会导致异常。
+  > 
   > 关于Connection字段，请参考https://graphql.org/learn/pagination/#complete-connection-model
 
 2. options:
@@ -53,7 +53,7 @@ usePaginationQuery<
   - paginationStyle: 分页方式，有三种取值
     - forward: 可累积的，由前到后逐段加载的分页
     - backward: 可累积的，由后到前逐段加载的分页
-    - page: 经典的，记录条数固定，能前后自由导航的分页
+    - page: 经典的，被显示的记录条数固定，能前后自由导航的分页
 
 ## 2. 返回类型
 
