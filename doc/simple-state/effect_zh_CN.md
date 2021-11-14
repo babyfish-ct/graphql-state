@@ -26,7 +26,7 @@ export const windowSizeState = createComputedState<WindowSize>(
     {
         mount: ctx => {
             const onResize = () => { 
-                ctx.invalidate(); // 用户改变浏览器窗口大小时，当前计算属性需要重新计算
+                ctx.invalidate(); // 用户改变浏览器窗口大小时，当前计算状态需要重新计算
             };
             window.addEventListener("resize", onResize); // 当前状态被mount
             return () => {
