@@ -428,4 +428,4 @@ const BookList: FC = memo(() => {
 
 -------------
 
-[< Previous: useQuery](./useQuery.md) | [Back to parent: Query](./README.md) | [Next: useObject&useObjects](./useObject.md)
+[< Previous: useQuery](./useQuery.md) | [Back to parent: Query](./README.md) | [Next: useObject&useObjects >](./useObject.md)
