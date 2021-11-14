@@ -1,10 +1,10 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/[简单状态](./README.md)/异步状态
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/[Simple state](./README.md)/Async state
 
-异步状态是计算状态的一种，和计算状态相比，唯一的不同在于其计算函数是异步的。
+Asynchronous state is a kind of computed state. Compared with computed state, the only difference is that its calculation function is asynchronous.
 
-鉴于此，本章节不会讲解异步状态的计算依赖和参数化，而是重点讲解异步结果的接收。
+In view of this, this chapter will not explain the calculation dependency and parameterization of the asynchronous state, but will focus on the reception of asynchronous result.
 
-首先，在State.ts中定义异步状态
+First, define the asynchronous state in "State.ts"
 
 ```ts
 import { makeStateFactory } from 'graphql-state';
@@ -22,17 +22,17 @@ function delay(millis: number): Promise<void> {
     })
 }
 ```
-使用useStateValue函数从异步状态取值时，可以设置asyncStyle参数，该参数有三种不同的取值
+When using the "useStateValue" function to get a value from an asynchronous state, you can set the "asyncStyle" parameter, which has three choices
 1. suspense
 2. suspense-refetch
 3. async-object
 
-**随着asyncStyle参数的不同，useStateValue函数的返回类型也不同**，对应到三种不同的异步值获取模式
+**With the different asyncStyle parameters, the return type of the useStateValue function is also different**
 
 ## 1. suspense
-这是默认的模式，即使调用useStateValue时不指定asyncStyle，也采用此模式。
+This is the default mode. This mode is used even if "asyncStyle" is not specified when calling "useStateValue".
 
-在DelayedView.tsx中以"suspense"模式使用useStateValue函数
+Use the "useStateValue" function in "suspense" mode in "DelayedView.tsx"
 ```ts
 import { FC, memo } from 'react';
 import { useStateValue } from 'graphql-state';
@@ -40,13 +40,15 @@ import { delayedState } from './State';
 
 export const DelayedView: FC = memo(() => {
     const delayed = useStateValue(delayedState, {
-        asyncStyle: "suspense" // 外部组件必须使用<Suspense/>包裹当前组件
+        // External component must use <Suspense/> to wrap the current component
+        asyncStyle: "suspense" 
     });
     return <div>The delayed value is {delayed}</div>;
 });
 ```
-对suspense模式而言，useStateValue的返回值就是异步结果，看起来似乎和非异步状态无异。但需要更外围的组件使用&lt;Suspense/&gt;，否则将会导致运行时异常。
-App.tsx的实现应该如下
+For the "suspense" mode, the return value of "useStateValue" is the asynchronous result, which seems to be the same as a non-asynchronous state. But you need to use &lt;Suspense/&gt; for more peripheral components, otherwise it will cause runtime exception.
+
+The implementation of "App.tsx" should be as follows
 ```
 import { FC, memo, Suspense } from 'react';
 import { StateManagerProvider } from 'graphql-state';
@@ -64,14 +66,18 @@ export const App: FC = memo(() => {
 ```
 
 ## 2. suspense-refetch
-和suspense模式类似，也需要外部组件使用&lt;Suspense/&gt;，但是useStateValue的返回类型和suspense不同，假设异步状态的数据类型为T，此模式下useStateValue函数的返回类型如下
+
+Similar to the "suspense" mode, external components are also required to use &lt;Suspense/&gt;, but the return type of "useStateValue" is different from "suspense". 
+
+Assuming that the data type of the asynchronous state is T, the return type of the "useStateValue" function in this mode is as follows
 ```ts
 {
     readonly data: T;
     readonly refetch: () => void
 }
 ```
-在DelayedView.tsx中以"suspense-refetch"模式使用useStateValue函数
+
+Use the "useStateValue" function in "suspense-refetch" mode in "DelayedView.tsx"
 ```ts
 import { FC, memo } from 'react';
 import { useStateValue } from 'graphql-state';
@@ -79,7 +85,8 @@ import { delayedState } from './State';
 
 export const DelayedView: FC = memo(() => {
     const { data: delayed, refetch}  = useStateValue(delayedState, {
-        asyncStyle: "suspense-refetch" // 外部组件必须使用<Suspense/>包裹当前组件
+        // External component must use <Suspense/> to wrap the current component
+        asyncStyle: "suspense-refetch"
     });
     return (
         <>
@@ -89,10 +96,13 @@ export const DelayedView: FC = memo(() => {
     );
 });
 ```
-和suspense模式相似，外围的组件使用&lt;Suspense/&gt;，否则将会导致运行时异常。上文对此已有示范，为了简洁，这里不再重复罗列相应代码
+Similar to the "suspense" mode, the peripheral components use &lt;Suspense/&gt;, otherwise it will cause runtime exception. This has been demonstrated above, for the sake of brevity, the corresponding code will not be repeated here
 
 ## 3. async-object
-和前两种模式不同，外部组件不再需要使用&lt;Suspense/&gt;，由用户自己控制异步状态，假设异步状态的数据类型为T，此模式下useStateValue函数的返回类型如下
+
+Unlike the previous two modes, external components no longer need to use &lt;Suspense/&gt;, and the user controls the asynchronous state. 
+
+Assuming that the data type of the asynchronous state is T, the return type of the useStateValue function in this mode is as follows
 ```ts
 {
     readonly data？: T;
@@ -101,11 +111,11 @@ export const DelayedView: FC = memo(() => {
     readonly refetch: () => void
 }
 ```
-> 注意
+> Attention
 >
-> 和suspense-refetch模式下useStateValue返回对象的data字段不同，这里的data字段被"?"修饰，这是一个可以为undefined的字段。当loading为true时或error存在时，data必然为undefined。
+> Unlike the "data" field of the object returned by "useStateValue" in the "suspense-refetch" mode, the "data" field here is marked by "?", which is a field that can be undefined. When "loading" is true or "error" exists, "data" must be undefined.
 
-在DelayedView.tsx中以"async-object"模式使用useStateValue函数
+Use the "useStateValue" function in "async-object" mode in DelayedView.tsx
 ```ts
 import { FC, memo } from 'react';
 import { useStateValue } from 'graphql-state';
@@ -129,7 +139,7 @@ export const DelayedView: FC = memo(() => {
 });
 ```
 
-async-object模式不再需要外围的组件使用&lt;Suspense/&gt;
+The async-object mode no longer requires peripheral components to use &lt;Suspense/&gt;
 ```
 import { FC, memo } from 'react';
 import { StateManagerProvider } from 'graphql-state';
@@ -144,4 +154,4 @@ export const App: FC = memo(() => {
 });
 ```
 
-[< Previous: 计算状态](./computed.md) | [Back to parent: 简单状态](./README.md) | [Next: Effect >](./effect.md)
+[< Previous: Computed state](./computed.md) | [Back to parent: Simple state](./README.md) | [Next: Effect >](./effect.md)
