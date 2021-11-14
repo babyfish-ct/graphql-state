@@ -3,7 +3,7 @@
 useMutation函数用于向服务端提交变更
 
 ## 1. 其定义形式
-```
+```ts
 useMutation<
     T extends object,
     TVariables extends object
