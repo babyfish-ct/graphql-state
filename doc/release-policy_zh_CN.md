@@ -8,7 +8,7 @@ graphql-state的内存结构如下
 
 ![image](./release-policy.png "数据结构")
 
-可以分为两个部分
+分为两个部分
 
 - 引用计数可以管理的部分
   - useStateValue, useStateAccessor函数引用简单状态StateValue。
@@ -16,7 +16,7 @@ graphql-state的内存结构如下
   
   虽然计算状态和异步状态会导致StateValue对其他StateValue或QueryResult形成依赖，但这种依赖是树形依赖，不是图形依赖，没有循环引用的问题，因此，对StateValue和QueryResult这些数据对象而言，引用计数内存管理是可行的
   
-  StateValue和QueryResult内置一个引用计数，默认为0，切支持两个内部操作
+  StateValue和QueryResult内置一个引用计数，默认为0，且支持两个内部操作
   - retain: 将引用计数加1
   - release: 讲引用计数减1，如果为0，释放资源。但这里的释放可以不仅可以使立即释放，还可以选择延迟释放，延迟释放等待过程中过，数据可以复活。这个过程，用户是可以干预的，也是本文要重点讨论的。
   
