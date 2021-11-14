@@ -1,0 +1,26 @@
+# [graphql-state](https://github.com/babyfish-ct/graphql-state/)/文档
+
+## 章节目录
+
+- [简单状态](./simple-state/README.md)
+  - [可写状态](./simple-state/writable.md)
+  - [计算状态](./simple-state/computed.md)
+  - [异步状态](./simple-state/async.md)
+  - [Effect](./simple-state/effect.md)
+  - [作用域](./simple-state/scope.md)
+- [图状态](./graph-state/README.md)
+  - [查询](./graph-state/query/README.md)
+    - [useQuery](./graph-state/query/useQuery.md)
+    - [usePaginationQuery](./graph-state/query/usePaginationQuery.md)
+    - [useObject&useObjects](./graph-state/query/useObject.md)
+  - [变更](./graph-state/mutation/README.md)
+    - [变更缓存](./graph-state/mutation/mutate-cache.md)
+    - [useMutation](./graph-state/mutation/mutate-cache.md)
+    - [智能变更](./graph-state/mutation/smart-mutation.md)
+    - [双向关联](./graph-state/mutation/bidirectional-association.md)
+  - [触发器](./graph-state/trigger.md)
+- [释放策略](./release-policy.md)
+- [HTTP优化](./http-optimization/README.md)
+  - [异步削峰](./http-optimization/peak-clipping.md)
+  - [碎片合并](./http-optimization/merge-fragment.md)
+  - [请求重用](./http-optimization/reuse-request.md)
