@@ -1,22 +1,22 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/[图状态](./README.md)/整合graphql-ts-client
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/[Graph state](./README.md)/Integrate graphql-ts-client
 
-## 1. 添加依赖
+## 1. Add dependencies
 
-如果项目要使用图状态，除graphql-state外，还需要导入graphql-ts-client。
+If the project wants to use graph state, in addition to graphql-state, graphql-ts-client needs to be imported.
 ```
 yarn add graphql-state graphql-ts-client-api
 yarn add graphql-ts-client-codegen --dev
 ```
 
-### 2. 生成代码
+### 2. Generate code
 
-graphql-ts-client是一个强类型的DSL，需要进行代码生成工作。
+graphql-ts-client is a strongly typed DSL that requires code generation.
 
-> 注意: 
+> Attention
 >
-> 在图的Schema不变的情况下，代码生成工作只需要进行一次! 这也是graphql-ts-client的优势所在。
+> The code generation work only needs to be done once when the graph schema remains unchanged! This is also the advantage of graphql-ts-client.
 
-#### 2.1. 基于GraphQL服务端
+#### 2.1. Based on GraphQL server
 
 如果你的开发针对一个GraphQL服务端，就如同[graphql示例](https://github.com/babyfish-ct/graphql-state/tree/master/example/client/src/graph/graphql)一般，你需要这样做
 
