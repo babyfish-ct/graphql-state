@@ -176,9 +176,9 @@ Assuming that the type of fetcher query is T
   </tbody>
 </table>
 
-## 3. 使用示范
+## 3. Usage
 
-### 3.1 只带id/ids参数
+### 3.1 Only with id/ids parameters
 ```ts
 import { FC, memo } from 'react';
 import { useObject, useObjects } from './__generated';
@@ -206,7 +206,7 @@ export const BookReferences: FC<{
 
 ```
 
-### 3.1 除id/ids外更多的参数
+### 3.1 More parameters besides id/ids
 ```ts
 import { FC, memo } from 'react';
 import { ParameterRef } from 'graphql-ts-client';
@@ -257,14 +257,14 @@ export const BookReferences: FC<{
 
 ```
 
-## 4. 服务端的支持
+## 4. Server support
 
-useObject和useObjects需要服务端的给予支持，服务端需要如下实现
+"useObject" and "useObjects" need to be supported by the server, and the server needs to be implemented as follows
 
-- 所有实体类从一个抽象接口派生
-- 支持一个名称为"entities"的查询字段，接受参数typeName和ids，返回抽象接口的数组
+- All entity classes are derived from an abstract interface
+- Support a query field named "entities", accept parameters "typeName" and "ids", and return an array of abstract interfaces
 
-公共接口的名称可以随便取，比如Any, Node, Entity, Object等等。这里我们以Any作为抽象接口的名称给出示范。服务端的行为应该让其sdl看起来类似如此
+The name of the abstract interface can be taken whatever you want, such as "Any", "Node", "Entity", "Object", etc. Here we use Any as the name of the abstract interface to give an example. The behavior of the server should make its sdl look like this
 
 ```
 interface Any {
@@ -278,9 +278,9 @@ type BookStore implements Any {...}
 type Book implements Any {...}
 type Author implements Any {...}
 ```
-其中, ID不是强制性的，可以使用其它类型，比如String, Int等。
+Among them, "ID" is not mandatory, other types can be used too, such as String, Int, etc.
 
-如果ids参数中某些id无法查找到对象，允许服务端返回的数组长度小于ids参数的长度。
+If some ids in the "ids" parameter cannot be found, the length of the array returned by the server is allowed to be less than the length of the "ids" parameter.
 
 ------------------------------
-[< Previous: usePaginationQuery](./usePaginationQuery.md) | [Back to parent: 查询](./README.md)
+[< Previous: usePaginationQuery](./usePaginationQuery.md) | [Back to parent: Query](./README.md)
