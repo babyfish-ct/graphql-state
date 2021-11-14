@@ -1,14 +1,14 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../../README.md)/[图状态](../README.md)/变更
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../../README.md)/[Graph state](../README.md)/Mutation
 
-变更是本框架核心价值所在，创建本框架存在的动机就是为了智能变更和双向关联
+Mutation is the core value of this framework, and the motivation for creating this framework is for intelligent mutation and bidirectional association
 
-## 下级文档
+## Child chapters
 
-- [变更缓存](./mutate-cache.md)
+- [Mutate cache](./mutate-cache.md)
 - [useMutation](./mutate-cache.md)
-- [智能变更](./smart-mutation.md)
-- [双向关联](./bidirectional-association.md)
+- [Smart mutation](./smart-mutation.md)
+- [Bidirectional association](./bidirectional-association.md)
 
 --------------------------
 
-[<Previous:  查询](../query/README.md) | [Back to parent: 图状态](../README.md) | [Next: 触发器 >](../trigger.md)
+[<Previous: Query](../query/README.md) | [Back to parent: Graph state](../README.md) | [Next: Trigger >](../trigger.md)
