@@ -53,7 +53,7 @@ function createStateManager() {
 }
 ```
 
-这里的newTypedConfiguration是graphql-ts-client-codegen自动生成代码中的一个函数，newTypedConfiguration()返回一个配置对象，这个配置对象可以创建一个StateManager。
+这里的newTypedConfiguration是graphql-ts-client-codegen自动在src/__generated中生成代码中的一个函数，newTypedConfiguration()返回一个配置对象，这个配置对象可以创建一个StateManager。
 
 这里的代码很简单，配置对象未经过任何处理就直接用于创建StateManager。随着我们的深入了解，后续文档会让配置对象的操作丰富起来。
 
