@@ -1,6 +1,6 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../../README.md)/[图状态](../README.md)/[查询](./README.md)/useQuery
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../../README.md)/[Graph state](../README.md)/[Query](./README.md)/useQuery
 
-## 1. 基本用法
+## 1. Basic usage
 
 ```ts
 import { FC, memo } from 'react';
@@ -24,12 +24,12 @@ export const BookStoreList:FC = memo(() => {
     );
 });
 ```
-> 注意: 
+> Attention 
 >
-> 这种例子的代码需要外部React组件使用&lt;Suspense/&gt;
+> The code in this example requires external React components to use &lt;Suspense/&gt;
 
 ## 2. 参数
-useQuery定义如下
+useQuery is defined as follows
 ```ts
 useQuery<
     T, 
@@ -44,16 +44,16 @@ useQuery<
     }
 );
 ```
-1. 第一个参数为[graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client)的Fetcher，其根类型必须是"Query"
-2. 第二个参数options可选，一个JSON对象，包含如下字段
-  - variables: 可选，一个JOSN对象，表示查询参数
-  - mode: 具备两个取值，可选，默认"cache-and-network"
-    1. "cache-and-network": 先尝试从缓存中查询数据，如果缓存数据不全，从服务的查询数据并更新缓存
-    2. "cache-only": 只从缓存中查询数据，如果缓存数据不全，抛出异常
-  - asyncStyle: 可选，默认"suspense"
-    1. "suspense": 稍后讨论
-    2. "suspense-refetch": 稍后讨论
-    3. "async-object": 稍后讨论
+1. The first parameter is the Fetcher of [graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client), and its root type must be "Query"
+3. The second parameter "options" is optional, it's a JSON object containing the following fields
+  - variables: Optional, a JOSN object, representing query parameters
+  - mode: Optional, there are two choices, default "cache-and-network"
+    1. "cache-and-network": First try to query the data from the cache, if the cached data is incomplete, query the data from the server and update the cache
+    2. "cache-only": Only query data from the cache, if the cached data is incomplete, throw an exception
+  - asyncStyle: Optional, default "suspense"
+    1. "suspense": Discuss later
+    2. "suspense-refetch": Discuss later
+    3. "async-object": Discuss later
     
 ```ts
 import { FC, ChangeEvent, memo, useState, useCallback } from 'react';
@@ -89,30 +89,32 @@ export const BookStoreList:FC = memo(() => {
     );
 });
 ```
-> 注意: 
+> Attention 
 >
-> 这个例子的代码需要外部React组件使用&lt;Suspense/&gt;
+> The code in this example requires external React components to use &lt;Suspense/&gt;
 
-## 3. 返回类型
+## 3. Return type
 
-随着options.asyncStyle取值的不同，useQuery的返回值也不相同。
+**With the different values of "options.asyncStyle", the return type of useQuery is also different**
 
-其行为和[AsyncValue](../../simple-state/async.md)中讨论过的useStateValue完全一致，这里不做重复讨论，仅仅给出asyncStyle和返回类型的对应关系（假设Fetcher参数返回类型为T）
+Its behavior is exactly the same as the "useStateValue" discussed in [AsyncValue](../../simple-state/async.md). I will not repeat the discussion here, but only give the correspondence between asyncStyle and the return type (assuming the Fetcher parameter return type is T)
 
 - suspense:
-  - 返回类型: T
-  - 备注: 外部React组件需要使用&lt;Suspense/&gt;
+  - Return Type: T
+  - Remark: External React components need to use&lt;Suspense/&gt;
+  
 - suspense-refetch:
-  - 返回类型: 
+  - Return Type: 
     ```
     {
         readonly data: T,
         readonly refetch: () => void
     }
     ```
-  - 备注: 外部React组件需要使用&lt;Suspense/&gt;
+  - Remark: External React components need to use&lt;Suspense/&gt;
+  
 - async-object:
-  - 返回类型: 
+  - Return Type: 
     ```
     {
         readonly data?: T,
@@ -121,9 +123,9 @@ export const BookStoreList:FC = memo(() => {
         readonly refetch: () => void
     }
     ```
-  - 备注: data可以为undefined，当loading为true或error存在时，data必为undefined
+  - Remark: "data" can be undefined, when "loading" is true or "error" exists, "data" must be undefined
   
-这里以async-object为例，展示可以刷新的查询
+Here takes "async-object" as an example to show the query that can be refreshed
 
 ```ts
 import { FC, memo } from 'react';
@@ -152,17 +154,17 @@ export const BookStoreList:FC = memo(() => {
                             <li key={store.id}>{store.name}</li>
                         )}
                     </ul>
-                    <button onClick={refetch}>刷新</button>
+                    <button onClick={refetch}>Refresh</button>
                 </>
             }
         </>
     );
 });
 ```
-当用户点击刷新按钮后，查询会重新执行。
+When the user clicks the refresh button, the query will be executed again.
 
-"async-object"需要用户自己处理loading状态，但对外部组件没有任何要求
+"async-object" requires users to handle the loading state by themselves, but does not require any external components
 
 ----------------------------
 
-[Back to parent: 查询](./README.md) | [Next: usePaginationQuery >](./usePaginationQuery.md)
+[Back to parent: Query](./README.md) | [Next: usePaginationQuery >](./usePaginationQuery.md)
