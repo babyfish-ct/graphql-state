@@ -70,7 +70,7 @@ useObjects<
     
 ## 2. 返回类型
 
-options.asyncStyle和options.objectStyle这两个参数都会影响useObject/useObjects的返回类型，这里罗列出所有情况
+**options.asyncStyle和options.objectStyle这两个参数都会影响useObject/useObjects的返回类型，这里罗列出所有情况**
 
 假设fetcher查询的类型为T
 
@@ -206,7 +206,7 @@ export const BookReferences: FC<{
 
 ```
 
-### 3.1 除id/ids外更多的参数
+### 3.2 除id/ids外更多的参数
 ```ts
 import { FC, memo } from 'react';
 import { ParameterRef } from 'graphql-ts-client';
