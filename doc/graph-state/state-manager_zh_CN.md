@@ -94,7 +94,7 @@ function createStateManager() {
 ## 2. 获取StateManager
 
 要在React组件内部获取StateManager，比较好的方式是调用自动生成的代码中的函数useTypedStateManager
-```
+```ts
 import { FC, memo } from 'react';
 import { useTypedStateManager } from './__generated';
 
