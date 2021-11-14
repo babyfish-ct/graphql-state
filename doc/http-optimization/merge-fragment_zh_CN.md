@@ -83,7 +83,7 @@ function createStateManager() {
 
 如果没有碎片合并优化，在缓存无数据的情况下，三个HTTP请求将会被发送到服务端
 
-新运的是，这三个hook查询的形状一样
+幸运的是，这三个hook查询的形状一样
 > 注意
 > 
 > [HTTP优化](./README_zh_CN.md)中讨论过，
