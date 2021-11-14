@@ -30,12 +30,12 @@ usePaginationQuery<
 
 2. options:
   一个可选对象，包含如下字段
-  - mode: 和useQuery中此参数的用法相同，此处不再赘述
-  - asyncStyle: 和useQuery中此参数的用法相同，此处不再赘述
-  - variables: 和useQuery中此参数的用法相同，此处不再赘述
+  - variables: 和[useQuery](./useQuery_zh_CN.md)中此参数的用法相同，此处不再赘述
     > 注意：
     > 
     > 不能指定分页参数first, after, last, before；否则，抛出异常
+  - mode: 和[useQuery](./useQuery_zh_CN.md)中此参数的用法相同，此处不再赘述
+  - asyncStyle: 和[useQuery](./useQuery_zh_CN.md)中此参数的用法相同，此处不再赘述
   - windowId: 指定一个标识名称
     > 任何界面都可以使用usePaginationQuery, 都会得到相应的分页结果。
     > 
