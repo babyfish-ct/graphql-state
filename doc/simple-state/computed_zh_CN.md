@@ -82,7 +82,7 @@ export const OutputView: FC = memo(() => {
 ```
 > 注意
 > 
-> 计算状态是只读的，所以只能使用useStateValue，不能对其使用useStateAcessor
+> 计算状态是只读的，所以只能使用useStateValue，不能对其使用useStateAccessor
 
 4. 在App.tsx中整合它们
 ```ts
