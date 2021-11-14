@@ -45,7 +45,7 @@ export const DelayedView: FC = memo(() => {
     return <div>The delayed value is {delayed}</div>;
 });
 ```
-对suspend模式而言，useStateValue的返回值就是异步结果，看起来似乎和非异步状态无异。但需要更外围的组件使用&lt;Suspense/&gt;，否则将会导致运行时异常。
+对suspense模式而言，useStateValue的返回值就是异步结果，看起来似乎和非异步状态无异。但需要更外围的组件使用&lt;Suspense/&gt;，否则将会导致运行时异常。
 App.tsx的实现应该如下
 ```
 import { FC, memo, Suspense } from 'react';
@@ -64,7 +64,7 @@ export const App: FC = memo(() => {
 ```
 
 ## 2. suspense-refetch
-和suspense模式类似，也需要外部组件使用&lt;Suspense/&gt;，但是useStateValue的返回类型和suspend不同，假设异步状态的数据类型为T，此模式下useStateValue函数的返回类型如下
+和suspense模式类似，也需要外部组件使用&lt;Suspense/&gt;，但是useStateValue的返回类型和suspense不同，假设异步状态的数据类型为T，此模式下useStateValue函数的返回类型如下
 ```ts
 {
     readonly data: T;
