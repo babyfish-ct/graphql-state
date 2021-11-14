@@ -57,7 +57,7 @@ export const BookStoreList: FC = memo(() => {
 |1000ms  | MANNI   |Loading|findBookStore({name: "MANNI"})|findBookStores({name: "M"})返回后，忽略findBookStores({name: "M"}), findBookStores({name: "MA"}), findBookStores({name: "MAN"}), findBookStores({name: "MANN"})直接执行findBookStores({name: "MANNI"})。因为只有最新的查询参数才有意义|
 |1200ms  | MANNIN  |Loading|findBookStore({name: "MANNI"})|不执行findBookStores({name: "MANNIN"})，因为存在未返回的请求|
 |1400ms  | MANNING |Loading|findBookStore({name: "MANNI"})|不执行findBookStores({name: "MANNING"})，因为存在未返回的请求|
-|2000ms  | MANNING |Loading|findBookStore({name: "MANNING"})|不执行findBookStores({name: "MANNI"})返回后，忽略findBookStores({name: "MANNIN"})，直接执行findBookStores({name: "MANNING"})。因为只有最新的查询参数才有意义|
+|2000ms  | MANNING |Loading|findBookStore({name: "MANNING"})|findBookStores({name: "MANNI"})返回后，忽略findBookStores({name: "MANNIN"})，直接执行findBookStores({name: "MANNING"})。因为只有最新的查询参数才有意义|
 |3000ms  | MANNING |findBookStore({name: "MANNING"})的结果|||
 
 > 注意
