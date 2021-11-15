@@ -1,6 +1,6 @@
 # 一个新的React状态管理框架
 
-## 语言: [English](https://github.com/babyfish-ct/graphql-state/README.md) | 中文**
+## 语言: [English](https://github.com/babyfish-ct/graphql-state) | 中文**
 
 ## 系统功能
 
