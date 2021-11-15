@@ -130,7 +130,7 @@ yarn start
 Access http://localhost:3000
 
 ## Get start
-WILL COME SOON
+[Step by step guid](./get-start.md)
 
 ## [Documentation](./doc/README.md)
 - [Simple state](./doc/simple-state/README.md)
@@ -179,14 +179,4 @@ This is a newly born framework. In order to make it more and more complete, the 
 
 
 ### Change list
-|Version|Description|Required version of graphql-ts-client|
-|-------|-----------|------------|
-|0.0.8 |Tiny bug fix, after this version, internal mechanism become stable|>=3.0.8|
-|0.0.7 |Tiny bug fix|>=3.0.8|
-|0.0.6 |**Important version!!! Emergency bug fix**|>=3.0.8|
-|0.0.5 |Internal change|>=3.0.8|
-|0.0.4 |Support releasePolicy|>=3.0.8|
-|0.0.3 |Make smart mutation smarter|>=3.0.8|
-|0.0.2 |Support paging query API: usePaginationQuery|>=3.0.8|
-|0.0.1 |Add a garbage collector to the built-in cache database|>=3.0.7|
-|0.0.0 |First version|>=3.0.4|
+[./Change list](./change_list.md)
