@@ -5,7 +5,7 @@ Mutation is the core value of this framework, and the motivation for creating th
 ## Child chapters
 
 - [Mutate cache](./mutate-cache.md)
-- [useMutation](./mutate-cache.md)
+- [useMutation](./useMutation.md)
 - [Smart mutation](./smart-mutation.md)
 - [Bidirectional association](./bidirectional-association.md)
 
