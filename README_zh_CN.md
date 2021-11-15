@@ -2,18 +2,18 @@
 
 ## 语言: [English](https://github.com/babyfish-ct/graphql-state) | 中文
 
-## 1. 系统功能
+## 系统功能
 
 ![image](./architecture_zh_CN.png "系统功能")
 
-### 1.1. 简单状态
+### 简单状态
 一套看起来非常类似于recoil的状态管理，用于管理业务对象模型以外的零散数据，可以方便地和图状态配合。
 
-### 1.2. 图状态
+### 图状态
 本框架的核心价值，提供智能性远高于apollo-client和relay的图状态管理能力。这也是我创建此框架的动机。
 
 图状态管理支持两个核心功能
-#### 1.2.1. 智能更新
+#### 智能更新
 
 在使用传统的GraphQL客户端时，开发者面临的最大痛苦，是需要在变更操作后决定究竟应该更新本地缓存还是重新查询数据。如果选择修改本地缓存，将面临繁重的工作量；如果选择重新查询，不仅需要接受性能缺陷，而且确定哪些查询需要被重新执行也非易事。
 
@@ -25,7 +25,7 @@
 
 然而，如果你愿意的话，你也可以干预抉择过程。您可以使用简单的API来帮助它优化，增加情况(A)的发生概率并降低情况(B)的发生概率。
 
-#### 1.2.2. 用户不给予优化时
+##### 用户不给予优化时
 
 让我们来看一个因用户不给予优化而导致无法通过仅修改本地缓存来完成变更的例子，GIF动画如下
 
@@ -34,7 +34,7 @@
 
 当我们把"MANNING-1"修改成"MANNING-2"的时候，在缺少用户优化的情况下，带参数的两个缓存项被清除。所以，带参数的查询会自动从服务端重新获取新的数据。
 
-#### 1.2.3. 用户给予优化时
+##### 用户给予优化时
 
 让我们来看一个因用户优化的支持而无需重新查询仅需修改本地缓存就可以完成变更的例子，GIF动画如下
 
@@ -51,7 +51,7 @@
 > 
 > 实际项目中，被UI抛弃的数据可能会在较短时间内被垃圾回收系统释放。在这个例子中，为了达到演示效果，故意调整了垃圾释放策略，让这三个数据都可以相对长时间地在缓存中同时存在。
 
-#### 1.2.4. 智能排序
+##### 智能排序
 
 如上面的GIF动画所示，graphql-state能自动根据数据的变更重新实施条件筛选。不仅如此，graphql-state还能自动根据数据的变更重新实施排序，如下GIF动画所示
 
@@ -64,7 +64,7 @@
 
 这两个关联都按照name升序排序。所以，当对象的name被修改时，这两个关联都会被重新排序。
 
-### 1.2.5. 双向关联管理
+####  双向关联管理
 
 上文中，我们展示几个很酷的效果。不仅如此，graphql-state还能处理不同数据关联之间的相互影响。这就是双向关联维护。
 
@@ -91,11 +91,11 @@ if (cached(LearningGraphQL.store)) {
 }
 ```
 
-### 1.2.6. 数据库风格的触发器
+#### 数据库风格的触发器
 
 内置缓存数据库支持触发器。不仅框架内部使用它来实现数据智能维护，触发器也作为公共API暴露出来，让开发者可以自定义更多的智能行为。
 
-## 1.3. HTTP优化
+### HTTP优化
 
 框架内置优化策略，减少HTTP请求次数
 
@@ -105,7 +105,7 @@ if (cached(LearningGraphQL.store)) {
 
 3. 对于变量相同但形状不同的多个查询，形状较小的查询不会发出HTTP请求，它们会借用形状最大的查询的HTTP请求来共享响应数据。即使对于最大shape的查询的HTTP请求已经发送并且处于pending状态，这种优化仍然有效。 
 
-## 2. 运行附带例子
+## 运行附带例子
 1. 克隆本项目
 ```
 git clone https://github.com/babyfish-ct/graphql-state.git
@@ -124,9 +124,9 @@ yarn start
 ```
 访问 http://localhost:3000
 
-## 3. [开始使用: 逐步向导](./get-start.md)
+## [开始使用: 逐步向导](./get-start.md)
 
-## 4. [文档](./doc/README_zh_CN.md)
+## [文档](./doc/README_zh_CN.md)
 
 - [简单状态](./doc/simple-state/README_zh_CN.md)
   - [可写状态](./doc/simple-state/writable_zh_CN.md)
@@ -151,13 +151,13 @@ yarn start
   - [碎片合并](./doc/http-optimization/merge-fragment_zh_CN.md)
   - [请求重用](./doc/http-optimization/reuse-request_zh_CN.md)
 
-## 5. 依赖
+## 依赖
 1. React, version >= 17.0.0
 2. [graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client), version >= 3.0.8
 
 [graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client) 是我数月前开发的另外一个框架, 它是针对GraphQL功能完整的的TypeScript-DSL
 
-## 6. 其它
+## 其它
 
 这是一个新诞生的框架，为了让它越来越完整，未来会实现的功能如下
 
@@ -173,5 +173,4 @@ yarn start
 2. 支持数据可视化的Chrome插件
 
 
-### 7. [变更日志](./change-log.md)
-
+### [变更日志](./change-log.md)
