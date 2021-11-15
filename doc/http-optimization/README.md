@@ -1,13 +1,13 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/HTTP优化
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/HTTP optimization
 
-## 基本概念
+## Basic concept
 
-大部分和HTTP优化的功能，都基于一个重要的概念: shape
+Most of the functions related to HTTP optimization are based on an important concept: shape
 ```
 shape = fetcher + variables
 ```
 
-例如
+For example
 ```ts
 const data = useQuery(
     query$.findBookStores(
@@ -30,7 +30,7 @@ const data = useQuery(
     }
 );
 ```
-其形状为
+Its shape is
 ```
 +-------+
 | Query |
@@ -72,7 +72,7 @@ const data = useQuery(
                           \---->| name |
                                 +------+         
 ```
-将之称为A，假如有另外一个形状B
+Call it **A**, if there is another shape **B**
 ```
 +-------+
 | Query |
@@ -102,16 +102,16 @@ const data = useQuery(
                   \-----| name |
                         +------+
 ```
-不难看出，形状B的所有数据，都在A存在，且参数化字段的参数也完全相等。这时我们称
+It is not difficult to see that all the data of shape B exists in A, and the parameters of the parameterized field are also completely equal. At this time we call
 
-- **形状A包含B，或，形状A比B大**
-- **形状B比A小**
+- **Shape A contains B, or, shape A is bigger than B**
+- **Shape B is smaller than A**
 
-> 注意
-> 
-> 字段的顺序不会影响形状的包含性和相等性的判断
+> Note
+>
+> **The order of the fields does not affect the inclusiveness and equality judgment of the shape**
 
-假如一个形状C
+If there is a shape **C**
 ```
 +-------+
 | Query |
@@ -129,9 +129,9 @@ const data = useQuery(
           \---->| name |
                 +------+
 ```
-形状A中Query.findBookStore的参数为{name: "a"}，形状C中Query.findBookStore的参数为{name: "NotA"}，参数不匹配。所以，A和C是毫不相干的两个形状，不能说A包含C或A大于C。
+The parameter of "Query.findBookStore" in shape A is '{name: "a"}', and the parameter of "Query.findBookStore" in shape C is '{name: "NotA"}', theirs parameters do not match. Therefore, A and **C** are two unrelated shapes. It cannot be said that A contains C or that A is greater than C.
 
-假如一个形状D
+If there is a shape **D**
 ```
 +-------+
 | Query |
@@ -153,12 +153,12 @@ const data = useQuery(
           \---->| location |
                 +----------+
 ```
-形状D中Query.findBookStores.location字段在形状A中不存在。所以，A和D是毫不相干的两个形状，不能说A包含D或A大于D。
+The "Query.findBookStores.location" field in shape D does not exist in shape A. Therefore, A and D are two unrelated shapes. It cannot be said that A contains D or that A is greater than D.
 
-## 下级文档
-- [异步削峰](./peak-clipping.md)
-- [碎片合并](./merge-fragment.md)
-- [请求重用](./reuse-request.md)
+## Child chapters
+- [Peak clipping](./peak-clipping.md)
+- [Merge fragments](./merge-fragment.md)
+- [Reuse request](./reuse-request.md)
 
 --------------
-[< Previous: 释放策略](../release-policy.md) | [Back to parent: 文档](../README.md)
+[< Previous: Release policy](../release-policy.md) | [Back to parent: Documentation](../README.md)
