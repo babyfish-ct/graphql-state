@@ -465,11 +465,11 @@ function defaultContains(
 
 ### 2.1. position决策
 
-既然对象被自动link到并未被直接修改的集合关联中，这时我们决定其插入位置呢？关联是否有业务层面的排序呢？
+既然对象可以被自动link到并未被直接修改的集合子关联中，这时我们如何决定其插入位置呢？关联是否有业务层面的排序要求呢？
 
-假设所有关联数据是按照对象的name字段排序的，无论是Query.findBooks这样的根对象关联，还是BookStore.books这样的普通对象关联。
+假设所有关联数据是按照对象的name字段排序的，无论是Query.findBookStores这样的根对象关联，还是BookStore.books这样的普通对象关联。
 
-assocaitionProperties支持一个position函数，我们可以这样来为被自动插入的对象自定义插入位置
+assocaitionProperties支持一个position函数，我们可以这样来为被自动link的对象自定义插入位置
 
 ```ts
 import { FlatRow } from 'graphql-state';
@@ -482,7 +482,7 @@ position(
 ) => number | "start" | "end" | undefined;
 ```
 
-参数:
+**参数**
 - row: 即将被插入的新元素
 - rows: 现在已经存在的数据
 - paginationDirection:
@@ -494,7 +494,7 @@ position(
   
 - variables: 关联的查询参数
 
-返回值：
+**返回值**
 - start
 插入到头部
 - end
@@ -526,9 +526,14 @@ function createStateManager() {
                 variables?: BookStoreArgs["books"]
             ) => number | "start" | "end" | undefined {
             
-                if (row.has("name")) { // if name of new row is cached
+                // 如果新数据的name被缓存
+                if (row.has("name")) { 
+                
                     const rowName = row.get("name");
+                
                     for (let i = 0; i < rows.length; i++) {
+                    
+                        // 如果现有数据的name没有被缓存
                         if (!rows[i].has("name")) {
                             return undefined;
                         }
@@ -538,6 +543,8 @@ function createStateManager() {
                     }
                     return "end";
                 }
+                
+                // 我不知道
                 return undefined;
             }
         })
@@ -638,7 +645,7 @@ stateManager.set(book$$, {id: "id1", 'Effective GraphQL'});
                                   | id3 | Learning GraphQL       |
                                   +-----+------------------------+
 ```
-比上个例子变化更大，被修改的对象需要从"A BookStore".books({name: "typ"})中删除，再插入到"A BookStore".books({name: "gra"})中。即，数据在同族的字关系之间迁移。
+比上个例子变化更大，被修改的对象需要从"A BookStore".books({name: "typ"})中删除，再插入到"A BookStore".books({name: "gra"})中。即，数据在同族的子关系之间迁移。
 
 这种情况的GIF动画演示是
 |![image](../../../optimized-mutation.gif "数据迁移")|
@@ -654,23 +661,23 @@ readonly dependencies?: (
     variables?: ...GeneratedVariablesType...
 ) => ReadonlyArray<keyof ...GeneratedFlatType...> | undefined;
 ```
-参数
+**参数**
 - variables: 关联的查询参数
 
-返回值
+**返回值**
 - array: 依赖字段集合
-- undefined: - undefined: 无法判断，此举会导致优化失败。缓存中数据作废，所有和此关联相关的UI查询自动刷新
+- undefined: 无法判断，此举会导致优化失败。缓存中数据作废，所有和此关联相关的UI查询自动刷新
 
 使用方式如下
 
 ```ts
 function createStateManager() {
     return newTypedConfiguration()
-        .rootAssocaitionProperties("findBooks", {
+        .assocaitionProperties("BookStore", "books", {
             contains: ...,
             position: ...,
             dependencies: (
-                variables?: BookStoreArgs["findBooks"]
+                variables?: BookStoreArgs["books"]
             ) => ReadonlyArray<keyof BookFlatType> {
                 return ["name"];
             }
@@ -699,9 +706,9 @@ dependencies: (
 }
 ```
 
-## 调整分页结果
+## 调整分页结果和"associationProperties.range"
 
-上文提到，未被直接修改的关联有可能被框架自动修改，tryLink行为可能插入新的数据，tryUnlink行为可能删除已有数据。这种情况下，分页结果将会被破坏，可能会影响后续翻页操作。
+上文提到，未被直接修改的子关联有可能被框架自动修改，tryLink行为可能插入新的数据，tryUnlink行为可能删除已有数据。这种情况下，分页结果将会被破坏，可能会影响后续翻页操作。
 
 有两种情况，需要调整分页结果
 
@@ -709,7 +716,8 @@ dependencies: (
 - 分页是基于行数偏移量的分页，而非基于对象id
 
 associationProperties对象接受一个range函数来调整分页结果，其定义如下
-```
+
+```ts
 range(
     range: {
         endCursor: string,
@@ -719,15 +727,14 @@ range(
     direction: "forward" | "backward"
 ) => void;
 ```
-参数:
+**参数**
   - range: 分页范围，你需要在函数中修改此对象
-    - startCursor: 其实游标
     - endCursor: 结束游标
-    - 其它任何字段
+    - 其它任何字段，当然包含可能存在的字段"totalCount"
   - delta
-    变化行数，正数表示新的数据被添加到当前关联中；负数表示有数据从当前关联中被移除
-  - direaction: 分页方向，forward或backward
-  > 不可能是page，因为page分页不可优化，总是重新查询。
+    记录行数的变化量，正数表示新的数据被添加到当前关联中；负数表示有数据从当前关联中被移除
+  - direction: 分页方向，forward或backward
+    > 不可能是page，因为page分页不可优化，总是重新查询。
 
 如果你的分页面是基于对象id的，你只需要调整totalCount
 ```ts
@@ -782,11 +789,11 @@ function cursorToIndex(cursor: string): number {
 
 但是，有些时候，这两点假设是不成立的
 
-第一点的反例：假设有一个查询字段Query.findActiveUsers(), 虽然此关联没有任何参数，但是故名思义，它隐含了过滤逻辑。此关联仅代表所有active为true的数据，而非所有数据。
+第一点的反例：假设有一个查询字段Query.findActiveUsers(), 虽然此关联没有任何参数，但是故名思义，它隐含了过滤逻辑。此关联仅代表active为true的数据，而非所有数据。
 
 第二点的反例：假设有一个查询字段Query.findRows(orderFieldName: string, descending: boolean), 这两个参数仅用于动态排序，没有过滤数据的意图，无论它们被如何指定，此关联都能代表所有数据。
 
-稍后的版本会处理这两种情况
+稍后的版本会处理这两种情况。在此之前，希望能听听大家的意见
 
 --------------------------------
 
