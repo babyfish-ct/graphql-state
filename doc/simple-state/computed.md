@@ -108,7 +108,7 @@ In the above example, we demonstrated the computed state, but there are three de
 
 - The computed state can not only depend on the writable state, but also on other computed states
 - The level of dependency of computed state can be very deep, theoretically it can reach infinite
-- The calculation state can be parameterized
+- The computed state can be parameterized
 
 To this end, let’s use an example of factorial recursive implementation to demonstrate all the above details.
 
