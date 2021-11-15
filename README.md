@@ -86,8 +86,12 @@ MANNING.books.add(LearningGraphQL);
 ```
 At the same time, graphql-state will perform two automatic updates for you
 ```
-O'REILLY.books.remove(LearningGraphQL);
-LearningGraphQL.store = MANNING;
+if (cached(O'REILLY.books)) {
+    O'REILLY.books.remove(LearningGraphQL);
+}
+if (cached(LearningGraphQL.store)) {
+    LearningGraphQL.store = MANNING;
+}
 ```
 
 ### 2.3. Database style trigger

@@ -23,6 +23,7 @@ useMutation<
 }
 ```
 
+**参数**
 fetcher: 一个[graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client)的fetcher，其根对象类型必须为"Mutation"
 
 options: 一个可选的对象，包含如下字段
@@ -31,7 +32,8 @@ options: 一个可选的对象，包含如下字段
   - onError: 请求失败后调用此函数
   - onComplete: 无论成功失败，请求完成后都会调用，相当于编程编程语言中的"finally"
   
-返回值：一个对象，包含如下字段
+**返回类型**
+一个对象，包含如下字段
   - mutate: 用户需要调用此函数发送变更请求到服务端。和useQuery，usePaginationQuery，useObject以及useObjects不同，变更请求不会自动发送，必须由用户自己调用
   - loading: 是否正在等待返回结果
   - data: 服务端返回结果。如果loading为true或error存在，必然为undefined
@@ -58,7 +60,7 @@ options: 一个可选的对象，包含如下字段
   
 ## 2. 使用例子
 
-以在[附带的例子的服务端](https://github.com/babyfish-ct/graphql-state/tree/master/example/server)中，Mutation支持一个mergeBook字段，用于插入或修改Book，其sdl如下
+在[附带的例子的服务端](https://github.com/babyfish-ct/graphql-state/tree/master/example/server)中，Mutation支持一个mergeBook字段，用于插入或修改Book，其sdl如下
 ```
 type Mutation {
     mergeBook(input: BookInput): Book
@@ -82,13 +84,13 @@ type BookStore { ... }
 type Author { ... }
 ```
 
-mergeBook字段接受一个BookInput，返回Book，可以利用这个返回值修改本地数据
+mergeBook字段接受一个BookInput并返回Book，返回的对象可以用于修改本地缓存数据
 
 > 某些情况下，返回的对象和传入的Input所包含等价信息是等价相同的，但这不是绝对的，服务端允许返回和input不一致的数据，客户端应该以返回的数据为准。
 > 
 > 无论如何，这是一个很常见且通用的设计方法
 
-如此，我们期望执行的变更操作的fetcher看起来应该是这个样子
+我们期望执行的变更操作的fetcher看起来应该是这个样子
 ```ts
 const MUTATION_FETCHER = mutation$.mergeBook(
     { input: ... },
@@ -104,7 +106,7 @@ const MUTATION_FETCHER = mutation$.mergeBook(
     .store(bookStore$.id)
     .authors(author$.id)
 ```
-既要用与指定mutation的返回格式，又要用于更新本地数据。我们可以稍微修改一下代码，把这部分独立出来，如下
+既要用于指定mutation请求的返回格式，又要用于更新本地数据。我们可以稍微修改一下代码，把这部分独立出来，如下
 ```ts
 const BOOK_MUATION_INFO = book$$
     .store(bookStore$.id)
@@ -122,7 +124,7 @@ const MUTATION_FETCHER = mutation$.mergeBook(
 ```ts
 import { FC, memo } from 'react';
 import { useMutation } from 'graphql-state';
-import { useTypedStateManager } from './__generated/fetchers';
+import { useTypedStateManager } from './__generated';
 import { mutation$, book$$, bookStore$, author$ } from './__generated/fetchers';
 import { BookInput } from './__generated/inputs';
 

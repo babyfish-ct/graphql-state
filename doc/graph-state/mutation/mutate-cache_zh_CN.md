@@ -19,7 +19,7 @@ export const SomeComponent: FC = memo(() => {
 StateManager支持save函数用于保存数据，它合并了insert和update操作，你不用区分insert和update
 
 ```ts
-save<TName extends (<EntityTypeNames> | "Query", T extends object, TVariables extends object = {}>(
+save<TName extends <EntityTypeNames> | "Query", T extends object, TVariables extends object = {}>(
     fetcher: ObjectFetcher<TName, T, any>,
     obj: T,
     variables?: TVariables
@@ -34,12 +34,12 @@ save<TName extends <EntityTypeNames>, T extends object, TVariables extends objec
 
 > 注意：
 > 
-> 1. 为了简化例子，后续所有代码都隐了这些import语句
+> 1. 为了简化例子，下文中所有代码都隐含了这些import语句
 >   ```
 >   import { ParameterRef } from 'graphql-ts-client';
 >   import { book$, book$$, bookStore$$, author$, author$$ } from './__generated/fetchers';
 >   ```
-> 2. 后续代码硬编码了大量的JSON字面量。在实际项目中，不可能对需要保存数据的JSON进行硬编码，而本文档如此只是为了简化讨论
+> 2. 下文中的代码硬编码了大量的JSON字面量。在实际项目中，不可能对需要保存数据的JSON进行硬编码，而本文档如此只是为了简化讨论
 > 
 > 3. save函数的第一个参数是[graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client)的fetcher，第二个参数是要保存的对象图或对象图集合，第三个参数可选的查询参数。由于[graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client)的类型安全性，如果第二个和第三个参数如果出现任何拼写错误，将会在编译期报错。
 
@@ -88,7 +88,7 @@ stateManager.save(
 
 ### 1.4 只修改关联，不修改被关联对象
 
-上例中，我们不久修改了Book，还修改了Author，比如Author.name被修改了。但是，很多时候，我们只想修改Book和Author之间的关联，不想修改被关联对象的其他属性。
+上例中，我们不仅修改了Book，还修改了Author，比如Author.name被修改了。但是，很多时候，我们只想修改Book和Author之间的关联，不想修改被关联对象的其他属性。
 
 要达到此目录，让被关联对象只包含id即可
 
@@ -158,9 +158,7 @@ stateManager.save(
     { authorName: "eve" }
 );
 ```
-
-> **注意**
-> 
+ 
 > 这个例子保存的关联不是Book.authors，而是Book.authors({name: "eve"})
 > 
 > 这是一个参数化的关联。所以仅仅给save函数传递需要保存的数据对象是不够的。此例很好地解释了为什么save函数的第一个参数要指定[graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client)的fetcher。
@@ -195,7 +193,7 @@ stateManager.save(
 
 ## 2. 删除
 
-### 2.1 删除对象
+### 2.1 删除一个对象
 ```
 stateManager.delete("Book", "e110c564-23cc-4811-9e81-d587a13db634");
 ```

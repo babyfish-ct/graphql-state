@@ -1,35 +1,51 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../../README.md)/[图状态](../README.md)/[变更](./README.md)/智能变更
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../../README.md)/[Graph state](../README.md)/[Mutation](./README.md)/Smart mutation
 
-智能更新更新流程如下
+The process of smart mutation is as follows
 
 ![image](../../../smart-mutation.png "smart mutation")
 
-此图图在首页中已经讨论过了，这里不再赘述。
+This picture has been discussed on the homepage, so I won’t repeat it here.
 
-本文档重点讨论两点: 
+This document focuses on two points:
 
-- 框架如何抉择只需修改本地数据还是需要重新查询?
-- 如果用户愿意介入抉择过程，他应该如何参与优化?
+- How does the framework decide whether to modify local data or re-query?
+- If a user is willing to intervene in the decision-making process, how should he participate in optimization?
 
-## 1. 关联修改和associationProperties.contains函数
+## 1. Association mutation and "associationProperties.contains" function
 
-### 1.1. 关联族和子关联
+### 1.1. Association family and sub association
 
-在GraphQL中，关联是具备参数的，以[附带例子的服务端](https://github.com/babyfish-ct/graphql-state/tree/master/example/server)为例，其提供的服务定义如下
-
+In GraphQL, associations have parameters. Take [the server side of attached demo](https://github.com/babyfish-ct/graphql-state/tree/master/example/server) as an example, Its sdl looks like this
 ```
 type Query {
     findBookStores(name: String): [BookStore!]!
+    findBooks(name: String): BookConnnection!
+    findAuthors(name: String): AuthorConnnection!
+    
     ...
+    
 }
 type BookStore {
     books(name: String): [Book!]!
     ...
 }
+
+type Book {
+    authors(name: String): [Author!]!
+    ...
+}
+
+type Author {
+    books(name: String): [Book!]!
+}
+
 ...
+
 ```
 
-我们看到，Query.findBookStores和Book.authors都是参数化的。统一个关系，可以由不同参数的创建不同的实例，比如
+We see that "Query.findBookStores", "Query.findBooks", "Query.findAuthors", "BookStore.books", "Book.authors" and "Author.books" are all parameterized.
+
+One association can be used to create different instances with different parameters, such as
 
 ```
 ----+-Query.findBookStores
@@ -49,11 +65,12 @@ type BookStore {
     \---- Book.authors({name: "b"})
 ```
 
-如上图，我们有两个关联族，每个族中有三个子关联
+As shown in the figure above, we call it two association families, each family has three sub-associations
 
-### 1.2. link和unlink
+### 1.2. link and unlink
 
-清观察下面的代码
+Look at the code below
+
 ```ts
 stateManager.save(
 
@@ -75,52 +92,65 @@ stateManager.save(
     { bookName: "a" }
 )
 ```
-这段代码试图修改id为storeId的BookStore对象的子关联books({name: "a"})
+This code attempts to modify the sub-association 'books({name: "a"})' of the BookStore object whose id is "storeId"
 
-假设books({name: "a"})现在的旧值为[id1, id2]，而期望修改的新值为[id2, id3]。对比新旧数据，被删除的Book为[id1]，被添加的Book为[id3]。
+Suppose the old value of 'books({name: "a"})' is now [id1, id2], and the new value expected to be modified is [id2, id3]. Comparing the new and old data, the deleted Book is [id1], and the added Book is [id3].
 
-当前BookStore对象，除了具备当前的books({name: "a})这个被直接修改的子关联外，还有另外两个子同族的子关联books({})，books({name: "b"})，接下来，框架即将尝试
+For the "BookStore" object, in addition to the directly modified sub-association 'books ({name: "a})', there are two other sub-associations of the same family, 'books({})' and 'books({name: "b"})'.
+
+Next, the framework do this
+
 ```ts
+
+// books({}) is affected by the mutation of books({name: "a"})
 books({}).tryUnlink({
     id: id1, 
-    reason: {name: "a} // books({})被books({name: "a"})的变更影响
+    reason: {name: "a}
 });
+
+// books({}) is affected by the mutation of books({name: "a"})
 books({}).tryLink({
     id: id3, 
-    reason: {name: "a} // books({})被books({name: "a"})的变更影响
+    reason: {name: "a}
 });
+
+// books({name: "b"}) is affected by the mutation of books({name: "a"})
 books({name: "b"}).tryUnlink({
     id: id1, 
-    reason: {name: "a} // books({name: "b"})被books({name: "a"})的变更影响
+    reason: {name: "a}
 });
+
+// books({name: "b"}) is affected by the mutation of books({name: "a"})
 books({name: "b"}).tryLink({
     id: id3, 
-    reason: {name: "a} // books({name: "b"})被books({name: "a"})的变更影响
+    reason: {name: "a} 
 });
 ```
-这说明，books({name: "a"})的变化有可能对books()和books({name: "b"})形成影响。即
+This shows that the changes of 'books({name: "a"})' may affect 'books({})' and 'books({name: "b"})'. which is
 
-> 同族内的子关联之间会相互影响; 任何一个被修改，其余的都会被执行unlink或link操作
+> **The sub-associations in the same family will affect each other; any one is modified, the rest will be executed unlink or link operation**
 
-### 1.3. 内部优化，对比同族内子关联的参数
+### 1.3. Internal optimization, comparing the parameters of the sub-association within the same family
 
-> 这部分内容是graphql-state内部优化，可以让上文中的
+> This part of the content is the internal optimization of graphql-state, which can simplify the judgment process of
 > ```
 > books({}).tryLink(id: id3, reason: {name: "a"})
 > ```
-> 的判断过程得到简化。
+> above.
 > 
-> 这种内部优化行为对用户而言透明，如果不感兴趣，可以直接跳到1.4
+> This internal optimization behavior is transparent to users, if you are not interested, you can skip to 1.4
 
-为了更好地判断是否可以直接修改缓存，引入了一个概念containsVariables，判断查询参数之间的包含关系。
+In order to better judge whether the local cache can be modified directly, a concept "containsVariables" is introduced to determine the containment relationship between query variables.
 
-> 其中，variables指关联的参数，如同上文中的{}, { name: "a"}, {name: "b"}
+> "variables" refer to the association parameters, as '{}', "{name: "a"}", "{name: "b"}"
 
 ```ts
 containsVariables(variables1, variables2): boolean
 ```
-改方法件判断variables1是否包含variables2，即variables2的所有字段都在variables1中存在且它们的值相等
-|例子|判断值|
+
+This method determines whether variable1 contains variables2, that is, all fields of variable2 exist in variables1 and their values are equal
+
+|Example|Result|
 |--------|--------|
 |containsVariables({k1: 'A', k2: 'B'}, {k1: 'A'})|true|
 |containsVariables({k1: 'A'}, {k1: 'A', k2: 'B'})|false|
@@ -135,78 +165,82 @@ containsVariables(variables1, variables2): boolean
 |||
 |containsVariables(undefined, udefined)|true|
 
-> 一个重要的规律，可以框架内部优化
-> 
-> 如果contains(variables1, variables)成立，那么
-> 
-> someAssocaiton(variables1) ∈ someAssocaiton(variables2)。
-> 
-> 即，如果关联参数variable1比variables2更严格，那么variables1能查询到的数据一定是variables2能查询到的数据的一部分。例如
-> 
+> An important rule that can be optimized within the framework
+>
+> If contains(variables1, variables) is true, then
+>
+> someAssocaiton(variables1) ∈ someAssocaiton(variables2).
+>
+> That is, if the association parameter "variable1" is more stringent than "variables2", then the data queried by "variables1" must be part of the data queried by "variables2". E.g
+>
 > books({name: "a"}) ∈ books({})
-> 
-> - 向books({name: "a"})中添加一个数据时，一定需要向books({})中添加数据
-> - 从books({})中删除数据时，一定需要从books({name: "a"})中删除数据
+>
+> - When adding a data to 'books({name: "a"})', the data must be add into 'books({})'
+> - When deleting data from 'books({})', the data must be removed from 'books({name: "a"})'
 
-因此，tryUnlink的逻辑如下
+Therefore, the logic of 'tryUnlink' is as follows
 ```ts
 tryUnlink(oldId, reason) {
     if (!this.ids.contains(oldId)) {
-        return; //要删除的数据早已不存在, 不需要做任何事
+        return; //The data to be deleted no longer exists, no need to do anything
     }
     if (containsVariables(this.variables, reason)) {
     
         /*
-         * 条件比我宽松的子关联都同意删除旧元素了，我当然同意
-         * 
-         * 例如: this.variables为{name: "a"}，而reason为{}
-         * 既然oldId可以从books({})中被删除，它也一定可以从books({name: "a"})被删除
+         * The sub-associations with looser conditions than mine 
+         * agree to delete the old elements, I certainly agree
+         *
+         * For example: this.variables is '{name: "a"}', and reason is '{}'
+         * Since oldId can be deleted from 'books({})', 
+         * it must also be deleted from 'books({name: "a"})'
          */
         this.unlinkDirectly(oldId); 
         
         return; 
     }
-    ... 更多的代码 需要进一步判断 ....
+    ... more code, further judgment is needed...
 }
 ```
-因为conains({name: "a"}, {})，所以，
-如果一个元素从books({})中被删除，那么它一定能直接从books({name: "a"})被删除。
-很遗憾，上文的案例并没有命中这种情况
+Because 'conainsVariables({name: "a"}, {})' is true, so,
+If an element is deleted from 'books({})', it must be deleted from 'books({name: "a"})' too.
+Unfortunately, the above case did not hit this situation
 
-tryLink的逻辑如下
+The logic of "tryLink" is as follows
 ```ts
 tryLink(newId, reason) {
     if (this.ids.contains(newId)) {
-        return; //要添加的新元素已经存在, 不需要做任何事
+        return; //The new element to be added already exists, no need to do anything
     }
     if (containsVariables(reason, this.variables)) {
        
         /*
-         * 条件比我严格的子关联同意添加新元素了，我当然同意
-         * 
-         * 例如: this.variables为{}，而reason为{name: "a"}
-         * 既然newId可以添加到books({name: "a"})中，它也一定可以添加到books({})中
+         * The sub-associations with stricter conditions than mine 
+         * agree to add new elements, I certainly agree
+         *
+         * For example: this.variables is '{}', and reason is '{name: "a"}'
+         * Since newId can be added to 'books({name: "a"})', 
+         * it must be added to 'books({})'
          */
         this.linkDirectly(newId); 
         
         return;
     }
-    ... 更多的代码 需要进一步判断 ....
+    ... more code, further judgment is needed...
 }
 ```
 
-经过此variables contains的优化，上个章节的行为变成了
-> 暂时忽略
-> - tryLink发现要添加的元素已经存在
-> - tryUnlink发现要删除的元素早已不存在
+After this optimization, the behavior of the previous chapter becomes
+> Temporarily ignore 
+> - "tryLink" found that the element to be added already exists
+> - "tryUnlink" found that the element to be deleted no longer exists
 >
-> 这两种可以提前结束判断的情况
+> These two situations can end the judgment early
 
 <table>
     <thead>
         <tr>
-            <th>期望行为</th>
-            <th>判断结果</th>
+            <th>Expected behavior</th>
+            <th>Judgment result</th>
         </tr>
     </thead>
     <tbody>
@@ -217,7 +251,7 @@ tryLink(newId, reason) {
     reason: {name: "a}
 });</pre>
             </td>
-            <td>尚需进一步判定</td>
+            <td>Need to be further judged</td>
         </tr>
         <tr>
             <td>
@@ -227,8 +261,10 @@ tryLink(newId, reason) {
 });</pre>
             </td>
             <td>
-                因为containsVariables({name: "a"}, {})为true，
-                即，比当前子关联条件更严苛的其它同族子关联books({name: "a"})都同意接受新元素了，books({})当然也同意，此修改可以直接在本地缓存上之执行
+                Because 'containsVariables({name: "a"}', {}) is true,
+                That means other same-family sub-association 'books({name: "a"})' with more stringent variables agree to accept the new element,
+                of course, the current sub-assocaition 'books({})' also agrees. 
+                This modification can be directly executed on local cache.
             </td>
         </tr>
         <tr>
@@ -238,7 +274,7 @@ tryLink(newId, reason) {
     reason: {name: "a}
 });</pre>
             </td>
-            <td>尚需进一步判定</td>
+            <td>Need to be further judged</td>
         </tr>
         <tr>
             <td>
@@ -247,14 +283,14 @@ tryLink(newId, reason) {
     reason: {name: "a}
 });</pre>
             </td>
-            <td>尚需进一步判定</td>
+            <td>Need to be further judged</td>
         </tr>
     </tbody>
 </table>
 
 ### 1.4. associationProperties.contains
 
-在创建全局的StateManager时，可以为对象之间的关联设置优化器
+When creating a global StateManager, you can set an optimizer for the associations
 
 ```ts
 import { newTypedConfiguration } from './__generated';
@@ -262,22 +298,22 @@ import { newTypedConfiguration } from './__generated';
 function createStateManager() {
     return newTypedConfiguration()
         .rootAssociationProperites("findBookStores", { ... })
-        .assocaitionProperties("BookStore", "authors", {...})
+        .assocaitionProperties("BookStore", "books", {...})
         .network(...)
         .buildStateManager();
 }
 ```
-其中
-- rootAssociationProperites针对根对象Query的关联字段
-- assocaitionProperties针对其他对象的关联字段
+- "rootAssociationProperites" is used for the association fields of the root object Query
+- "assocaitionProperties" is used for the association fields of other objects
 
-二者用法一样
+Both of them have the same usage
 
-> 注意: API是强类型设计，不用担心"findBookStores", "BookStore"和"authors"等字符串的拼写错误，错误会在编译时呈现。
+> Note: The API is a strongly typed design. Don't worry about spelling errors in strings such as "findBookStores", "BookStore" and "books". The errors will appear at compile time.
 
-这里，我们以BookStore.books关系的assocaitionProperties来讲解如何优化BookStore.books。
+Here, we take the assocaitionProperties of "BookStore.books" as an example to explain how to optimize "BookStore.books".
 
-assocaitionProperties是一个对象，用户可以提供一个contains函数，判断一个数据对象是否应该属于一个关联
+"assocaitionProperties" is an object, the user can provide a "contains" function to determine whether a data object should belong to an association
+
 ```ts
 import { FlatRow } from 'graphql-state';
 
@@ -286,13 +322,13 @@ contains(
     variables: ...GeneratedVariablesType...
 ) => boolean | undefined;
 ```
-参数
-- row: 数据对象
-- variables: 当前关联的参数
+Parameters
+- row: data object
+- variables: parameters of current association
 
-返回值 
-- boolean: 对象是否和关联参数的条件匹配
-- undefined: 无法判断，此举会导致优化失败。缓存中数据作废，所有和此关联相关的UI查询自动刷新
+Return value 
+- boolean: whether the object matches the filter condition of current association
+- undefined: Unable to judge, this will cause optimization failure. The data in the cache will be evicted, and all UI queries related to this association will be automatically refreshed.
 
 ```ts
 import { FlatRow } from 'graphql-state';
@@ -307,15 +343,17 @@ function createStateManager() {
             ) => boolean | undefined {
             
                 if (variables?.name === undefined) {
-                    // 如果当前关联没有条件，即books({})，那么此关联一定可以包含row
+                    // If "variables.name" is not specified by current sub association,
+                    // assocaition accept every thing, always contains the data
                     return true; 
                 }
-                if (row.has("name")) { // 如果name被缓存，检查之
+                if (row.has("name")) { // If name of data is cached
+                    // Check whether the name of data matches the filter of association
                     return row.get("name").toLowerCase()
                         .indexOf(variables.name.toLowerCase()) !== -1;
                 }
                 
-                // 如果row所代表的数据的name字段没有被缓存，不知道该如何优化
+                // If the name of the data is not cached, I don’t know how to optimize
                 return undefined; 
             }
         })
@@ -323,26 +361,26 @@ function createStateManager() {
         .buildStateManager();
 }
 ```
-> 为了清晰讲解，这里写出了所有类型，并未有任何省略，你在开发中可以省略。
+> In order to explain clearly, all types are written here, without any omissions, you can omit them during development.
 
-这里
-- 先检查子关联的参数是否指定了name，如果没有，直接判定接受元素属于关联
-- 如果对象的name被缓存了，检查对象的name是否包含参数的name，并返回检查结果
-- 如果对象的name没有被缓存，没有任何办法优化，返回undefine即可
+Here
+- First check whether the variables of the sub-association specifies name, if not, directly determine that the accepted element belongs to the association
+- If the name of the data object is cached, check whether the name of the object contains the name of the variables, and return the result
+- If the name of data object is not cached, there is no way to optimize it, just return to undefine
 
-> 注意: 
-> 
-> 此处只需判断variables?.name是否为undefined，不用考虑null和""，因为
-> - null会被自动转化为undefined
-> - 如果参数为""且GraphQL schema并没有定义改参数不能为空，自动转化为undefined
+> Note:
+>
+> Here only need to judge whether variable?.name is undefined, no need to consider null and "", because
+> - null will be automatically converted to undefined
+> - If variable is "" and its type is GraphQLNonNull, it will automatically be converted to undefined
 
-至此，上文无法执行的三个操作的执行策略为
+So far, the execution strategy of the three operations that cannot be performed above is
 
 <table>
     <thead>
         <tr>
-            <th>期望行为</th>
-            <th>判断结果</th>
+            <th>Expected behavior</th>
+            <th>Judgment result</th>
         </tr>
     </thead>
     <tbody>
@@ -354,19 +392,24 @@ function createStateManager() {
 });</pre>
             </td>
             <td>
-                当前子关联无参数
+                The current sub-association is not parameterized
                 <ul>
                     <li>
-                        <div>如果用户不指定contains</div>
-                        不做任何操作，旧对象不应该被移除
+                        <div>If the user does not specify "associationProperites.contains"</div>
+                        Do nothing, old objects should not be removed
                         <div><i>
-                            这是没问题的，如果对象在books({name: "a"})中的消失是是因为其它原因导致的
-                            (比如，删除操作，或其父对象发生变更)，其它智能更新机制会负责从当前关联中删除它，并非此处讨论的内容。
+                            This is no problem, if the object disappears from 'books({name: "a"})' 
+                            because of other reasons(For example, delete operation, or its parent object changes), 
+                            other smart update mechanisms will be responsible for deleting it from the current association, 
+                            which is not the content discussed here.
                         </i></div>
                     </li>
                     <li>
-                        <div>如果用户指定了contains</div>
-                        不做任何操作，旧对象不应该被移除（对于无参数子关联而言，上文中的用户在contains函数中实现的行为，其实和下文即将讨论的框架的默认行为是一样的）
+                        <div>If the user specifies "associationProperties.contains"</div>
+                        Do nothing, and the old object should not be removed 
+                        (For the parameterless sub-association, the behavior implemented 
+                        by the user in the "associationProperties.contains" function above 
+                        is actually the same as the default behavior which will be discussed later)
                     </li>
                 </ul>
             </td>
@@ -379,19 +422,19 @@ function createStateManager() {
 });</pre>
             </td>
             <td>
-                当前子关联有参数
+                The current sub-assocaition is parameterized
                 <ul>
                     <li>
-                        <div>如果用户不指定contains</div>
-                        <div>缓存中数据作废，所有和此关联相关的UI查询自动刷新</div>
+                        <div>If the user does not specify "associationProperites.contains"</div>
+                        <div>The data in the cache will be evicted, and all UI queries related to this association will automatically refreshed</div>
                     </li>
                     <li>
-                        <div>如果用户指定了contains</div>
-                        检查用户实现的contains函数的返回值
+                        <div>If the user specifies "associationProperties.contains"</div>
+                        Check the return value of the "contains" function implemented by the user
                         <ul>
-                            <li>true: 不做任何操作</li>
-                            <li>false: 从当前子关联删除元素</li>
-                            <li>undefined: 用户也无法判断。缓存中数据作废，所有和此关联相关的UI查询自动刷新</li>
+                            <li>true: Do nothing</li>
+                            <li>false: Remove elements from the current sub-association</li>
+                            <li>undefined: User can't judge either. The data in the cache will be evicted, and all UI queries related to this association will automatically refreshed</li>
                         </ul>
                     </li>
                 </ul>
@@ -405,19 +448,19 @@ function createStateManager() {
 });</pre>
             </td>
             <td>
-                当前子关联有参数
+                The current sub-assocaition is parameterized
                 <ul>
                     <li>
-                        <div>如果用户不指定contains</div>
-                        <div>缓存中数据作废，所有和此关联相关的UI查询自动刷新</div>
+                        <div>If the user does not specify "associationProperites.contains"</div>
+                        <div>The data in the cache will be evicted, and all UI queries related to this association will automatically refreshed</div>
                     </li>
                     <li>
-                        <div>如果用户指定了contains</div>
-                        检查用户实现的contains函数的返回值
+                        <div>If the user specifies "associationProperties.contains"</div>
+                        Check the return value of the "contains" function implemented by the user
                         <ul>
-                            <li>true: 为当前子关联添加新元素</li>
-                            <li>false: 不做任何操作</li>
-                            <li>undefined: 用户也无法判断。缓存中数据作废，所有和此关联相关的UI查询自动刷新</li>
+                            <li>true: Add a new element into the current sub-association</li>
+                            <li>false: Do nothing</li>
+                            <li>undefined: User can't judge either. The data in the cache will be evicted, and all UI queries related to this association will automatically refreshed</li>
                         </ul>
                     </li>
                 </ul>
@@ -426,7 +469,7 @@ function createStateManager() {
     </tbody>
 </table>
 
-这个优化是可选的，如果用户没有为assocationProperties指定contains函数，框架默认的的contains行为如下
+This optimization is optional. If the user does not specify the "contains" function for "assocationProperties", the default "contains" behavior of the framework is as follows
 ```ts
 function defaultContains(
     row: FlatRow<BookFlatType>,
@@ -439,20 +482,20 @@ function defaultContains(
 }
 ```
 
-如果关联的variables中所有字段都为undefined，则传递给contains函数的variables整体为undefined。
+> If all fields of variables are undefined, the variables passed to the contains function are undefined as a whole.
 
-默认contains的逻辑是，没有参数的关联可以包含任何数据对象。
+The logic of default "contains" is that associations without variables can contain any data object.
 
+## 2. The position where the object is inserted and the "associationProperties.position" function
 
-## 2. 对象被插入位置和associationProperties.position函数
+### 2.1. position decision
 
-### 2.1. position决策
+Since an object can be automatically linked to a collection sub-association that has not been directly modified, how do we determine its insertion position? Is there a business-level ordering requirement for associations?
 
-既然对象被自动link到并未被直接修改的集合关联中，这时我们决定其插入位置呢？关联是否有业务层面的排序呢？
+Assume that all associated data is sorted according to the "name" field of the object, whether it is a root object association such as "Query.findBookStores" or a normal object association such as "BookStore.books".
 
-假设所有关联数据是按照对象的name字段排序的，无论是Query.findBooks这样的根对象关联，还是BookStore.books这样的普通对象关联。
+"assocaitionProperties" supports a "position" function, we can customize the insertion position for the automatically linked object like this
 
-assocaitionProperties支持一个position函数，我们可以这样来为被自动插入的对象自定义插入位置
 
 ```ts
 import { FlatRow } from 'graphql-state';
@@ -465,34 +508,34 @@ position(
 ) => number | "start" | "end" | undefined;
 ```
 
-参数:
-- row: 即将被插入的新元素
-- rows: 现在已经存在的数据
+**Parameters**
+- row: the new element to be inserted
+- rows: existing data collection
 - paginationDirection:
-  - forward: 当前connection关联使用了forward模式的分页
-  - backward: 当前connection关联使用了backward模式的分页
-  - undefined: 当前connection关联并未使用分页
+  - forward: The current connection association uses the "forward" mode pagination
+  - backward: The current connection assocaition uses the "backward" mode pagination
+  - undefined: The current connection association does not use pagination
   
-  > 这里的paginationDirection不可能是"page"，因为page模式的分页无法被优化，总是重新查询。
+  > The paginationDirection here cannot be "page", because the pagination in page mode cannot be optimized, it is always re-queried.
   
-- variables: 关联的查询参数
+- variables: query parameters of current sub-association
 
-返回值: 
-- start
-插入到头部
-- end
-插入到尾部
-- 数字: 
-- 如果 <= 0, 插入到头部
-- 如果 >= rows.length, 插入到尾部
-- 其它情况，插入到指定位置之前
+**Return value**
+- start: 
+  Insert to the head
+- end: 
+  Insert at the end
+- number: 
+  - If <= 0, insert to the head
+  - If >= rows.length, insert to the end
+  - In other cases, insert before the specified position
 - undefined
-无法判断新对象应该插入到什么位置。缓存中数据作废，所有和此关联相关的UI查询自动刷新。
-> 注意
-> - 如果使用forward分页，如果新数据被定位到尾部且当前页具有下一页，优化行为终止，缓存中数据作废，所有和此关联相关的UI查询自动刷新。 
-> - 如果使用backward分页，如果新数据被定位到头部且当前页具有上一页，优化行为终止，缓存中数据作废，所有和此关联相关的UI查询自动刷新。
+  It is impossible to determine where the new object should be inserted. The data in the cache will be evicted, and all UI queries related to this association will be automatically refreshed.
+> Note
+> - When you use the "forward" pagination, if the new data is positioned to the tail of the current page and "hasNext" is true, the optimization behavior will be terminated, that means the data in the local cache will evicted, and all UI queries related to this association will be automatically refreshed.
+> - When you use the "backward" pagination, if the new data is positioned to the head of the current page and "hasPrevious" is true, the optimization behavior will be terminated, that means the data in the local cache will evicted, and all UI queries related to this association will be automatically refreshed.
 
-使用方法如下
+Usage is as follows
 
 ```ts
 import { FlatRow } from 'graphql-state';
@@ -509,9 +552,14 @@ function createStateManager() {
                 variables?: BookStoreArgs["books"]
             ) => number | "start" | "end" | undefined {
             
-                if (row.has("name")) { // if name of new row is cached
+                // if name of new row is cached
+                if (row.has("name")) { 
+                    
                     const rowName = row.get("name");
+                    
                     for (let i = 0; i < rows.length; i++) {
+                    
+                        // if name of existing row is not cached
                         if (!rows[i].has("name")) {
                             return undefined;
                         }
@@ -521,6 +569,8 @@ function createStateManager() {
                     }
                     return "end";
                 }
+                
+                // I don't know
                 return undefined;
             }
         })
@@ -529,11 +579,11 @@ function createStateManager() {
 }
 ```
 
-使用position，可以轻松规定被link对象的位置。
+Using "position" function, you can easily specify the position of the linked object.
 
-### 2.2 默认的position
+### 2.2 Default position
 
-position是可选的，如果用户没有指定，框架默认的的position行为如下
+The "position" is optional. If the user does not specify it, the default position behavior of the framework is as follows
 ```ts
 defaultPosition: (
     row: FlatRow<BookFlatType>,
@@ -544,11 +594,11 @@ defaultPosition: (
     return paginationDirection === "forward" ? "start" : "end";
 }
 ```
-即，forward分页下，插入到头部，其余情况，全部插入到尾部。
+That is, if the current pagination is in "forward" mode, it is inserted to the head, and in other cases, it is inserted to the tail.
 
-## 3. 修改对象和和associationProperties.dependencies函数
+## 3. Modify the object and "associationProperties.dependencies" function
 
-假如现在有如下数据
+If you have the following data
 ```
 +-------------+
 | A BookStore |
@@ -568,13 +618,13 @@ defaultPosition: (
                                   +-----+------------------------+
 ```
 
-让我们来看两个案例
+Let's look at two cases
 
-1. 执行
+1. Execute
 ```ts
 stateManager.set(book$$, {id: "id1", 'effective typescript'});
 ```
-很明显, 修改后的"effective typescript" > Programming TypeScript, 因此业务上期望的效果是这样的
+Obviously, the revised "effective typescript"> Programming TypeScript, so the expected business effect is like this
 ```
 +-------------+
 | A BookStore |
@@ -593,16 +643,18 @@ stateManager.set(book$$, {id: "id1", 'effective typescript'});
                                       | id3 | Learning GraphQL       |
                                       +-----+------------------------+
 ```
-books({name: "typ"})的顺序发生了变化。
-这种情况的GIF动画演示是
-|![image](../../../smart-sorting.gif "智能排序")|
+The order of 'books({name: "typ"})' has beean changed.
+
+The animated GIF presentation of this situation is
+
+|![image](../../../smart-sorting.gif "Smart sorting")|
 |----|
 
-2. 执行
+2. Execute
 ```ts
 stateManager.set(book$$, {id: "id1", 'Effective GraphQL'});
 ```
-很明显, "Effective GraphQL"不再和查询条件{name: "typ"}匹配, 业务上期望的效果是这样的
+Obviously, "Effective GraphQL" no longer matches the query condition {name: "typ"}, the expected effect in business is this
 ```
 +-------------+
 | A BookStore |
@@ -621,35 +673,36 @@ stateManager.set(book$$, {id: "id1", 'Effective GraphQL'});
                                   | id3 | Learning GraphQL       |
                                   +-----+------------------------+
 ```
-比上个例子变化更大，被修改的对象需要从"A BookStore".books({name: "typ"})中删除，再插入到"A BookStore".books({name: "gra"})中。即，数据在同族的字关系之间迁移。
+The modified object needs to be deleted from "A BookStore".'books({name: "typ"})', and inserted into "A BookStore".'books({name: "gra"})'. That is, data migrates between sub-associations of the family.
 
-这种情况的GIF动画演示是
-|![image](../../../optimized-mutation.gif "数据迁移")|
+The animated GIF presentation of this situation is
+|![image](../../../optimized-mutation.gif "Data migration")|
 |----|
 
-如何让graphql-state实现上面这两种效果呢？
+How to make graphql-state achieve the above two effects?
 
-答案很简单，让graphql-state知道books({...})依赖于其对象的name字段即可，这样，被依赖的对象name字段发生变更的时候，graphql-state就可以利用associationProperties的contains和position函数，进行单个子关联内部重新排序，甚至不同子关联之间的数据迁移。
+The answer is simple, let graphql-state know that 'books({...})' depends on the "name" field of its objects, so that when the "name" field of the dependent objects change, graphql-state can use the "contains" and "position" of "associationProperties" to re-sort sub-association or perform data migration between different sub-associations.
 
-associationProperties支持一个dependencies函数，返回当前关联依赖其数据对象的那些字段
+"associationProperties" supports a "dependencies" function that returns some field names of the data object, the current sub-association depends on them.
+
 ```ts
 readonly dependencies?: (
     variables?: ...GeneratedVariablesType...
 ) => ReadonlyArray<keyof ...GeneratedFlatType...> | undefined;
 ```
-参数
-- variables: 关联的查询参数
+**Parameters**
+- variables: parameters of current sub-assocaition
 
 返回值
-- array: 依赖字段集合
-- undefined: - undefined: 无法判断，此举会导致优化失败。缓存中数据作废，所有和此关联相关的UI查询自动刷新
+- array: List of dependent field names
+- undefined: Unable to judge, this will cause optimization to fail. The data in the local cache will be evicted, and all UI queries related to this association will automatically be refreshed
 
-使用方式如下
+Usage
 
 ```ts
 function createStateManager() {
     return newTypedConfiguration()
-        .rootAssocaitionProperties("findBooks", {
+        .assocaitionProperties("BookStore", "books", {
             contains: ...,
             position: ...,
             dependencies: (
@@ -663,9 +716,9 @@ function createStateManager() {
 }
 ```
 
-> 这个例子中，数据对象的name字段需要用于排序，所以对dependencies函数忽略当前关联的参数，无条件返回包含name的数组。
+> In this example, the "name" field of the data object is used for sorting, so the "variables" of current sub-association is ignored, and an array containing " name" is returned unconditionally.
 > 
-> 有时，项目需求可能不是这样的。我们可能希望对象的name仅仅用于按关联条件筛选，而不会被用于排序，这时，你可以如此实现
+> Sometimes, the project requirements may not be like this. We may hope that the "name" field of data object is only used to filter by association variables, but not to be used for sorting. At this time, you can achieve this
 > ```ts
 > if (variables.name !== undefined) {
 >     return ["name"];
@@ -673,7 +726,7 @@ function createStateManager() {
 > return [];
 > ```
 
-如果不指定dependences, 框架默认实现如下
+If you do not specify "dependencies", the default implementation of the framework is as follows
 ```ts
 dependencies: (
     variables?: any
@@ -682,17 +735,18 @@ dependencies: (
 }
 ```
 
-## 调整分页结果
+## Adjust pagination results and "associationProperties.range"
 
-上文提到，未被直接修改的关联有可能被框架自动修改，tryLink行为可能插入新的数据，tryUnlink行为可能删除已有数据。这种情况下，分页结果将会被破坏，可能会影响后续翻页操作。
+As mentioned above, sub-associations that have not been directly modified may be automatically modified by the framework, "tryLink" behavior may insert new data, and "tryUnlink" behavior may delete existing data. In this case, the pagination result will be destroyed, which may affect subsequent page turning operations.
 
-有两种情况，需要调整分页结果
+There are two situations, you need to adjust the paging results
 
-- Connection类型中有表示分页前记录总条数的字段，比如附带例子中的totalCount字段
-- 分页是基于行数偏移量的分页，而非基于对象id
+- There is a field in the connection type that indicates the total number of records before paging, such as the "totalCount" field in the attached example
+- Pagination is based on row offset, not based on object id
 
-associationProperties对象接受一个range函数来调整分页结果，其定义如下
-```
+The "associationProperties" object accepts a "range" function to adjust the pagination results, which is defined as follows
+
+```ts
 range(
     range: {
         endCursor: string,
@@ -702,17 +756,16 @@ range(
     direction: "forward" | "backward"
 ) => void;
 ```
-参数:
-  - range: 分页范围，你需要在函数中修改此对象
-    - startCursor: 其实游标
-    - endCursor: 结束游标
-    - 其它任何字段
+**参数**
+  - range: Paging range, you need to modify this object in the function
+    - endCursor: End cursor
+    - Any other fields, of course, including the possible field "totalCount"
   - delta
-    变化行数，正数表示新的数据被添加到当前关联中；负数表示有数据从当前关联中被移除
-  - direaction: 分页方向，forward或backward
-  > 不可能是page，因为page分页不可优化，总是重新查询。
+    Detal of number of rows, positive number indicates that new data is added to the current page; negative number indicates that data is removed from the current page
+  - direction: Pagination direction, "forward" or "backward"
+  > > It cannot be "page", because "page" style pagination cannot be optimized, it always re-query.
 
-如果你的分页面是基于对象id的，你只需要调整totalCount
+If your pagination is based on object id, you only need to adjust "totalCount"
 ```ts
 function createStateManager() {
     return newTypedConfiguration()
@@ -729,7 +782,7 @@ function createStateManager() {
 }
 ```
 
-如果你的分页面是基于行数偏移的且分页方向为forward，你还需要调整endCursor
+If your pagination is based on row number offset and the page direction is "forward", you also need to adjust the "endCursor"
 ```ts
 function createStateManager() {
     return newTypedConfiguration()
@@ -756,21 +809,21 @@ function cursorToIndex(cursor: string): number {
 }
 ```
 
-## 后续版本会改进的地方
+## What will be improved in subsequent versions?
 
-当前版本的实现并不完善，它依赖两个假设
+The implementation of the current version is not perfect, it relies on two assumptions
 
-1. 没有任何参数的关联就代表所有数据
-2. 有参数的关联不一定能代表所有数据
+1. Sub-association without variables always represents all data
+2. Sub-association with variables cannot represent all data
 
-但是，有些时候，这两点假设是不成立的
+However, sometimes these two assumptions are not true
 
-第一点的反例: 假设有一个查询字段Query.findActiveUsers(), 虽然此关联没有任何参数，但是故名思义，它隐含了过滤逻辑。此关联仅代表所有active为true的数据，而非所有数据。
+Counterexample to the first point: Suppose there is a query field "Query.findActiveUsers()". Although this association does not have any variables, as the name suggests, it implies filtering logic. This sub-association only represents data whose active is true, not all data.
 
-第二点的反例: 假设有一个查询字段Query.findRows(orderFieldName: string, descending: boolean), 这两个参数仅用于动态排序，没有过滤数据的意图，无论它们被如何指定，此关联都能代表所有数据。
+Counterexample to the second point: Suppose there is a query field "Query.findRows(orderFieldName: string, descending: boolean)". These two parameters are only used for dynamic sorting and have no intention of filtering data. No matter how they are specified, this sub-association can Represents all data.
 
-稍后的版本会处理这两种情况
+A later version will handle both cases. Before that, I hope to listen to the opinions of everyone
 
 --------------------------------
 
-[< Previous: useMutation](./useMutation.md) | [Back to parent: 变更](./README.md) | [Next: 双向关联 >](./bidirectional-association.md)
+[< Previous: useMutation](./useMutation.md) | [Back to parent: Mutation](./README.md) | [Next: Bidirectional association >](./bidirectional-association.md)

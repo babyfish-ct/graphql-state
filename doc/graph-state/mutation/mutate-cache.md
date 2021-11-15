@@ -1,6 +1,6 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../../README.md)/[图状态](../README.md)/[变更](./README.md)/变更缓存
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../../README.md)/[Graph state](../README.md)/[Mutation](./README.md)/Mutate cache
 
-要变更缓存，首选需要获取StateManager，请使用被生成代码中的useTypedStateManager函数
+To mutate the cache, you first need to get the StateManager, please use the "useTypedStateManager" function in the generated code to get the StateManager
 
 ```ts
 import { FC, memo } form 'react';
@@ -14,12 +14,12 @@ export const SomeComponent: FC = memo(() => {
 });
 ```
 
-## 1. 保存
+## 1. Save
 
-StateManager支持save函数用于保存数据，它合并了insert和update操作，你不用区分insert和update
+StateManager supports a "save" function, it combines insert and update operations, you don’t have to distinguish between insert and update
 
 ```ts
-save<TName extends (<EntityTypeNames> | "Query", T extends object, TVariables extends object = {}>(
+save<TName extends <EntityTypeNames> | "Query", T extends object, TVariables extends object = {}>(
     fetcher: ObjectFetcher<TName, T, any>,
     obj: T,
     variables?: TVariables
@@ -32,18 +32,18 @@ save<TName extends <EntityTypeNames>, T extends object, TVariables extends objec
 ): void;
 ```
 
-> 注意: 
-> 
-> 1. 为了简化例子，后续所有代码都隐了这些import语句
+> Note:
+>
+> 1. In order to simplify the example, all the code below implies these import statements
 >   ```
 >   import { ParameterRef } from 'graphql-ts-client';
 >   import { book$, book$$, bookStore$$, author$, author$$ } from './__generated/fetchers';
 >   ```
-> 2. 后续代码硬编码了大量的JSON字面量。在实际项目中，不可能对需要保存数据的JSON进行硬编码，而本文档如此只是为了简化讨论
+> 2. The code below hard-codes a lot of JSON literals. In actual projects, we never hard-code the JSON to be saved, and this document is just to simplify the discussion
 > 
-> 3. save函数的第一个参数是[graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client)的fetcher，第二个参数是要保存的对象图或对象图集合，第三个参数可选的查询参数。由于[graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client)的类型安全性，如果第二个和第三个参数如果出现任何拼写错误，将会在编译期报错。
+> 3. The first parameter is the fetcher of [graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client), and the second parameter is the object graph or object collection which will be saved, the third parameter is an optional query variables. Due to the type safety of [graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client), if there are any spelling errors in the second and third parameters, compilation errors will be repoarted at first time
 
-### 1.1 保存简单对象
+### 1.1 Save basic object
 ```
 
 stateManager.save(
@@ -54,7 +54,7 @@ stateManager.save(
 );
 ```
 
-### 1.2 保存使用字段别名的对象
+### 1.2 Save object using field aliases
 ```ts
 stateManager.save(
     
@@ -66,7 +66,7 @@ stateManager.save(
 );
 ```
 
-### 1.3 保存带关联的对象
+### 1.3 Save object with associations
 ```ts
 stateManager.save(
     
@@ -86,11 +86,11 @@ stateManager.save(
 );
 ```
 
-### 1.4 只修改关联，不修改被关联对象
+### 1.4 Only change the association, do not change the associated object
 
-上例中，我们不久修改了Book，还修改了Author，比如Author.name被修改了。但是，很多时候，我们只想修改Book和Author之间的关联，不想修改被关联对象的其他属性。
+In the above example, we not only modified the Book, but also modified associated objects, for example, "Author.name" was modified. However, in many cases, we only want to modify the association between Book and Author, and do not want to modify any fields of the associated objects.
 
-要达到此目录，让被关联对象只包含id即可
+To achieve this goal, please don't provide any fields other than id for the associated objects.
 
 ```ts
 stateManager.save(
@@ -104,17 +104,17 @@ stateManager.save(
         name: "Learning GraphQL",
         store: {id: "d38c10da-6be8-4924-b9b9-5e81899612a0", name: "O'REILLY"},
         authors: [
-            {id: "fd6bb6cf-336d-416c-8005-1ae11a6694b5"}, // 只提供id
-            {id: "1e93da94-af84-44f4-82d1-d8a9fd52ea94"} // 只提供id
+            {id: "fd6bb6cf-336d-416c-8005-1ae11a6694b5"}, // Only provide id
+            {id: "1e93da94-af84-44f4-82d1-d8a9fd52ea94"} // Only provide id
         ]
     }
 );
 ```
-**此用法很重要，在配套例子中频繁使用**
+**This usage is very important and is frequently used in supporting examples**
 
-### 1.5 保存带参数的对象（参数化的关联）
+### 1.5 Save objects with parameters(parameterized associations)
 
-最直观，但是不推荐的方式
+The most intuitive but not recommended way
 ```ts
 stateManager.save(
     
@@ -135,7 +135,7 @@ stateManager.save(
     }
 );
 ```
-更推荐的方式
+The more recommended way
 ```ts
 stateManager.save(
     
@@ -159,13 +159,11 @@ stateManager.save(
 );
 ```
 
-> **注意**
-> 
-> 这个例子保存的关联不是Book.authors，而是Book.authors({name: "eve"})
-> 
-> 这是一个参数化的关联。所以仅仅给save函数传递需要保存的数据对象是不够的。此例很好地解释了为什么save函数的第一个参数要指定[graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client)的fetcher。
+> The association saved in this example is not "Book.authors", but "Book.authors({name: "eve"})"
+>
+> This is a parameterized association, so just passing the data object that needs to be saved to the "save" function is not enough. This example explains well why the first parameter of the save function should specify the fetcher of [graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client).
 
-### 1.6 保存多个对象
+### 1.6 Save multiple objects
 
 ```ts
 stateManager.save(
@@ -193,15 +191,15 @@ stateManager.save(
 );
 ```
 
-## 2. 删除
+## 2. Delete
 
-### 2.1 删除对象
+### 2.1 Delete one object
 ```
 stateManager.delete("Book", "e110c564-23cc-4811-9e81-d587a13db634");
 ```
-> API是强类型的，不用担心字符串"Book"拼写错误
+> The API is strongly typed, so don’t worry about spelling errors in the string "Book"
 
-### 2.2 删除多个对象
+### 2.2 Delete multiple objects
 ```
 stateManager.delete(
     "Book", [
@@ -209,7 +207,6 @@ stateManager.delete(
         "8f30bc8a-49f9-481d-beca-5fe2d147c831"
     ]);
 ```
-> API是强类型的，不用担心字符串"Book"拼写错误
-
+> The API is strongly typed, so don’t worry about spelling errors in the string "Book"
 -----------------------
-[Back to parent: 变更](./README.md) | [Next: useMutation >](./useMutation.md)
+[Back to parent: Mutation](./README.md) | [Next: useMutation >](./useMutation.md)

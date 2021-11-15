@@ -83,8 +83,12 @@ MANNING.books.add(LearningGraphQL);
 ```
 与此同时，graphql-state会为你执行两个自动更新
 ```
-O'REILLY.books.remove(LearningGraphQL);
-LearningGraphQL.store = MANNING;
+if (cached(O'REILLY.books)) {
+    O'REILLY.books.remove(LearningGraphQL);
+}
+if (cached(LearningGraphQL.store)) {
+    LearningGraphQL.store = MANNING;
+}
 ```
 
 ### 2.3. 数据库风格的触发器
