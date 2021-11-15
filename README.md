@@ -1,6 +1,6 @@
 # A new react state management framework
 
-# Language: English | [中文](./README_zh_CN.md)
+## Language: English | [中文](./README_zh_CN.md)
 
 # System functions
 
@@ -112,12 +112,11 @@ The framework has built-in optimization strategies to reduce the number of HTTP 
 
 # Run the example
 1. Clone this project
-```
-git clone https://github.com/babyfish-ct/graphql-state.git
-```
+
 2. Start server
 ```
 cd ${clonedDir}/example/server
+yarn install
 yarn start
 ```
 The server mock data in memory, when it's restarted, all the data will be restored.
@@ -125,6 +124,7 @@ The server mock data in memory, when it's restarted, all the data will be restor
 3. Start client
 ```
 cd ${clonedDir}/example/client
+yarn install
 yarn start
 ```
 Access http://localhost:3000
