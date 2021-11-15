@@ -27,6 +27,7 @@ export const EntityLogList: FC = memo(() => {
                         <Timeline.Item key={log.id}>
                             <Collapse>
                                 <Collapse.Panel 
+                                className={log.event.eventType === "evict" && log.event.causedByGC ? css({background: "lightpink"}) : undefined}
                                 header={
                                     <>
                                         {format(log.time)},&nbsp;
