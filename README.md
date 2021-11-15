@@ -30,7 +30,7 @@ Regardless of whether the framework chooses to modify only the local data(A), or
 
 However, you can also intervene in the decision-making process if you wish. You can use simple APIs to help it with performance optimization, increase the probability of occurrence (A) and decrease the probability of occurrence (B).
 
-#### 2.1.1. When users do not optimize
+#### 2.1.1. When user does not optimize
 
 Let's take a look at an example where the mutation cannot be completed by only modifying the local cache because the user does not optimize it. The GIF animation is as follows
 
@@ -39,7 +39,7 @@ Let's take a look at an example where the mutation cannot be completed by only m
 
 When we changed "MANNING-1" to "MANNING-2", in the absence of user optimization, the two cache entries with parameters were cleared. Therefore, queries with parameters will automatically retrieve new data from the server again.
 
-#### 2.1.2. When users give optimization
+#### 2.1.2. When user give optimization
 
 Let's take a look at an example where the change can be completed by modifying the local cache without re-query due to the support of user optimization. The GIF animation is as follows
 
