@@ -1,35 +1,51 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../../README.md)/[图状态](../README.md)/[变更](./README.md)/智能变更
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../../README.md)/[Graph state](../README.md)/[Mutation](./README.md)/Smart mutation
 
-智能更新更新流程如下
+The process of smart mutation is as follows
 
 ![image](../../../smart-mutation.png "smart mutation")
 
-此图图在首页中已经讨论过了，这里不再赘述。
+This picture has been discussed on the homepage, so I won’t repeat it here.
 
-本文档重点讨论两点: 
+This document focuses on two points:
 
-- 框架如何抉择只需修改本地数据还是需要重新查询?
-- 如果用户愿意介入抉择过程，他应该如何参与优化?
+- How does the framework decide whether to modify local data or re-query?
+- If a user is willing to intervene in the decision-making process, how should he participate in optimization?
 
-## 1. 关联修改和associationProperties.contains函数
+## 1. Association mutation and "associationProperties.contains" function
 
-### 1.1. 关联族和子关联
+### 1.1. Association family and sub association
 
-在GraphQL中，关联是具备参数的，以[附带例子的服务端](https://github.com/babyfish-ct/graphql-state/tree/master/example/server)为例，其提供的服务定义如下
-
+In GraphQL, associations have parameters. Take [the server side of attached demo](https://github.com/babyfish-ct/graphql-state/tree/master/example/server) as an example, Its sdl looks like this
 ```
 type Query {
     findBookStores(name: String): [BookStore!]!
+    findBooks(name: String): BookConnnection!
+    findAuthors(name: String): AuthorConnnection!
+    
     ...
+    
 }
 type BookStore {
     books(name: String): [Book!]!
     ...
 }
+
+type Book {
+    authors(name: String): [Author!]!
+    ...
+}
+
+type Author {
+    books(name: String): [Book!]!
+}
+
 ...
+
 ```
 
-我们看到，Query.findBookStores和Book.authors都是参数化的。统一个关系，可以由不同参数的创建不同的实例，比如
+We see that "Query.findBookStores", "Query.findBooks", "Query.findAuthors", "BookStore.books", "Book.authors" and "Author.books" are all parameterized.
+
+One association can be used to create different instances with different parameters, such as
 
 ```
 ----+-Query.findBookStores
@@ -49,11 +65,12 @@ type BookStore {
     \---- Book.authors({name: "b"})
 ```
 
-如上图，我们有两个关联族，每个族中有三个子关联
+As shown in the figure above, we call it two association families, each family has three sub-associations
 
-### 1.2. link和unlink
+### 1.2. link and unlink
 
-清观察下面的代码
+Look at the code below
+
 ```ts
 stateManager.save(
 
@@ -75,52 +92,65 @@ stateManager.save(
     { bookName: "a" }
 )
 ```
-这段代码试图修改id为storeId的BookStore对象的子关联books({name: "a"})
+This code attempts to modify the sub-association 'books({name: "a"})' of the BookStore object whose id is "storeId"
 
-假设books({name: "a"})现在的旧值为[id1, id2]，而期望修改的新值为[id2, id3]。对比新旧数据，被删除的Book为[id1]，被添加的Book为[id3]。
+Suppose the old value of 'books({name: "a"})' is now [id1, id2], and the new value expected to be modified is [id2, id3]. Comparing the new and old data, the deleted Book is [id1], and the added Book is [id3].
 
-当前BookStore对象，除了具备当前的books({name: "a})这个被直接修改的子关联外，还有另外两个子同族的子关联books({})，books({name: "b"})，接下来，框架即将尝试
+For the "BookStore" object, in addition to the directly modified sub-association 'books ({name: "a})', there are two other sub-associations of the same family, 'books({})' and 'books({name: "b"})'.
+
+Next, the framework do this
+
 ```ts
+
+// books({}) is affected by the mutation of books({name: "a"})
 books({}).tryUnlink({
     id: id1, 
-    reason: {name: "a} // books({})被books({name: "a"})的变更影响
+    reason: {name: "a}
 });
+
+// books({}) is affected by the mutation of books({name: "a"})
 books({}).tryLink({
     id: id3, 
-    reason: {name: "a} // books({})被books({name: "a"})的变更影响
+    reason: {name: "a}
 });
+
+// books({name: "b"}) is affected by the mutation of books({name: "a"})
 books({name: "b"}).tryUnlink({
     id: id1, 
-    reason: {name: "a} // books({name: "b"})被books({name: "a"})的变更影响
+    reason: {name: "a}
 });
+
+// books({name: "b"}) is affected by the mutation of books({name: "a"})
 books({name: "b"}).tryLink({
     id: id3, 
-    reason: {name: "a} // books({name: "b"})被books({name: "a"})的变更影响
+    reason: {name: "a} 
 });
 ```
-这说明，books({name: "a"})的变化有可能对books()和books({name: "b"})形成影响。即
+This shows that the changes of 'books({name: "a"})' may affect 'books({})' and 'books({name: "b"})'. which is
 
-> 同族内的子关联之间会相互影响; 任何一个被修改，其余的都会被执行unlink或link操作
+> **The sub-associations in the same family will affect each other; any one is modified, the rest will be executed unlink or link operation**
 
-### 1.3. 内部优化，对比同族内子关联的参数
+### 1.3. Internal optimization, comparing the parameters of the sub-association within the same family
 
-> 这部分内容是graphql-state内部优化，可以让上文中的
+> This part of the content is the internal optimization of graphql-state, which can simplify the judgment process of
 > ```
 > books({}).tryLink(id: id3, reason: {name: "a"})
 > ```
-> 的判断过程得到简化。
+> above.
 > 
-> 这种内部优化行为对用户而言透明，如果不感兴趣，可以直接跳到1.4
+> This internal optimization behavior is transparent to users, if you are not interested, you can skip to 1.4
 
-为了更好地判断是否可以直接修改缓存，引入了一个概念containsVariables，判断查询参数之间的包含关系。
+In order to better judge whether the local cache can be modified directly, a concept "containsVariables" is introduced to determine the containment relationship between query variables.
 
-> 其中，variables指关联的参数，如同上文中的{}, { name: "a"}, {name: "b"}
+> "variables" refer to the association parameters, as '{}', "{name: "a"}", "{name: "b"}"
 
 ```ts
 containsVariables(variables1, variables2): boolean
 ```
-改方法件判断variables1是否包含variables2，即variables2的所有字段都在variables1中存在且它们的值相等
-|例子|判断值|
+
+This method determines whether variable1 contains variables2, that is, all fields of variable2 exist in variables1 and their values are equal
+
+|Example|Result|
 |--------|--------|
 |containsVariables({k1: 'A', k2: 'B'}, {k1: 'A'})|true|
 |containsVariables({k1: 'A'}, {k1: 'A', k2: 'B'})|false|
@@ -135,18 +165,18 @@ containsVariables(variables1, variables2): boolean
 |||
 |containsVariables(undefined, udefined)|true|
 
-> 一个重要的规律，可以框架内部优化
-> 
-> 如果contains(variables1, variables)成立，那么
-> 
-> someAssocaiton(variables1) ∈ someAssocaiton(variables2)。
-> 
-> 即，如果关联参数variable1比variables2更严格，那么variables1能查询到的数据一定是variables2能查询到的数据的一部分。例如
-> 
+> An important rule that can be optimized within the framework
+>
+> If contains(variables1, variables) is true, then
+>
+> someAssocaiton(variables1) ∈ someAssocaiton(variables2).
+>
+> That is, if the association parameter "variable1" is more stringent than "variables2", then the data queried by "variables1" must be part of the data queried by "variables2". E.g
+>
 > books({name: "a"}) ∈ books({})
-> 
-> - 向books({name: "a"})中添加一个数据时，一定需要向books({})中添加数据
-> - 从books({})中删除数据时，一定需要从books({name: "a"})中删除数据
+>
+> - When adding a data to books({name: "a"}), the data must be add into 'books({})'
+> - When deleting data from books({}), the data must be removed from 'books({name: "a"})'
 
 因此，tryUnlink的逻辑如下
 ```ts
