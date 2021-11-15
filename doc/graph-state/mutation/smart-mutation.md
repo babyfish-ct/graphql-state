@@ -486,15 +486,16 @@ function defaultContains(
 
 The logic of default "contains" is that associations without variables can contain any data object.
 
-## 2. 对象被插入位置和associationProperties.position函数
+## 2. The position where the object is inserted and the "associationProperties.position" function
 
-### 2.1. position决策
+### 2.1. position decision
 
-既然对象被自动link到并未被直接修改的集合关联中，这时我们决定其插入位置呢？关联是否有业务层面的排序呢？
+Since an object can be automatically linked to a collection sub-association that has not been directly modified, how do we determine its insertion position? Is there a business-level ordering requirement for associations?
 
-假设所有关联数据是按照对象的name字段排序的，无论是Query.findBooks这样的根对象关联，还是BookStore.books这样的普通对象关联。
+Assume that all associated data is sorted according to the "name" field of the object, whether it is a root object association such as "Query.findBookStores" or a normal object association such as "BookStore.books".
 
-assocaitionProperties支持一个position函数，我们可以这样来为被自动插入的对象自定义插入位置
+"assocaitionProperties" supports a "position" function, we can customize the insertion position for the automatically linked object like this
+
 
 ```ts
 import { FlatRow } from 'graphql-state';
@@ -507,34 +508,34 @@ position(
 ) => number | "start" | "end" | undefined;
 ```
 
-参数:
-- row: 即将被插入的新元素
-- rows: 现在已经存在的数据
+**Parameters**
+- row: the new element to be inserted
+- rows: existing data collection
 - paginationDirection:
-  - forward: 当前connection关联使用了forward模式的分页
-  - backward: 当前connection关联使用了backward模式的分页
-  - undefined: 当前connection关联并未使用分页
+  - forward: The current connection association uses the "forward" mode pagination
+  - backward: The current connection assocaition uses the "backward" mode pagination
+  - undefined: The current connection association does not use pagination
   
-  > 这里的paginationDirection不可能是"page"，因为page模式的分页无法被优化，总是重新查询。
+  > The paginationDirection here cannot be "page", because the pagination in page mode cannot be optimized, it is always re-queried.
   
-- variables: 关联的查询参数
+- variables: query parameters of current sub-association
 
-返回值: 
-- start
-插入到头部
-- end
-插入到尾部
-- 数字: 
-- 如果 <= 0, 插入到头部
-- 如果 >= rows.length, 插入到尾部
-- 其它情况，插入到指定位置之前
+**Return value**
+- start: 
+  Insert to the head
+- end: 
+  Insert at the end
+- number: 
+  - If <= 0, insert to the head
+  - If >= rows.length, insert to the end
+  - In other cases, insert before the specified position
 - undefined
-无法判断新对象应该插入到什么位置。缓存中数据作废，所有和此关联相关的UI查询自动刷新。
-> 注意
-> - 如果使用forward分页，如果新数据被定位到尾部且当前页具有下一页，优化行为终止，缓存中数据作废，所有和此关联相关的UI查询自动刷新。 
-> - 如果使用backward分页，如果新数据被定位到头部且当前页具有上一页，优化行为终止，缓存中数据作废，所有和此关联相关的UI查询自动刷新。
+  It is impossible to determine where the new object should be inserted. The data in the cache will be evicted, and all UI queries related to this association will be automatically refreshed.
+> Note
+> - When you use the "forward" pagination, if the new data is positioned to the tail of the current page and "hasNext" is true, the optimization behavior will be terminated, that means the data in the local cache will evicted, and all UI queries related to this association will be automatically refreshed.
+> - When you use the "backward" pagination, if the new data is positioned to the head of the current page and "hasPrevious" is true, the optimization behavior will be terminated, that means the data in the local cache will evicted, and all UI queries related to this association will be automatically refreshed.
 
-使用方法如下
+Usage is as follows
 
 ```ts
 import { FlatRow } from 'graphql-state';
@@ -551,9 +552,14 @@ function createStateManager() {
                 variables?: BookStoreArgs["books"]
             ) => number | "start" | "end" | undefined {
             
-                if (row.has("name")) { // if name of new row is cached
+                // if name of new row is cached
+                if (row.has("name")) { 
+                    
                     const rowName = row.get("name");
+                    
                     for (let i = 0; i < rows.length; i++) {
+                    
+                        // if name of existing row is not cached
                         if (!rows[i].has("name")) {
                             return undefined;
                         }
@@ -563,6 +569,8 @@ function createStateManager() {
                     }
                     return "end";
                 }
+                
+                // I don't know
                 return undefined;
             }
         })
@@ -571,11 +579,11 @@ function createStateManager() {
 }
 ```
 
-使用position，可以轻松规定被link对象的位置。
+Using "position" function, you can easily specify the position of the linked object.
 
-### 2.2 默认的position
+### 2.2 Default position
 
-position是可选的，如果用户没有指定，框架默认的的position行为如下
+The "position" is optional. If the user does not specify it, the default position behavior of the framework is as follows
 ```ts
 defaultPosition: (
     row: FlatRow<BookFlatType>,
@@ -586,7 +594,7 @@ defaultPosition: (
     return paginationDirection === "forward" ? "start" : "end";
 }
 ```
-即，forward分页下，插入到头部，其余情况，全部插入到尾部。
+That is, if the current pagination is in "forward" mode, it is inserted to the head, and in other cases, it is inserted to the tail.
 
 ## 3. 修改对象和和associationProperties.dependencies函数
 
