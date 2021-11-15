@@ -274,7 +274,7 @@ import { useTypedStateManager } from './__generated';
 export const MyComponent: FC = memo(() => {
     const stateManager = useTypedStateManager();
     useEffect(() => {
-        const onEvict = (e: EntityEvictEvent) => {
+        const listener = (e: EntityEvictEvent) => {
             if (e.typeName === "BookStore") {
                 // TODO
             } else if (e.typeName === "Book") {
@@ -283,9 +283,9 @@ export const MyComponent: FC = memo(() => {
                 // TODO:
             }
         };
-        stateManager.addEntityEvictListener(onChange);
+        stateManager.addEntityEvictListener(listener);
         return () => {
-            stateManager.removeEntityEvictListener(onChange);
+            stateManager.removeEntityEvictListener(listener);
         }
     }, [stateManager]);
     
