@@ -14,7 +14,7 @@ graphql-state的内存结构如下
   - useStateValue, useStateAccessor函数引用简单状态StateValue。
   - useQuery, usePaginationQuery, useObject, useObjects函数引用查询结果QueryResult。
   
-  虽然计算状态和异步状态会导致StateValue对其他StateValue或QueryResult形成依赖，但这种依赖是树形依赖，不是图形依赖，没有循环引用的问题，因此，对StateValue和QueryResult这些数据对象而言，引用计数内存管理是可行的
+  > 虽然计算状态和异步状态会导致StateValue对其他StateValue或QueryResult形成依赖，但这种依赖是树形依赖，不是图形依赖，没有循环引用的问题，因此，对StateValue和QueryResult这些数据对象而言，引用计数内存管理是可行的
   
   StateValue和QueryResult内置一个引用计数，默认为0，且支持两个内部操作
   - retain: 将引用计数加1
@@ -30,7 +30,7 @@ graphql-state的内存结构如下
 
   框架内置了图数据的缓存数据库，其中存放normalize处理后的数据，类似于关系型数据库。这些数据之间的相互引用关系错综复杂，循环引用常常出现。对这部分数据而言，必须使用垃圾回收策略。
 
-  受引用计数管理的StateValue和QueryResult对象充当垃圾回收算法的根引用。每当有QueryResult被释放时，都会自动触发一次垃圾回收。垃圾回收过程用户无法干预，不是本文重点所讨论的话题。
+  受引用计数管理的StateValue和QueryResult对象充当垃圾回收算法的根引用。每当有StateValue或QueryResult被释放时，都会自动触发一次垃圾回收。垃圾回收过程用户无法干预，不是本文重点所讨论的话题。
   
 ## 2. 延迟释放
 
@@ -38,14 +38,14 @@ graphql-state的内存结构如下
 ```ts
 (aliveTime: number, variables: any) => number
 ```
-参数：
+**参数**
   - aliveTime:
     从被创建到现在为止，当前StateValue/QueryResult共存活了多长时间，以毫秒为单位
   - variables:
     当前数据的参数，即用户调用useStateValue, useStateAccessor，useQuery，usePaginationQuery，useObject, useObjects函数时指定的options.variables。
-    - 对于options.variables内部的每个字段而言，如果其值为""且GraphQL schema并未强制要求其非null，则variables字段被自动视为undefined
-    - 对于options.variables内部的每个字段都为undefined或被视为undefined，variables整体为undefined
-返回值
+    > - 对于options.variables内部的每个字段而言，如果其值为""且GraphQL schema并未强制要求其非null，则variables字段被自动视为undefined
+    > - 对于options.variables内部的每个字段都为undefined或被视为undefined，variables整体为undefined
+**返回值**
   延迟释放的等待时间，以毫秒为单位
   - 如果小于或等于0，立即释放
   - 否则，延迟释放
@@ -65,9 +65,9 @@ graphql-state的内存结构如下
 }
 ```
 - 对生存时间未足一秒的数据，立即释放
-- 否则，按照生存时间延迟释放
-  - 对于有参数的数据，最大延迟不得操作半分钟
-  - 对于无参数的数据，最大延迟不得操作1分钟
+- 否则，按照生存时间延迟释放。生存时间越长的对象价值越大，复活的意义也越大。这就好比更热的数据需要更长的时间来冷却。
+  - 对于有参数的数据，最大延迟不得操过半分钟
+  - 对于无参数的数据，最大延迟不得操过1分钟
 
 ### 2.2 自定义延迟释放
 
