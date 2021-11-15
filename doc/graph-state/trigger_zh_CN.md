@@ -11,7 +11,7 @@ EntityChangeEvent表示实体对象被修改的事件
 ### 1.1. 事件类型定义
 
 1. 针对任意对象类型的通用事件的定义
-  ```ts清理
+  ```ts
   export interface EntityChangeEvent {
       readonly eventType: "change";
       readonly typeName: string;
@@ -40,21 +40,21 @@ EntityChangeEvent表示实体对象被修改的事件
   参数：
   - changedKey: 字段，分两种情况
     - 无参数字段：一个字符串即可
-    - 参数化字段：传递一个对象，包含两个对象
+    - 参数化字段：传递一个对象，包含两个字段
       - name: 字段的名称
       - variables: 字段的参数对象
 - oldValue: 取得一个字段被修改前的旧值，如果changedType为"insert"或同样的参数会导致has函数返回false, 将会导致异常
   参数：
   - changedKey: 字段，分两种情况
     - 参数为无参数字段：一个字符串即可
-    - 参数化字段：传递一个对象，包含两个对象
+    - 参数化字段：传递一个对象，包含两个字段
       - name: 字段的名称
       - variables: 字段的参数对象
 - newValue: 取得一个字段被修改后的新值，如果changedType为"delete"或同样的参数会导致has函数返回false, 将会导致异常
   参数：
   - changedKey: 字段，分两种情况
     - 无参数字段：一个字符串即可
-    - 参数化字段：传递一个对象，包含两个对象
+    - 参数化字段：传递一个对象，包含两个字段
       - name: 字段的名称
       - variables: 字段的参数对象
  
@@ -98,7 +98,7 @@ EntityChangeEvent表示实体对象被修改的事件
       "authors"
   ;
   ```
-和EntityChangeEvent类型的作用一样，只是这个类型的类型更精确而已。其字段的含义也并无差异，此处不在赘述。
+和EntityChangeEvent类型的作用一样，只是内部字段类型更精确而已。其字段的含义也并无差异，此处不在赘述。
 
 ### 1.2 添加对象变更事件
 
@@ -196,29 +196,29 @@ EntityChangeEvent表示实体对象从缓存中被清理
 - id: 对象的id
 - **causedByGC**: 是否由垃圾回收触发
   - true: 当前事件是因为垃圾回收导致
-  - false: 当前时间是因为智能变更导致
+  - false: 当前时间是因为变更导致
   > 注意
   > 
   > causedByGC为true表示垃圾回收导致事件。只有被所有查询丢弃的数据才会被垃圾回收，所以事件不会导致任何查询自动刷新
 - id: 对象的id
-- evictType: 连个个取值
+- evictType: 两个取值
   - "row": 表示整个对象从缓存中被清理
   - "fields": 表示对象的某些字段从缓存中被清理
 - has: 判断一个字段是从缓存中被清理，只有被清理的字段才可以作为evictedValue函数的参数，否则会导致异常
   参数：
   - evictedKey: 字段，分两种情况
     - 无参数字段：一个字符串即可
-    - 参数化字段：传递一个对象，包含两个对象
+    - 参数化字段：传递一个对象，包含两个字段
       - name: 字段的名称
       - variables: 字段的参数对象
 - evictedValue: 取得一个字段从缓存中被清理之前的的旧值，如果同样的参数会导致has函数返回false, 将会导致异常
   参数：
-  - changedKey: 字段，分两种情况
+  - evictedKey: 字段，分两种情况
     - 参数为无参数字段：一个字符串即可
-    - 参数化字段：传递一个对象，包含两个对象
+    - 参数化字段：传递一个对象，包含两个字段
       - name: 字段的名称
       - variables: 字段的参数对象
-```
+
 2. 针对特定对象类型的专用事件定义（被代码生成器生成，这里以[example/client/src/graph/__generated_graphql_schema__/triggers/BookChangeEvent.ts](https://github.com/babyfish-ct/graphql-state/blob/master/example/client/src/graph/__generated_graphql_schema__/triggers/BookChangeEvent.ts)为例）
 
   ```ts
@@ -259,7 +259,7 @@ EntityChangeEvent表示实体对象从缓存中被清理
       "authors"
   ;
   ```
-和EntityChangeEvent类型的作用一样，只是这个类型的类型更精确而已。其字段的含义也并无差异，此处不在赘述。
+和EntityEvictEvent类型的作用一样，只是内部字段类型更精确而已。其字段的含义也并无差异，此处不在赘述。
 
 ### 1.2 添加对象从缓存中被清理事件
 
