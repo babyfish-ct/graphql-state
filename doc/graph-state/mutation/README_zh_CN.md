@@ -5,7 +5,7 @@
 ## 下级文档
 
 - [变更缓存](./mutate-cache_zh_CN.md)
-- [useMutation](./mutate-cache_zh_CN.md)
+- [useMutation](./useMutation_zh_CN.md)
 - [智能变更](./smart-mutation_zh_CN.md)
 - [双向关联](./bidirectional-association_zh_CN.md)
 
