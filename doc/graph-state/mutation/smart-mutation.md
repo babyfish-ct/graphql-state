@@ -596,9 +596,9 @@ defaultPosition: (
 ```
 That is, if the current pagination is in "forward" mode, it is inserted to the head, and in other cases, it is inserted to the tail.
 
-## 3. 修改对象和和associationProperties.dependencies函数
+## 3. Modify the object and "associationProperties.dependencies" function
 
-假如现在有如下数据
+If you have the following data
 ```
 +-------------+
 | A BookStore |
@@ -618,13 +618,13 @@ That is, if the current pagination is in "forward" mode, it is inserted to the h
                                   +-----+------------------------+
 ```
 
-让我们来看两个案例
+Let's look at two cases
 
-1. 执行
+1. Execute
 ```ts
 stateManager.set(book$$, {id: "id1", 'effective typescript'});
 ```
-很明显, 修改后的"effective typescript" > Programming TypeScript, 因此业务上期望的效果是这样的
+Obviously, the revised "effective typescript"> Programming TypeScript, so the expected business effect is like this
 ```
 +-------------+
 | A BookStore |
@@ -643,16 +643,18 @@ stateManager.set(book$$, {id: "id1", 'effective typescript'});
                                       | id3 | Learning GraphQL       |
                                       +-----+------------------------+
 ```
-books({name: "typ"})的顺序发生了变化。
-这种情况的GIF动画演示是
-|![image](../../../smart-sorting.gif "智能排序")|
+The order of 'books({name: "typ"})' has beean changed.
+
+The animated GIF presentation of this situation is
+
+|![image](../../../smart-sorting.gif "Smart sorting")|
 |----|
 
-2. 执行
+2. Execute
 ```ts
 stateManager.set(book$$, {id: "id1", 'Effective GraphQL'});
 ```
-很明显, "Effective GraphQL"不再和查询条件{name: "typ"}匹配, 业务上期望的效果是这样的
+Obviously, "Effective GraphQL" no longer matches the query condition {name: "typ"}, the expected effect in business is this
 ```
 +-------------+
 | A BookStore |
@@ -671,35 +673,36 @@ stateManager.set(book$$, {id: "id1", 'Effective GraphQL'});
                                   | id3 | Learning GraphQL       |
                                   +-----+------------------------+
 ```
-比上个例子变化更大，被修改的对象需要从"A BookStore".books({name: "typ"})中删除，再插入到"A BookStore".books({name: "gra"})中。即，数据在同族的字关系之间迁移。
+The modified object needs to be deleted from "A BookStore".'books({name: "typ"})', and inserted into "A BookStore".'books({name: "gra"})'. That is, data migrates between sub-associations of the family.
 
-这种情况的GIF动画演示是
-|![image](../../../optimized-mutation.gif "数据迁移")|
+The animated GIF presentation of this situation is
+|![image](../../../optimized-mutation.gif "Data migration")|
 |----|
 
-如何让graphql-state实现上面这两种效果呢？
+How to make graphql-state achieve the above two effects?
 
-答案很简单，让graphql-state知道books({...})依赖于其对象的name字段即可，这样，被依赖的对象name字段发生变更的时候，graphql-state就可以利用associationProperties的contains和position函数，进行单个子关联内部重新排序，甚至不同子关联之间的数据迁移。
+The answer is simple, let graphql-state know that 'books({...})' depends on the "name" field of its objects, so that when the "name" field of the dependent objects change, graphql-state can use the "contains" and "position" of "associationProperties" to re-sort sub-association or perform data migration between different sub-associations.
 
-associationProperties支持一个dependencies函数，返回当前关联依赖其数据对象的那些字段
+"associationProperties" supports a "dependencies" function that returns some field names of the data object, the current sub-association depends on them.
+
 ```ts
 readonly dependencies?: (
     variables?: ...GeneratedVariablesType...
 ) => ReadonlyArray<keyof ...GeneratedFlatType...> | undefined;
 ```
-参数
-- variables: 关联的查询参数
+**Parameters**
+- variables: parameters of current sub-assocaition
 
 返回值
-- array: 依赖字段集合
-- undefined: - undefined: 无法判断，此举会导致优化失败。缓存中数据作废，所有和此关联相关的UI查询自动刷新
+- array: List of dependent field names
+- undefined: Unable to judge, this will cause optimization to fail. The data in the local cache will be evicted, and all UI queries related to this association will automatically be refreshed
 
-使用方式如下
+Usage
 
 ```ts
 function createStateManager() {
     return newTypedConfiguration()
-        .rootAssocaitionProperties("findBooks", {
+        .assocaitionProperties("BookStore", "books", {
             contains: ...,
             position: ...,
             dependencies: (
@@ -713,9 +716,9 @@ function createStateManager() {
 }
 ```
 
-> 这个例子中，数据对象的name字段需要用于排序，所以对dependencies函数忽略当前关联的参数，无条件返回包含name的数组。
+> In this example, the "name" field of the data object is used for sorting, so the "variables" of current sub-association is ignored, and an array containing " name" is returned unconditionally.
 > 
-> 有时，项目需求可能不是这样的。我们可能希望对象的name仅仅用于按关联条件筛选，而不会被用于排序，这时，你可以如此实现
+> Sometimes, the project requirements may not be like this. We may hope that the "name" field of data object is only used to filter by association variables, but not to be used for sorting. At this time, you can achieve this
 > ```ts
 > if (variables.name !== undefined) {
 >     return ["name"];
@@ -723,7 +726,7 @@ function createStateManager() {
 > return [];
 > ```
 
-如果不指定dependences, 框架默认实现如下
+If you do not specify "dependencies", the default implementation of the framework is as follows
 ```ts
 dependencies: (
     variables?: any
@@ -732,17 +735,18 @@ dependencies: (
 }
 ```
 
-## 调整分页结果
+## Adjust pagination results and "associationProperties.range"
 
-上文提到，未被直接修改的关联有可能被框架自动修改，tryLink行为可能插入新的数据，tryUnlink行为可能删除已有数据。这种情况下，分页结果将会被破坏，可能会影响后续翻页操作。
+As mentioned above, sub-associations that have not been directly modified may be automatically modified by the framework, "tryLink" behavior may insert new data, and "tryUnlink" behavior may delete existing data. In this case, the pagination result will be destroyed, which may affect subsequent page turning operations.
 
-有两种情况，需要调整分页结果
+There are two situations, you need to adjust the paging results
 
-- Connection类型中有表示分页前记录总条数的字段，比如附带例子中的totalCount字段
-- 分页是基于行数偏移量的分页，而非基于对象id
+- There is a field in the connection type that indicates the total number of records before paging, such as the "totalCount" field in the attached example
+- Pagination is based on row offset, not based on object id
 
-associationProperties对象接受一个range函数来调整分页结果，其定义如下
-```
+The "associationProperties" object accepts a "range" function to adjust the pagination results, which is defined as follows
+
+```ts
 range(
     range: {
         endCursor: string,
@@ -752,17 +756,16 @@ range(
     direction: "forward" | "backward"
 ) => void;
 ```
-参数:
-  - range: 分页范围，你需要在函数中修改此对象
-    - startCursor: 其实游标
-    - endCursor: 结束游标
-    - 其它任何字段
+**参数**
+  - range: Paging range, you need to modify this object in the function
+    - endCursor: End cursor
+    - Any other fields, of course, including the possible field "totalCount"
   - delta
-    变化行数，正数表示新的数据被添加到当前关联中；负数表示有数据从当前关联中被移除
-  - direaction: 分页方向，forward或backward
-  > 不可能是page，因为page分页不可优化，总是重新查询。
+    Detal of number of rows, positive number indicates that new data is added to the current page; negative number indicates that data is removed from the current page
+  - direction: Pagination direction, "forward" or "backward"
+  > > It cannot be "page", because "page" style pagination cannot be optimized, it always re-query.
 
-如果你的分页面是基于对象id的，你只需要调整totalCount
+If your pagination is based on object id, you only need to adjust "totalCount"
 ```ts
 function createStateManager() {
     return newTypedConfiguration()
@@ -779,7 +782,7 @@ function createStateManager() {
 }
 ```
 
-如果你的分页面是基于行数偏移的且分页方向为forward，你还需要调整endCursor
+If your pagination is based on row number offset and the page direction is "forward", you also need to adjust the "endCursor"
 ```ts
 function createStateManager() {
     return newTypedConfiguration()
@@ -806,21 +809,21 @@ function cursorToIndex(cursor: string): number {
 }
 ```
 
-## 后续版本会改进的地方
+## What will be improved in subsequent versions?
 
-当前版本的实现并不完善，它依赖两个假设
+The implementation of the current version is not perfect, it relies on two assumptions
 
-1. 没有任何参数的关联就代表所有数据
-2. 有参数的关联不一定能代表所有数据
+1. Sub-association without variables always represents all data
+2. Sub-association with variables cannot represent all data
 
-但是，有些时候，这两点假设是不成立的
+However, sometimes these two assumptions are not true
 
-第一点的反例: 假设有一个查询字段Query.findActiveUsers(), 虽然此关联没有任何参数，但是故名思义，它隐含了过滤逻辑。此关联仅代表所有active为true的数据，而非所有数据。
+Counterexample to the first point: Suppose there is a query field "Query.findActiveUsers()". Although this association does not have any variables, as the name suggests, it implies filtering logic. This sub-association only represents data whose active is true, not all data.
 
-第二点的反例: 假设有一个查询字段Query.findRows(orderFieldName: string, descending: boolean), 这两个参数仅用于动态排序，没有过滤数据的意图，无论它们被如何指定，此关联都能代表所有数据。
+Counterexample to the second point: Suppose there is a query field "Query.findRows(orderFieldName: string, descending: boolean)". These two parameters are only used for dynamic sorting and have no intention of filtering data. No matter how they are specified, this sub-association can Represents all data.
 
-稍后的版本会处理这两种情况
+A later version will handle both cases. Before that, I hope to listen to the opinions of everyone
 
 --------------------------------
 
-[< Previous: useMutation](./useMutation.md) | [Back to parent: 变更](./README.md) | [Next: 双向关联 >](./bidirectional-association.md)
+[< Previous: useMutation](./useMutation.md) | [Back to parent: Mutation](./README.md) | [Next: Bidirectional association >](./bidirectional-association.md)
