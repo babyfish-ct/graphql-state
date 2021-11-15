@@ -290,7 +290,7 @@ After this optimization, the behavior of the previous chapter becomes
 
 ### 1.4. associationProperties.contains
 
-在创建全局的StateManager时，可以为对象之间的关联设置优化器
+When creating a global StateManager, you can set an optimizer for the associations
 
 ```ts
 import { newTypedConfiguration } from './__generated';
@@ -298,22 +298,22 @@ import { newTypedConfiguration } from './__generated';
 function createStateManager() {
     return newTypedConfiguration()
         .rootAssociationProperites("findBookStores", { ... })
-        .assocaitionProperties("BookStore", "authors", {...})
+        .assocaitionProperties("BookStore", "books", {...})
         .network(...)
         .buildStateManager();
 }
 ```
-其中
-- rootAssociationProperites针对根对象Query的关联字段
-- assocaitionProperties针对其他对象的关联字段
+- "rootAssociationProperites" is used for the association fields of the root object Query
+- "assocaitionProperties" is used for the association fields of other objects
 
-二者用法一样
+Both of them have the same usage
 
-> 注意: API是强类型设计，不用担心"findBookStores", "BookStore"和"authors"等字符串的拼写错误，错误会在编译时呈现。
+> Note: The API is a strongly typed design. Don't worry about spelling errors in strings such as "findBookStores", "BookStore" and "books". The errors will appear at compile time.
 
-这里，我们以BookStore.books关系的assocaitionProperties来讲解如何优化BookStore.books。
+Here, we take the assocaitionProperties of "BookStore.books" as an example to explain how to optimize "BookStore.books".
 
-assocaitionProperties是一个对象，用户可以提供一个contains函数，判断一个数据对象是否应该属于一个关联
+"assocaitionProperties" is an object, the user can provide a "contains" function to determine whether a data object should belong to an association
+
 ```ts
 import { FlatRow } from 'graphql-state';
 
@@ -322,13 +322,13 @@ contains(
     variables: ...GeneratedVariablesType...
 ) => boolean | undefined;
 ```
-参数
-- row: 数据对象
-- variables: 当前关联的参数
+Parameters
+- row: data object
+- variables: parameters of current association
 
-返回值 
-- boolean: 对象是否和关联参数的条件匹配
-- undefined: 无法判断，此举会导致优化失败。缓存中数据作废，所有和此关联相关的UI查询自动刷新
+Return value 
+- boolean: whether the object matches the filter condition of current association
+- undefined: Unable to judge, this will cause optimization failure. The data in the cache will be evicted, and all UI queries related to this association will be automatically refreshed.
 
 ```ts
 import { FlatRow } from 'graphql-state';
@@ -343,15 +343,17 @@ function createStateManager() {
             ) => boolean | undefined {
             
                 if (variables?.name === undefined) {
-                    // 如果当前关联没有条件，即books({})，那么此关联一定可以包含row
+                    // If "variables.name" is not specified by current sub association,
+                    // assocaition accept every thing, always contains the data
                     return true; 
                 }
-                if (row.has("name")) { // 如果name被缓存，检查之
+                if (row.has("name")) { // If name of data is cached
+                    // Check whether the name of data matches the filter of association
                     return row.get("name").toLowerCase()
                         .indexOf(variables.name.toLowerCase()) !== -1;
                 }
                 
-                // 如果row所代表的数据的name字段没有被缓存，不知道该如何优化
+                // If the name of the data is not cached, I don’t know how to optimize
                 return undefined; 
             }
         })
@@ -359,26 +361,26 @@ function createStateManager() {
         .buildStateManager();
 }
 ```
-> 为了清晰讲解，这里写出了所有类型，并未有任何省略，你在开发中可以省略。
+> In order to explain clearly, all types are written here, without any omissions, you can omit them during development.
 
-这里
-- 先检查子关联的参数是否指定了name，如果没有，直接判定接受元素属于关联
-- 如果对象的name被缓存了，检查对象的name是否包含参数的name，并返回检查结果
-- 如果对象的name没有被缓存，没有任何办法优化，返回undefine即可
+Here
+- First check whether the variables of the sub-association specifies name, if not, directly determine that the accepted element belongs to the association
+- If the name of the data object is cached, check whether the name of the object contains the name of the variables, and return the result
+- If the name of data object is not cached, there is no way to optimize it, just return to undefine
 
-> 注意: 
-> 
-> 此处只需判断variables?.name是否为undefined，不用考虑null和""，因为
-> - null会被自动转化为undefined
-> - 如果参数为""且GraphQL schema并没有定义改参数不能为空，自动转化为undefined
+> Note:
+>
+> Here only need to judge whether variable?.name is undefined, no need to consider null and "", because
+> - null will be automatically converted to undefined
+> - If variable is "" and its type is GraphQLNonNull, it will automatically be converted to undefined
 
-至此，上文无法执行的三个操作的执行策略为
+So far, the execution strategy of the three operations that cannot be performed above is
 
 <table>
     <thead>
         <tr>
-            <th>期望行为</th>
-            <th>判断结果</th>
+            <th>Expected behavior</th>
+            <th>Judgment result</th>
         </tr>
     </thead>
     <tbody>
@@ -390,19 +392,24 @@ function createStateManager() {
 });</pre>
             </td>
             <td>
-                当前子关联无参数
+                The current sub-association has no variables
                 <ul>
                     <li>
-                        <div>如果用户不指定contains</div>
-                        不做任何操作，旧对象不应该被移除
+                        <div>If the user does not specify "associationProperites.contains"</div>
+                        Do nothing, old objects should not be removed
                         <div><i>
-                            这是没问题的，如果对象在books({name: "a"})中的消失是是因为其它原因导致的
-                            (比如，删除操作，或其父对象发生变更)，其它智能更新机制会负责从当前关联中删除它，并非此处讨论的内容。
+                            This is no problem, if the object disappears from 'books({name: "a"})' 
+                            because of other reasons(For example, delete operation, or its parent object changes), 
+                            other smart update mechanisms will be responsible for deleting it from the current association, 
+                            which is not the content discussed here.
                         </i></div>
                     </li>
                     <li>
-                        <div>如果用户指定了contains</div>
-                        不做任何操作，旧对象不应该被移除（对于无参数子关联而言，上文中的用户在contains函数中实现的行为，其实和下文即将讨论的框架的默认行为是一样的）
+                        <div>If the user specifies "associationProperties.contains"</div>
+                        Do nothing, and the old object should not be removed 
+                        (For the parameterless sub-association, the behavior implemented 
+                        by the user in the "associationProperties.contains" function above 
+                        is actually the same as the default behavior which will be discussed later)
                     </li>
                 </ul>
             </td>
@@ -415,19 +422,19 @@ function createStateManager() {
 });</pre>
             </td>
             <td>
-                当前子关联有参数
+                The current sub-assocaition is parameterized
                 <ul>
                     <li>
-                        <div>如果用户不指定contains</div>
-                        <div>缓存中数据作废，所有和此关联相关的UI查询自动刷新</div>
+                        <div>If the user does not specify "associationProperites.contains"</div>
+                        <div>The data in the cache will be evicted, and all UI queries related to this association will automatically refreshed</div>
                     </li>
                     <li>
-                        <div>如果用户指定了contains</div>
-                        检查用户实现的contains函数的返回值
+                        <div>If the user specifies "associationProperties.contains"</div>
+                        Check the return value of the "contains" function implemented by the user
                         <ul>
-                            <li>true: 不做任何操作</li>
-                            <li>false: 从当前子关联删除元素</li>
-                            <li>undefined: 用户也无法判断。缓存中数据作废，所有和此关联相关的UI查询自动刷新</li>
+                            <li>true: Do nothing</li>
+                            <li>false: Remove elements from the current sub-association</li>
+                            <li>undefined: User can't judge either. The data in the cache will be evicted, and all UI queries related to this association will automatically refreshed</li>
                         </ul>
                     </li>
                 </ul>
@@ -441,19 +448,19 @@ function createStateManager() {
 });</pre>
             </td>
             <td>
-                当前子关联有参数
+                The current sub-assocaition is parameterized
                 <ul>
                     <li>
-                        <div>如果用户不指定contains</div>
-                        <div>缓存中数据作废，所有和此关联相关的UI查询自动刷新</div>
+                        <div>If the user does not specify "associationProperites.contains"</div>
+                        <div>The data in the cache will be evicted, and all UI queries related to this association will automatically refreshed</div>
                     </li>
                     <li>
-                        <div>如果用户指定了contains</div>
-                        检查用户实现的contains函数的返回值
+                        <div>If the user specifies "associationProperties.contains"</div>
+                        Check the return value of the "contains" function implemented by the user
                         <ul>
-                            <li>true: 为当前子关联添加新元素</li>
-                            <li>false: 不做任何操作</li>
-                            <li>undefined: 用户也无法判断。缓存中数据作废，所有和此关联相关的UI查询自动刷新</li>
+                            <li>true: Add a new element into the current sub-association</li>
+                            <li>false: Do nothing</li>
+                            <li>undefined: User can't judge either. The data in the cache will be evicted, and all UI queries related to this association will automatically refreshed</li>
                         </ul>
                     </li>
                 </ul>
@@ -462,7 +469,7 @@ function createStateManager() {
     </tbody>
 </table>
 
-这个优化是可选的，如果用户没有为assocationProperties指定contains函数，框架默认的的contains行为如下
+This optimization is optional. If the user does not specify the "contains" function for "assocationProperties", the default "contains" behavior of the framework is as follows
 ```ts
 function defaultContains(
     row: FlatRow<BookFlatType>,
@@ -475,10 +482,9 @@ function defaultContains(
 }
 ```
 
-如果关联的variables中所有字段都为undefined，则传递给contains函数的variables整体为undefined。
+> If all fields of variables are undefined, the variables passed to the contains function are undefined as a whole.
 
-默认contains的逻辑是，没有参数的关联可以包含任何数据对象。
-
+The logic of default "contains" is that associations without variables can contain any data object.
 
 ## 2. 对象被插入位置和associationProperties.position函数
 
