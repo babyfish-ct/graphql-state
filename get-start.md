@@ -66,14 +66,14 @@ yarn codegen
 
 Change 'src/App.tsx' of your app, copy & paste this code
 ```tsx
-import { useQuery, StateManager, StateManagerProvider } from 'graphql-state';
-import { newTypedConfiguration } from './__generated';
+import { Suspense } from 'react';
+import { useQuery, StateManager, StateManagerProvider, GraphQLNetwork } from 'graphql-state';
+import { newTypedConfiguration, Schema } from './__generated';
 import { query$, bookStore$$, book$$ } from './__generated/fetchers';
 
 function createStateManager(): StateManager<Schema> {
-
-    return newTypedConfiguration()
-    	.network(
+	return newTypedConfiguration()
+		.network(
 			new GraphQLNetwork(async(body, variables) => {
 				const response = await fetch('http://localhost:8081/graphql', {
 					method: 'POST',
@@ -89,7 +89,7 @@ function createStateManager(): StateManager<Schema> {
 			})
 		)
 		.buildStateManager()
-    ;
+	;
 }
 	
 function BookStoreList() {
@@ -127,11 +127,11 @@ function App() {
 
 	const stateManager = createStateManager();
     return (
-        <StateManagerProvider stateManager={stateManager}>
-			<Suspense fallback={<div>Loading...</div>}>
-				<BookStoreList/>
-			</Suspense>
-        </StateManagerProvider>
+      <StateManagerProvider stateManager={stateManager}>
+			  <Suspense fallback={<div>Loading...</div>}>
+				  <BookStoreList/>
+			  </Suspense>
+      </StateManagerProvider>
     );
 }
 
