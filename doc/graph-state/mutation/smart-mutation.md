@@ -392,7 +392,7 @@ So far, the execution strategy of the three operations that cannot be performed 
 });</pre>
             </td>
             <td>
-                The current sub-association has no variables
+                The current sub-association is not parameterized
                 <ul>
                     <li>
                         <div>If the user does not specify "associationProperites.contains"</div>
