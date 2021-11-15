@@ -170,7 +170,7 @@ export const MyComponent: FC = memo(() => {
 > Note
 >
 > 1. Data being evicted from the cache and data being deleted are two completely different concepts
-> 2. For application developers, "EntityEvictEvent" is not as useful as "EntityChangeEvent". If you are not interested, you can skip this chapter and look directly at the application example
+> 2. For application developers, "EntityEvictEvent" is not as useful as "EntityChangeEvent". If you are not interested, you can skip this chapter and look directly at "Examples of practical applications"
 
 ### 2.1 Event type definition
 
@@ -260,11 +260,11 @@ export const MyComponent: FC = memo(() => {
       "authors"
   ;
   ```
-和EntityChangeEvent类型的作用一样，只是这个类型的类型更精确而已。其字段的含义也并无差异，此处不在赘述。
+It has the same function as the EntityEvictEvent type, except that the type of this type is more precise. There is no difference in the meaning of its fields, so I won’t repeat them here.
 
-### 1.2 添加对象从缓存中被清理事件
+### 2.2 Add EntityEvictEvent
 
-1. 基于通用事件类型
+1. Based on common event types
 
 ```ts
 import { FC, memo } from 'react';
@@ -293,7 +293,7 @@ export const MyComponent: FC = memo(() => {
 });
 ```
 
-2. 基于专用事件类型
+2. Based on dedicated event type
 
 ```ts
 import { FC, memo } from 'react';
@@ -324,9 +324,9 @@ export const MyComponent: FC = memo(() => {
 });
 ```
 
-### 3. 实际应用举例
+### 3. Examples of practical applications
 
-我们尝试定义个简单状态selectedBookId
+Define a simple state "selectedBookId"
 
 ```ts
 import { createState } from './__generated';
@@ -349,11 +349,11 @@ export const selectedBookIdState = createState<string | undefined>("selectedBook
 });
 ```
 
-这里，我们使用简单状态的effect注册/注销触发器，如果当前状态所指的对象从缓存中被删除，那么将简单状态设置为undefined。
+Here, we use the effect register/unregister trigger of the simple state. If the object pointed to by the current state is deleted, then the current simple state is automatically set to undefined.
 
-selectedBookId只是一个id，而非Book对象，要将之转换为selectedBook对象, 有两种方法
+"selectedBookId" is just an id, not a Book object. To convert it to a "selectedBook" object, there are two ways
 
-1. 如果其他页面对selectedBook对象的形状要求差别很大，可以在其他页面中使用useObject，例如
+1. If other pages have very different requirements for the shape of the "selectedBook" object, you can use "useObject" in other pages, for example
   ```ts
   import { FC, memo } from 'react';
   import { useStateValue } from 'graphql-state';
@@ -376,18 +376,19 @@ selectedBookId只是一个id，而非Book对象，要将之转换为selectedBook
           {
               asyncStyle: "async-object",
 
-              objectStyle: "optional" //重要，否则useObject的第二个参数不得为undefined
+              // Important, otherwise the second parameter of useObject must not be undefined
+              objectStyle: "optional" 
           }
       );
 
       return ...;
   });
   ```
-  > 注意
-  > 
-  > 代码中objectStyle为"optional"很重要，否则useObject的第二个参数不允许为undefined，将会导致编译错误
+  > Note
+  >
+  > It is very important to let objectStyle be "optional", otherwise the second parameter of useObject is not allowed to be undefined, which will cause compilation error
     
-2. 如果其他页面对selectedBook对象的形状要求差别不大，可以selectedBook包装为一个简单对象，方便各页面复用，例如
+2. If other pages have the same requirements for the shape of the selectedBook object, you can wrap the selectedBook as a simple state. For example
   ```
   import { book$$, author$$ } from './__generated';
   import { ModelType } from 'graphql-ts-client';
@@ -402,16 +403,21 @@ selectedBookId只是一个id，而非Book对象，要将之转换为selectedBook
       ModelType<typeof SELECTED_BOOK_SHAPE>
   >("selectedBook", ctx => {
       return ctx.object(
+          
+          SELECTED_BOOK_SHAPE,
+          
           ctx(selectedBookIdState),
+          
           {
-              objectStyle: "optional" //重要，否则ctx.object首个参数不得为undefined
+              // Important, otherwise the second parameter of "ctx.object" cannot be undefined
+              objectStyle: "optional"
           }
       );
   });
   ```
-  > 注意
-  > 
-  > 代码中objectStyle为"optional"很重要，否则ctx.object的第一个参数不允许为undefined，将会导致编译错误
+  > Note
+  >
+  > It is very important to let objectStyle be "optional", otherwise the second parameter of "ctx.object" is not allowed to be undefined, which will cause compilation error
   
 ----------
-[< Previous: 变更](./mutation/README.md) | [Back to parent: 图状态](./README.md)
+[< Previous: Mutation](./mutation/README.md) | [Back to parent: Graph state](./README.md)
