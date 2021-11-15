@@ -128,9 +128,9 @@ function App() {
     const stateManager = createStateManager();
     return (
       <StateManagerProvider stateManager={stateManager}>
-              <Suspense fallback={<div>Loading...</div>}>
-                  <BookStoreList/>
-              </Suspense>
+          <Suspense fallback={<div>Loading...</div>}>
+              <BookStoreList/>
+          </Suspense>
       </StateManagerProvider>
     );
 }
