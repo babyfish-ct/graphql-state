@@ -234,5 +234,5 @@ After running, we will find that if the "numberState" changes, "factorialResultS
 
 -------------------------
 
-[< Previous: WritableState](./writable.md) | [Back to parent: Simple state](./README.md) | [Next: Async >](./async.md)
+[< Previous: WritableState](./writable.md) | [Back to parent: Simple state](./README.md) | [Next: Async state >](./async.md)
 
