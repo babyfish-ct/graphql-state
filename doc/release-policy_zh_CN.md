@@ -6,7 +6,7 @@
 
 graphql-state的内存结构如下
 
-![image](./release-policy.png "数据结构")
+![image](./release-policy.png "内存结构")
 
 分为两个部分
 
