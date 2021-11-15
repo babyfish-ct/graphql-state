@@ -56,7 +56,7 @@ Therefore, graphql-state does an automatic peak clipping for this, and the next 
 |1000ms  | MANNI   |Loading|findBookStore({name: "MANNI"})|After 'findBookStores({name: "M"})' finished, ignore 'findBookStores({name: "M"})', 'findBookStores({name: "MA"})', 'findBookStores({name: "MAN"})' and 'findBookStores({name: "MANN"})', Execute 'findBookStores({name: "MANNI"})' directly, because only the latest query parameters are meaningful|
 |1200ms  | MANNIN  |Loading|findBookStore({name: "MANNI"})|Don't request findBookStores({name: "MANNIN"}), because there is a pending request|
 |1400ms  | MANNING |Loading|findBookStore({name: "MANNI"})|Don't request findBookStores({name: "MANNING"}), because there is a pending request|
-|2000ms  | MANNING |Loading|findBookStore({name: "MANNING"})|After findBookStores({name: "MANNI"})finished, ignore 'findBookStores({name: "MANNIN"})', Execute 'findBookStores({name: "MANNING"})', because only the latest query parameters are meaningful|
+|2000ms  | MANNING |Loading|findBookStore({name: "MANNING"})|After findBookStores({name: "MANNI"})finished, ignore 'findBookStores({name: "MANNIN"})', Execute 'findBookStores({name: "MANNING"})' directly, because only the latest query parameters are meaningful|
 |3000ms  | MANNING |The result of findBookStore({name: "MANNING"})|||
 
 > Note
