@@ -1,5 +1,7 @@
 # A new react state management framework
 
+## Language: English | [中文](./README_zh_CN.md)
+
 ## System functions
 
 ![image](./architecture.png "architecture")
@@ -128,7 +130,7 @@ yarn start
 Access http://localhost:3000
 
 ## Get start
-WILL come soon
+WILL COME SOON
 
 ## [Documentation](./doc/README.md)
 - [Simple state](./doc/simple-state/README.md)
