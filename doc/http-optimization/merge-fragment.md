@@ -1,8 +1,8 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/[HTTP优化](./README.md)/碎片合并
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/[HTTP optimization](./README.md)/Merge fragments
 
-useObject和useObjects根据id/ids查询对象/对象集合，虽然方便，但容易导致请求碎片化。
+"useObject" and "useObjects" query objects/object collections based on id/ids. Although convenient, if not optimized, HTTP requests will be fragmented.
 
-graphql-state能把这些碎片化的请求合并成一个大请求
+graphql-state can merge these fragmented requests into one big request
 
 ```ts
 import { FC, memo, Suspense } from "react";
@@ -74,27 +74,28 @@ function createStateManager() {
 }
 ```
 
-各界面对useObject/useObjects的调用如下
+The calls of each react component to useObject/useObjects are as follows
 |API|a62f7aa3-9490-4612-98b5-98aae0e77120|e110c564-23cc-4811-9e81-d587a13db634|914c8595-35cb-4f67-bbc7-8029e9e6245a|8f30bc8a-49f9-481d-beca-5fe2d147c831|
 |---|---|---|---|---|
 |useObject|<ul><li>[x] </li></ul>| | | |
 |useObjects| |<ul><li>[x] </li></ul>|<ul><li>[x] </li></ul>|<ul><li>[x] </li></ul>|
 |useObjects| | |<ul><li>[x] </li></ul>|<ul><li>[x] </li></ul>|
 
-如果没有碎片合并优化，在缓存无数据的情况下，三个HTTP请求将会被发送到服务端
+If there is no fragmentation optimization, three HTTP requests will be sent to the server when there is no data in the cache
 
-幸运的是，这三个hook查询的形状一样
-> 注意
-> 
-> [HTTP优化](./README.md)中讨论过，
+Fortunately, these three hook queries have the same shape
+
+> Note
+>
+> Discussed in [HTTP optimization](./README.md),
 > ```
 > shape = fetcher + variables
 > ```
-> 但useObject/useObjects的id/ids参数不属于variables，所以，这些请求的形状一样
+> But the id/ids parameters of useObject/useObjects do not belong to variables, so these requests have the same shape
 
-形状一样的useObject/useObjects会被合并为一个请求。这些hook共享合并后的请求返回的数据，并各自选取自己需要的数据。
+useObject/useObjects with the same shape will be combined into one request. These hooks share the data returned by the merged request and select the data they need.
 
-最终，实际运行后只会向服务端发送一个HTTP请求
+Finally, only one HTTP request will be sent to the server
 
 **Body**
 ```
@@ -131,4 +132,4 @@ query(
 
 
 -----------
-[< Previous: 异步削峰](./peak-clipping.md) | [Back to parent: HTTP优化](./README.md) | [Next: 请求重用 >](./reuse-request.md)
+[< Previous: Peak clipping](./peak-clipping.md) | [Back to parent: HTTP optimization](./README.md) | [Next: Reuse request >](./reuse-request.md)
