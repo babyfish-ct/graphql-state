@@ -98,5 +98,5 @@ As mentioned above, the delayed disposing of StateValue and QueryResult can be i
   ```
 
 -----------
-[< Previous：Graphq state](./graph-state/README.md) | [Back to parent：Documentation](./README.md) | [Next：HTTP optimization>](./http-optimization/README.md)
+[< Previous：Graph state](./graph-state/README.md) | [Back to parent：Documentation](./README.md) | [Next：HTTP optimization>](./http-optimization/README.md)
 ```
