@@ -136,7 +136,7 @@ books({name: "b"}).tryLink({
 ```ts
 containsVariables(variables1, variables2): boolean
 ```
-改方法件判断variables1是否包含variables2，即variables2的所有字段都在variables1中存在且它们的值相等
+此方法件判断variables1是否包含variables2，即variables2的所有字段都在variables1中存在且它们的值相等
 |例子|判断值|
 |--------|--------|
 |containsVariables({k1: 'A', k2: 'B'}, {k1: 'A'})|true|
