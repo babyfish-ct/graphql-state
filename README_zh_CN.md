@@ -124,6 +124,8 @@ yarn start
 ```
 访问 http://localhost:3000
 
+## [开始使用: 逐步向导](./get-start.md)
+
 ## 文档
 
 - [简单状态](./doc/simple-state/README_zh_CN.md)
@@ -171,12 +173,5 @@ yarn start
 2. 支持数据可视化的Chrome插件
 
 
-### 变更列表
-|版本|描述|graphql-ts-client所需版本|
-|-------|-----------|------------|
-|0.0.4  |支持releasePolicy|>=3.0.8|
-|0.0.3  |让智能变更更智能|>=3.0.8|
-|0.0.2  |支持分页查询API：usePaginationQuery|>=3.0.8|
-|0.0.1  |为内置的缓存数据库添加垃圾回收器|>=3.0.7|
-|0.0.0  |首个版本|>=3.0.4|
+### [变更日志](./change-log.md)
 
