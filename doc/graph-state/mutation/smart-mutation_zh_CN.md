@@ -279,7 +279,7 @@ import { newTypedConfiguration } from './__generated';
 function createStateManager() {
     return newTypedConfiguration()
         .rootAssociationProperites("findBookStores", { ... })
-        .assocaitionProperties("BookStore", "authors", {...})
+        .assocaitionProperties("BookStore", "books", {...})
         .network(...)
         .buildStateManager();
 }
@@ -290,9 +290,9 @@ function createStateManager() {
 
 二者用法一样
 
-> 注意：API是强类型设计，不用担心"findBookStores", "BookStore"和"authors"等字符串的拼写错误，错误会在编译时呈现。
+> 注意：API是强类型设计，不用担心"findBookStores", "BookStore"和"books"等字符串的拼写错误，错误会在编译时呈现。
 
-这里，我们以BookStore.books关系的assocaitionProperties来讲解如何优化BookStore.books。
+这里，我们以BookStore.books关系的assocaitionProperties为例来讲解如何优化BookStore.books。
 
 assocaitionProperties是一个对象，用户可以提供一个contains函数，判断一个数据对象是否应该属于一个关联
 ```ts
@@ -374,15 +374,15 @@ function createStateManager() {
                 当前子关联无参数
                 <ul>
                     <li>
-                        <div>如果用户不指定contains</div>
+                        <div>如果用户不指定associationProperties.contains</div>
                         不做任何操作，旧对象不应该被移除
                         <div><i>
-                            这是没问题的，如果对象在books({name: "a"})中的消失是是因为其它原因导致的
+                            这是没问题的，如果对象从books({name: "a"})中消失是是因为其它原因导致的
                             (比如，删除操作，或其父对象发生变更)，其它智能更新机制会负责从当前关联中删除它，并非此处讨论的内容。
                         </i></div>
                     </li>
                     <li>
-                        <div>如果用户指定了contains</div>
+                        <div>如果用户指定了associationProperties.contains</div>
                         不做任何操作，旧对象不应该被移除（对于无参数子关联而言，上文中的用户在contains函数中实现的行为，其实和下文即将讨论的框架的默认行为是一样的）
                     </li>
                 </ul>
@@ -456,7 +456,7 @@ function defaultContains(
 }
 ```
 
-如果关联的variables中所有字段都为undefined，则传递给contains函数的variables整体为undefined。
+> 如果关联的variables中所有字段都为undefined，则传递给contains函数的variables整体为undefined。
 
 默认contains的逻辑是，没有参数的关联可以包含任何数据对象。
 
