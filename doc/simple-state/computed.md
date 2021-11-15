@@ -80,7 +80,7 @@ export const OutputView: FC = memo(() => {
     return <div>The average number is {averageNumber}</div>;    
 });
 ```
-> Attention
+> Note
 >
 > The computed state is read-only, so only "useStateValue" can be used, "useStateAccessor" cannot be used
 
@@ -210,7 +210,7 @@ export const OutputView: FC = memo(() => {
     return <div>The factorial result is {factorialResult}</div>;    
 });
 ```
-> Attention
+> Note
 >
 > The computed state is read-only, so only "useStateValue" can be used, "useStateAccessor" cannot be used
 

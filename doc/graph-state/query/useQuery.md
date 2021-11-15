@@ -24,7 +24,7 @@ export const BookStoreList:FC = memo(() => {
     );
 });
 ```
-> Attention 
+> Note 
 >
 > The code in this example requires external React components to use &lt;Suspense/&gt;
 
@@ -89,7 +89,7 @@ export const BookStoreList:FC = memo(() => {
     );
 });
 ```
-> Attention 
+> Note 
 >
 > The code in this example requires external React components to use &lt;Suspense/&gt;
 

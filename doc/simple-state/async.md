@@ -111,7 +111,7 @@ Assuming that the data type of the asynchronous state is T, the return type of t
     readonly refetch: () => void
 }
 ```
-> Attention
+> Note
 >
 > Unlike the "data" field of the object returned by "useStateValue" in the "suspense-refetch" mode, the "data" field here is marked by "?", which is a field that can be undefined. When "loading" is true or "error" exists, "data" must be undefined.
 

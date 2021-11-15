@@ -69,7 +69,7 @@ export const App: FC = memo(() => {
     );
 });
 ```
-> Attention
+> Note
 > The premise of using state management is that the top layer needs to be wrapped with &lt;StateManagerProvider/&gt;
 
 After running, it can be found that IuputView's changes to the state are reflected in the OutputView in real time, and the state completes the information transfer across components.

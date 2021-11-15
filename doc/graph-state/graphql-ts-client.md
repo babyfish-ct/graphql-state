@@ -12,7 +12,7 @@ yarn add graphql-ts-client-codegen --dev
 
 graphql-ts-client is a strongly typed DSL that requires code generation.
 
-> Attention
+> Note
 >
 > The code generation work only needs to be done once when the graph schema remains unchanged! This is also the advantage of graphql-ts-client.
 
