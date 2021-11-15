@@ -175,68 +175,72 @@ This method determines whether variable1 contains variables2, that is, all field
 >
 > books({name: "a"}) ∈ books({})
 >
-> - When adding a data to books({name: "a"}), the data must be add into 'books({})'
-> - When deleting data from books({}), the data must be removed from 'books({name: "a"})'
+> - When adding a data to 'books({name: "a"})', the data must be add into 'books({})'
+> - When deleting data from 'books({})', the data must be removed from 'books({name: "a"})'
 
-因此，tryUnlink的逻辑如下
+Therefore, the logic of 'tryUnlink' is as follows
 ```ts
 tryUnlink(oldId, reason) {
     if (!this.ids.contains(oldId)) {
-        return; //要删除的数据早已不存在, 不需要做任何事
+        return; //The data to be deleted no longer exists, no need to do anything
     }
     if (containsVariables(this.variables, reason)) {
     
         /*
-         * 条件比我宽松的子关联都同意删除旧元素了，我当然同意
-         * 
-         * 例如: this.variables为{name: "a"}，而reason为{}
-         * 既然oldId可以从books({})中被删除，它也一定可以从books({name: "a"})被删除
+         * The sub-associations with looser conditions than mine 
+         * agree to delete the old elements, I certainly agree
+         *
+         * For example: this.variables is '{name: "a"}', and reason is '{}'
+         * Since oldId can be deleted from 'books({})', 
+         * it must also be deleted from 'books({name: "a"})'
          */
         this.unlinkDirectly(oldId); 
         
         return; 
     }
-    ... 更多的代码 需要进一步判断 ....
+    ... more code, further judgment is needed...
 }
 ```
-因为conains({name: "a"}, {})，所以，
-如果一个元素从books({})中被删除，那么它一定能直接从books({name: "a"})被删除。
-很遗憾，上文的案例并没有命中这种情况
+Because 'conainsVariables({name: "a"}, {})' is true, so,
+If an element is deleted from 'books({})', it must be deleted from 'books({name: "a"})' too.
+Unfortunately, the above case did not hit this situation
 
-tryLink的逻辑如下
+The logic of "tryLink" is as follows
 ```ts
 tryLink(newId, reason) {
     if (this.ids.contains(newId)) {
-        return; //要添加的新元素已经存在, 不需要做任何事
+        return; //The new element to be added already exists, no need to do anything
     }
     if (containsVariables(reason, this.variables)) {
        
         /*
-         * 条件比我严格的子关联同意添加新元素了，我当然同意
-         * 
-         * 例如: this.variables为{}，而reason为{name: "a"}
-         * 既然newId可以添加到books({name: "a"})中，它也一定可以添加到books({})中
+         * The sub-associations with stricter conditions than mine 
+         * agree to add new elements, I certainly agree
+         *
+         * For example: this.variables is '{}', and reason is '{name: "a"}'
+         * Since newId can be added to 'books({name: "a"})', 
+         * it must be added to 'books({})'
          */
         this.linkDirectly(newId); 
         
         return;
     }
-    ... 更多的代码 需要进一步判断 ....
+    ... more code, further judgment is needed...
 }
 ```
 
-经过此variables contains的优化，上个章节的行为变成了
-> 暂时忽略
-> - tryLink发现要添加的元素已经存在
-> - tryUnlink发现要删除的元素早已不存在
+After this optimization, the behavior of the previous chapter becomes
+> Temporarily ignore 
+> - "tryLink" found that the element to be added already exists
+> - "tryUnlink" found that the element to be deleted no longer exists
 >
-> 这两种可以提前结束判断的情况
+> These two situations can end the judgment early
 
 <table>
     <thead>
         <tr>
-            <th>期望行为</th>
-            <th>判断结果</th>
+            <th>Expected behavior</th>
+            <th>Judgment result</th>
         </tr>
     </thead>
     <tbody>
@@ -247,7 +251,7 @@ tryLink(newId, reason) {
     reason: {name: "a}
 });</pre>
             </td>
-            <td>尚需进一步判定</td>
+            <td>Need to be further judged</td>
         </tr>
         <tr>
             <td>
@@ -257,8 +261,10 @@ tryLink(newId, reason) {
 });</pre>
             </td>
             <td>
-                因为containsVariables({name: "a"}, {})为true，
-                即，比当前子关联条件更严苛的其它同族子关联books({name: "a"})都同意接受新元素了，books({})当然也同意，此修改可以直接在本地缓存上之执行
+                Because 'containsVariables({name: "a"}', {}) is true,
+                That means other same-family sub-association 'books({name: "a"})' with more stringent variables agree to accept the new element,
+                of course, the current sub-assocaition 'books({})' also agrees. 
+                This modification can be directly executed on local cache.
             </td>
         </tr>
         <tr>
@@ -268,7 +274,7 @@ tryLink(newId, reason) {
     reason: {name: "a}
 });</pre>
             </td>
-            <td>尚需进一步判定</td>
+            <td>Need to be further judged</td>
         </tr>
         <tr>
             <td>
@@ -277,7 +283,7 @@ tryLink(newId, reason) {
     reason: {name: "a}
 });</pre>
             </td>
-            <td>尚需进一步判定</td>
+            <td>Need to be further judged</td>
         </tr>
     </tbody>
 </table>
