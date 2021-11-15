@@ -1,58 +1,60 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](./README_zh_CN.md)/释放策略
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](./README.md)/Release Policy
 
-# 1. 内存管理策略
+# 1. Memory management strategy
 
-状态关系需要消耗浏览器的内存资源，需要不停地把这些宝贵的资源归还浏览器，网站才能可持续地运行下去
+The state relationship needs to consume the memory resources of the browser, and these precious resources need to be returned to the browser continuously, so that the website can run continuously
 
-graphql-state的内存结构如下
+The memory structure of "graphql-state" is as follows
 
-![image](./release-policy.png "数据结构")
+![image](./release-policy.png "Memory structore")
 
-分为两个部分
+Divided into two parts
 
-- 引用计数可以管理的部分
-  - useStateValue, useStateAccessor函数引用简单状态StateValue。
-  - useQuery, usePaginationQuery, useObject, useObjects函数引用查询结果QueryResult。
+- Simple data can be managed by reference count
+  - "useStateValue", "useStateAccessor" functions refer StateValue.
+  - "useQuery", "usePaginationQuery", "useObject", "useObjects" functions refer QueryResult.
   
-  虽然计算状态和异步状态会导致StateValue对其他StateValue或QueryResult形成依赖，但这种依赖是树形依赖，不是图形依赖，没有循环引用的问题，因此，对StateValue和QueryResult这些数据对象而言，引用计数内存管理是可行的
+  > Although the computed state and asynchronous state let StateValue depends on other StateValue or QueryResult, these dependencies are a tree structure, not a graph structure, there is no problem of circular references. Therefore, for objects such as StateValue and QueryResult, reference counting memory management is feasible
   
-  StateValue和QueryResult内置一个引用计数，默认为0，且支持两个内部操作
-  - retain: 将引用计数加1
-  - release: 将引用计数减1，如果为结果为0，释放资源。这里的释放可以不仅可以选择立即释放，还可以选择延迟释放，延迟释放等待过程中过，数据可以复活。对于如何延迟释放，用户是可以干预的，也是本文要重点讨论的。
+  StateValue and QueryResult have a built-in reference count, the default is 0, and supports two internal operations
+   - retain: add 1 to the reference count
+   - release: Decrease the reference count by 1, if the result is 0, dipose the resource. Here we can choose not only to dispose immediately, but also to delay diposing. For delayed diposing, the data can be redeemed before the deadline is reached. The user can decide how to delay the diposing, this is the focus of this article.
   
-  不同的react界面使用上述hook访问数据时，如果所有参数都相同，将会共享相同的StateValue或QueryResult，否则各自获得各自的StateValue或QueryResult。但无论如何
-  - 对获取到到新数据进行retain操作
-  - 如果数据变化或react组件被unmount，对旧数据进行release操作。
+  When different react component use the above hook to access data, if all the parameters are the same, they will share the same StateValue or QueryResult, otherwise they will get their own StateValue or QueryResult. In either case, follow the following rules
+  - Retain the new data
+  - If the data changes or the react component is unmount, release the old data.
 
-  一旦某个StateVale或QueryResult的引用计数被release操作归0，它就会被立即释放或延迟释放。
+  Once the reference count of a StateVale or QueryResult is reset to 0 by the release operation, it will be diposed immediately or delayed.
   
-- 必须采用垃圾回收的部分
+- The part that needs garbage collection
 
-  框架内置了图数据的缓存数据库，其中存放normalize处理后的数据，类似于关系型数据库。这些数据之间的相互引用关系错综复杂，循环引用常常出现。对这部分数据而言，必须使用垃圾回收策略。
+   The framework has a built-in cache database of graph data, like RDBMS, it stores normalized records. The inter-reference relationship between these records is intricate and complicated, and circular references often occur. For this part of the data, garbage collection strategies must be used.
 
-  受引用计数管理的StateValue和QueryResult对象充当垃圾回收算法的根引用。每当有QueryResult被释放时，都会自动触发一次垃圾回收。垃圾回收过程用户无法干预，不是本文重点所讨论的话题。
+   The StateValue and QueryResult objects managed by the reference count serve as the root references for the garbage collection algorithm. Whenever a StateValue or QueryResult is disposed, it will automatically trigger once GC. The user cannot intervene in the garbage collection process, it is not the focus of this article.
   
-## 2. 延迟释放
+## 2. Delayed disposing
 
-上文谈到，StateValue和QueryResult的释放是用户可以干预的。要干预此行为，需要指定一个函数
+As mentioned above, the delayed disposing of StateValue and QueryResult can be intervened by the user. To interfere with this behavior, you need to specify a function
+
 ```ts
 (aliveTime: number, variables: any) => number
 ```
-参数：
+**Parameters**
   - aliveTime:
-    从被创建到现在为止，当前StateValue/QueryResult共存活了多长时间，以毫秒为单位
+    How long has the current StateValue/QueryResult survived since it was created until now, in milliseconds
   - variables:
-    当前数据的参数，即用户调用useStateValue, useStateAccessor，useQuery，usePaginationQuery，useObject, useObjects函数时指定的options.variables。
-    - 对于options.variables内部的每个字段而言，如果其值为""且GraphQL schema并未强制要求其非null，则variables字段被自动视为undefined
-    - 对于options.variables内部的每个字段都为undefined或被视为undefined，variables整体为undefined
-返回值
-  延迟释放的等待时间，以毫秒为单位
-  - 如果小于或等于0，立即释放
-  - 否则，延迟释放
-    - 等待结束过程中，如果数据被再次retain，将会导致数据被复活。延迟释放和等待行为被取消。
-    - 如果等待过程中对象并未复活，到期后，当前StateValue或QueryResult将会真正释放。并触发一次针对图数据缓存数据库的垃圾回收。
+    The parameters of the current StateValue/QueryResult, its the "options.variables" specified when the user calls the useStateValue, useStateAccessor, useQuery, usePaginationQuery, useObject, and useObjects functions.
+    > - For each field inside "options.variables", if its value is "" and GraphQL schema does not require it to be non-null, the variable field is automatically regarded as undefined
+    >- If all the fields inside "options.variables" are undefined or regarded as undefined, here the "variables" as a whole are undefined
 
-### 2.1 默认的延迟释放
+**Return value**
+  Delayed disposing waiting time, in milliseconds
+  - If less than or equal to 0, dispose immediately
+  - Otherwise, delayed disposing
+    - During the waiting process, if the data is retained again, the data will be resurrected. Delayed disposing and waiting behavior are cancelled.
+    - If the object is not resurrected during the waiting process, the current StateValue/QueryResult will be disposed. And trigger once garbage collection for the normalized data cache database.
+
+### 2.1 Default release prolicy
 ```ts
 (aliveTime: number, variables: any) => number {
     if (aliveTime < 1000) {
@@ -64,14 +66,14 @@ graphql-state的内存结构如下
     return Math.min(aliveTime, 60_000);
 }
 ```
-- 对生存时间未足一秒的数据，立即释放
-- 否则，按照生存时间延迟释放
-  - 对于有参数的数据，最大延迟不得操作半分钟
-  - 对于无参数的数据，最大延迟不得操作1分钟
+- For data whose survival time is less than one second, it will be released immediately
+- Otherwise, the disposing will be delayed according to the survival time. The longer the survival time, the greater the value of the data, and the greater the meaning of resurrection. This is like hotter data that takes longer to cool down.
+   - For data with parameters, the maximum delay shall not exceed half a minute
+   - For data without parameters, the maximum delay shall not exceed 1 minute
 
-### 2.2 自定义延迟释放
+### 2.2 Customize delayed diposing
 
-1. 全局覆盖
+1. Global Setting
   ```ts
   const myReleasePolicy = (aliveTime: number, variables: any) => {
       return ...;
@@ -82,7 +84,7 @@ graphql-state的内存结构如下
       ...
   </StateManagerProvider>
   ```
-2. 单数据覆盖(仅以useStateValue和useQuery为例)
+2. Single data setting (take only useStateValue and useQuery as examples)
   ```ts
   const myReleasePolicy = (aliveTime: number, variables: any) => {
       return ...;
@@ -96,5 +98,5 @@ graphql-state的内存结构如下
   ```
 
 -----------
-[< 上一篇：图状态](./graph-state/README_zh_CN.md) | [返回上级：文档](./README_zh_CN.md) | [下一篇：HTTP优化器>](./http-optimization/README_zh_CN.md)
+[< Previous：Graphq state](./graph-state/README.md) | [Back to parent：Documentation](./README.md) | [Next：HTTP optimization>](./http-optimization/README.md)
 ```
