@@ -3,8 +3,9 @@
 
 参考这样一个例子
 
-BookStore具备一个books属性，一个指向Book的one-to-many关联
-反过来，Book具备一个store属性，一个指向BookStore的many-to-one关联
+- BookStore具备一个books属性，一个指向Book的one-to-many关联
+- 反过来，Book具备一个store属性，一个指向BookStore的many-to-one关联
+
 从业务上讲，BookStore.books和Book.store其实是同一个关联因视角不同而展现出的两面，因此，graphql-state允许你把这样的两个关系绑定为双向关联。一旦你完成了这种绑定，你就可以得到如下GIF动画所示的效果
 
 |![image](../../../bidirectional-association.gif "双向关联")|
@@ -16,8 +17,12 @@ MANNING.books.add(LearningGraphQL);
 ```
 与此同时，graphql-state会为你执行两个自动更新
 ```
-O'REILLY.books.remove(LearningGraphQL);
-LearningGraphQL.store = MANNING;
+if (cached(O'REILLY.books)) {
+    O'REILLY.books.remove(LearningGraphQL);
+}
+if (cached(LearningGraphQL.store)) {
+    LearningGraphQL.store = MANNING;
+}
 ```
 
 > 上面的GIF演示中，我是通过修改BookStore对象来完成演示的。
