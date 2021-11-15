@@ -1,4 +1,4 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/[HTTP优化](./README.md)/请求重用
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/[http optimization](./README.md)/Reuse request
 
 ```ts
 import { FC, memo, Suspense } form 'react';
@@ -51,18 +51,17 @@ function createStateManager() {
 
 ```
 
-在[HTTP优化](./README.md)中我们讨论了形状，以及形状之间的包哈关系。
+In [HTTP Optimization](./README.md), we discussed shapes and the relationship between shapes.
 
-很明显，在这个例子，BiggerShapeComponent内部查询的形状包含SmallerShapeComponent内部查询的形状，SmallerShapeComponent内部查询能查到的数据一定包含在BiggerShapeComponent内部查询返回的数据中。
+Obviously, in this example, the shape queried within BiggerShapeComponent includes the shape queried within SmallerShapeComponent, and the data that can be queried within SmallerShapeComponent must be included in the data returned by the internal query of BiggerShapeComponent.
 
-最终，SmallerShapeComponent并不会发出HTTP请求，它会重用BiggerShapeComponent内部的查询的HTTP请求，盗用其返回数据并从中选取自己要的结果。
+In the end, SmallerShapeComponent will not send out HTTP requests. It will reuse the HTTP request of BiggerShapeComponent's internal query, steal the returned data and select the results it wants.
 
-> 注意
-> 
-> 无论形状更大的查询的HTTP请求是否已经被发送出去，只要形状更大的请求还未从服务端获得值，此优化就能生效（如果形状更大的请求已经查询到数据，会被缓存直接优化，没机会执行到HTTP请求这里）
-> - 针对形状更大的查询的HTTP请求还未发送的情况，请运行附带例子并访问http://localhost:3000/graphState/httpOpitimizator/mergeDifferentShapes
-> - 针对形状更大的查询的HTTP请求已经发送的情况，请运行附带例子并访问http://localhost:3000/graphState/httpOpitimizator/reusePendingQueries
-
+> Note
+>
+> Regardless of whether the HTTP request with lager shape has been sent out, As long as requests with larger shapes have not yet received response from the server, this optimization will take effect (if the larger shape request has already received the response, it will be optimized by cache, no chance to execute to HTTP request here)
+> - If the HTTP request for a larger shape query has not been sent, please run the attached example and visit http://localhost:3000/graphState/httpOpitimizator/mergeDifferentShapes
+> - For the case where the HTTP request for a larger query has been sent, please run the attached example and visit http://localhost:3000/graphState/httpOpitimizator/reusePendingQueries
 -------------------------
 
-[< Previous: 碎片合并](./merge-fragment.md) | [Back to parent: HTTP优化](./README.md)
+[< Previous: Merge fragments](./merge-fragment.md) | [Back to parent: HTTP optimization](./README.md)
