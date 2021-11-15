@@ -186,7 +186,7 @@ tryUnlink(oldId, reason) {
     ... 更多的代码 需要进一步判断 ....
 }
 ```
-因为conains({name: "a"}, {})，所以，
+因为conainsVariables({name: "a"}, {})为true，所以，
 如果一个元素从books({})中被删除，那么它一定能直接从books({name: "a"})被删除。
 很遗憾，上文的案例并没有命中这种情况
 
@@ -212,7 +212,7 @@ tryLink(newId, reason) {
 }
 ```
 
-经过此variables contains的优化，上个章节的行为变成了
+经此优化，上个章节的行为变成了
 > 暂时忽略
 > - tryLink发现要添加的元素已经存在
 > - tryUnlink发现要删除的元素早已不存在
