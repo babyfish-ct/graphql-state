@@ -64,8 +64,8 @@ As shown in the above GIF animation, graphql-state can automatically re-implemen
 |---|
 
 In this example, we care about two associations
--Query.findBooks
--BookStore.books
+- Query.findBooks
+- BookStore.books
 
 Both of them are sorted in ascending order by name. Therefore, when the name of the object is modified, these two associations will be reordered.
 
