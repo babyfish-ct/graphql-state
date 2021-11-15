@@ -129,8 +129,7 @@ yarn start
 ```
 Access http://localhost:3000
 
-## Get start
-[Step by step guid](./get-start.md)
+## [Step by step guide](./get-start.md)
 
 ## [Documentation](./doc/README.md)
 - [Simple state](./doc/simple-state/README.md)
@@ -178,5 +177,4 @@ This is a newly born framework. In order to make it more and more complete, the 
 2. A Chrome extension for data visualization.
 
 
-### Change log
-[Change log](./change-log.md)
+### [Change Log](./change-log.md)
