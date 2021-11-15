@@ -1,8 +1,8 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../../README.md)/[图状态](../README.md)/[变更](./README.md)/useMutation
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../../README.md)/[Graph state](../README.md)/[Mutation](./README.md)/useMutation
 
-useMutation函数用于向服务端提交变更
+The "useMutation" function is used to submit changes to the server
 
-## 1. 其定义形式
+## 1. Definition
 ```ts
 useMutation<
     T extends object,
@@ -23,30 +23,31 @@ useMutation<
 }
 ```
 
-fetcher: 一个[graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client)的fetcher，其根对象类型必须为"Mutation"
-
-options: 一个可选的对象，包含如下字段
-  - variables: 请求参数
-  - onSuccess: 请求成功后调用此函数
-  - onError: 请求失败后调用此函数
-  - onComplete: 无论成功失败，请求完成后都会调用，相当于编程编程语言中的"finally"
+** Parameters **
+fetcher: Fetcher of [graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client), its root object type must be "Mutation"
+options: an optional object containing the following fields
+- variables: request parameters
+- onSuccess: call this function after the request is successful
+- onError: call this function after the request fails
+- onComplete: Whether it succeeds or fails, it will be called after the request is completed, which is equivalent to "finally" in a programming language
   
-返回值: 一个对象，包含如下字段
-  - mutate: 用户需要调用此函数发送变更请求到服务端。和useQuery，usePaginationQuery，useObject以及useObjects不同，变更请求不会自动发送，必须由用户自己调用
-  - loading: 是否正在等待返回结果
-  - data: 服务端返回结果。如果loading为true或error存在，必然为undefined
-  - error: 服务端返回的异常
+** Return Type**
+An object containing the following fields
+- mutate: The user needs to call this function to send the mutation request to the server. Unlike useQuery, usePaginationQuery, useObject and useObjects, the mutation request will not be sent automatically and must be called by the user himself
+- loading: Whether it is waiting to return the result
+- error: the exception returned by the server
+- data: The server returns the result. If loading is true or error exists, it must be undefined
 
-> 注意
+> Note
 > 
-> 有两种方法可以指定请求参数
-> 1. 在调用此Hook时指定options.variables，例如
+> There are two ways to specify request parameters
+> 1. Specify "options.variables" when calling this hook, for example
 >   ```ts
 >   const { mutate} = useMutation(..., {
 >      variables: { input: ...}
 >   });
 >   ```
-> 2. 在调用此Hook返回的muate函数时指定参数
+> 2. Specify the parameters when calling the "muate" function returned by this hook
 >   ```ts
 >   const { mutate } = useMutation(..., {});
 >   const onSubmitClick = useCallback(() => {
@@ -54,11 +55,11 @@ options: 一个可选的对象，包含如下字段
 >   }, [mutate]);
 >   ```
 >   
-> 如果两种行为都存在，2优先
+> If both behaviors exist, 2 takes precedence
   
 ## 2. 使用例子
 
-以在[附带的例子的服务端](https://github.com/babyfish-ct/graphql-state/tree/master/example/server)中，Mutation支持一个mergeBook字段，用于插入或修改Book，其sdl如下
+In the [server side of the attached example](https://github.com/babyfish-ct/graphql-state/tree/master/example/server), "Mutation" supports a "mergeeBook" field, which is used to insert or update Book. Its sdl is as follows
 ```
 type Mutation {
     mergeBook(input: BookInput): Book
@@ -82,13 +83,13 @@ type BookStore { ... }
 type Author { ... }
 ```
 
-mergeBook字段接受一个BookInput，返回Book，可以利用这个返回值修改本地数据
+The mergeBook field accepts a BookInput and returns Book. The returned object can be used to modify the local cache data
 
-> 某些情况下，返回的对象和传入的Input所包含等价信息是等价相同的，但这不是绝对的，服务端允许返回和input不一致的数据，客户端应该以返回的数据为准。
-> 
-> 无论如何，这是一个很常见且通用的设计方法
+> In some cases, the returned object and the equivalent information contained in the incoming Input are equivalent, but this is not absolute. The server is allowed to return data that is inconsistent with the input, and the client should take the returned data as the standard .
+>
+> In any case, this is a very common and universal design method
 
-如此，我们期望执行的变更操作的fetcher看起来应该是这个样子
+The fetcher of the mutation operation we expect to perform should look like this
 ```ts
 const MUTATION_FETCHER = mutation$.mergeBook(
     { input: ... },
@@ -98,13 +99,15 @@ const MUTATION_FETCHER = mutation$.mergeBook(
 );
 ```
 
-其中
+Among them, 
 ```ts
     book$$
     .store(bookStore$.id)
     .authors(author$.id)
 ```
-既要用与指定mutation的返回格式，又要用于更新本地数据。我们可以稍微修改一下代码，把这部分独立出来，如下
+should be used to specify the return format of the mutation request and also to update the local data.
+We can slightly modify the code to separate this part, as follows
+
 ```ts
 const BOOK_MUATION_INFO = book$$
     .store(bookStore$.id)
@@ -117,12 +120,12 @@ const MUTATION_FETCHER = mutation$.mergeBook(
 )
 ```
 
-好了，现在，我们给出useMutation的示例代码
+Now, let's see sample code of "useMutation"
 
 ```ts
 import { FC, memo } from 'react';
 import { useMutation } from 'graphql-state';
-import { useTypedStateManager } from './__generated/fetchers';
+import { useTypedStateManager } from './__generated';
 import { mutation$, book$$, bookStore$, author$ } from './__generated/fetchers';
 import { BookInput } from './__generated/inputs';
 
@@ -163,7 +166,7 @@ export const BookMutationComponent: FC = memo(() => {
 });
 ```
 
-当用户点击Save按钮后，提交变更到服务端，并根据服务的的返回结果更新本地缓存
+When the user clicks the "Save" button, the mutation is submitted to the server, and the local cache is updated according to the returned results of the server
 
 --------------
-[< Previous: 变更缓存](./mutate-cache.md) | [Back to parent: 变更](./README.md) | [Next: 智能变更 >](./smart-mutation.md)
+[< Previous: Mutate cache](./mutate-cache.md) | [Back to parent: Mutation](./README.md) | [Next: Smart mutation >](./smart-mutation.md)
