@@ -72,65 +72,65 @@ import { newTypedConfiguration, Schema } from './__generated';
 import { query$, bookStore$$, book$$ } from './__generated/fetchers';
 
 function createStateManager(): StateManager<Schema> {
-	return newTypedConfiguration()
-		.network(
-			new GraphQLNetwork(async(body, variables) => {
-				const response = await fetch('http://localhost:8081/graphql', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify({
-						query: body,
-						variables,
-					}),
-				}); 
-				return await response.json();
-			})
-		)
-		.buildStateManager()
-	;
+    return newTypedConfiguration()
+        .network(
+            new GraphQLNetwork(async(body, variables) => {
+                const response = await fetch('http://localhost:8081/graphql', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: body,
+                        variables,
+                    }),
+                }); 
+                return await response.json();
+            })
+        )
+        .buildStateManager()
+    ;
 }
-	
+    
 function BookStoreList() {
 
-	const data = useQuery(
-		query$.findBookStores(
-			bookStore$$
-			.books(
-				book$$
-			)
-		)
-	);
-	
-	return (
-		<ul>
-			{
-				data.findBookStores.map(store => 
-					<li key={store.id}>
-						{store.name}
-						<ul>
-							{
-								store.books.map(book => 
-									<li key={book.id}>{book.name}</li>
-								) 
-							}
-						</ul>
-					</li>
-				)
-			}
-		</ul>
-	);
+    const data = useQuery(
+        query$.findBookStores(
+            bookStore$$
+            .books(
+                book$$
+            )
+        )
+    );
+    
+    return (
+        <ul>
+            {
+                data.findBookStores.map(store => 
+                    <li key={store.id}>
+                        {store.name}
+                        <ul>
+                            {
+                                store.books.map(book => 
+                                    <li key={book.id}>{book.name}</li>
+                                ) 
+                            }
+                        </ul>
+                    </li>
+                )
+            }
+        </ul>
+    );
 }
 
 function App() {
 
-	const stateManager = createStateManager();
+    const stateManager = createStateManager();
     return (
       <StateManagerProvider stateManager={stateManager}>
-			  <Suspense fallback={<div>Loading...</div>}>
-				  <BookStoreList/>
-			  </Suspense>
+              <Suspense fallback={<div>Loading...</div>}>
+                  <BookStoreList/>
+              </Suspense>
       </StateManagerProvider>
     );
 }
