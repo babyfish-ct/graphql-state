@@ -54,7 +54,7 @@ export const BookStoreList: FC = memo(() => {
 |400ms  | MA       |Loading|findBookStore({name: ""})|不执行findBookStores({name: "MA"})，因为存在未返回的请求|
 |600ms  | MAN      |Loading|findBookStore({name: ""})|不执行findBookStores({name: "MAN"})，因为存在未返回的请求|
 |800ms  | MANN     |Loading|findBookStore({name: ""})|不执行findBookStores({name: "MANN"})，因为存在未返回的请求|
-|1000ms  | MANNI   |Loading|findBookStore({name: "MANNI"})|findBookStores({name: "M"})返回后，忽略findBookStores({name: "M"}), findBookStores({name: "MA"}), findBookStores({name: "MAN"}), findBookStores({name: "MANN"})直接执行findBookStores({name: "MANNI"})。因为只有最新的查询参数才有意义|
+|1000ms  | MANNI   |Loading|findBookStore({name: "MANNI"})|findBookStores({name: "M"})返回后，忽略findBookStores({name: "M"}), findBookStores({name: "MA"}), findBookStores({name: "MAN"}), findBookStores({name: "MANN"})，直接执行findBookStores({name: "MANNI"})。因为只有最新的查询参数才有意义|
 |1200ms  | MANNIN  |Loading|findBookStore({name: "MANNI"})|不执行findBookStores({name: "MANNIN"})，因为存在未返回的请求|
 |1400ms  | MANNING |Loading|findBookStore({name: "MANNI"})|不执行findBookStores({name: "MANNING"})，因为存在未返回的请求|
 |2000ms  | MANNING |Loading|findBookStore({name: "MANNING"})|findBookStores({name: "MANNI"})返回后，忽略findBookStores({name: "MANNIN"})，直接执行findBookStores({name: "MANNING"})。因为只有最新的查询参数才有意义|
