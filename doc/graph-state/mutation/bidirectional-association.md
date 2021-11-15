@@ -25,12 +25,12 @@ if (cached(LearningGraphQL.store)) {
 }
 ```
 
-> 上面的GIF演示中，我是通过修改BookStore对象来完成演示的。
-> 事实上，对双向关联而言，无论操作哪一端都是可行的，你也可以编辑Book对象来达到完全一样的效果，附带的例子运行起来后，你体验到更多的双向关联相关的效果。
+> In the above GIF demonstration, I completed the demonstration by modifying the "BookStore" object. 
+> In fact, for bidirectional associations, no matter which side of the operation is possible, you can also edit the "Book" object to achieve exactly the same effect. After the attached example runs, you will experience more two-way association-related effects.
 
-## 实现方法
+## Usage
 
-双向关联维护的实现方法很简单，由于双向关联是一种业务意义层面的绑定，GraphQL schema中并没有对等的元数据，因此我们需要在配置阶段加入双向关联的元数据即可
+The implementation method of bidirectional association maintenance is very simple. Since bidirectional association is a binding at the business sense level, there is no equivalent metadata in the GraphQL schema, so we need to enhance the metadata in the configuration phase.
 
 ```ts
 import { newTypedConfiguration } from "./__generated";
@@ -43,7 +43,7 @@ function createStateManager() {
         .buildStateManager();
 }
 ```
-上面的写法并不是唯一的写法，下面这种写法与之等价
+The code above is not the only wording, the wording below is equivalent
 ```ts
 import { newTypedConfiguration } from "./__generated";
 
@@ -56,8 +56,8 @@ function createStateManager() {
 }
 ```
 
-> API是强类型的，不用担心上面的字符串参数出现拼写错误，错误会在编译时报告
+> API is strongly typed, don’t worry about spelling errors in the string parameters above, errors will be reported at compile time
 
 -----------
 
-[< Previous: 智能变更](./smart-mutation.md) | [Back to parent: 变更](./README.md) 
+[< Previous: Smart mutation](./smart-mutation.md) | [Back to parent: Mutation](./README.md) 
