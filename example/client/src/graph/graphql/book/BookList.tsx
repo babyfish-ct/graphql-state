@@ -20,8 +20,8 @@ const BOOK_ROW =
 
 export const BookList: FC = memo(() => {
     
-    const [name, setName] = useState<string>();
-    const [authorName, setAuthorName] = useState<string>();
+    const [name, setName] = useState("");
+    const [authorName, setAuthorName] = useState("");
 
     const { data, loading, refetch, hasNext, loadNext, isLoadingNext } = usePaginationQuery(
         query$.findBooks(
@@ -58,13 +58,11 @@ export const BookList: FC = memo(() => {
     const [deleting, setDeleting] = useState<ModelType<typeof BOOK_ROW>>();
 
     const onNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value.trim();
-        setName(value === "" ? undefined : value);
+        setName(e.target.value);
     }, []);
 
     const onAuthorNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value.trim();
-        setAuthorName(value === "" ? undefined : value);
+        setAuthorName(e.target.value);
     }, []);
 
     const onDelete = useCallback((row: ModelType<typeof BOOK_ROW>) => {

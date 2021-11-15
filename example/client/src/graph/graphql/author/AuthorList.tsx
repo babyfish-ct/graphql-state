@@ -17,8 +17,8 @@ const AUTHOR_ROW =
 
 export const AuthorList: FC = memo(() => {
 
-    const [name, setName] = useState<string>();
-    const [bookName, setBookName] = useState<string>();
+    const [name, setName] = useState("");
+    const [bookName, setBookName] = useState("");
 
     const { data, loading, refetch, isLoadingNext, loadNext, hasNext } = usePaginationQuery(
         query$.findAuthors(
@@ -51,12 +51,10 @@ export const AuthorList: FC = memo(() => {
     );
     
     const onNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value.trim();
-        setName(value === "" ? undefined : value);
+        setName(e.target.value);
     }, []);
     const onBookNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value.trim();
-        setBookName(value === "" ? undefined : value);
+        setBookName(e.target.value);
     }, []);
 
     const [dialog, setDialog] = useState<"NEW" | "EDIT">();

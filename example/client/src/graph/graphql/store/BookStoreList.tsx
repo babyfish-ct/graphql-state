@@ -19,8 +19,8 @@ const BOOK_STORE_ROW =
 
 export const BookStoreList = memo(() => {
 
-    const [name, setName] = useState<string>();
-    const [bookName, setBookName] = useState<string>();
+    const [name, setName] = useState("");
+    const [bookName, setBookName] = useState("");
 
     const { data, loading, refetch } = useQuery(
         query$.findBookStores(
@@ -49,12 +49,10 @@ export const BookStoreList = memo(() => {
     const [deleting, setDeleting] = useState<ModelType<typeof BOOK_STORE_ROW>>();
 
     const onNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value.trim();
-        setName(value === "" ? undefined : value);
+        setName(e.target.value);
     }, []);
     const onBookNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value.trim();
-        setBookName(value === "" ? undefined : value);
+        setBookName(e.target.value);
     }, []);
 
     const onDelete = useCallback((row: ModelType<typeof BOOK_STORE_ROW>) => {
