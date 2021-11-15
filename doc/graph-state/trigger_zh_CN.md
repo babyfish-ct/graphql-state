@@ -261,7 +261,7 @@ EntityChangeEvent表示实体对象从缓存中被清理
   ```
 和EntityEvictEvent类型的作用一样，只是内部字段类型更精确而已。其字段的含义也并无差异，此处不在赘述。
 
-### 1.2 添加对象从缓存中被清理事件
+### 2.2 添加对象从缓存中被清理事件
 
 1. 基于通用事件类型
 
@@ -348,7 +348,7 @@ export const selectedBookIdState = createState<string | undefined>("selectedBook
 });
 ```
 
-这里，我们使用简单状态的effect注册/注销触发器，如果当前状态所指的对象从缓存中被删除，那么将简单状态设置为undefined。
+这里，我们使用简单状态的effect注册/注销触发器，如果当前状态所指的对象被删除，那么将当前简单状态自动设置为undefined。
 
 selectedBookId只是一个id，而非Book对象，要将之转换为selectedBook对象, 有两种方法
 
@@ -386,7 +386,7 @@ selectedBookId只是一个id，而非Book对象，要将之转换为selectedBook
   > 
   > 代码中objectStyle为"optional"很重要，否则useObject的第二个参数不允许为undefined，将会导致编译错误
     
-2. 如果其他页面对selectedBook对象的形状要求差别不大，可以selectedBook包装为一个简单对象，方便各页面复用，例如
+2. 如果其他页面对selectedBook对象的形状要求差别一样，可以将selectedBook包装为一个简单状态。例如
   ```
   import { book$$, author$$ } from './__generated';
   import { ModelType } from 'graphql-ts-client';
@@ -401,16 +401,19 @@ selectedBookId只是一个id，而非Book对象，要将之转换为selectedBook
       ModelType<typeof SELECTED_BOOK_SHAPE>
   >("selectedBook", ctx => {
       return ctx.object(
+      
+          SELECTED_BOOK_SHAPE,
+          
           ctx(selectedBookIdState),
           {
-              objectStyle: "optional" //重要，否则ctx.object首个参数不得为undefined
+              objectStyle: "optional" //重要，否则ctx.object的第二个参数不得为undefined
           }
       );
   });
   ```
   > 注意
   > 
-  > 代码中objectStyle为"optional"很重要，否则ctx.object的第一个参数不允许为undefined，将会导致编译错误
+  > 代码中objectStyle为"optional"很重要，否则ctx.object的第二个参数不允许为undefined，将会导致编译错误
   
 ----------
 [< 上一篇：变更](./mutation/README_zh_CN.md) | [返回上级：图状态](./README_zh_CN.md)
