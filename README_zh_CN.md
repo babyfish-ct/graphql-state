@@ -124,12 +124,6 @@ yarn start
 ```
 访问 http://localhost:3000
 
-## 依赖
-1. React, version >= 17.0.0
-2. [graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client), version >= 3.0.8
-
-[graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client) 是我数月前开发的另外一个框架, 它是针对GraphQL功能完整的的TypeScript-DSL。
-
 ## 文档
 
 - [简单状态](./doc/simple-state/README_zh_CN.md)
@@ -145,7 +139,7 @@ yarn start
     - [useObject&useObjects](./doc/graph-state/query/useObject_zh_CN.md)
   - [变更](./doc/graph-state/mutation/README_zh_CN.md)
     - [变更缓存](./doc/graph-state/mutation/mutate-cache_zh_CN.md)
-    - [useMutation](./doc/graph-state/mutation/mutate-cache_zh_CN.md)
+    - [useMutation](./doc/graph-state/mutation/useMutation_zh_CN.md)
     - [智能变更](./doc/graph-state/mutation/smart-mutation_zh_CN.md)
     - [双向关联](./doc/graph-state/mutation/bidirectional-association_zh_CN.md)
   - [触发器](./doc/graph-state/trigger_zh_CN.md)
@@ -155,6 +149,11 @@ yarn start
   - [碎片合并](./doc/http-optimization/merge-fragment_zh_CN.md)
   - [请求重用](./doc/http-optimization/reuse-request_zh_CN.md)
 
+## 依赖
+1. React, version >= 17.0.0
+2. [graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client), version >= 3.0.8
+
+[graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client) 是我数月前开发的另外一个框架, 它是针对GraphQL功能完整的的TypeScript-DSL
 
 ## 其它
 
