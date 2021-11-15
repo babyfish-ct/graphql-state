@@ -130,7 +130,7 @@ Access http://localhost:3000
 ## Get start
 WILL come soon
 
-## Documentation
+## [Documentation](./doc/README.md)
 - [Simple state](./doc/simple-state/README.md)
   - [Writable state](./doc/simple-state/writable.md)
   - [Computed state](./doc/simple-state/computed.md)
