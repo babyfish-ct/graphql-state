@@ -57,7 +57,7 @@ An object containing the following fields
 >   
 > If both behaviors exist, 2 takes precedence
   
-## 2. 使用例子
+## 2. Usage
 
 In the [server side of the attached example](https://github.com/babyfish-ct/graphql-state/tree/master/example/server), "Mutation" supports a "mergeeBook" field, which is used to insert or update Book. Its sdl is as follows
 ```
