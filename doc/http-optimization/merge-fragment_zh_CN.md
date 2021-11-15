@@ -1,6 +1,6 @@
 # [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../README_zh_CN.md)/[HTTP优化](./README_zh_CN.md)/碎片合并
 
-useObject和useObjects根据id/ids查询对象/对象集合，虽然方便，但容易导致请求碎片化。
+useObject和useObjects根据id/ids查询对象/对象集合，虽然方便，但如果没有优化会导致HTTP请求碎片化。
 
 graphql-state能把这些碎片化的请求合并成一个大请求
 
@@ -94,7 +94,7 @@ function createStateManager() {
 
 形状一样的useObject/useObjects会被合并为一个请求。这些hook共享合并后的请求返回的数据，并各自选取自己需要的数据。
 
-最终，实际运行后只会向服务端发送一个HTTP请求
+最终，只会向服务端发送一个HTTP请求
 
 **Body**
 ```
