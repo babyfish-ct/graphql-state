@@ -1,16 +1,16 @@
 # A new react state management framework
 
-## Language: English | [中文](./README_zh_CN.md)
+# Language: English | [中文](./README_zh_CN.md)
 
-## System functions
+# System functions
 
 ![image](./architecture.png "architecture")
 
-## Simple State
+## 1. Simple State
 
 A simple state management tool that looks similar to recoil, used to manage scattered data outside the business object model, and can be easily coordinated with the "Graph State".
 
-## Graph State
+## 2. Graph State
 
 The core value of this framework is to provide graph state management capabilities that are far more intelligent than apollo-client and relay. This is also my motivation for creating this framework.
 
@@ -18,7 +18,7 @@ Graph state management supports two core functions:
 - Smart mutation
 - Bidirectional association
 
-### Smart Mutation
+### 2.1. Smart Mutation
 
 When using the traditional GraphQL client, the biggest pain developers face is the need to decide whether to update the local cache or requery the data after the change operation. If you choose to modify the local cache, you will face a heavy workload; if you choose to re-query, not only you need to accept the performance defects, but also it is not easy to determine which queries need to be re-executed.
 
@@ -30,7 +30,7 @@ Regardless of whether the framework chooses to modify only the local data(A), or
 
 However, you can also intervene in the decision-making process if you wish. You can use simple APIs to help it with performance optimization, increase the probability of occurrence (A) and decrease the probability of occurrence (B).
 
-#### When users do not optimize
+#### 2.1.1. When users do not optimize
 
 Let's take a look at an example where the mutation cannot be completed by only modifying the local cache because the user does not optimize it. The GIF animation is as follows
 
@@ -39,7 +39,7 @@ Let's take a look at an example where the mutation cannot be completed by only m
 
 When we changed "MANNING-1" to "MANNING-2", in the absence of user optimization, the two cache entries with parameters were cleared. Therefore, queries with parameters will automatically retrieve new data from the server again.
 
-#### When users give optimization
+#### 2.1.2. When users give optimization
 
 Let's take a look at an example where the change can be completed by modifying the local cache without re-query due to the support of user optimization. The GIF animation is as follows
 
@@ -56,7 +56,7 @@ When we change "MANNING-1" to "MANNING-2", with the support of user optimization
 > 
 > In actual projects, the data discarded by the UI may be released by the garbage collection system in a relatively short period of time. In this example, in order to achieve the demonstration effect, the garbage release strategy is deliberately adjusted so that all three data can exist in the cache for a relatively long time.
 
-#### Smart Sorting
+#### 2.1.3. Smart Sorting
 
 As shown in the above GIF animation, graphql-state can automatically re-implement conditional filtering according to data changes. Not only that, graphql-state can also automatically re-sort according to data changes, as shown in the following GIF animation
 
@@ -69,7 +69,7 @@ In this example, we care about two associations
 
 Both of them are sorted in ascending order by name. Therefore, when the name of the object is modified, these two associations will be reordered.
 
-### Bidirectonal association maintenance
+### 2.2. Bidirectonal association maintenance
 
 In the above, we showed a few cool effects. Not only that, graphql-state can also handle the interaction between different data associations. This is the bidirectional association maintenance.
 
@@ -96,11 +96,11 @@ if (cached(LearningGraphQL.store)) {
 }
 ```
 
-### Database style trigger
+### 2.3. Database style trigger
 The built-in cache database supports triggers. Not only does the framework use it internally to achieve the purpose of data intelligent maintenance, the triggers are also exposed as public APIs so that developers can customize more intelligent behaviors.
 
 
-### HTTP optimization
+## 3. HTTP optimization
 
 The framework has built-in optimization strategies to reduce the number of HTTP requests
 
@@ -110,7 +110,7 @@ The framework has built-in optimization strategies to reduce the number of HTTP 
 
 3. For multiple queries with the same variables but different shapes, queries with smaller shapes will not send out HTTP requests, they will borrow the HTTP request of the query with the largest shape to share the response data. Even if the HTTP request for the query with the largest shape has been sent and is in the pending state, this optimization is still effective.
 
-## Run the example
+# Run the example
 1. Clone this project
 ```
 git clone https://github.com/babyfish-ct/graphql-state.git
@@ -129,9 +129,9 @@ yarn start
 ```
 Access http://localhost:3000
 
-## [Get start: step by step guide](./get-start.md)
+# [Get start: step by step guide](./get-start.md)
 
-## [Documentation](./doc/README.md)
+# [Documentation](./doc/README.md)
 - [Simple state](./doc/simple-state/README.md)
   - [Writable state](./doc/simple-state/writable.md)
   - [Computed state](./doc/simple-state/computed.md)
@@ -155,13 +155,13 @@ Access http://localhost:3000
   - [Merge fragments](./doc/http-optimization/merge-fragment.md)
   - [Reuse request](./doc/http-optimization/reuse-request.md)
 
-## Dependencies
+# Dependencies
 1. React, version >= 17.0.0
 2. [graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client), version >= 3.0.8
 
 [graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client) is another framework created by me a few months ago, it's TypeScript-DSL for GraphQL with full features.
 
-## Other
+# Other
 
 This is a newly born framework. In order to make it more and more complete, the functions that will be implemented in the future are as follows
 
@@ -176,4 +176,4 @@ This is a newly born framework. In order to make it more and more complete, the 
   2. A Chrome extension for data visualization.
 
 
-## [Change Log](./change-log.md)
+# [Change Log](./change-log.md)
