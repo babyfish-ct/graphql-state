@@ -38,7 +38,7 @@ const {GraphQLStateGenerator, loadRemoteSchema} = require("graphql-ts-client-cod
 const path = require("path");
 const generator = new GraphQLStateGenerator({
     schemaLoader: async() => {
-      return loadRemoteSchema("http://localhost:8081/graphql");
+        return loadRemoteSchema("http://localhost:8081/graphql");
     },
     targetDir: path.join(__dirname, "../src/__generated")
 });
