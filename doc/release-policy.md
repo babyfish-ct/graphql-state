@@ -66,7 +66,7 @@ As mentioned above, the delayed disposing of StateValue and QueryResult can be i
     return Math.min(aliveTime, 60_000);
 }
 ```
-- For data whose survival time is less than one second, it will be released immediately
+- For data whose survival time is less than one second, it will be disposed immediately
 - Otherwise, the disposing will be delayed according to the survival time. The longer the survival time, the greater the value of the data, and the greater the meaning of resurrection. This is like hotter data that takes longer to cool down.
    - For data with parameters, the maximum delay shall not exceed half a minute
    - For data without parameters, the maximum delay shall not exceed 1 minute
