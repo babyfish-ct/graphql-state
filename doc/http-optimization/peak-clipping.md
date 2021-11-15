@@ -1,6 +1,6 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/[HTTP优化](./README.md)/异步削峰
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../README.md)/[HTTP optimization](./README.md)/Peak clipping
 
-某些时候，用户对查询条件的修改可能很快
+In some cases, the user may modify the query conditions very quickly
 
 ```ts
 import { FC, memo, useState, useCallback, ChangeEvent } from 'react';
@@ -40,35 +40,34 @@ export const BookStoreList: FC = memo(() => {
     </>;
 });
 ```
+In this example, the user's input is bound to the query condition in real time, and every time the user edits the query text, an asynchronous request will result.
 
-在这个例子中过，用户的输入被实时绑定到了查询条件上，每次用户编辑查询文本，都会导致一次一步请求。
+Assuming that it takes 1 second to wait until the server returns the result, that is, each query will result in one second of loading, and the user enters 5 characters on the keyboard every second, so many requests are wasted.
 
-假设需要1秒才能从等到服务端返回的结果，即每次查询都会导致一秒钟的loading，而用户每秒在键盘上输入5个字符，那么有很多请求都是浪费。
+Therefore, graphql-state does an automatic peak clipping for this, and the next query can only be performed after the previous query is over.
 
-因此graphql-state对此做了自动削峰，必须上一次的查询结束后才能进行下一次查询
-
-| 时间线 | 用户输入           | 界面呈现 | 正在执行的HTTP请求|备注|
+| Timeline | User input           | UI | Pending HTTP request| Remark |
 |-------|-------------------|--------|-----------------|---|
 |0 ms   |          |Loading|findBookStore({name: ""})| |
-|200ms  | M        |Loading|findBookStore({name: ""})|不执行findBookStores({name: "M"})，因为存在未返回的请求|
-|400ms  | MA       |Loading|findBookStore({name: ""})|不执行findBookStores({name: "MA"})，因为存在未返回的请求|
-|600ms  | MAN      |Loading|findBookStore({name: ""})|不执行findBookStores({name: "MAN"})，因为存在未返回的请求|
-|800ms  | MANN     |Loading|findBookStore({name: ""})|不执行findBookStores({name: "MANN"})，因为存在未返回的请求|
-|1000ms  | MANNI   |Loading|findBookStore({name: "MANNI"})|findBookStores({name: "M"})返回后，忽略findBookStores({name: "M"}), findBookStores({name: "MA"}), findBookStores({name: "MAN"}), findBookStores({name: "MANN"})直接执行findBookStores({name: "MANNI"})。因为只有最新的查询参数才有意义|
-|1200ms  | MANNIN  |Loading|findBookStore({name: "MANNI"})|不执行findBookStores({name: "MANNIN"})，因为存在未返回的请求|
-|1400ms  | MANNING |Loading|findBookStore({name: "MANNI"})|不执行findBookStores({name: "MANNING"})，因为存在未返回的请求|
-|2000ms  | MANNING |Loading|findBookStore({name: "MANNING"})|findBookStores({name: "MANNI"})返回后，忽略findBookStores({name: "MANNIN"})，直接执行findBookStores({name: "MANNING"})。因为只有最新的查询参数才有意义|
-|3000ms  | MANNING |findBookStore({name: "MANNING"})的结果|||
+|200ms  | M        |Loading|findBookStore({name: ""})|Don't request 'findBookStores({name: "M"})', because there is a pending request|
+|400ms  | MA       |Loading|findBookStore({name: ""})|Don't request 'findBookStores({name: "MA"})', because there is a pending request|
+|600ms  | MAN      |Loading|findBookStore({name: ""})|Don't request 'findBookStores({name: "MAN"})', because there is a pending request|
+|800ms  | MANN     |Loading|findBookStore({name: ""})|Don't request 'findBookStores({name: "MANN"})', because there is a pending request|
+|1000ms  | MANNI   |Loading|findBookStore({name: "MANNI"})|After 'findBookStores({name: "M"})' finished, ignore 'findBookStores({name: "M"})', 'findBookStores({name: "MA"})', 'findBookStores({name: "MAN"})' and 'findBookStores({name: "MANN"})', Execute 'findBookStores({name: "MANNI"})' directly, because only the latest query parameters are meaningful|
+|1200ms  | MANNIN  |Loading|findBookStore({name: "MANNI"})|Don't request findBookStores({name: "MANNIN"}), because there is a pending request|
+|1400ms  | MANNING |Loading|findBookStore({name: "MANNI"})|Don't request findBookStores({name: "MANNING"}), because there is a pending request|
+|2000ms  | MANNING |Loading|findBookStore({name: "MANNING"})|After findBookStores({name: "MANNI"})finished, ignore 'findBookStores({name: "MANNIN"})', Execute 'findBookStores({name: "MANNING"})', because only the latest query parameters are meaningful|
+|3000ms  | MANNING |The result of findBookStore({name: "MANNING"})|||
 
-> 注意
-> 
-> graphql-state的异步数据hook支持一个options.async-object参数，具备如下三个取值
+> Note
+>
+> The asynchronous data hook of graphql-state supports an "options.async-object" parameter with the following three values
 > - suspense
 > - suspense-refetch
 > - async-object
-> 
-> **仅async-object支持异步削峰优化**
+>
+> **Only "async-object" supports asynchronous peak clipping optimization**
 
 -----------------
 
-[Back to parent: HTTP优化](./README.md) | [Next: 碎片合并>](./merge-fragment.md)
+[Back to parent: HTTP optimization](./README.md) | [Next: Merge fragments>](./merge-fragment.md)
