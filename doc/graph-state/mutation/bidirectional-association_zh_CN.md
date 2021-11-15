@@ -7,7 +7,8 @@ BookStore具备一个books属性，一个指向Book的one-to-many关联
 反过来，Book具备一个store属性，一个指向BookStore的many-to-one关联
 从业务上讲，BookStore.books和Book.store其实是同一个关联因视角不同而展现出的两面，因此，graphql-state允许你把这样的两个关系绑定为双向关联。一旦你完成了这种绑定，你就可以得到如下GIF动画所示的效果
 
-![image](../../../bidirectional-association.gif "双向关联")
+|![image](../../../bidirectional-association.gif "双向关联")|
+|---|
 
 在这个例子中，你执行的修改行为是
 ```
