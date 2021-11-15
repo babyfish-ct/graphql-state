@@ -178,5 +178,5 @@ This is a newly born framework. In order to make it more and more complete, the 
 2. A Chrome extension for data visualization.
 
 
-### Change list
-[Change list](./change-list.md)
+### Change log
+[Change log](./change-log.md)
