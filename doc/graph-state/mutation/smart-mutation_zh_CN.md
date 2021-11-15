@@ -1,6 +1,6 @@
 # [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../../README_zh_CN.md)/[图状态](../README_zh_CN.md)/[变更](./README_zh_CN.md)/智能变更
 
-智能更新更新流程如下
+智能变更的流程如下
 
 ![image](../../../smart-mutation_zh_CN.png "smart mutation")
 
@@ -20,16 +20,33 @@
 ```
 type Query {
     findBookStores(name: String): [BookStore!]!
+    findBooks(name: String): BookConnnection!
+    findAuthors(name: String): AuthorConnnection!
+    
     ...
+    
 }
 type BookStore {
     books(name: String): [Book!]!
     ...
 }
+
+type Book {
+    authors(name: String): [Author!]!
+    ...
+}
+
+type Author {
+    books(name: String): [Book!]!
+}
+
 ...
+
 ```
 
-我们看到，Query.findBookStores和Book.authors都是参数化的。统一个关系，可以由不同参数的创建不同的实例，比如
+我们看到，Query.findBookStores, Query.findBooks, Query.findAuthors, BookStore.books, Book.authors和Author.books都是参数化的。
+
+同一个关系，可以由不同参数的创建不同的实例，比如
 
 ```
 ----+-Query.findBookStores
@@ -49,11 +66,11 @@ type BookStore {
     \---- Book.authors({name: "b"})
 ```
 
-如上图，我们有两个关联族，每个族中有三个子关联
+如上图，我们称其为有两个关联族，每个族中有三个子关联
 
 ### 1.2. link和unlink
 
-清观察下面的代码
+请观察下面的代码
 ```ts
 stateManager.save(
 
@@ -100,7 +117,7 @@ books({name: "b"}).tryLink({
 ```
 这说明，books({name: "a"})的变化有可能对books()和books({name: "b"})形成影响。即
 
-> 同族内的子关联之间会相互影响; 任何一个被修改，其余的都会被执行unlink或link操作
+> **同族内的子关联之间会相互影响; 任何一个被修改，其余的都会被执行unlink或link操作**
 
 ### 1.3. 内部优化，对比同族内子关联的参数
 
