@@ -1,22 +1,28 @@
 # [graphql-state](https://github.com/babyfish-ct/graphql-state)/[Documentation](../../README.md)/[Graph state](../README.md)/[Mutation](./README.md)/Bidirectional association
 
 
-参考这样一个例子
+Refer to such an example
 
-BookStore具备一个books属性，一个指向Book的one-to-many关联
-反过来，Book具备一个store属性，一个指向BookStore的many-to-one关联
-从业务上讲，BookStore.books和Book.store其实是同一个关联因视角不同而展现出的两面，因此，graphql-state允许你把这样的两个关系绑定为双向关联。一旦你完成了这种绑定，你就可以得到如下GIF动画所示的效果
+- "BookStore" has a "books" field, a one-to-many association pointing to "Book"
+- In turn, "Book" has a "store" field, a many-to-one association pointing to "BookStore"
 
-![image](../../../bidirectional-association.gif "双向关联")
+From a business perspective, "BookStore.books" and "Book.store" are actually two sides of the same association due to different perspectives. Therefore, graphql-state allows you to bind these two associations into one bidirectional association. Once you have completed this binding, you can get the effect shown in the following GIF animation
 
-在这个例子中，你执行的修改行为是
+|![image](../../../bidirectional-association.gif "Bidirectional assocaition")|
+|----|
+
+In this example, the modification you performed is
 ```
 MANNING.books.add(LearningGraphQL);
 ```
-与此同时，graphql-state会为你执行两个自动更新
+At the same time, graphql-state will perform two automatic updates for you
 ```
-O'REILLY.books.remove(LearningGraphQL);
-LearningGraphQL.store = MANNING;
+if (cached(O'REILLY.books)) {
+    O'REILLY.books.remove(LearningGraphQL);
+}
+if (cached(LearningGraphQL.store)) {
+    LearningGraphQL.store = MANNING;
+}
 ```
 
 > 上面的GIF演示中，我是通过修改BookStore对象来完成演示的。
