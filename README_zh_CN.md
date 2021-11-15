@@ -126,7 +126,7 @@ yarn start
 
 ## [开始使用: 逐步向导](./get-start.md)
 
-## 文档
+## [文档](./doc/README_zh_CN.md)
 
 - [简单状态](./doc/simple-state/README_zh_CN.md)
   - [可写状态](./doc/simple-state/writable_zh_CN.md)
