@@ -15,7 +15,7 @@
     - [useObject&useObjects](./graph-state/query/useObject.md)
   - [Mutation](./graph-state/mutation/README.md)
     - [Muate cache](./graph-state/mutation/mutate-cache.md)
-    - [useMutation](./graph-state/mutation/mutate-cache.md)
+    - [useMutation](./graph-state/mutation/useMutation.md)
     - [Smart mutation](./graph-state/mutation/smart-mutation.md)
     - [Bidirectional association](./graph-state/mutation/bidirectional-association.md)
   - [Trigger](./graph-state/trigger.md)
