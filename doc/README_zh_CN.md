@@ -15,7 +15,7 @@
     - [useObject&useObjects](./graph-state/query/useObject_zh_CN.md)
   - [变更](./graph-state/mutation/README_zh_CN.md)
     - [变更缓存](./graph-state/mutation/mutate-cache_zh_CN.md)
-    - [useMutation](./graph-state/mutation/mutate-cache_zh_CN.md)
+    - [useMutation](./graph-state/mutation/useMutation_zh_CN.md)
     - [智能变更](./graph-state/mutation/smart-mutation_zh_CN.md)
     - [双向关联](./graph-state/mutation/bidirectional-association_zh_CN.md)
   - [触发器](./graph-state/trigger_zh_CN.md)
