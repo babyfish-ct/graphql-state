@@ -129,7 +129,7 @@ yarn start
 ```
 Access http://localhost:3000
 
-## [Step by step guide](./get-start.md)
+## [Get start: step by step guide](./get-start.md)
 
 ## [Documentation](./doc/README.md)
 - [Simple state](./doc/simple-state/README.md)
