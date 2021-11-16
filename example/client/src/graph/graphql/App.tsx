@@ -17,6 +17,15 @@ export const App: FC<{
         if (aliveTime < 1000) {
             return 0;
         }
+        /* 
+         * In actual projects, the data discarded by the UI may be released by the 
+         * garbage collection system in a relatively short period of time. 
+         * 
+         * In this example, in order to achieve the demonstration effect of
+         * "https://github.com/babyfish-ct/graphql-state/blob/master/optimized-mutation.gif", 
+         * the garbage release strategy is deliberately adjusted so that all 
+         * query result can exist in the cache for a relatively long time.
+         */
         return 60_000;
     }, []);
 
