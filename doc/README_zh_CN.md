@@ -9,6 +9,8 @@
   - [Effect](./simple-state/effect_zh_CN.md)
   - [作用域](./simple-state/scope_zh_CN.md)
 - [图状态](./graph-state/README_zh_CN.md)
+  - [整合graphql-ts-client](./graph-state/graphql-ts-client_zh_CN.md)
+  - [StateManager](./graph-state/state-manager_zh_CN.md)
   - [查询](./graph-state/query/README_zh_CN.md)
     - [useQuery](./graph-state/query/useQuery_zh_CN.md)
     - [usePaginationQuery](./graph-state/query/usePaginationQuery_zh_CN.md)
