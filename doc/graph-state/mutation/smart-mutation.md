@@ -693,7 +693,7 @@ readonly dependencies?: (
 **Parameters**
 - variables: parameters of current sub-assocaition
 
-返回值
+**Return value**
 - array: List of dependent field names
 - undefined: Unable to judge, this will cause optimization to fail. The data in the local cache will be evicted, and all UI queries related to this association will automatically be refreshed
 
