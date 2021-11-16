@@ -135,6 +135,8 @@ yarn start
   - [Effect](./doc/simple-state/effect_zh_CN.md)
   - [作用域](./doc/simple-state/scope_zh_CN.md)
 - [图状态](./doc/graph-state/README_zh_CN.md)
+  - [整合graphql-ts-client](./doc/graph-state/graphql-ts-client_zh_CN.md)
+  - [StateManager](./doc/graph-state/state-manager_zh_CN.md)
   - [查询](./doc/graph-state/query/README_zh_CN.md)
     - [useQuery](./doc/graph-state/query/useQuery_zh_CN.md)
     - [usePaginationQuery](./doc/graph-state/query/usePaginationQuery_zh_CN.md)
