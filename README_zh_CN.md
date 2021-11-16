@@ -155,7 +155,7 @@ yarn start
 1. React, version >= 17.0.0
 2. [graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client), version >= 3.0.8
 
-[graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client) 是我数月前开发的另外一个框架, 它是针对GraphQL功能完整的的TypeScript-DSL
+[graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client) 是针对GraphQL功能完整的的TypeScript-DSL
 
 # 其它
 
