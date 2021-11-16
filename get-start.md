@@ -16,7 +16,7 @@ Choose any another dir, execute
 yarn create react-app <YourAppName> --template typescript
 ```
 
-### 3. Add de
+### 3. Add dependencies
 
 Goto the root dir of your app, execute
 ```
