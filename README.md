@@ -159,7 +159,7 @@ Access http://localhost:3000
 1. React, version >= 17.0.0
 2. [graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client), version >= 3.0.8
 
-[graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client) is another framework created by me a few months ago, it's TypeScript-DSL for GraphQL with full features.
+[graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client) is TypeScript-DSL for GraphQL with full features.
 
 # Other
 
