@@ -14,6 +14,8 @@ A simple state management tool that looks similar to recoil, used to manage scat
 
 The core value of this framework is to provide graph state management capabilities that are far more intelligent than Apollo client and Relay. This is also my motivation for creating this framework.
 
+**After mutation, there is no need to manually update the local cache, nor to specify which queries need to be refetched, everything is automatic**
+
 Graph state management supports two core functions: 
 - Smart mutation
 - Bidirectional association
