@@ -12,7 +12,7 @@ A simple state management tool that looks similar to recoil, used to manage scat
 
 ## 2. Graph State
 
-The core value of this framework is to provide graph state management capabilities that are far more intelligent than apollo-client and relay. This is also my motivation for creating this framework.
+The core value of this framework is to provide graph state management capabilities that are far more intelligent than Apollo client and Relay. This is also my motivation for creating this framework.
 
 Graph state management supports two core functions: 
 - Smart mutation
