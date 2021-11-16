@@ -9,6 +9,8 @@
   - [Effect](./simple-state/effect.md)
   - [Scopes](./simple-state/scope.md)
 - [Graph state](./graph-state/README.md)
+  - [Integrate graphql-ts-client](./graph-state/graphql-ts-client.md)
+  - [StateManager](./graph-state/state-manager.md)
   - [Query](./graph-state/query/README.md)
     - [useQuery](./graph-state/query/useQuery.md)
     - [usePaginationQuery](./graph-state/query/usePaginationQuery.md)
