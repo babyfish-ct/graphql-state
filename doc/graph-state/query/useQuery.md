@@ -28,7 +28,7 @@ export const BookStoreList:FC = memo(() => {
 >
 > The code in this example requires external React components to use &lt;Suspense/&gt;
 
-## 2. 参数
+## 2. Parameters
 useQuery is defined as follows
 ```ts
 useQuery<
