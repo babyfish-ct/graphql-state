@@ -139,6 +139,8 @@ Access http://localhost:3000
   - [Effect](./doc/simple-state/effect.md)
   - [Scopes](./doc/simple-state/scope.md)
 - [Graph state](./doc/graph-state/README.md)
+  - [Integrate graphql-ts-client](./doc/graph-state/graphql-ts-client.md)
+  - [StateManager](./doc/graph-state/state-manager.md)
   - [Query](./doc/graph-state/query/README.md)
     - [useQuery](./doc/graph-state/query/useQuery.md)
     - [usePaginationQuery](./doc/graph-state/query/usePaginationQuery.md)
