@@ -71,6 +71,8 @@ In this example, we care about two associations
 
 Both of them are sorted in ascending order by name. Therefore, when the name of the object is modified, these two associations will be reordered.
 
+> Smart sorting requires user optimization
+
 ### 2.2. Bidirectonal association maintenance
 
 In the above, we showed a few cool effects. Not only that, graphql-state can also handle the interaction between different data associations. This is the bidirectional association maintenance.
