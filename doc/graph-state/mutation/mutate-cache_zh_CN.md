@@ -96,13 +96,13 @@ stateManager.save(
 stateManager.save(
     
     book$$
-    .store(bookStore$$)
-    .authors(author$$),
+    .store(bookStore$.id) // 只需要id
+    .authors(author$.id), // 只需要id
     
     { 
         id: "e110c564-23cc-4811-9e81-d587a13db634", 
         name: "Learning GraphQL",
-        store: {id: "d38c10da-6be8-4924-b9b9-5e81899612a0", name: "O'REILLY"},
+        store: {id: "d38c10da-6be8-4924-b9b9-5e81899612a0" }, // 只提供id
         authors: [
             {id: "fd6bb6cf-336d-416c-8005-1ae11a6694b5"}, // 只提供id
             {id: "1e93da94-af84-44f4-82d1-d8a9fd52ea94"} // 只提供id
