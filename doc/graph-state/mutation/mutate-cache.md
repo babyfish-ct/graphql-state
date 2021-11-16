@@ -96,13 +96,13 @@ To achieve this goal, please don't provide any fields other than id for the asso
 stateManager.save(
     
     book$$
-    .store(bookStore$$)
-    .authors(author$$),
+    .store(bookStore$.id) // Only require id
+    .authors(author$.id), // Only require id
     
     { 
         id: "e110c564-23cc-4811-9e81-d587a13db634", 
         name: "Learning GraphQL",
-        store: {id: "d38c10da-6be8-4924-b9b9-5e81899612a0", name: "O'REILLY"},
+        store: {id: "d38c10da-6be8-4924-b9b9-5e81899612a0" }, // Only provide id
         authors: [
             {id: "fd6bb6cf-336d-416c-8005-1ae11a6694b5"}, // Only provide id
             {id: "1e93da94-af84-44f4-82d1-d8a9fd52ea94"} // Only provide id
