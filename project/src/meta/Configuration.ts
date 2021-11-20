@@ -1,6 +1,5 @@
-import { ObjectFetcher, TextWriter } from "graphql-ts-client-api";
-import { PageInfo } from "../entities/assocaition/AssociationConnectionValue";
 import { StateManager } from "../state/StateManager";
+import { Network } from "./Network";
 import { SchemaType } from "./SchemaType";
 
 export interface Configuration<TSchema extends SchemaType> {
@@ -30,8 +29,8 @@ export interface Configuration<TSchema extends SchemaType> {
     ): this;
 
     rootAssociationProperties<
-        TFieldName extends keyof Exclude<
-            TSchema["query"][" $associationTypes"],
+        TFieldName extends Exclude<
+            keyof TSchema["query"][" $associationTypes"],
             keyof TSchema["query"][" $associationArgs"]
         > & string
     >(
@@ -55,8 +54,8 @@ export interface Configuration<TSchema extends SchemaType> {
 
     associationProperties<
         TTypeName extends keyof TSchema["entities"] & string, 
-        TFieldName extends keyof Exclude<
-            TSchema["entities"][TTypeName][" $associationTypes"],
+        TFieldName extends Exclude<
+            keyof TSchema["entities"][TTypeName][" $associationTypes"],
             keyof TSchema["entities"][TTypeName][" $associationArgs"]
         > & string
     >(
@@ -134,45 +133,3 @@ export interface ConnectionRange {
     [key: string]: any;
 }
 
-export interface Network {
-
-    execute<
-        T extends object,
-        TVariabes extends object
-    >(
-        fetcher: ObjectFetcher<'Query' | 'Mutation', T, TVariabes>,
-        variables?: TVariabes
-    ): Promise<T>;
-}
-
-export class GraphQLNetwork {
-
-    constructor(private fetch: (body: string, variables?: object) => Promise<any>) {}
-
-    async execute<
-        TData extends object,
-        TVariabes extends object
-    >(
-        fetcher: ObjectFetcher<'Query' | 'Mutation', TData, TVariabes>,
-        variables?: TVariabes
-    ): Promise<TData> {
-        const writer = new TextWriter();
-        writer.text(`${fetcher.fetchableType.name.toLowerCase()}`);
-        if (fetcher.variableTypeMap.size !== 0) {
-            writer.scope({type: "ARGUMENTS", multiLines: fetcher.variableTypeMap.size > 2, suffix: " "}, () => {
-                for (const [name, type] of fetcher.variableTypeMap) {
-                    writer.seperator();
-                    writer.text(`$${name}: ${type}`);
-                }
-            });
-        }
-        writer.text(fetcher.toString());
-        writer.text(fetcher.toFragmentString());
-
-        const response = await this.fetch(writer.toString(), variables ?? {});
-        if (response.errors) {
-            throw new Error(response.errors);
-        }
-        return response.data as TData;
-    }
-}

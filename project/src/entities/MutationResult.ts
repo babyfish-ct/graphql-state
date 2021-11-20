@@ -1,6 +1,6 @@
 import { ObjectFetcher, util } from "graphql-ts-client-api";
 import { Dispatch, SetStateAction } from "react";
-import { Network } from "../meta/Configuration";
+import { Network } from "..";
 import { StateManagerImpl } from "../state/impl/StateManagerImpl";
 import { Loadable } from "../state/impl/StateValue";
 

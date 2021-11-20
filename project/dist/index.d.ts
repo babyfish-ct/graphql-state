@@ -1,4 +1,5 @@
-export { Configuration, FlatRow, ParameterizedAssociationProperties, UnparameterizedAssociationProperties, Network, GraphQLNetwork } from './meta/Configuration';
+export { Configuration, FlatRow, ParameterizedAssociationProperties, UnparameterizedAssociationProperties, } from './meta/Configuration';
+export { Network, GraphQLNetwork, RESTNetworkBuilder } from './meta/Network';
 export { useStateManager, useStateValue, useStateAccessor, useQuery, usePaginationQuery, useMutation, makeManagedObjectHooks } from './state/StateHook';
 export { PositionType, ConnectionRange } from './meta/Configuration';
 export { newConfiguration } from './meta/impl/ConfigurationImpl';

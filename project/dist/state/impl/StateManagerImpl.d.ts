@@ -3,7 +3,7 @@ import { EntityChangeEvent } from "../..";
 import { EntityEvictEvent } from "../../entities/EntityEvent";
 import { EntityManager } from "../../entities/EntityManager";
 import { QueryResult } from "../../entities/QueryResult";
-import { Network } from "../../meta/Configuration";
+import { Network } from "../../meta/Network";
 import { SchemaMetadata } from "../../meta/impl/SchemaMetadata";
 import { SchemaType } from "../../meta/SchemaType";
 import { StateManager, TransactionStatus } from "../StateManager";

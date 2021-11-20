@@ -3,9 +3,12 @@ export {
     FlatRow, 
     ParameterizedAssociationProperties, 
     UnparameterizedAssociationProperties,
-    Network,
-    GraphQLNetwork
 } from './meta/Configuration';
+export {
+    Network,
+    GraphQLNetwork,
+    RESTNetworkBuilder
+} from './meta/Network';
 export { 
     useStateManager, 
     useStateValue, 

@@ -1,8 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.StateScope = exports.StateManagerProvider = exports.makeStateFactory = exports.newConfiguration = exports.makeManagedObjectHooks = exports.useMutation = exports.usePaginationQuery = exports.useQuery = exports.useStateAccessor = exports.useStateValue = exports.useStateManager = exports.GraphQLNetwork = void 0;
-var Configuration_1 = require("./meta/Configuration");
-Object.defineProperty(exports, "GraphQLNetwork", { enumerable: true, get: function () { return Configuration_1.GraphQLNetwork; } });
+exports.StateScope = exports.StateManagerProvider = exports.makeStateFactory = exports.newConfiguration = exports.makeManagedObjectHooks = exports.useMutation = exports.usePaginationQuery = exports.useQuery = exports.useStateAccessor = exports.useStateValue = exports.useStateManager = exports.RESTNetworkBuilder = exports.GraphQLNetwork = void 0;
+var Network_1 = require("./meta/Network");
+Object.defineProperty(exports, "GraphQLNetwork", { enumerable: true, get: function () { return Network_1.GraphQLNetwork; } });
+Object.defineProperty(exports, "RESTNetworkBuilder", { enumerable: true, get: function () { return Network_1.RESTNetworkBuilder; } });
 var StateHook_1 = require("./state/StateHook");
 Object.defineProperty(exports, "useStateManager", { enumerable: true, get: function () { return StateHook_1.useStateManager; } });
 Object.defineProperty(exports, "useStateValue", { enumerable: true, get: function () { return StateHook_1.useStateValue; } });

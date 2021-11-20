@@ -1,7 +1,8 @@
 import { Fetcher } from "graphql-ts-client-api";
 import { StateManagerImpl } from "../../state/impl/StateManagerImpl";
 import { StateManager } from "../../state/StateManager";
-import { Configuration, Network } from "../Configuration";
+import { Configuration } from "../Configuration";
+import { Network } from "../Network";
 import { SchemaType } from "../SchemaType";
 import { FieldMetadata } from "./FieldMetadata";
 import { SchemaMetadata } from "./SchemaMetadata";
