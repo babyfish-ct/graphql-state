@@ -9,8 +9,8 @@ export function createStateManager(withCustomerOptimization: boolean): StateMana
 
     const cfg = newTypedConfiguration()
 
-        .bidirectionalAssociation("BookStore", "books", "store")
-        .bidirectionalAssociation("Book", "authors", "books")
+        .bidirectionalAssociation("Book", "store", "books") // BookStore.books <----> Book.store
+        .bidirectionalAssociation("Book", "authors", "books") //Book.authors <----> Author.books
 
         .network(createGraphQLNetwork())
     ;

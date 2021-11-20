@@ -181,7 +181,7 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
                 newConnection[key] = range[key];
             }
         }
-        newConnection.pageInfo = Object.assign(Object.assign({}, newConnection.pageInfo), { startCursor: range.startCursor, endCursor: range.endCursor });
+        newConnection.pageInfo = Object.assign(Object.assign({}, newConnection.pageInfo), { endCursor: range.endCursor });
     }
     contains(target) {
         var _a;
@@ -224,6 +224,7 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
                 throw Error(`The connection object of "${association.field.fullName}" must have an object field named "pageInfo"`);
             }
             if (typeof value.pageInfo.startCursor !== 'string') {
+                console.log(value);
                 throw Error(`The pageInfo object of "${association.field.fullName}.pageInfo" must have string field named "startCursor"`);
             }
             if (typeof value.pageInfo.endCursor !== 'string') {
