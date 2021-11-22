@@ -2,7 +2,7 @@ import { Fetcher } from "graphql-ts-client-api";
 import { StateManagerImpl } from "../../state/impl/StateManagerImpl";
 import { StateManager } from "../../state/StateManager";
 import { Configuration } from "../Configuration";
-import { Network } from "../Network";
+import { Network, NetworkBuilder } from "../Network";
 import { SchemaType } from "../SchemaType";
 import { FieldMetadata } from "./FieldMetadata";
 import { SchemaMetadata } from "./SchemaMetadata";
@@ -18,6 +18,8 @@ class ConfigurationImpl<TSchema extends SchemaType> implements Configuration<TSc
     private _schema = new SchemaMetadata();
 
     private _network?: Network;
+
+    private _networkBuilder?: NetworkBuilder;
 
     constructor(fetchers: ReadonlyArray<Fetcher<string, object, object>>) {
         for (const fetcher of fetchers) {
@@ -62,6 +64,11 @@ class ConfigurationImpl<TSchema extends SchemaType> implements Configuration<TSc
         return this;
     }
 
+    networkBuilder(networkBuilder: NetworkBuilder): this {
+        this._networkBuilder = networkBuilder;
+        return this;
+    }
+
     buildStateManager(): StateManager<TSchema> {
         for (const type of this._schema.typeMap.values()) {
             if (type.category === "OBJECT") {
@@ -71,7 +78,14 @@ class ConfigurationImpl<TSchema extends SchemaType> implements Configuration<TSc
                 field.targetType;
             }
         }
-        return new StateManagerImpl<TSchema>(this._schema.freeze(), this._network);
+        if (this._network && this._networkBuilder) {
+            throw new Error('Both network and networkBuilder are configured');
+        }
+        const schema = this._schema.freeze();
+        if (this._networkBuilder !== undefined) {
+            this._network = this._networkBuilder.build(schema);
+        }
+        return new StateManagerImpl<TSchema>(schema, this._network);
     }
 
     private field(typeName: string, fieldName: string): FieldMetadata {

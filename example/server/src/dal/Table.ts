@@ -98,12 +98,27 @@ export class Table<R extends object> {
         for (const pair of propValuePairs) {
             if (pair !== undefined) {
                 const { prop, value } = pair;
+                const subValues = Array.isArray(value) ? value : [value]; 
                 if (this.uniqueIndexMap.has(prop)) {
-                    const row = this.uniqueIndexMap.get(prop)!.get(value);
-                    ids = intersection(ids, row !== undefined ? [row[this.idProp]] : []);
+                    const matchedIds: any[] = [];
+                    for (const subValue of subValues) {
+                        const row = this.uniqueIndexMap.get(prop)!.get(subValue);
+                        if (row !== undefined) {
+                            matchedIds.push(row[this.idProp]);
+                        }
+                    }
+                    ids = intersection(ids, matchedIds);
                 } else if (this.indexMap.has(prop)) {
-                    const rows = Array.from(this.indexMap.get(prop)!.get(value)?.values() ?? []);
-                    ids = intersection(ids, rows.map(row => row[this.idProp]));
+                    const matchedIds: any[] = [];
+                    for (const subValue of subValues) {
+                        const rows = this.indexMap.get(prop)!.get(subValue)?.values();
+                        if (rows !== undefined) {
+                            for (const row of rows) {
+                                matchedIds.push(row[this.idProp]);
+                            }
+                        }
+                    }
+                    ids = intersection(ids, matchedIds);
                 } else {
                     unhandledPairs.push(pair); 
                 }
@@ -124,7 +139,11 @@ export class Table<R extends object> {
                 return false;
             }
             for (const unhandledPair of unhandledPairs) {
-                if (row[unhandledPair.prop] !== unhandledPair.value) {
+                if (Array.isArray(unhandledPair.value)) {
+                    if (unhandledPair.value.indexOf(row[unhandledPair.prop]) === -1) {
+                        return false;
+                    }
+                } else if (row[unhandledPair.prop] !== unhandledPair.value) {
                     return false;
                 }
             }

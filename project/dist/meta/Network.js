@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RESTNetworkBuilder = exports.GraphQLNetwork = void 0;
+exports.GraphQLNetwork = void 0;
 const graphql_ts_client_api_1 = require("graphql-ts-client-api");
 class GraphQLNetwork {
     constructor(fetch) {
@@ -38,60 +38,3 @@ class GraphQLNetwork {
     }
 }
 exports.GraphQLNetwork = GraphQLNetwork;
-class RESTNetworkBuilder {
-    constructor() {
-        this._dataLoaderMap = new Map();
-    }
-    baseUrl(url) {
-        if (!url.startsWith("http://") && !url.startsWith("https://")) {
-            throw new Error(`baseUrl must start with "http://" or "https://"`);
-        }
-        this._baseUrl = url;
-        return this;
-    }
-    rootAssociation(fieldName, endpoint) {
-        return this;
-    }
-    rootScalar(fieldName, endpoint) {
-        this._dataLoaderMap.set(`Query.${fieldName}`, endpoint);
-        return this;
-    }
-    association(typeName, fieldName, endpoint) {
-        this._dataLoaderMap.set(`${typeName}.${fieldName}`, endpoint);
-        return this;
-    }
-    scalar(typeName, fieldName, endpoint) {
-        this._dataLoaderMap.set(`${typeName}.${fieldName}`, endpoint);
-        return this;
-    }
-    build() {
-        return new RESTNetwork(this._baseUrl, this._dataLoaderMap);
-    }
-}
-exports.RESTNetworkBuilder = RESTNetworkBuilder;
-class RESTNetwork {
-    constructor(_baseUrl, _dataLoaderMap) {
-        this._baseUrl = _baseUrl;
-        this._dataLoaderMap = _dataLoaderMap;
-    }
-    execute(fetcher, variables) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (fetcher.fetchableType.name === "Mutation") {
-                throw new Error(`REST Network does not support "useMutation"`);
-            }
-            const obj = {};
-            yield this.load(obj, fetcher, variables);
-            return obj;
-        });
-    }
-    load(obj, fetcher, variables) {
-        return __awaiter(this, void 0, void 0, function* () {
-            for (const [name, field] of fetcher.fieldMap) {
-                if (name.startsWith("...")) {
-                }
-            }
-        });
-    }
-    unloadedFields(obj, fetcher) {
-    }
-}

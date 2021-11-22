@@ -28,7 +28,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "codegen": "node scripts/local/codegen.js; node scripts/graphql/codegen.js"
+    "codegen": "node scripts/local/codegen.js; node scripts/graphql/codegen.js; node scripts/rest/codegen.js"
   },
   "eslintConfig": {
     "extends": [

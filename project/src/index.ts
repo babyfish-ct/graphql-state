@@ -6,9 +6,13 @@ export {
 } from './meta/Configuration';
 export {
     Network,
+    NetworkBuilder,
     GraphQLNetwork,
-    RESTNetworkBuilder
 } from './meta/Network';
+export {
+    RESTNetworkBuilder,
+    URLBuilder
+} from './meta/RESTNetwork';
 export { 
     useStateManager, 
     useStateValue, 

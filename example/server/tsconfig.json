@@ -6,6 +6,7 @@
     "outDir": "./dist",
     "skipLibCheck": true,
     "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "strictNullChecks": true
   },

@@ -1,5 +1,5 @@
 import { StateManager } from "../state/StateManager";
-import { Network } from "./Network";
+import { Network, NetworkBuilder } from "./Network";
 import { SchemaType } from "./SchemaType";
 
 export interface Configuration<TSchema extends SchemaType> {
@@ -69,6 +69,7 @@ export interface Configuration<TSchema extends SchemaType> {
 
     network(network: Network): this;
 
+    networkBuilder(networkBuilder: NetworkBuilder): this;
 
     buildStateManager(): StateManager<TSchema>;
 }

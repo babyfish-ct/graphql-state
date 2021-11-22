@@ -30,6 +30,10 @@ class ConfigurationImpl {
         this._network = network;
         return this;
     }
+    networkBuilder(networkBuilder) {
+        this._networkBuilder = networkBuilder;
+        return this;
+    }
     buildStateManager() {
         for (const type of this._schema.typeMap.values()) {
             if (type.category === "OBJECT") {
@@ -39,7 +43,14 @@ class ConfigurationImpl {
                 field.targetType;
             }
         }
-        return new StateManagerImpl_1.StateManagerImpl(this._schema.freeze(), this._network);
+        if (this._network && this._networkBuilder) {
+            throw new Error('Both network and networkBuilder are configured');
+        }
+        const schema = this._schema.freeze();
+        if (this._networkBuilder !== undefined) {
+            this._network = this._networkBuilder.build(schema);
+        }
+        return new StateManagerImpl_1.StateManagerImpl(schema, this._network);
     }
     field(typeName, fieldName) {
         const typeMetadata = this._schema.typeMap.get(typeName);

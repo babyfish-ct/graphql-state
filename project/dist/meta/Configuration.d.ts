@@ -1,5 +1,5 @@
 import { StateManager } from "../state/StateManager";
-import { Network } from "./Network";
+import { Network, NetworkBuilder } from "./Network";
 import { SchemaType } from "./SchemaType";
 export interface Configuration<TSchema extends SchemaType> {
     bidirectionalAssociation<TTypeName extends keyof TSchema["entities"] & string, TFieldName extends keyof TSchema["entities"][TTypeName][" $associationTypes"] & string, TOppositeFieldName extends keyof TSchema["entities"][TSchema["entities"][TTypeName][" $associationTypes"][TFieldName]][" $associationTypes"] & string>(typeName: TTypeName, fieldName: TFieldName, oppositeFieldName: TOppositeFieldName): this;
@@ -8,6 +8,7 @@ export interface Configuration<TSchema extends SchemaType> {
     associationProperties<TTypeName extends keyof TSchema["entities"] & string, TFieldName extends keyof TSchema["entities"][TTypeName][" $associationArgs"] & string>(typeName: TTypeName, fieldName: TFieldName, properties: ParameterizedAssociationProperties<TSchema["entities"][TTypeName][" $associationTargetTypes"][TFieldName], TSchema["entities"][TTypeName][" $associationArgs"][TFieldName]>): this;
     associationProperties<TTypeName extends keyof TSchema["entities"] & string, TFieldName extends Exclude<keyof TSchema["entities"][TTypeName][" $associationTypes"], keyof TSchema["entities"][TTypeName][" $associationArgs"]> & string>(typeName: TTypeName, fieldName: TFieldName, properties: UnparameterizedAssociationProperties<TSchema["entities"][TTypeName][" $associationTargetTypes"][TFieldName]>): this;
     network(network: Network): this;
+    networkBuilder(networkBuilder: NetworkBuilder): this;
     buildStateManager(): StateManager<TSchema>;
 }
 export interface ParameterizedAssociationProperties<TFlatType, TVariables> {
