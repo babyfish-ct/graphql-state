@@ -10,6 +10,7 @@ export class BookStoreController {
 
     @Get("/findBookStores")
     async findBookStores(@QueryParam("name") name?: string): Promise<TBookStore[]> {
+        
         /*
          * Mock the network delay
          */
