@@ -8,10 +8,8 @@ import { createGraphQLNetwork } from "../common/Networks";
 export function createStateManager(withCustomerOptimization: boolean): StateManager<Schema> {
 
     const cfg = newTypedConfiguration()
-
         .bidirectionalAssociation("BookStore", "books", "store") // BookStore.books <---> Book.store
         .bidirectionalAssociation("Book", "authors", "books") // Book.authors <---> Author.books
-
         .network(createGraphQLNetwork())
     ;
 
