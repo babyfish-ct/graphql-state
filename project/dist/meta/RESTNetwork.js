@@ -16,8 +16,8 @@ class RESTNetworkBuilder {
     constructor(_baseUrl, _fetch) {
         this._baseUrl = _baseUrl;
         this._fetch = _fetch;
-        this._defaultBatchSize = 128;
-        this._defaultCollectionBatchSize = 16;
+        this._defaultBatchSize = 64;
+        this._defaultCollectionBatchSize = 8;
         this._userLoaderMap = new Map();
         if (!_baseUrl.startsWith("http://") && !_baseUrl.startsWith("https://")) {
             throw new Error(`baseUrl must start with "http://" or "https://"`);
