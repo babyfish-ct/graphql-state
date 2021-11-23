@@ -7,6 +7,7 @@ import { DELETE_CONFIRM_CLASS, DELETING_ROW_CLASS, INFORMATION_CLASS } from "../
 import { book$$, bookConnection$, bookEdge$, bookStore$$, query$, author$$ } from "../../__generated_rest_schema__/fetchers";
 import { Schema } from "../../__generated_rest_schema__";
 import { BookDialog } from "./BookDialog";
+import { deleteBook } from "../Mutation";
 
 const BOOK_ROW =
     book$$
@@ -43,7 +44,6 @@ export const BookList: FC = memo(() => {
     );
 
     const stateManager = useStateManager<Schema>();
-
     const [removing, setRemoving] = useState(false);
 
     const [dialog, setDialog] = useState<"NEW" | "EDIT">();
@@ -70,12 +70,18 @@ export const BookList: FC = memo(() => {
                     </ul>
                 </div>
             </>,
-            onOk: () => {
+            onOk: async () => {
                 setDeleting(row);
-                // TODO
+                setRemoving(true);
+                try {
+                    await deleteBook(row.id);
+                    stateManager.delete('Book', row.id);
+                } finally {
+                    setRemoving(false);
+                }
             }
         });
-    }, []);
+    }, [stateManager]);
 
     const renderStoreName = useCallback((name?: string) => {
         return name ? <Tag>{name}</Tag> : <></>

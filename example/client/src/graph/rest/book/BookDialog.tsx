@@ -7,8 +7,6 @@ import { AuthorMultiSelect } from "../author/AuthorMultiSelect";
 import { INFORMATION_CLASS, ACTION_CLASS, NOTE_CLASS } from "../Css";
 import { BookStoreSelect } from "../store/BookStoreSelect";
 import { useTypedStateManager } from "../../__generated_rest_schema__";
-import { join } from "path";
-import { BASE_URL } from "../Contants";
 import { BookInput, BOOK_EDIT_INFO, saveBook } from "../Mutation";
 
 export const BookDialog: FC<{

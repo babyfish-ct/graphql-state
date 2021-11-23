@@ -7,6 +7,7 @@ import { DELETE_CONFIRM_CLASS, DELETING_ROW_CLASS, INFORMATION_CLASS } from "../
 import { book$$, author$$, query$, authorConnection$, authorEdge$ } from "../../__generated_rest_schema__/fetchers";
 import { Schema } from "../../__generated_rest_schema__";
 import { AuthorDialog } from "./AuthorDialog";
+import { deleteAuthor } from "../Mutation";
 
 const AUTHOR_ROW =
     author$$
@@ -65,12 +66,18 @@ export const AuthorList: FC = memo(() => {
                     </ul>
                 </div>
             </>,
-            onOk: () => {
+            onOk: async () => {
                 setDeleting(row);
-                // TODO
+                setRemoving(true);
+                try {
+                    await deleteAuthor(row.id);
+                    stateManager.delete('Author', row.id);
+                } finally {
+                    setRemoving(false);
+                }
             }
         });
-    }, []);
+    }, [stateManager]);
 
     const onAddClick = useCallback(() => {
         setDialog("NEW");

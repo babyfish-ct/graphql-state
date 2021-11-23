@@ -1,6 +1,6 @@
 import { FC, memo, useCallback } from "react";
 import { StateManagerProvider } from "graphql-state";
-import { Card, Col, Row, Space, Tabs } from "antd";
+import { Card, Space, Tabs } from "antd";
 import { BookStoreList } from "./store/BookStoreList";
 import { createStateManager } from "./Environment";
 import { AuthorList } from "./author/AuthorList";

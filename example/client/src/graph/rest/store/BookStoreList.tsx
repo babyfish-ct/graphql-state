@@ -7,6 +7,7 @@ import { DELETE_CONFIRM_CLASS, DELETING_ROW_CLASS, INFORMATION_CLASS } from "../
 import { BookStoreDialog } from "./BookStoreDialog";
 import { book$$, bookStore$$, query$ } from "../../__generated_rest_schema__/fetchers";
 import { Schema } from "../../__generated_rest_schema__";
+import { deleteBookStore } from "../Mutation";
 
 const BOOK_STORE_ROW =
     bookStore$$
@@ -33,11 +34,11 @@ export const BookStoreList = memo(() => {
     );
 
     const stateManager = useStateManager<Schema>();
+    const [removing, setRemoving] = useState(false);
 
     const [dialog, setDialog] = useState<"NEW" | "EDIT">();
     const [editing, setEditing] = useState<ModelType<typeof BOOK_STORE_ROW>>();
     const [deleting, setDeleting] = useState<ModelType<typeof BOOK_STORE_ROW>>();
-    const [removing, setRemoving] = useState(false);
 
     const onNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         setName(e.target.value);
@@ -58,12 +59,18 @@ export const BookStoreList = memo(() => {
                     </ul>
                 </div>
             </>,
-            onOk: () => {
+            onOk: async () => {
                 setDeleting(row);
-                // TODO:
+                setRemoving(true);
+                try {
+                    await deleteBookStore(row.id);
+                    stateManager.delete('BookStore', row.id);
+                } finally {
+                    setRemoving(false);
+                }
             }
         });
-    }, []);
+    }, [stateManager]);
 
     const onAddClick = useCallback(() => {
         setDialog("NEW");
