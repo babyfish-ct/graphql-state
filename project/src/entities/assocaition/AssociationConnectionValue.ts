@@ -243,7 +243,6 @@ export class AssociationConnectionValue extends AssociationValue {
         }
         newConnection.pageInfo = {
             ...newConnection.pageInfo,
-            startCursor: range.startCursor,
             endCursor: range.endCursor
         }
     }

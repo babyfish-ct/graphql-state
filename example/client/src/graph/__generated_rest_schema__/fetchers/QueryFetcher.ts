@@ -1,5 +1,5 @@
 import type { AcceptableVariables, UnresolvedVariables, FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
-import { ObjectFetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
+import { ObjectFetcher, ConnectionFetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
 
 /*
  * Any instance of this interface is immutable,
@@ -83,9 +83,9 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
         X extends object, 
         XVariables extends object
     >(
-        child: ObjectFetcher<'Book', X, XVariables>
+        child: ConnectionFetcher<'BookConnection', X, XVariables>
     ): QueryFetcher<
-        T & {readonly "findBooks": readonly X[]}, 
+        T & {readonly "findBooks": X}, 
         TVariables & XVariables & QueryArgs["findBooks"]
     >;
 
@@ -95,9 +95,9 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
         XVariables extends object
     >(
         args: XArgs, 
-        child: ObjectFetcher<'Book', X, XVariables>
+        child: ConnectionFetcher<'BookConnection', X, XVariables>
     ): QueryFetcher<
-        T & {readonly "findBooks": readonly X[]}, 
+        T & {readonly "findBooks": X}, 
         TVariables & XVariables & UnresolvedVariables<XArgs, QueryArgs['findBooks']>
     >;
 
@@ -108,15 +108,15 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        child: ObjectFetcher<'Book', X, XVariables>, 
+        child: ConnectionFetcher<'BookConnection', X, XVariables>, 
         optionsConfigurer: (
             options: FieldOptions<"findBooks", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): QueryFetcher<
         T & (
             XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-                {readonly [key in XAlias]?: readonly X[]} : 
-                {readonly [key in XAlias]: readonly X[]}
+                {readonly [key in XAlias]?: X} : 
+                {readonly [key in XAlias]: X}
         ), 
         TVariables & XVariables & QueryArgs["findBooks"] & XDirectiveVariables
     >;
@@ -130,15 +130,15 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
         XDirectiveVariables extends object = {}
     >(
         args: XArgs, 
-        child: ObjectFetcher<'Book', X, XVariables>, 
+        child: ConnectionFetcher<'BookConnection', X, XVariables>, 
         optionsConfigurer: (
             options: FieldOptions<"findBooks", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): QueryFetcher<
         T & (
             XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-                {readonly [key in XAlias]?: readonly X[]} : 
-                {readonly [key in XAlias]: readonly X[]}
+                {readonly [key in XAlias]?: X} : 
+                {readonly [key in XAlias]: X}
         ), 
         TVariables & XVariables & UnresolvedVariables<XArgs, QueryArgs['findBooks']> & XDirectiveVariables
     >;
@@ -148,9 +148,9 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
         X extends object, 
         XVariables extends object
     >(
-        child: ObjectFetcher<'Author', X, XVariables>
+        child: ConnectionFetcher<'AuthorConnection', X, XVariables>
     ): QueryFetcher<
-        T & {readonly "findAuthors": readonly X[]}, 
+        T & {readonly "findAuthors": X}, 
         TVariables & XVariables & QueryArgs["findAuthors"]
     >;
 
@@ -160,9 +160,9 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
         XVariables extends object
     >(
         args: XArgs, 
-        child: ObjectFetcher<'Author', X, XVariables>
+        child: ConnectionFetcher<'AuthorConnection', X, XVariables>
     ): QueryFetcher<
-        T & {readonly "findAuthors": readonly X[]}, 
+        T & {readonly "findAuthors": X}, 
         TVariables & XVariables & UnresolvedVariables<XArgs, QueryArgs['findAuthors']>
     >;
 
@@ -173,15 +173,15 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        child: ObjectFetcher<'Author', X, XVariables>, 
+        child: ConnectionFetcher<'AuthorConnection', X, XVariables>, 
         optionsConfigurer: (
             options: FieldOptions<"findAuthors", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): QueryFetcher<
         T & (
             XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-                {readonly [key in XAlias]?: readonly X[]} : 
-                {readonly [key in XAlias]: readonly X[]}
+                {readonly [key in XAlias]?: X} : 
+                {readonly [key in XAlias]: X}
         ), 
         TVariables & XVariables & QueryArgs["findAuthors"] & XDirectiveVariables
     >;
@@ -195,15 +195,15 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
         XDirectiveVariables extends object = {}
     >(
         args: XArgs, 
-        child: ObjectFetcher<'Author', X, XVariables>, 
+        child: ConnectionFetcher<'AuthorConnection', X, XVariables>, 
         optionsConfigurer: (
             options: FieldOptions<"findAuthors", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): QueryFetcher<
         T & (
             XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-                {readonly [key in XAlias]?: readonly X[]} : 
-                {readonly [key in XAlias]: readonly X[]}
+                {readonly [key in XAlias]?: X} : 
+                {readonly [key in XAlias]: X}
         ), 
         TVariables & XVariables & UnresolvedVariables<XArgs, QueryArgs['findAuthors']> & XDirectiveVariables
     >;
@@ -223,7 +223,7 @@ export const query$: QueryFetcher<{}, {}> =
                     targetTypeName: "BookStore"
                 }, 
                 {
-                    category: "LIST", 
+                    category: "CONNECTION", 
                     name: "findBooks", 
                     argGraphQLTypeMap: {
                         name: 'String', 
@@ -232,10 +232,12 @@ export const query$: QueryFetcher<{}, {}> =
                         last: 'Int', 
                         before: 'String'
                     }, 
+                    connectionTypeName: "BookConnection", 
+                    edgeTypeName: "BookEdge", 
                     targetTypeName: "Book"
                 }, 
                 {
-                    category: "LIST", 
+                    category: "CONNECTION", 
                     name: "findAuthors", 
                     argGraphQLTypeMap: {
                         name: 'String', 
@@ -244,6 +246,8 @@ export const query$: QueryFetcher<{}, {}> =
                         last: 'Int', 
                         before: 'String'
                     }, 
+                    connectionTypeName: "AuthorConnection", 
+                    edgeTypeName: "AuthorEdge", 
                     targetTypeName: "Author"
                 }
             ]
@@ -279,10 +283,34 @@ export interface QueryFlatType {
     readonly findBookStores: readonly {
         readonly id: string
     }[];
-    readonly findBooks: readonly {
-        readonly id: string
-    }[];
-    readonly findAuthors: readonly {
-        readonly id: string
-    }[];
+    readonly findBooks: {
+        readonly totalCount: number, 
+        readonly edges: readonly {
+            readonly node: {
+                readonly id: string
+            }, 
+            readonly cursor: string
+        }[], 
+        readonly pageInfo: {
+            readonly hasNextPage: boolean, 
+            readonly hasPreviousPage: boolean, 
+            readonly startCursor: string, 
+            readonly endCursor: string
+        }
+    };
+    readonly findAuthors: {
+        readonly totalCount: number, 
+        readonly edges: readonly {
+            readonly node: {
+                readonly id: string
+            }, 
+            readonly cursor: string
+        }[], 
+        readonly pageInfo: {
+            readonly hasNextPage: boolean, 
+            readonly hasPreviousPage: boolean, 
+            readonly startCursor: string, 
+            readonly endCursor: string
+        }
+    };
 }

@@ -181,7 +181,7 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
                 newConnection[key] = range[key];
             }
         }
-        newConnection.pageInfo = Object.assign(Object.assign({}, newConnection.pageInfo), { startCursor: range.startCursor, endCursor: range.endCursor });
+        newConnection.pageInfo = Object.assign(Object.assign({}, newConnection.pageInfo), { endCursor: range.endCursor });
     }
     contains(target) {
         var _a;

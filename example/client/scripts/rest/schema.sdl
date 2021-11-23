@@ -27,7 +27,7 @@ type Query {
         after: String,
         last: Int,
         before: String
-    ): [Book!]!
+    ): BookConnection!
     
     findAuthors(
         name: String,
@@ -35,7 +35,7 @@ type Query {
         after: String,
         last: Int,
         before: String
-    ): [Author!]!
+    ): AuthorConnection!
 }
 
 type PageInfo {

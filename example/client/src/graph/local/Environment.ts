@@ -4,8 +4,8 @@ import { initializeDefaultData } from "./InitializeDefaultData";
 export function createStateManager() { 
     
     const stateManager = newTypedConfiguration()
-        .bidirectionalAssociation("BookStore", "books", "store")
-        .bidirectionalAssociation("Book", "authors", "books")
+        .bidirectionalAssociation("BookStore", "books", "store") // BookStore.books <---> Book.store
+        .bidirectionalAssociation("Book", "authors", "books") // Book.authors <---> Author.books
         .buildStateManager()
     ;
 

@@ -1,11 +1,11 @@
 import { FC, memo, useCallback } from "react";
 import { StateManagerProvider } from "graphql-state";
-import { Card, Space, Tabs } from "antd";
+import { Card, Col, Row, Space, Tabs } from "antd";
 import { BookStoreList } from "./store/BookStoreList";
 import { createStateManager } from "./Environment";
 import { AuthorList } from "./author/AuthorList";
 import { BookList } from "./book/BookList";
-import { LogPanel } from "./log/LogPanel";
+import { LogPanel } from "../common/LogPanel";
 
 export const App: FC<{
     readonly withCustomerOptimization: boolean

@@ -82,6 +82,9 @@ export class Table<R extends object> {
         if (!this.uniqueIndexMap.has(prop)) {
             throw new Error(`'${prop}' is not column of unique index`);
         }
+        if (Array.isArray(value)) {
+            throw new Error(`findByUniqueProp does not support 'in' predicate`);
+        }
         return this.uniqueIndexMap.get(prop)!.get(value);
     }
 

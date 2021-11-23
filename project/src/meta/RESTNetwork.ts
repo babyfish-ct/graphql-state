@@ -9,9 +9,9 @@ import { SchemaType } from "./SchemaType";
 
 export class RESTNetworkBuilder<TSchema extends SchemaType> implements NetworkBuilder {
 
-    private _defaultBatchSize = 128;
+    private _defaultBatchSize = 64;
 
-    private _defaultCollectionBatchSize = 16;
+    private _defaultCollectionBatchSize = 8;
 
     private _userLoaderMap = new Map<string, UserLoader>();
 
@@ -410,7 +410,9 @@ class RESTLoader {
                 continue;
             }
             if (value[" $__instanceOfParameterRef"]) {
-                value = this.variables[(value as ParameterRef<any>).name];
+                value = this.variables === undefined ? 
+                    undefined :
+                    this.variables[(value as ParameterRef<any>).name];
             }
             resolved[name] = value;
         }
@@ -559,8 +561,15 @@ class RESTLoader {
         obj[dataLoader.fetcherField?.fieldOptionsValue?.alias ?? dataLoader.field.name] = data;
         if (data !== undefined && dataLoader.fetcherField.childFetchers !== undefined) {
             if (dataLoader.field.category === "CONNECTION") {
+                const nodeFetcher = dataLoader
+                    .fetcherField
+                    .childFetchers![0]
+                    .findField("edges")!
+                    .childFetchers![0]
+                    .findField("node")!
+                    .childFetchers![0];
                 for (const edge of data.edges) {
-                    this.add(edge.node, dataLoader.fetcherField.childFetchers[0]);
+                    this.add(edge.node, nodeFetcher);
                 }
             } else if (dataLoader.field.category === "LIST") {
                 for (const element of data) {

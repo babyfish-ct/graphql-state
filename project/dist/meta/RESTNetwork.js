@@ -283,7 +283,9 @@ class RESTLoader {
                 continue;
             }
             if (value[" $__instanceOfParameterRef"]) {
-                value = this.variables[value.name];
+                value = this.variables === undefined ?
+                    undefined :
+                    this.variables[value.name];
             }
             resolved[name] = value;
         }
@@ -409,8 +411,15 @@ class RESTLoader {
         obj[(_c = (_b = (_a = dataLoader.fetcherField) === null || _a === void 0 ? void 0 : _a.fieldOptionsValue) === null || _b === void 0 ? void 0 : _b.alias) !== null && _c !== void 0 ? _c : dataLoader.field.name] = data;
         if (data !== undefined && dataLoader.fetcherField.childFetchers !== undefined) {
             if (dataLoader.field.category === "CONNECTION") {
+                const nodeFetcher = dataLoader
+                    .fetcherField
+                    .childFetchers[0]
+                    .findField("edges")
+                    .childFetchers[0]
+                    .findField("node")
+                    .childFetchers[0];
                 for (const edge of data.edges) {
-                    this.add(edge.node, dataLoader.fetcherField.childFetchers[0]);
+                    this.add(edge.node, nodeFetcher);
                 }
             }
             else if (dataLoader.field.category === "LIST") {

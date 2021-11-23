@@ -2,15 +2,15 @@ import { FlatRow, ParameterizedAssociationProperties, StateManager } from "graph
 import { PositionType, ConnectionRange } from "graphql-state";
 import { Schema } from "../__generated_graphql_schema__";
 import { newTypedConfiguration } from "../__generated_graphql_schema__";
-import { publishEntityLog } from "./log/EntityLog";
+import { publishEntityLog } from "../common/EntityLog";
 import { createGraphQLNetwork } from "../common/Networks";
 
 export function createStateManager(withCustomerOptimization: boolean): StateManager<Schema> {
 
     const cfg = newTypedConfiguration()
 
-        .bidirectionalAssociation("BookStore", "books", "store")
-        .bidirectionalAssociation("Book", "authors", "books")
+        .bidirectionalAssociation("BookStore", "books", "store") // BookStore.books <---> Book.store
+        .bidirectionalAssociation("Book", "authors", "books") // Book.authors <---> Author.books
 
         .network(createGraphQLNetwork())
     ;

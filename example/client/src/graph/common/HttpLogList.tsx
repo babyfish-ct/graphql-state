@@ -29,16 +29,34 @@ export const HttpLogList: FC = memo(() => {
                                     <>
                                         {log.response === undefined && <Spin/>}
                                         {format(log.time)},&nbsp;
-                                        {log.body.startsWith("query") ? "query data" : "mutation data"}
+                                        {
+                                            log.body !== undefined?
+                                            log.body.startsWith("query") ? "query data" : "mutation data" :
+                                            `${log.method ?? "GET"} REST resource`
+                                        }
                                     </>
                                 } 
                                 key="message">
-                                    <div className={LOG_LABEL_CLASS}>Body</div>
-                                    <pre className={LOG_VALUE_CLASS}>{log.body}</pre>
-                                    <div className={LOG_LABEL_CLASS}>Variables</div>
-                                    <pre className={LOG_VALUE_CLASS}>{
-                                        JSON.stringify(log.variables, undefined, "  ")
-                                    }</pre>
+                                    {
+                                        log.url &&
+                                        <>
+                                            <div className={LOG_LABEL_CLASS}>URL</div>
+                                            <div className={LOG_VALUE_CLASS}>{log.url}</div>
+                                            <div className={LOG_LABEL_CLASS}>Method</div>
+                                            <div className={LOG_VALUE_CLASS}>{log.method}</div>
+                                        </>
+                                    }
+                                    {
+                                        log.body &&
+                                        <>
+                                            <div className={LOG_LABEL_CLASS}>Body</div>
+                                            <pre className={LOG_VALUE_CLASS}>{log.body}</pre>
+                                            <div className={LOG_LABEL_CLASS}>Variables</div>
+                                            <pre className={LOG_VALUE_CLASS}>{
+                                                JSON.stringify(log.variables, undefined, "  ")
+                                            }</pre>
+                                        </>
+                                    }
                                     <div className={LOG_LABEL_CLASS}>Response</div>
                                     <pre className={LOG_VALUE_CLASS}>{
                                         typeof log.response === "string" ?

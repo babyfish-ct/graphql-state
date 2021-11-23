@@ -7,12 +7,18 @@ const { createState } = makeStateFactory();
 export interface HttpLog {
     readonly id: number;
     readonly time: Date;
-    readonly body: string;
-    readonly variables?: any;
     readonly response?: any;
+
+    // GraphQL HTTP request fields
+    readonly body?: string; // always be undefined for REST demo
+    readonly variables?: any; // always be undefined for REST demo
+    
+    // REST HTTP reqeust fields
+    readonly url?: string; // always be undefined for GraphQL demo
+    readonly method?: "GET" | "PUT" | "DELETE"; // always be undefined for GraphQL demo
 }
 
-export function publishRequestLog(
+export function publishGraphQLRequestLog(
     body: string,
     variables: any
 ): number {
@@ -25,6 +31,26 @@ export function publishRequestLog(
                     time: new Date(),
                     body,
                     variables
+                }
+            } 
+        })
+    ); 
+    return id;
+}
+
+export function publishRESTRequestLog(
+    url: string,
+    method?: "GET" | "PUT" | "DELETE"
+): number {
+    const id = idSequence++;
+    window.dispatchEvent(
+        new CustomEvent("http-request-event", { 
+            detail: {
+                log: {
+                    id,
+                    time: new Date(),
+                    url,
+                    method: method ?? "GET"
                 }
             } 
         })
@@ -62,7 +88,14 @@ export const httpLogListState = createState<ReadonlyArray<HttpLog>>(
                 ctx(produce(ctx(), draft => {
                     const log = draft.find(log => log.id === e.detail.id);
                     if (log !== undefined) {
-                        log.response = e.detail.response;
+                        if (log.url !== undefined && typeof e.detail.response === "object") {
+                            // Deeply clone the response for REST mode,
+                            // Because immer will freeze the object
+                            // which will be changed by RESTLoader later
+                            log.response = JSON.parse(JSON.stringify(e.detail.response));
+                        } else {
+                            log.response = e.detail.response;
+                        }
                     }
                 }));
             };

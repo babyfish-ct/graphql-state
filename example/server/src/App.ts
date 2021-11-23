@@ -13,8 +13,9 @@ import { BookStoreSerice } from "./graphql/bll/BookStoreService";
 import { BookSerice } from "./graphql/bll/BookService";
 import { AuthorService } from "./graphql/bll/AuthorService";
 import { EntityService } from "./graphql/bll/EntityService";
-import { BookStoreController } from './rest/BookStoreController';
-import { BookController } from "./rest/BookController";
+import { BookStoreController } from './rest/bll/BookStoreController';
+import { BookController } from "./rest/bll/BookController";
+import { AuthorController } from "./rest/bll/AuthorController";
  
 const schema = buildSchemaSync({
     resolvers: [
@@ -44,7 +45,8 @@ useExpressServer(app, {
     routePrefix: "/rest",
     controllers: [
         BookStoreController,
-        BookController
+        BookController,
+        AuthorController
     ]
 });
 

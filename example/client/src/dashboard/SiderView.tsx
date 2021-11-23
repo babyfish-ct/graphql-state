@@ -40,7 +40,7 @@ export const SiderView: FC = memo(() => {
                     <Menu.Item key="unoptimized" className={IMPORTANNT_CSS}>Unoptimized</Menu.Item>
                     <Menu.Item key="optimized" className={IMPORTANNT_CSS}>Optimized</Menu.Item>
                 </Menu.SubMenu>
-                <Menu.Item key="restServer">Rest server</Menu.Item>
+                <Menu.Item key="restServer" className={IMPORTANNT_CSS}>REST server</Menu.Item>
                 <Menu.SubMenu key="httpOpitimizator" title="HTTP Opitmizator">
                     <Menu.Item key="peakClipping">Peak clipping</Menu.Item>
                     <Menu.Item key="objectBaseOnId">Objects</Menu.Item>

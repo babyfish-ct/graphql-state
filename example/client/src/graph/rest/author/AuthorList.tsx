@@ -1,44 +1,47 @@
-import { ChangeEvent, memo, useCallback, useState } from "react";
-import { Button, Input, Space, Spin, Table, Tag, Modal, Row, Col } from "antd";
-import { ComponentDecorator } from "../../../common/ComponentDecorator";
-import { useQuery, useStateManager } from "graphql-state";
+import { Space, Table, Modal, Input, Button, Tag, Spin, Row, Col } from "antd";
+import { useStateManager, usePaginationQuery } from "graphql-state";
 import { ModelType, ParameterRef } from "graphql-ts-client-api";
+import { ChangeEvent, FC, memo, useCallback, useState } from "react";
+import { ComponentDecorator } from "../../../common/ComponentDecorator";
 import { DELETE_CONFIRM_CLASS, DELETING_ROW_CLASS, INFORMATION_CLASS } from "../Css";
-import { BookStoreDialog } from "./BookStoreDialog";
-import { book$$, bookStore$$, query$ } from "../../__generated_rest_schema__/fetchers";
+import { book$$, author$$, query$, authorConnection$, authorEdge$ } from "../../__generated_rest_schema__/fetchers";
 import { Schema } from "../../__generated_rest_schema__";
+import { AuthorDialog } from "./AuthorDialog";
 
-const BOOK_STORE_ROW =
-    bookStore$$
+const AUTHOR_ROW =
+    author$$
     .books(
-        {name: ParameterRef.of("bookName")},
+        { name: ParameterRef.of("bookName") },
         book$$
-    )
-;
+    );
 
-export const BookStoreList = memo(() => {
+export const AuthorList: FC = memo(() => {
 
     const [name, setName] = useState("");
     const [bookName, setBookName] = useState("");
 
-    const { data, loading, refetch } = useQuery(
-        query$.findBookStores(
-            BOOK_STORE_ROW, 
-            options => options.alias("stores")
+    const { data, loading, refetch, isLoadingNext, loadNext, hasNext } = usePaginationQuery(
+        query$.findAuthors(
+            authorConnection$
+            .totalCount
+            .edges(
+                authorEdge$.node(
+                    AUTHOR_ROW
+                )
+            ),
+            options => options.alias("authorConnection")
         ),
         {
+            windowId: "authorPagination",
+            initialSize: 4,
             asyncStyle: "async-object",
             variables: { name, bookName }
         }
     );
 
     const stateManager = useStateManager<Schema>();
-
-    const [dialog, setDialog] = useState<"NEW" | "EDIT">();
-    const [editing, setEditing] = useState<ModelType<typeof BOOK_STORE_ROW>>();
-    const [deleting, setDeleting] = useState<ModelType<typeof BOOK_STORE_ROW>>();
     const [removing, setRemoving] = useState(false);
-
+    
     const onNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         setName(e.target.value);
     }, []);
@@ -46,11 +49,15 @@ export const BookStoreList = memo(() => {
         setBookName(e.target.value);
     }, []);
 
-    const onDelete = useCallback((row: ModelType<typeof BOOK_STORE_ROW>) => {
+    const [dialog, setDialog] = useState<"NEW" | "EDIT">();
+    const [editing, setEditing] = useState<ModelType<typeof AUTHOR_ROW>>();
+    const [deleting, setDeleting] = useState<ModelType<typeof AUTHOR_ROW>>();
+
+    const onDelete = useCallback((row: ModelType<typeof AUTHOR_ROW>) => {
         Modal.confirm({
             title: `Are your sure`,
             content: <>
-                <div className={DELETE_CONFIRM_CLASS}>Are you sure to delete the book store "{row.name}"?</div>
+                <div className={DELETE_CONFIRM_CLASS}>Are you sure to delete the author "{row.name}"?</div>
                 <div className={INFORMATION_CLASS}>
                     If you choose to delete this object
                     <ul>
@@ -60,7 +67,7 @@ export const BookStoreList = memo(() => {
             </>,
             onOk: () => {
                 setDeleting(row);
-                // TODO:
+                // TODO
             }
         });
     }, []);
@@ -71,9 +78,10 @@ export const BookStoreList = memo(() => {
 
     const onDialogClose = useCallback(() => {
         setDialog(undefined);
+        setEditing(undefined);
     }, []);
 
-    const renderBooks = useCallback((_: any, row: ModelType<typeof BOOK_STORE_ROW>) => {
+    const renderBooks = useCallback((_: any, row: ModelType<typeof AUTHOR_ROW>) => {
         return (
             <>
                 {
@@ -85,7 +93,7 @@ export const BookStoreList = memo(() => {
         );
     }, []);
 
-    const renderOperations = useCallback((_: any, row: ModelType<typeof BOOK_STORE_ROW>) => {
+    const renderOperations = useCallback((_: any, row: ModelType<typeof AUTHOR_ROW>) => {
         return (
             <Button.Group>
                 <Button onClick={() => { setDialog("EDIT"); setEditing(row); }}>Edit</Button>
@@ -98,12 +106,12 @@ export const BookStoreList = memo(() => {
         );
     }, [onDelete, removing, deleting]);
 
-    const rowClassName = useCallback((row: ModelType<typeof BOOK_STORE_ROW>) => {
+    const rowClassName = useCallback((row: ModelType<typeof AUTHOR_ROW>) => {
         return removing && deleting?.id === row.id ? DELETING_ROW_CLASS : "";
     }, [deleting, removing]);
 
     return (
-        <ComponentDecorator name="BookStoreList">
+        <ComponentDecorator name="AuthorList">
             <Space direction="vertical" style={{width: "100%"}}>
                 <Row gutter={10}>
                     <Col flex={1}>
@@ -116,16 +124,16 @@ export const BookStoreList = memo(() => {
                         <Button onClick={refetch}>Refresh</Button>
                     </Col>
                     <Col>
-                        <Button onClick={onAddClick} type="primary">Add BookStore...</Button>
+                        <Button onClick={onAddClick} type="primary">Add Author...</Button>
                     </Col>
                 </Row>
-                { loading && <div><Spin/>Loading book stores...</div>}
+                { loading && <div><Spin/>Loading authors...</div> }
                 {
                     !loading && data &&
                     <>
                         <Table 
                         rowKey="id" 
-                        dataSource={data.stores} 
+                        dataSource={data.authorConnection.edges.map(edge => edge.node)} 
                         pagination={false}
                         rowClassName={rowClassName}>
                             <Table.Column title="Id" dataIndex="id"/>
@@ -133,11 +141,15 @@ export const BookStoreList = memo(() => {
                             <Table.Column title="Books" render={renderBooks}/>
                             <Table.Column title="Operations" render={renderOperations}/>
                         </Table>
+                        <Space>
+                            <Button onClick={loadNext} disabled={!hasNext} loading={isLoadingNext}>Load more</Button>
+                            {data.authorConnection.totalCount - data.authorConnection.edges.length} row(s) left
+                        </Space>
                     </>
                 }
                 {
                     dialog !== undefined &&
-                    <BookStoreDialog value={dialog === "EDIT" ? editing : undefined} onClose={onDialogClose}/>
+                    <AuthorDialog value={dialog === "EDIT" ? editing : undefined} onClose={onDialogClose}/>
                 }
             </Space>
         </ComponentDecorator>
