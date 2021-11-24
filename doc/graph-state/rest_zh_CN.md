@@ -1,16 +1,16 @@
 # [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../README_zh_CN.md)/图状态(./README_zh_CN.md)/访问REST服务
 
-考虑到大量的现有服务端基于REST，本框架支持在客户端REST服务模拟成GraphQL服务，以GraphQL的语义进行查询，并享受[graphql-ts-client](https://github.com/babyfish-ct/graphql-state)的语法糖
+考虑到大量的现有服务端基于REST，本框架支持在客户端将REST服务模拟成GraphQL服务，以GraphQL的语义进行查询，并享受[graphql-ts-client](https://github.com/babyfish-ct/graphql-state)提供的语法糖
 
-> REST映射只支队查询，不针对变更。
+> REST映射只针对查询，不针对变更。
 > 
-> 如果向REST服务发起数据变更并保证本地缓存的一致性并不复杂，请参见[附带的REST例子](../../example/client/src/graph/rest)
+> 向REST服务发起数据变更并保证本地缓存的一致性并不复杂，请参见[附带的REST例子](../../example/client/src/graph/rest)
 
 # 1. 生成代码
 
 和访问GraphQL服务一样，需先生成[graphql-ts-client](https://github.com/babyfish-ct/graphql-state)所需的代码。
 
-由于和服务端不提供GraphQL服务，无法描述schema结构，你需要定义自己的sdl文件，就如同[example/client/scripts/schema.sdl](../../example/client/scripts/rest/schema.sdl)一样
+由于和服务端是服务，无法描述GraphQL schema结构，你需要定义自己的sdl文件，就如同[example/client/scripts/schema.sdl](../../example/client/scripts/rest/schema.sdl)一样
 ```
 type BookStore {
     id: ID!
@@ -83,9 +83,9 @@ type AuthorEdge {
 ```
 > 前文提过，REST映射只针对查询，因为向REST服务发起数据变更并保证本地缓存的一致性并不复杂
 > 
-> 所以，你住需要定义Query，不需要定义Mutation
+> 所以，你只需要定义Query，不需要定义Mutation
 
-按照[整合graphql-ts-client](./graphql-ts-client_zh_CN.md)章节所介绍的内容生成代码，这里不再赘述
+按照[整合graphql-ts-client](./graphql-ts-client_zh_CN.md)章节所阐述的内容生成代码即可，这里不再赘述
 
 # 2. Query根对象映射
 
