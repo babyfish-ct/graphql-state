@@ -82,6 +82,7 @@ type AuthorEdge {
 }
 ```
 > 前文提过，REST映射只针对查询，因为向REST服务发起数据变更并保证本地缓存的一致性并不复杂
+> 
 > 所以，你住需要定义Query，不需要定义Mutation
 
 按照[整合graphql-ts-client](./graphql-ts-client_zh_CN.md)章节所介绍的内容生成代码，这里不再赘述
