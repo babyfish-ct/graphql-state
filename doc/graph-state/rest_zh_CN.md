@@ -10,7 +10,7 @@
 
 和访问GraphQL服务一样，需先生成[graphql-ts-client](https://github.com/babyfish-ct/graphql-state)所需的代码。
 
-由于和服务端不提供GraphQL服务，无法描述schema结构，你需要定义自己的sdl文件，就如同[example/client/scripts/](../../example/client/scripts/rest/schema.sdl)一样
+由于和服务端不提供GraphQL服务，无法描述schema结构，你需要定义自己的sdl文件，就如同[example/client/scripts/schema.sdl](../../example/client/scripts/rest/schema.sdl)一样
 ```
 type BookStore {
     id: ID!
