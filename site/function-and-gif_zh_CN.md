@@ -112,5 +112,5 @@ if (cached(LearningGraphQL.store)) {
 3. 对于变量相同但形状不同的多个查询，形状较小的查询不会发出HTTP请求，它们会借用形状最大的查询的HTTP请求来共享响应数据。即使对于最大shape的查询的HTTP请求已经发送并且处于pending状态，这种优化仍然有效。 
 
 --------------
-[回到首页](./README_zh_CN.md)
+[回到首页](../README_zh_CN.md)
 
