@@ -4,7 +4,7 @@
 > GraphQL风格，但不只是GraphQL。对于REST服务，本框架能够在客户端将之映射为GraphQL服务，以GraphQL强大的语义访问REST服务！
 
 本框架提供三大功能
-1. 简单状态管理：类似于recoil[https://github.com/facebookexperimental/Recoil]
+1. 简单状态管理：类似于[recoil](https://github.com/facebookexperimental/Recoil)
 2. 图状态管理：本框架的核心价值，提供远比[Apollo Client](https://github.com/apollographql/apollo-client)和[Relay](https://github.com/facebook/relay)智能的服务，是项目诞生的根本目的，请查看[项目背景](./background_zh_CN.md)以了解更多
 3. HTTP优化：通过合并请求和重用请用来减少HTTP请求数量
 
