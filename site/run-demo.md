@@ -28,4 +28,4 @@ Access http://localhost:3000 by browser
 
 -----------------
 
-[Back to home](../README.md)
+[Back to home](https://github.com/babyfish-ct/graphql-state)
