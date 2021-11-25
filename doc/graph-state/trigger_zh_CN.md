@@ -416,4 +416,4 @@ selectedBookId只是一个id，而非Book对象，要将之转换为selectedBook
   > 代码中objectStyle为"optional"很重要，否则ctx.object的第二个参数不允许为undefined，将会导致编译错误
   
 ----------
-[< 上一篇：变更](./mutation/README_zh_CN.md) | [返回上级：图状态](./README_zh_CN.md)
+[< 上一篇：变更](./mutation/README_zh_CN.md) | [返回上级：图状态](./README_zh_CN.md) | [下一篇：访问REST服务 >](./rest_zh_CN.md)
