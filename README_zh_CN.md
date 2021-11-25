@@ -2,7 +2,7 @@
 
 > 注意：
 > 
-> GraphQL风格，但不只是GraphQL。
+> **GraphQL风格，但不只是GraphQL**
 > 
 > 对于REST服务，本框架能够在客户端将之映射为GraphQL服务，以GraphQL强大的语义访问REST服务！
 
