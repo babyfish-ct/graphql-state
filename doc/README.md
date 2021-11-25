@@ -21,6 +21,7 @@
     - [Smart mutation](./graph-state/mutation/smart-mutation.md)
     - [Bidirectional association](./graph-state/mutation/bidirectional-association.md)
   - [Trigger](./graph-state/trigger.md)
+  - [Access REST service](./graphql-state/rest.md)
 - [Release policy](./release-policy.md)
 - [HTTP optimization](./http-optimization/README.md)
   - [Peak clipping](./http-optimization/peak-clipping.md)
