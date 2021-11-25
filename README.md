@@ -15,5 +15,5 @@ This framework provides three major functions
 - [Project background](./site/background.md)
 - [Functions and GIF animation demonstrations](./site/function-and-gif.md)
 - [Get start](./site/get-start.md)
-- [Run attached examples](./site/run-demo.md)
+- [Run attached demos](./site/run-demo.md)
 - [Documentation](./doc/README.md)
