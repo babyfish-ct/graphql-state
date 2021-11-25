@@ -217,7 +217,7 @@ new RESTNetworkBuilder<Schema>(
 然而，当以下条件全部满足时
 1. 当前关联是一个one-to-many关联
 2. 当前关联是返回类型简单的list而非用于分页的connection
-3. REST返回子对象数据，且每个子对象都包含父对象的id
+3. REST返回子对象类型的数组，其中每个子对象都包含父对象的id
 
 比如
 ```ts
