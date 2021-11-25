@@ -3,7 +3,7 @@
 ![image](./architecture_zh_CN.png "系统功能")
 
 ## 1. 简单状态
-一套看起来非常类似于recoil的状态管理，用于管理业务对象模型以外的零散数据，可以方便地和图状态配合。
+一套看起来非常类似于[recoil](https://github.com/facebookexperimental/Recoil)的状态管理，用于管理业务对象模型以外的零散数据，可以方便地和图状态配合。
 
 ## 2. 图状态
 
