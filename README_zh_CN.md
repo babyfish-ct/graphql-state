@@ -2,7 +2,9 @@
 
 ## 语言: [English](https://github.com/babyfish-ct/graphql-state) | 中文
 
-# 系统功能
+## [项目背景](./background_zh_CN.md)
+
+## [系统功能和GIF动画演示](./function_and_gif_zh_CN.md)
 
 ![image](./architecture_zh_CN.png "系统功能")
 
