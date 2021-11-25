@@ -147,5 +147,5 @@ yarn start
 
 ____________________
 
-[Back to home](./README_zh_CN.md)
+[回到首页](./README_zh_CN.md)
 
