@@ -1,4 +1,4 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state/)/Documentation
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/Documentation
 
 ## Table of Contents
 
@@ -27,3 +27,7 @@
   - [Peak clipping](./http-optimization/peak-clipping.md)
   - [Merge fragments](./http-optimization/merge-fragment.md)
   - [Reuse request](./http-optimization/reuse-request.md)
+
+--------------
+
+[Back to home](https://github.com/babyfish-ct/graphql-state)
