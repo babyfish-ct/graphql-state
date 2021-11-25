@@ -23,4 +23,4 @@ yarn start
 
 -----------------
 
-[返回首页](./README_zh_CN.md)
+[返回首页](../README_zh_CN.md)
