@@ -145,4 +145,4 @@ This framework can automatically ensure the consistency of the cache after mutat
 The method of directly modifying the cache is preferred, and if not feasible, it will be upgraded to a re-query. No matter how the framework chooses, everything is automatic.
 
 -----------------
-[Back to project](https://github.com/babyfish-ct/graphql-state)
+[Back to home](https://github.com/babyfish-ct/graphql-state)
