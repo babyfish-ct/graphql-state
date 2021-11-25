@@ -2,7 +2,7 @@
 
 智能变更的流程如下
 
-![image](../../../smart-mutation_zh_CN.png "smart mutation")
+![image](../../../site/smart-mutation_zh_CN.png "smart mutation")
 
 此图图在首页中已经讨论过了，这里不再赘述。
 
