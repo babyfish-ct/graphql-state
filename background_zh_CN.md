@@ -89,9 +89,9 @@ nomalized-cache就像关系型数据一样存储数据行以及它们之间的�
     }
 }
 ```
-其中, *findBooks({"name": ...})*表示查询条件，对书的名称进行模糊匹配筛选。
+其中, *findBooks({"name": ...})* 表示查询条件，对书的名称进行模糊匹配筛选。
 
-现在，修改数据，把 *{id:2, name: "Learning GraphQL"}*修改为 *{id:2, name: "Learning TypeScript"}*。修改后，新的名称 *"Learning TypeScript"* 不再和查询条件 *{name: "g"}*匹配。所以，新的缓存看起来应该如此
+现在，修改数据，把 *{id:2, name: "Learning GraphQL"}* 修改为 *{id:2, name: "Learning TypeScript"}* 。修改后，新的名称 *"Learning TypeScript"* 不再和查询条件 *{name: "g"}* 匹配。所以，新的缓存看起来应该如此
 ```ts
 {
     "Query": {
