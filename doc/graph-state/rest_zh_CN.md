@@ -213,9 +213,10 @@ new RESTNetworkBuilder<Schema>(
 
 上面中例子中，服务端返回的是一个Map。
 
-当一下条件满足是
+当以下条件满足是
 - 当前关联是一个one-to-many关联
-- REST返回的子对象中包含父对象的id
+- 当前关联是返回类型简单的list而非用于分页的connection
+- REST返回子对象数据，且每个子对象都包含父对象的id
 
 比如
 ```ts
