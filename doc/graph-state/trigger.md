@@ -420,4 +420,4 @@ Here, we use the effect register/unregister trigger of the simple state. If the 
   > It is very important to let objectStyle be "optional", otherwise the second parameter of "ctx.object" is not allowed to be undefined, which will cause compilation error
   
 ----------
-[< Previous: Mutation](./mutation/README.md) | [Back to parent: Graph state](./README.md) | [Next: Access REST service](./rest.md)
+[< Previous: Mutation](./mutation/README.md) | [Back to parent: Graph state](./README.md) | [Next: Access REST service >](./rest.md)
