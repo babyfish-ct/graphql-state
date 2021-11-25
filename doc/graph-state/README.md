@@ -22,6 +22,7 @@ Graph state is a cache for complex object accessed through [graphql-ts-client](h
   - [Smart mutation](./mutation/README.md)
   - [Bidirectional association](./mutation/bidirectional-association.md)
 - [Trigger](./trigger.md)
+- [Access REST service](./rest.md)
 
 -------
 
