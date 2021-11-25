@@ -97,7 +97,7 @@ type AuthorEdge {
 ```
 /rest/bookStores?name=abc
 ```
-那么你可以在创建StateManager的过程中，将之映射为GraphQL的Query.findBookStore字段
+那么你可以在创建StateManager的过程中，将之映射为GraphQL的Query.findBookStores字段
 ```ts
 import { StateManager, RESTNetworkBuilder } form 'graphql-state';
 import { Schema, newTypedConfiguration } from './__generated';
