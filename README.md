@@ -2,7 +2,7 @@
 
 > Note:
 >
-> GraphQL style, but not GraphQL only.
+> **GraphQL style, but not GraphQL only**
 >
 > For REST services, this framework can map them to GraphQL services on the client side, it can access REST services with GraphQL's powerful semantics!
 
