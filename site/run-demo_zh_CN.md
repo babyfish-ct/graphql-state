@@ -24,7 +24,7 @@ cd ${clonedDir}/example/client
 yarn install
 yarn start
 ```
-访问 http://localhost:3000
+用浏览器访问 http://localhost:3000
 
 -----------------
 
