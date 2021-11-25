@@ -2,7 +2,7 @@
 
 The process of smart mutation is as follows
 
-![image](../../../smart-mutation.png "smart mutation")
+![image](../../../site/smart-mutation.png "smart mutation")
 
 This picture has been discussed on the homepage, so I won’t repeat it here.
 
@@ -647,7 +647,7 @@ The order of 'books({name: "typ"})' has beean changed.
 
 The animated GIF presentation of this situation is
 
-|![image](../../../smart-sorting.gif "Smart sorting")|
+|![image](../../../site/smart-sorting.gif "Smart sorting")|
 |----|
 
 2. Execute
@@ -676,7 +676,7 @@ Obviously, "Effective GraphQL" no longer matches the query condition {name: "typ
 The modified object needs to be deleted from "A BookStore".'books({name: "typ"})', and inserted into "A BookStore".'books({name: "gra"})'. That is, data migrates between sub-associations of the family.
 
 The animated GIF presentation of this situation is
-|![image](../../../optimized-mutation.gif "Data migration")|
+|![image](../../../site/optimized-mutation.gif "Data migration")|
 |----|
 
 How to make graphql-state achieve the above two effects?
