@@ -135,7 +135,8 @@ url.path("/bookStores").arg("name", args.name)
 1. SimpleLoader
   这种方法简单直观，也最符合REST的基本语义，但是会导致N+1问题
 2. BatchLoader
-  这种方法稍微复杂点，但可以没有N+1问题
+  这种方法稍微复杂点，但解决了N+1问题
+  
 实际项目中，推荐使用BatchLoader
 
 ## 3.1 SimpleLoader(有N + 1问题)
