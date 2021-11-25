@@ -1,38 +1,38 @@
-# Step-by-step guide
+# 入门向导
 
 
-### 1. Start the server
+## 1. 启动服务端
 
-Download this project, goto [example/server](example/server), execute
+下载本项目，进入[example/server](example/server)，执行
 ```
 yarn install
 yarn start
 ```
 
-### 2. Create your client app
+## 2. 创建你的客户端项目
 
-Choose any another dir, execute
+任选一目录，执行
 ```
 yarn create react-app <YourAppName> --template typescript
 ```
 
-### 3. Add dependencies
+## 3. 添加依赖
 
-Goto the root dir of your app, execute
+进入你的项目的根目录，执行
 ```
 yarn add graphql-state graphql-ts-client-api
 yarn add graphql-ts-client-codegen --dev
 ``` 
 
-### 4. config code generator
+## 4. 配置代码生成器
 
-Goto the root dir or your app
+进入你的项目的根目录，执行
 ```
 mkdir scripts
 cd scripts
 touch codegen.js
 ``` 
-Open the new file and paste code
+打开新文件，粘贴如下代码
 ```js
 const {GraphQLStateGenerator, loadRemoteSchema} = require("graphql-ts-client-codegen");
 const path = require("path");
@@ -44,27 +44,27 @@ const generator = new GraphQLStateGenerator({
 });
 generator.generate();
 ```
-Open the package.json of the root dir, find the object "scripts" and add this field into it
+打开项目根目录下的package.json，找到名为scripts的对象，添加如下字段
 ```
 "codegen": "node scripts/codegen.js"
 ```
 
-### 5. Generate TS code(depends on server)
+## 5. 生成TS代码(依赖于服务端)
 
-Goto the root dir of your app, execute
+进入你的项目的根目录，执行
 
 ```
 yarn codegen
 ``` 
-*Notes:*
+*注意*
 
-*This is a one-time job! you need not to generate code again and again.*
+*这是一次性的工作，你无需一遍又一遍地生成代码*
 
-*After this step, you can forget the code generator until the server-side team tell you their interface has been changed.*
+*这个步骤完成后，你可以忘记代码生成，直到服务端团队通知你它们的对外接口发生变更为止*
 
-### 6. Change react code
+## 6. 修改React代码
 
-Change 'src/App.tsx' of your app, copy & paste this code
+修改你的项目的src/App.tsx文件，粘贴如下代码
 ```tsx
 import { Suspense } from 'react';
 import { useQuery, StateManager, StateManagerProvider, GraphQLNetwork } from 'graphql-state';
@@ -138,14 +138,14 @@ function App() {
 export default App;
 ```
 
-### 7. Run your app(depends on server)
+## 7. 运行你的项目(依赖于服务端)
 
-Goto the root dir of your app, execute 
+进入你的项目的根目录，执行
 ```
 yarn start
 ```
 
 ____________________
 
-[Back to home](https://github.com/babyfish-ct/graphql-state)
+[回到首页](../README.md)
 
