@@ -129,7 +129,7 @@ url.path("/bookStores").arg("name", args.name)
 
 # 3. 非根对象映射
 
-上面阐述的是根Query对象的映射，其他非根不对象也需要映射，比如BookStore.books
+上面阐述的是根Query对象的映射，其他非根对象也需要映射，比如BookStore.books
 
 非根对象有两种映射方法
 1. SimpleLoader
