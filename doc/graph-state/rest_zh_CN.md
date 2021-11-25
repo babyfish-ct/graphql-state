@@ -244,7 +244,7 @@ new RESTNetworkBuilder<Schema>(
 ...
 ```
 
-BatchLoader一次为多个对象查询关联对象，如果关联对象过多，肯能会导致很长的URL，因此支持batchSize设置，比如
+BatchLoader一次为多个当前对象查询关联对象，如果当前对象过多，会导致很长的URL，因此支持batchSize设置，比如
 ```ts
 new RESTNetworkBuilder<Schema>(
     "http://localhost:8081/rest/"
@@ -259,17 +259,17 @@ new RESTNetworkBuilder<Schema>(
 })
 ...
 ```
-这里指定batchSize为32，表示一次HTTP请求最多为32个BookStore对象获取books集合。假设现有100个BookStore对象，时机执行中过，教分裂成4个HTTP请求并发执行
+这里指定batchSize为32，表示一次HTTP请求最多为32个BookStore对象获取books集合。如果现有100个BookStore对象，就分裂成4个HTTP请求并发执行
 - http://localhost:8081/rest/booksOfStores?bookStoreIds=bookStoreId1,bookStoreId2,...,bookStoreId32
 - http://localhost:8081/rest/booksOfStores?bookStoreIds=bookStoreId33,bookStoreId34,...,bookStoreId64
 - http://localhost:8081/rest/booksOfStores?bookStoreIds=bookStoreId65,bookStoreId66,...,bookStoreId96
 - http://localhost:8081/rest/booksOfStores?bookStoreIds=bookStoreId97,bookStoreId98,bookStoreId99,bookStoreId100
 
 如果不指定batchSize，其默认值为
-- 如果当前关联是集合（list或connection），默认为defaultCollectionBatchSize
-- 否则，defaultBatchSize
+- 如果当前关联是集合（list或connection），默认采用为defaultCollectionBatchSize
+- 否则，默认采用defaultBatchSize
 
-defaultBatchSize和defaultCollectionBatchSize可以配置
+其中，defaultBatchSize和defaultCollectionBatchSize可以配置
 ```ts
 new RESTNetworkBuilder<Schema>(
     "http://localhost:8081/rest/"
