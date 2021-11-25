@@ -1,14 +1,14 @@
-# System functions and GIF GIF animation presentations
+# System functions and GIF animation presentations
 
 ![image](./architecture.png "architecture")
 
 ## 1. Simple State
 
-A simple state management tool that looks similar to recoil, used to manage scattered data outside the business object model, and can be easily coordinated with the "Graph State".
+A simple state management tool that looks similar to [recoil](https://github.com/facebookexperimental/Recoil), used to manage scattered data outside the business object model, and can be easily coordinated with the "Graph State".
 
 ## 2. Graph State
 
-The core value of this framework is to provide graph state management capabilities that are far more intelligent than Apollo client and Relay. This is also my motivation for creating this framework.
+The core value of this framework is to provide graph state management capabilities that are far more intelligent than [Apollo client](https://github.com/apollographql/apollo-client) and [Relay](https://github.com/facebook/relay). This is also my motivation for creating this framework.
 
 > **After the mutation, in addition to the need to use a simple API to save the directly modified data into local cache, there is no need to write complex code to update other affected data in the local cache, and there is no need to specify which queries need to be refreshed. Everything is automatic.**
 
@@ -99,6 +99,9 @@ if (cached(LearningGraphQL.store)) {
 ### 2.3. Database style trigger
 The built-in cache database supports triggers. Not only does the framework use it internally to achieve the purpose of data intelligent maintenance, the triggers are also exposed as public APIs so that developers can customize more intelligent behaviors.
 
+### 2.4. Access REST service 
+
+For existing REST services, the framework supports mapping REST services to GraphQL services on the client side, using GraphQL semantics, and enjoying  the syntactic sugar provided by [graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client)
 
 ## 3. HTTP optimization
 
@@ -109,3 +112,7 @@ The framework has built-in optimization strategies to reduce the number of HTTP 
 2. Object/objects queries base on id/ids are easy to repeat between different UI components, if not optimized, it will lead to fragmentation of HTTP requests. As long as different components query object/objects by same shape, the id/ids parameters specified by different components will be merged together, and finally one merged batch request will be sent.
 
 3. For multiple queries with the same variables but different shapes, queries with smaller shapes will not send out HTTP requests, they will borrow the HTTP request of the query with the largest shape to share the response data. Even if the HTTP request for the query with the largest shape has been sent and is in the pending state, this optimization is still effective.
+
+-------------
+
+[Back to home](https://github.com/babyfish-ct/graphql-state)
