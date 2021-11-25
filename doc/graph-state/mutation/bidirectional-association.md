@@ -8,7 +8,7 @@ Refer to such an example
 
 From a business perspective, "BookStore.books" and "Book.store" are actually two sides of the same association due to different perspectives. Therefore, graphql-state allows you to bind these two associations into one bidirectional association. Once you have completed this binding, you can get the effect shown in the following GIF animation
 
-|![image](../../../bidirectional-association.gif "Bidirectional assocaition")|
+|![image](../../../site/bidirectional-association.gif "Bidirectional assocaition")|
 |----|
 
 In this example, the modification you performed is
