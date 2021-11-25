@@ -24,7 +24,7 @@ BookStore <--1:n--> Book <--m:n--> Author
 按照例子中的关联方式，简单的key/value缓存会轻易导致如下两条数据
 
 缓存数据1:
-```
+```ts
 {
   __typename: "BookStore",
   id: 1,
@@ -44,7 +44,7 @@ BookStore <--1:n--> Book <--m:n--> Author
 }
 ```
 缓存数据2:
-```
+```ts
 {
   __typename: "Author",
   id: 9,
