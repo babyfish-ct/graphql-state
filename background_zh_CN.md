@@ -115,7 +115,7 @@ nomalized-cache就像关系型数据一样存储数据行以及它们之间的�
 要让缓存完成上面的"额外修改"，无外乎两种办法。
 
 - 手动更改本地缓存，这是性能优越但不一定可行的方法
-- 让查询 *Query.findBooks({name: "g"})*重新从服务端获取最新数据。这是性能不好但一定可行的方法
+- 让查询 *Query.findBooks({name: "g"})* 重新从服务端获取最新数据。这是性能不好但一定可行的方法
 
 - 对Apollo Client而言：
   - 修改缓存：https://www.apollographql.com/docs/react/data/mutations/#updating-the-cache-directly
