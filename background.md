@@ -1,6 +1,6 @@
 # What is the value of this framework and why it was created?
 
-The purpose of this framework is to provide far intelligent services than Apollo client and Relay.
+The purpose of this framework is to provide far intelligent services than [Apollo client](https://github.com/apollographql/apollo-client) and [Relay](https://github.com/facebook/relay).
 
 How to consume GraphQL services in React can be divided into four levels
 
@@ -143,3 +143,6 @@ The more complex the UI, the greater the N, this is the biggest problem of Apoll
 This framework can automatically ensure the consistency of the cache after mutation, user only need to save the main mutation into the cache, all the extra mutations will be handled automatically.
 
 The method of directly modifying the cache is preferred, and if not feasible, it will be upgraded to a re-query. No matter how the framework chooses, everything is automatic.
+
+-----------------
+[Back to project](https://github.com/babyfish-ct/graphql-state)
