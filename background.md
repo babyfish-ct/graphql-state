@@ -135,6 +135,7 @@ As explained above, the complexity of this "extra mutations" cannot be limited. 
 
 In short
 > One main mutation causes **N** extra mutations
+
 The more complex the UI, the greater the N, this is the biggest problem of Apollo client and relay. If you use them, you will find that the pain point you face has become cache consistency maintenance, and the degree of pain is positively related to the complexity of the UI.
 
 ## 4. The fourth level, automatically guarantees cache consistency
