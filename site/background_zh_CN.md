@@ -139,4 +139,4 @@ UI越复杂，N就越大，这是Apollo Client和Relay最大的问题。如果�
 
 -----------------
 
-[回到首页](./README_zh_CN.md)
+[回到首页](../README_zh_CN.md)
