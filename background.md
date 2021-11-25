@@ -124,7 +124,7 @@ To allow the cache to complete the above "extra mutations", there are nothing mo
 
 - For Apollo Client:
   - Modify the cache: [https://www.apollographql.com/docs/react/data/mutations/#updating-the-cache-directly](https://www.apollographql.com/docs/react/data/mutations/#updating-the-cache-directly)
- - Refetch: [https://www.apollographql.com/docs/react/data/mutations/#refetching-queries](https://www.apollographql.com/docs/react/data/mutations/#refetching-queries)
+  - Refetch: [https://www.apollographql.com/docs/react/data/mutations/#refetching-queries](https://www.apollographql.com/docs/react/data/mutations/#refetching-queries)
 
 - Relay prefers to modify the cache directly: [https://relay.dev/docs/guided-tour/updating-data/graphql-mutations/#updater-functions](https://relay.dev/docs/guided-tour/updating-data/graphql-mutations/#updater-functions)
 
