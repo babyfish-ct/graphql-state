@@ -8,7 +8,7 @@
 
 This framework provides three major functions
 1. Simple state management: similar to [recoil](https://github.com/facebookexperimental/Recoil)
-2. Graph state management: The core value of this framework, providing services far smarter than [Apollo Client](https://github.com/apollographql/apollo-client) and [Relay](https://github.com/facebook/relay) is the fundamental purpose of the project. Please view [Project Background](./site/background.md) to know more
+2. **Graph state management**: The core value of this framework, providing services far intelligent than [Apollo Client](https://github.com/apollographql/apollo-client) and [Relay](https://github.com/facebook/relay) is the fundamental purpose of the project. Please view [Project Background](./site/background.md) to know more
 3. HTTP optimization: reduce the number of HTTP requests through merge requests and reuse
 
 ## Table of contents
