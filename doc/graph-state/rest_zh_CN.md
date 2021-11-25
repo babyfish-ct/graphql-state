@@ -178,11 +178,11 @@ new RESTNetworkBuilder<Schema>(
 ```
 /booksOfStores?bookStoreIds=...&name=abc
 ```
-默认情况下，批量查询期望的返回类型为
+默认情况下，服务端的返回类型为
 ```ts
 Map<ParentId, Refereance | List | Connection>
 ```
-对这里的例子而言，期待的返回内容如下
+对这里的例子而言，期待的服务端返回内容如下
 ```ts
 {
     bookStoreId1: [
@@ -196,7 +196,7 @@ Map<ParentId, Refereance | List | Connection>
     ]
 }
 ```
-针对服务端的此接口，映射如下
+对此，客户端映射应该如下
 ```ts
 new RESTNetworkBuilder<Schema>(
     "http://localhost:8081/rest/"
@@ -213,10 +213,10 @@ new RESTNetworkBuilder<Schema>(
 
 上面中例子中，服务端返回的是一个Map。
 
-当以下条件满足是
-- 当前关联是一个one-to-many关联
-- 当前关联是返回类型简单的list而非用于分页的connection
-- REST返回子对象数据，且每个子对象都包含父对象的id
+然而，当以下条件全部满足时
+1. 当前关联是一个one-to-many关联
+2. 当前关联是返回类型简单的list而非用于分页的connection
+3. REST返回子对象数据，且每个子对象都包含父对象的id
 
 比如
 ```ts
@@ -228,7 +228,7 @@ new RESTNetworkBuilder<Schema>(
     { id: "bookId5", name: "bookName5", storeId: 'bookStoreId2' }
 ]
 ```
-此时，服务端可以返回一个Array，而不是List。但客户端必须指定groupBy属性，例如
+服务端可以返回一个Array，而不是Map，但客户端必须指定groupBy属性，例如
 ```ts
 new RESTNetworkBuilder<Schema>(
     "http://localhost:8081/rest/"
