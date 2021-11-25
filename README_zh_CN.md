@@ -13,4 +13,4 @@
 - [系统功能和GIF动画演示](./site/function-and-gif_zh_CN.md)
 - [入门向导](./site/get-start_zh_CN.md)
 - [运行附带例子](./site/run-demo_zh_CN.md)
-- [文档](.site/doc/README_zh_CN.md)
+- [文档](./doc/README_zh_CN.md)
