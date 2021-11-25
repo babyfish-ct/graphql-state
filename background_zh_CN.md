@@ -1,4 +1,4 @@
-### 本框架的核心价值是什么，为什么要创建它？
+# 本框架的核心价值是什么，为什么要创建它？
 
 
 本框架的目的是提供远比[Apollo client](https://github.com/apollographql/apollo-client)和[Relay](https://github.com/facebook/relay)智能的服务
