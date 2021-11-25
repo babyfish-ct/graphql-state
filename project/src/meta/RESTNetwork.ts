@@ -341,22 +341,26 @@ class RESTLoader {
             if (field.category === "ID") {
                 continue;
             }
+            const alias = fetcherField.fieldOptionsValue?.alias;
+            if (alias !== undefined && alias !== name && fetchableType.name !== "Query") {
+                throw new Error(`In REST query, alias can only be used on field of 'Query' object, but alias is used on '${field.fullName}'`);
+            }
             const childFetcher = fetcherField.childFetchers === undefined ? undefined : fetcherField.childFetchers[0];
-            const existsValue = target[fetcherField?.fieldOptionsValue?.alias ?? name]; 
+            const existsValue = target[alias ?? name]; 
             if (existsValue !== undefined) {
                 if (childFetcher !== undefined) {
                     this.add(existsValue, childFetcher);
                 }
                 continue;
             }
-            if (existsNames.has(fetcherField?.fieldOptionsValue?.alias ?? name)) {
+            if (existsNames.has(alias ?? name)) {
                 continue;
             }
-            const resolvedArgs = this.resolveArgs(fetcherField.args);
+            const resolvedArgs = this.resolveArgs(fetcherField);
             const dataLoaderKey = dataLoaderKeyOf(
                 field.declaringType.name, 
                 name, 
-                fetcherField.fieldOptionsValue?.alias,
+                alias,
                 resolvedArgs
             );
             let dataLoader = this.dataLoaderMap.get(dataLoaderKey);
@@ -399,12 +403,16 @@ class RESTLoader {
         }
     }
 
-    private resolveArgs(args: any): VariableArgs | undefined {
+    private resolveArgs(field: FetcherField): VariableArgs | undefined {
+        if (field.argGraphQLTypes === undefined || field.argGraphQLTypes.size === 0) {
+            return undefined;
+        }
+        const args = field.args;
         if (args === undefined || args === null) {
             return undefined;
         }
         const resolved = {};
-        for (const name in args) {
+        for (const name of field.argGraphQLTypes.keys()) {
             let value = args[name];
             if (value === undefined || value === null) {
                 continue;
@@ -413,6 +421,9 @@ class RESTLoader {
                 value = this.variables === undefined ? 
                     undefined :
                     this.variables[(value as ParameterRef<any>).name];
+            }
+            if (value === "" && !field.argGraphQLTypes.get(name)!.endsWith("!")) {
+                continue;
             }
             resolved[name] = value;
         }

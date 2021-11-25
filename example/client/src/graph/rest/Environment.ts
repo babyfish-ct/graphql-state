@@ -43,20 +43,20 @@ function createRESTNetworkBuilder(): RESTNetworkBuilder<Schema> {
         }
     )
     .rootAssociation(
-        "findBookStores", (url, variables) => url.path("/bookStores").args(variables)
+        "findBookStores", (url, args) => url.path("/bookStores").args(args)
     )
     .rootAssociation(
-        "findBooks", (url, variables) => url.path("/books").args(variables)
+        "findBooks", (url, args) => url.path("/books").args(args)
     )
     .rootAssociation(
-        "findAuthors", (url, variables) => url.path("/authors").args(variables)
+        "findAuthors", (url, args) => url.path("/authors").args(args)
     )
     .association(
         "BookStore", "books", {
-            batchLoader: (url, ids, variables) => url
+            batchLoader: (url, ids, args) => url
                 .path("/booksOfStores")
                 .arg("storeIds", ids.join(","))
-                .args(variables),
+                .args(args),
             groupBy: "storeId"
         }
     )
@@ -69,18 +69,18 @@ function createRESTNetworkBuilder(): RESTNetworkBuilder<Schema> {
     )
     .association(
         "Book", "authors", {
-            batchLoader: (url, ids, variables) => url
+            batchLoader: (url, ids, args) => url
                 .path("/authorsOfBooks")
                 .arg("bookIds", ids.join(","))
-                .args(variables)
+                .args(args)
         }
     )
     .association(
         "Author", "books", {
-            batchLoader: (url, ids, variables) => url
+            batchLoader: (url, ids, args) => url
                 .path("/booksOfAuthors")
                 .arg("authorIds", ids.join(","))
-                .args(variables)
+                .args(args)
         }
     );
 }

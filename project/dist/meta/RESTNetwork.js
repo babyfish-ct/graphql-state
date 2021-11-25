@@ -196,7 +196,7 @@ class RESTLoader {
         this.dataLoaderMap = new Map();
     }
     add(target, fetcher) {
-        var _a, _b, _c, _d, _e, _f, _g;
+        var _a, _b, _c;
         const type = this.schema.typeMap.get(fetcher.fetchableType.name);
         if (type === undefined) {
             throw new Error(`Illegal type '${fetcher.fetchableType.name}'`);
@@ -219,19 +219,23 @@ class RESTLoader {
             if (field.category === "ID") {
                 continue;
             }
+            const alias = (_a = fetcherField.fieldOptionsValue) === null || _a === void 0 ? void 0 : _a.alias;
+            if (alias !== undefined && alias !== name && fetchableType.name !== "Query") {
+                throw new Error(`In REST query, alias can only be used on field of 'Query' object, but alias is used on '${field.fullName}'`);
+            }
             const childFetcher = fetcherField.childFetchers === undefined ? undefined : fetcherField.childFetchers[0];
-            const existsValue = target[(_b = (_a = fetcherField === null || fetcherField === void 0 ? void 0 : fetcherField.fieldOptionsValue) === null || _a === void 0 ? void 0 : _a.alias) !== null && _b !== void 0 ? _b : name];
+            const existsValue = target[alias !== null && alias !== void 0 ? alias : name];
             if (existsValue !== undefined) {
                 if (childFetcher !== undefined) {
                     this.add(existsValue, childFetcher);
                 }
                 continue;
             }
-            if (existsNames.has((_d = (_c = fetcherField === null || fetcherField === void 0 ? void 0 : fetcherField.fieldOptionsValue) === null || _c === void 0 ? void 0 : _c.alias) !== null && _d !== void 0 ? _d : name)) {
+            if (existsNames.has(alias !== null && alias !== void 0 ? alias : name)) {
                 continue;
             }
-            const resolvedArgs = this.resolveArgs(fetcherField.args);
-            const dataLoaderKey = dataLoaderKeyOf(field.declaringType.name, name, (_e = fetcherField.fieldOptionsValue) === null || _e === void 0 ? void 0 : _e.alias, resolvedArgs);
+            const resolvedArgs = this.resolveArgs(fetcherField);
+            const dataLoaderKey = dataLoaderKeyOf(field.declaringType.name, name, alias, resolvedArgs);
             let dataLoader = this.dataLoaderMap.get(dataLoaderKey);
             if (dataLoader === undefined) {
                 const userLoader = this.userLoaderMap.get(`${field.declaringType.name}.${name}`);
@@ -260,7 +264,7 @@ class RESTLoader {
                 if (idFetcherField === undefined) {
                     throw new Error(`The id field of "${fetchableType.name}" must be fetched`);
                 }
-                id = target[(_g = (_f = idFetcherField.fieldOptionsValue) === null || _f === void 0 ? void 0 : _f.alias) !== null && _g !== void 0 ? _g : idField.name];
+                id = target[(_c = (_b = idFetcherField.fieldOptionsValue) === null || _b === void 0 ? void 0 : _b.alias) !== null && _c !== void 0 ? _c : idField.name];
                 if (id === undefined || id === null) {
                     throw new Error(`The id of "${fetchableType.name}" cannot be undefined or null`);
                 }
@@ -272,12 +276,16 @@ class RESTLoader {
             arr.push(target);
         }
     }
-    resolveArgs(args) {
+    resolveArgs(field) {
+        if (field.argGraphQLTypes === undefined || field.argGraphQLTypes.size === 0) {
+            return undefined;
+        }
+        const args = field.args;
         if (args === undefined || args === null) {
             return undefined;
         }
         const resolved = {};
-        for (const name in args) {
+        for (const name of field.argGraphQLTypes.keys()) {
             let value = args[name];
             if (value === undefined || value === null) {
                 continue;
@@ -286,6 +294,9 @@ class RESTLoader {
                 value = this.variables === undefined ?
                     undefined :
                     this.variables[value.name];
+            }
+            if (value === "" && !field.argGraphQLTypes.get(name).endsWith("!")) {
+                continue;
             }
             resolved[name] = value;
         }
