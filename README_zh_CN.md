@@ -9,8 +9,8 @@
 3. HTTP优化：通过合并请求和重用请用来减少HTTP请求数量
 
 ## 目录
-- [项目背景](./background_zh_CN.md)
-- [系统功能和GIF动画演示](./function-and-gif_zh_CN.md)
-- [入门向导](./get-start_zh_CN.md)
-- [运行附带例子](./run-demo_zh_CN.md)
-- [文档](./doc/README_zh_CN.md)
+- [项目背景](./site/background_zh_CN.md)
+- [系统功能和GIF动画演示](./site/function-and-gif_zh_CN.md)
+- [入门向导](./site/get-start_zh_CN.md)
+- [运行附带例子](./site/run-demo_zh_CN.md)
+- [文档](.site/doc/README_zh_CN.md)
