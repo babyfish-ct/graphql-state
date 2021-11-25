@@ -1,4 +1,4 @@
-# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../README_zh_CN.md)/图状态(./README_zh_CN.md)/访问REST服务
+# [graphql-state](https://github.com/babyfish-ct/graphql-state)/[文档](../README_zh_CN.md)/[图状态](./README_zh_CN.md)/访问REST服务
 
 考虑到大量的现有服务端基于REST，本框架支持在客户端将REST服务模拟成GraphQL服务，以GraphQL的语义进行查询，并享受[graphql-ts-client](https://github.com/babyfish-ct/graphql-state)提供的语法糖
 
