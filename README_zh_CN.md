@@ -1,7 +1,9 @@
 # 一个新的React状态管理框架([English](https://github.com/babyfish-ct/graphql-state) | 中文)
 
 > 注意：
+> 
 > GraphQL风格，但不只是GraphQL。
+> 
 > 对于REST服务，本框架能够在客户端将之映射为GraphQL服务，以GraphQL强大的语义访问REST服务！
 
 本框架提供三大功能
