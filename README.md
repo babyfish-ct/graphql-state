@@ -4,7 +4,7 @@
 
 ## Project description
 
-What is the essence of UI?
+What is the essence of UI state?
 > One main mutation causes **N** extra mutations. The more complex the UI, the larger the **N**.
 
 *(If you have ever developed more complex UI, you will resonate with it. If not, don’t worry, let's discuss it together in the [Project context](./site/background.md).)*
