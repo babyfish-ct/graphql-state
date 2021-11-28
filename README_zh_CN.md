@@ -11,7 +11,7 @@ UI状态的本质是什么?
 
 本框架允许用户只关注主变更, 而其它额外修改都会被自动处理。
 
-*相较于[Apollo client](https://github.com/apollographql/apollo-client)和[Relay](https://github.com/facebook/relay)，在变更之后，你只需要把主变更保存到本地缓存即可。既不需要再本地缓存中人为修改其它受影响的数据，也不需要指定哪些查询会被影响而需要重新获取，因为额外变更会被自动处理。*
+*相较于[Apollo client](https://github.com/apollographql/apollo-client)和[Relay](https://github.com/facebook/relay)，在变更之后，你只需要把主变更保存到本地缓存即可。既不需要在本地缓存中人为修改其它受影响的数据，也不需要指定哪些查询会被影响而需要重新获取，因为额外变更都会被自动处理。*
 
 ## 目录
 - [项目背景](./site/background_zh_CN.md)
