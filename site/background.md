@@ -2,7 +2,7 @@
 
 ## Essence of UI state
 
-**One main mutation causes "N" extra mutations. The more complex the UI, the larger the "N".**
+One main mutation causes **N** extra mutations. The more complex the UI, the larger the **N**.
 
 ## Why?
 
