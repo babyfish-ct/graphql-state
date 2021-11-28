@@ -6,7 +6,7 @@
 
 ## Why?
 
-Let image the data
+Let's image some data like this
 ```js
 {
     "Query": {
