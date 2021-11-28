@@ -1,6 +1,6 @@
 # What is the value of this framework and why it was created?
 
-## Core point:
+## Essence of UI state:
 
 **One main mutation causes "N" extra mutations. The more complex the UI, the larger the "N".**
 
