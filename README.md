@@ -9,7 +9,7 @@ What is the essence of UI state?
 
 *(If you have ever developed more complex UI, you will resonate with it. If not, don’t worry, let's discuss it together in the [Project context](./site/background.md).)*
 
-This is the essence of UI, also the biggest trouble of UI development.
+This is the essence of UI state, also the biggest trouble of UI development.
 
 **The framework allows developers to focus only on the main mutation, because extra mutations are handled automatically**
 
