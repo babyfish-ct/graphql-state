@@ -11,7 +11,7 @@ What is the essence of UI?
 
 This is the essence of UI, also the biggest trouble of UI development.
 
-**The framework allows developers to focus only on the main changes, because extra mutations are handled automatically**
+**The framework allows developers to focus only on the main mutation, because extra mutations are handled automatically**
 
 ## About REST
 
