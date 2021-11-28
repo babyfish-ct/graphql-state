@@ -6,7 +6,7 @@ One main mutation causes **N** extra mutations. The more complex the UI, the lar
 
 ## Why?
 
-Let's image some data like this
+For example, the existing data is as follows
 ```js
 {
     "Query": {
