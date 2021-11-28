@@ -84,7 +84,7 @@ This is the biggest problem of [Apollo Client](https://github.com/apollographql/
 
 This framework let developer only focus on main mutation, extra mutations will be handled automatically.
 
-*Compare with [Apollo client](https://github.com/apollographql/apollo-client) and [Relay](https://github.com/facebook/relay), after mutation, you only need to save the main mutation into local cache. neither need to manually change other affected data in the local cache, nor need to specify which queries will be affected and need to be refetched, because of all the extra mutations is handled automatically.*
+Compare with [Apollo client](https://github.com/apollographql/apollo-client) and [Relay](https://github.com/facebook/relay), after mutation, you only need to save the main mutation into local cache. neither need to manually change other affected data in the local cache, nor need to specify which queries will be affected and need to be refetched, because of all the extra mutations is handled automatically.
 
 Fo this framework, directly modifying cache is preferred behavior, if not feasible, it will be upgraded to refetch affected queries behavior. No matter how the framework chooses, everything is automatic.
 
