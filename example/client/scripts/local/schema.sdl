@@ -1,0 +1,24 @@
+type BookStore {
+    id: ID!
+    name: String!
+    books: [Book!]!
+}
+
+type Book {
+    id: ID!
+    name: String!
+    store: BookStore
+    authors: [Author!]!
+}
+
+type Author {
+    id: ID!
+    name: String!
+    books: [Book!]!
+}
+
+type Query {
+    bookStores: [BookStore!]!
+    books: [Book!]!
+    authors: [Author!]!
+}

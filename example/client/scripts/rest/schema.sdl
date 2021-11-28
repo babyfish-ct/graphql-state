@@ -1,0 +1,68 @@
+type BookStore {
+    id: ID!
+    name: String!
+    books(name: String): [Book!]!
+}
+
+type Book {
+    id: ID!
+    name: String!
+    store: BookStore
+    authors(name: String): [Author!]!
+}
+
+type Author {
+    id: ID!
+    name: String!
+    books(name: String): [Book!]!
+}
+
+type Query {
+
+    findBookStores(name: String): [BookStore!]!
+    
+    findBooks(
+        name: String,
+        first: Int,
+        after: String,
+        last: Int,
+        before: String
+    ): BookConnection!
+    
+    findAuthors(
+        name: String,
+        first: Int,
+        after: String,
+        last: Int,
+        before: String
+    ): AuthorConnection!
+}
+
+type PageInfo {
+    hasNextPage: Boolean!
+    hasPreviousPage: Boolean!
+    startCursor: String!
+    endCursor: String!
+}
+
+type BookConnection {
+    totalCount: Int!,
+    edges: [BookEdge!]!
+    pageInfo: PageInfo!
+}
+
+type BookEdge {
+    node: Book!
+    cursor: String!
+}
+
+type AuthorConnection {
+    totalCount: Int!,
+    edges: [AuthorEdge!]!
+    pageInfo: PageInfo!
+}
+
+type AuthorEdge {
+    node: Author!
+    cursor: String!
+}

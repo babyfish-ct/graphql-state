@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2015",
+    "declaration": true,
+    "outDir": "./dist",
+    "skipLibCheck": true,
+    "strictNullChecks": true,
+    "jsx": "react-jsx",
+  },
+  "include": [
+    "src/**/*"  
+, "babel.config.js", "test.setup.js", "src/__tests__/WritableState.test.tsx"  ],
+  "exclude": [
+    "src/__tests__/**/*",
+    "node_modules",
+    "./node_modules",
+    "./node_modules/*",
+    "./node_modules/@types/node/index.d.ts",
+  ]
+}

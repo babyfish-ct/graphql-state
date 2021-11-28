@@ -1,0 +1,15 @@
+type Department {
+    id: ID!
+    name: String!
+    employees(descending: Boolean): [Employee!]!
+}
+
+type Employee {
+    id: ID!
+    name: String!
+    department: Department!
+}
+
+type Query {
+    findDepartments(name: String): [Department!]!
+}
