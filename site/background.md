@@ -59,7 +59,7 @@ Here are some classic cases(Not all):
    3. Insert an object. Is it possible that it needs to be automatically added to the associated collection of other objects? If necessary, where to add it?
    4. Link the **A** object to an associated field of the **B** object, or unlink the **A** object from an associated field of the **B** object. If the **A** object also has a reverse associated field that references the **B** object, is this reverse associated field also need to be modified?
 
-There are many possibilities like this，so
+There are many possibilities like this, so
 > One main mutation causes **N** extra mutations. The more complex the UI, the larger the **N**
 
 How to apply "extra mutations"? Two methods:
