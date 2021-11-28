@@ -86,7 +86,7 @@ This framework let developer only focus on main mutation, extra mutations will b
 
 Compare with [Apollo client](https://github.com/apollographql/apollo-client) and [Relay](https://github.com/facebook/relay), after mutation, you only need to save the main mutation into local cache. neither need to manually change other affected data in the local cache, nor need to specify which queries will be affected and need to be refetched, because of all the extra mutations is handled automatically.
 
-Fo this framework, directly modifying cache is preferred behavior, if not feasible, it will be upgraded to refetch affected queries behavior. No matter how the framework chooses, everything is automatic.
+Inside the framework, it will first try to apply extra mutations by modifying the local cache, if this is not feasible, it will automatically determine which queries are affected and have to be refetched. No matter how the framework chooses, everything is automatic.
 
 -----------------
 [Back to home](https://github.com/babyfish-ct/graphql-state)
