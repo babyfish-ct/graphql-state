@@ -1,7 +1,9 @@
+import { SimpleState, SimpleStateScope } from "../Monitor";
 import { State, StateCreationScope } from "../State";
 import { StateAccessingScope } from "../Types";
 import { StateInstance } from "./StateInstance";
 import { StateManagerImpl } from "./StateManagerImpl";
+import { compare } from "./util";
 
 export class ScopedStateManager {
 
@@ -141,4 +143,27 @@ export class ScopedStateManager {
             throw exception;
         }
     }
+
+    monitor(): SimpleStateScope {
+
+        const states: SimpleState[] = Array
+            .from(this._instanceMap.values())
+            .map(value => value.mintor());
+        states.sort((a, b) => compare(a, b, "name"));
+
+        const scopes: SimpleStateScope[] = [];
+        if (this._childMap !== undefined) {
+            for (const child of this._childMap.values()) {
+                scopes.push(child.monitor());
+            }
+        }
+        scopes.sort((a, b) => compare(a, b, "name"));
+        
+        return {
+            name: this.name ?? "",
+            states,
+            scopes
+        }
+    }
 }
+

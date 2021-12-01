@@ -27,6 +27,8 @@ export abstract class StateValue {
 
     abstract get result(): any;
 
+    abstract get rawData(): any;
+
     abstract get loadable(): Loadable;
 
     retain(): this {

@@ -6,11 +6,11 @@ import { QueryResult } from "../../entities/QueryResult";
 import { Network } from "../../meta/Network";
 import { SchemaMetadata } from "../../meta/impl/SchemaMetadata";
 import { SchemaType } from "../../meta/SchemaType";
-import { StateManager, TransactionStatus } from "../StateManager";
+import { StateManager } from "../StateManager";
 import { ReleasePolicy } from "../Types";
 import { ScopedStateManager } from "./ScopedStateManager";
 import { StateValue } from "./StateValue";
-import { UndoManagerImpl } from "./UndoManagerImpl";
+import { SimpleStateScope } from "../Monitor";
 export declare class StateManagerImpl<TSchema extends SchemaType> implements StateManager<TSchema> {
     readonly network?: Network | undefined;
     releasePolicy: ReleasePolicy<any>;
@@ -20,7 +20,6 @@ export declare class StateManagerImpl<TSchema extends SchemaType> implements Sta
     private _entityManager;
     constructor(schema?: SchemaMetadata, network?: Network | undefined);
     get entityManager(): EntityManager;
-    get undoManager(): UndoManagerImpl;
     save<T extends object, TVariables extends object = {}>(fetcher: ObjectFetcher<string, T, any>, obj: T, variables?: TVariables): void;
     delete<TName extends keyof TSchema["entities"] & string>(typeName: TName, idOrArray: TSchema["entities"][TName][" $id"] | ReadonlyArray<TSchema["entities"][TName][" $id"] | undefined> | undefined): void;
     evict<TName extends keyof TSchema["entities"] & string>(typeName: TName, idOrArray?: TSchema["entities"][TName][" $id"] | ReadonlyArray<TSchema["entities"][TName][" $id"] | undefined> | undefined): void;
@@ -41,7 +40,6 @@ export declare class StateManagerImpl<TSchema extends SchemaType> implements Sta
         readonly [TName in keyof TSchema["entities"] & string]?: (e: TSchema["entities"][TName][" $changeEvent"]) => void;
     }): void;
     scope(path: string): ScopedStateManager;
-    transaction<TResult>(callback: (ts: TransactionStatus) => TResult): TResult;
     addStateValueChangeListener(listener: StateValueChangeListener): void;
     removeStateValueChangeListener(listener: StateValueChangeListener): void;
     publishStateValueChangeEvent(e: StateValueChangeEvent): void;
@@ -50,6 +48,7 @@ export declare class StateManagerImpl<TSchema extends SchemaType> implements Sta
     publishQueryResultChangeEvent(e: QueryResultChangeEvent): void;
     suspendBidirectionalAssociationManagement<T>(action: () => T): T;
     dispose(): void;
+    simpleStateMonitor(): SimpleStateScope;
 }
 export declare type StateValueChangeListener = (e: StateValueChangeEvent) => void;
 export interface StateValueChangeEvent {

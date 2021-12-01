@@ -1,3 +1,4 @@
+import { SimpleStateScope } from "../Monitor";
 import { State } from "../State";
 import { StateAccessingScope } from "../Types";
 import { StateInstance } from "./StateInstance";
@@ -19,4 +20,5 @@ export declare class ScopedStateManager {
     private getInstance;
     private createInstance;
     dispose(): void;
+    monitor(): SimpleStateScope;
 }

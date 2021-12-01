@@ -5,6 +5,7 @@ const EntityManager_1 = require("../../entities/EntityManager");
 const RuntimeShape_1 = require("../../entities/RuntimeShape");
 const SchemaMetadata_1 = require("../../meta/impl/SchemaMetadata");
 const ScopedStateManager_1 = require("./ScopedStateManager");
+const Monitor_1 = require("../Monitor");
 class StateManagerImpl {
     constructor(schema, network) {
         this.network = network;
@@ -24,9 +25,6 @@ class StateManagerImpl {
     }
     get entityManager() {
         return this._entityManager;
-    }
-    get undoManager() {
-        throw new Error();
     }
     save(fetcher, obj, variables) {
         if (!this.entityManager.schema.isAcceptable(fetcher.fetchableType)) {
@@ -87,9 +85,6 @@ class StateManagerImpl {
     scope(path) {
         return this._rootScope.subScope(path);
     }
-    transaction(callback) {
-        throw new Error();
-    }
     addStateValueChangeListener(listener) {
         if (this._stateValueChangeListeners.has(listener)) {
             throw new Error(`Cannot add existing listener`);
@@ -102,6 +97,7 @@ class StateManagerImpl {
         this._stateValueChangeListeners.delete(listener);
     }
     publishStateValueChangeEvent(e) {
+        Monitor_1.postSimpleStateMessage(e.stateValue, "update", e.stateValue.rawData);
         for (const listener of this._stateValueChangeListeners) {
             listener(e);
         }
@@ -130,6 +126,9 @@ class StateManagerImpl {
         this._queryResultChangeListeners.clear();
         this._entityManager = new EntityManager_1.EntityManager(this, this._entityManager.schema);
         this._rootScope.dispose();
+    }
+    simpleStateMonitor() {
+        return this._rootScope.monitor();
     }
 }
 exports.StateManagerImpl = StateManagerImpl;

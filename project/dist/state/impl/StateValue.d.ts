@@ -12,6 +12,7 @@ export declare abstract class StateValue {
     private _createdMillis;
     constructor(stateInstance: StateInstance, args: VariableArgs | undefined, disposer: () => void);
     abstract get result(): any;
+    abstract get rawData(): any;
     abstract get loadable(): Loadable;
     retain(): this;
     release(releasePolicy?: ReleasePolicy<any>): void;

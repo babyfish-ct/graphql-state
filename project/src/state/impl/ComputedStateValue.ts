@@ -41,6 +41,10 @@ export class ComputedStateValue extends StateValue {
         return this.compute();
     }
 
+    get rawData(): any {
+        return this._loadable.data;
+    }
+
     get loadable(): Loadable {
         this.compute();
         return this._loadable;
@@ -155,6 +159,11 @@ export class ComputedStateValue extends StateValue {
                         this.stateInstance.release(this.args, asyncLoadingReleasePolicy); // Self holding during Async computing
                     }
                 });
+        } else {
+            this.stateInstance.scopedStateManager.stateManager.publishStateValueChangeEvent({
+                stateValue: this,
+                changedType: "RESULT_CHANGE"
+            });
         }
         this._loadable = {
             loading: false,

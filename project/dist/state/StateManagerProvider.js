@@ -4,6 +4,7 @@ exports.stateContext = exports.StateManagerProvider = void 0;
 const jsx_runtime_1 = require("react/jsx-runtime");
 const react_1 = require("react");
 const StateManagerImpl_1 = require("./impl/StateManagerImpl");
+const Monitor_1 = require("./Monitor");
 exports.StateManagerProvider = react_1.memo(({ stateManager, releasePolicy, children }) => {
     var _a;
     const externalStateManager = react_1.useContext(exports.stateContext);
@@ -14,14 +15,17 @@ exports.StateManagerProvider = react_1.memo(({ stateManager, releasePolicy, chil
     if (releasePolicy !== undefined) {
         finallyUsedStateManager.releasePolicy = releasePolicy;
     }
-    // Use this to debug before chrome extension to visualize the data is supported in the future
-    window.__STATE_MANAGER__ = finallyUsedStateManager;
     react_1.useEffect(() => {
+        const version = stateManagerVersion++;
+        window.__STATE_MANAGER__ = finallyUsedStateManager;
+        Monitor_1.postStateManagerMessage(true, version);
         return () => {
             window.__STATE_MANAGER__ = undefined;
+            Monitor_1.postStateManagerMessage(false, version);
             finallyUsedStateManager.dispose();
         };
-    }, [finallyUsedStateManager]);
+    }, [stateManager]);
     return (jsx_runtime_1.jsx(exports.stateContext.Provider, Object.assign({ value: finallyUsedStateManager }, { children: children }), void 0));
 });
 exports.stateContext = react_1.createContext(undefined);
+let stateManagerVersion = 0;

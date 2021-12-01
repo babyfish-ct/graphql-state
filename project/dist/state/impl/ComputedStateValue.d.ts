@@ -11,6 +11,7 @@ export declare class ComputedStateValue extends StateValue {
     constructor(stateInstance: StateInstance, args: VariableArgs | undefined, disposer: () => void);
     invalidate(): void;
     get result(): any;
+    get rawData(): any;
     get loadable(): Loadable;
     compute(parentContext?: InternalComputedContext): any;
     protected createMountContext(): any;

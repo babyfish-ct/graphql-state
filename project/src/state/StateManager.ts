@@ -5,10 +5,6 @@ import { SchemaType } from "../meta/SchemaType";
 
 export interface StateManager<TSchema extends SchemaType> {
 
-    readonly undoManager: UndoManager;
-
-    transaction<TResult>(callback: (ts: TransactionStatus) => TResult): TResult;
-
     save<TName extends (keyof TSchema["entities"] & string) | "Query", T extends object, TVariables extends object = {}>(
         fetcher: ObjectFetcher<TName, T, any>,
         obj: T,
@@ -78,23 +74,6 @@ export interface StateManager<TSchema extends SchemaType> {
     ): void;
 
     suspendBidirectionalAssociationManagement<T>(action: () => T): T;
-}
-
-export interface UndoManager {
-
-    readonly isUndoable: boolean;
-
-    readonly isRedoable: boolean;
-
-    undo(): void;
-    
-    redo(): void;
-
-    clear(): void;
-}
-
-export interface TransactionStatus {
-    setRollbackOnly(): void;
 }
 
 export type RecursivePartial<T> = 

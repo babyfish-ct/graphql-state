@@ -3,8 +3,6 @@ import { EntityChangeEvent } from "..";
 import { EntityEvictEvent } from "../entities/EntityEvent";
 import { SchemaType } from "../meta/SchemaType";
 export interface StateManager<TSchema extends SchemaType> {
-    readonly undoManager: UndoManager;
-    transaction<TResult>(callback: (ts: TransactionStatus) => TResult): TResult;
     save<TName extends (keyof TSchema["entities"] & string) | "Query", T extends object, TVariables extends object = {}>(fetcher: ObjectFetcher<TName, T, any>, obj: T, variables?: TVariables): void;
     save<TName extends keyof TSchema["entities"] & string, T extends object, TVariables extends object = {}>(fetcher: ObjectFetcher<TName, T, any>, objs: readonly T[], variables?: TVariables): void;
     delete<TName extends keyof TSchema["entities"] & string>(typeName: TName, id: TSchema["entities"][TName][" $id"] | undefined): void;
@@ -29,16 +27,6 @@ export interface StateManager<TSchema extends SchemaType> {
         readonly [TName in keyof TSchema["entities"] & string]?: (e: TSchema["entities"][TName][" $changeEvent"]) => void;
     }): void;
     suspendBidirectionalAssociationManagement<T>(action: () => T): T;
-}
-export interface UndoManager {
-    readonly isUndoable: boolean;
-    readonly isRedoable: boolean;
-    undo(): void;
-    redo(): void;
-    clear(): void;
-}
-export interface TransactionStatus {
-    setRollbackOnly(): void;
 }
 export declare type RecursivePartial<T> = T extends object ? {
     [P in keyof T]?: RecursivePartial<T[P]>;

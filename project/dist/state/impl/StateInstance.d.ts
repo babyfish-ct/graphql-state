@@ -1,3 +1,4 @@
+import { SimpleState } from "../Monitor";
 import { State } from "../State";
 import { ReleasePolicy } from "../Types";
 import { VariableArgs } from "./Args";
@@ -11,4 +12,5 @@ export declare class StateInstance {
     retain(args: VariableArgs | undefined): StateValue;
     release(args: VariableArgs | undefined, releasePolicy?: ReleasePolicy<any>): void;
     dispose(): void;
+    mintor(): SimpleState;
 }

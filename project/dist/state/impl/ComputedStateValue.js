@@ -24,6 +24,9 @@ class ComputedStateValue extends StateValue_1.StateValue {
     get result() {
         return this.compute();
     }
+    get rawData() {
+        return this._loadable.data;
+    }
     get loadable() {
         this.compute();
         return this._loadable;
@@ -131,6 +134,12 @@ class ComputedStateValue extends StateValue_1.StateValue {
                 finally {
                     this.stateInstance.release(this.args, asyncLoadingReleasePolicy); // Self holding during Async computing
                 }
+            });
+        }
+        else {
+            this.stateInstance.scopedStateManager.stateManager.publishStateValueChangeEvent({
+                stateValue: this,
+                changedType: "RESULT_CHANGE"
             });
         }
         this._loadable = {

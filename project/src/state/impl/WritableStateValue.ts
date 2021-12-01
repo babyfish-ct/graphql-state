@@ -29,6 +29,10 @@ export class WritableStateValue extends StateValue {
         return this._lodable.data;
     }
 
+    get rawData(): any {
+        return this._lodable.data;
+    }
+
     get loadable(): Loadable {
         return this._lodable;
     }
