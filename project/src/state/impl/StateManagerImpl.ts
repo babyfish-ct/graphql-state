@@ -15,6 +15,8 @@ import { postSimpleStateMessage, SimpleStateScope } from "../Monitor";
 
 export class StateManagerImpl<TSchema extends SchemaType> implements StateManager<TSchema> {
 
+    readonly id = `${new Date().getTime()}-${++sequenceNumber}`;
+
     releasePolicy: ReleasePolicy<any>;
     
     private _rootScope = new ScopedStateManager(this);
@@ -190,6 +192,7 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
     }
 
     simpleStateMonitor(): SimpleStateScope {
+        console.log("monitor: " + this.id);
         return this._rootScope.monitor();
     }
 }
@@ -208,3 +211,5 @@ export interface QueryResultChangeEvent {
     readonly queryResult: QueryResult;
     readonly changedType: "RESULT_CHANGE" | "ASYNC_STATE_CHANGE";
 }
+
+let sequenceNumber = 0;

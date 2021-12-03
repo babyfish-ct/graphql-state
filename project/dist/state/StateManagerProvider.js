@@ -16,16 +16,16 @@ exports.StateManagerProvider = react_1.memo(({ stateManager, releasePolicy, chil
         finallyUsedStateManager.releasePolicy = releasePolicy;
     }
     react_1.useEffect(() => {
-        const version = stateManagerVersion++;
         window.__STATE_MANAGER__ = finallyUsedStateManager;
-        Monitor_1.postStateManagerMessage(true, version);
+        setTimeout(() => {
+            Monitor_1.postStateManagerMessage(finallyUsedStateManager.id);
+        }, 0);
         return () => {
             window.__STATE_MANAGER__ = undefined;
-            Monitor_1.postStateManagerMessage(false, version);
+            Monitor_1.postStateManagerMessage(undefined);
             finallyUsedStateManager.dispose();
         };
-    }, [stateManager]);
+    }, [finallyUsedStateManager.id]);
     return (jsx_runtime_1.jsx(exports.stateContext.Provider, Object.assign({ value: finallyUsedStateManager }, { children: children }), void 0));
 });
 exports.stateContext = react_1.createContext(undefined);
-let stateManagerVersion = 0;

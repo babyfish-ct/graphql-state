@@ -23,16 +23,17 @@ export const StateManagerProvider: FC<
 
     useEffect(() => {
         
-        const version = stateManagerVersion++;
         (window as any).__STATE_MANAGER__ = finallyUsedStateManager;
-        postStateManagerMessage(true, version);
+        setTimeout(() => {
+            postStateManagerMessage(finallyUsedStateManager.id);
+        }, 0);
 
         return () => {
             (window as any).__STATE_MANAGER__ = undefined;
-            postStateManagerMessage(false, version);
+            postStateManagerMessage(undefined);
             finallyUsedStateManager.dispose();
         }
-    }, [stateManager]);
+    }, [finallyUsedStateManager.id]);
 
     return (
         <stateContext.Provider value={finallyUsedStateManager}>
@@ -42,5 +43,3 @@ export const StateManagerProvider: FC<
 });
 
 export const stateContext = createContext<StateManagerImpl<any> | undefined>(undefined);
-
-let stateManagerVersion = 0;

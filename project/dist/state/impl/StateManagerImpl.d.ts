@@ -13,6 +13,7 @@ import { StateValue } from "./StateValue";
 import { SimpleStateScope } from "../Monitor";
 export declare class StateManagerImpl<TSchema extends SchemaType> implements StateManager<TSchema> {
     readonly network?: Network | undefined;
+    readonly id: string;
     releasePolicy: ReleasePolicy<any>;
     private _rootScope;
     private _stateValueChangeListeners;

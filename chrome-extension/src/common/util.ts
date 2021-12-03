@@ -106,3 +106,46 @@ export function setScopeValue(
         }
     }
 }
+
+export function visitScope(
+    scope: SimpleStateScope,
+    visitor: {
+        readonly scope?: (path: string, scope: SimpleStateScope) => void,
+        readonly state?: (path: string, state: SimpleState) => void
+    }
+) {
+    visitScope0("/", scope, visitor);
+}
+
+export function visitScope0(
+    path: string,
+    scope: SimpleStateScope,
+    visitor: {
+        readonly scope?: (path: string, scope: SimpleStateScope) => void,
+        readonly state?: (path: string, state: SimpleState) => void
+    }
+) {
+    const childPath = childPathOf(path, scope.name, true);
+    if (visitor.scope !== undefined) {
+        visitor.scope(childPath, scope);
+    }
+    if (visitor.state !== undefined) {
+        for (const state of scope.states) {
+            visitor.state(childPathOf(childPath, state.name, false), state);
+        }
+    }
+    for (const child of scope.scopes) {
+        visitScope0(childPath, child, visitor);
+    }
+}
+
+export function childPathOf(path: string, childName: string, isChildScope: boolean): string {
+    const name = isChildScope ? 
+        (childName === "" ? "globalScope" : `scope(${childName})`) : 
+        childName
+    ;
+    if (path === "" || path === "/") {
+        return `/${name}`;
+    }
+    return `${path}/${name}`;
+}

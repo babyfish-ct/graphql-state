@@ -1,5 +1,5 @@
 import { StateValue } from "./impl/StateValue";
-export declare function postStateManagerMessage(has: boolean, version: number): void;
+export declare function postStateManagerMessage(stateManagerId?: string): void;
 export declare function postSimpleStateMessage(stateValue: StateValue, changeType: ChangeType, data?: any): void;
 export declare type Message = StateManagerMessage | SimpleStateMessage;
 interface AbstractMessage {
@@ -7,11 +7,11 @@ interface AbstractMessage {
 }
 export interface StateManagerMessage extends AbstractMessage {
     readonly messageType: "stateManagerChange";
-    readonly has: boolean;
-    readonly version: number;
+    readonly stateManagerId?: string;
 }
 export interface SimpleStateMessage extends AbstractMessage {
     readonly messageType: "simpleStateChange";
+    readonly stateManagerId: string;
     readonly changeType: ChangeType;
     readonly scopePath: string;
     readonly name: string;

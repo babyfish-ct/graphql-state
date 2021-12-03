@@ -1,11 +1,10 @@
 import { StateValue } from "./impl/StateValue";
 
-export function postStateManagerMessage(has: boolean, version: number) {
+export function postStateManagerMessage(stateManagerId?: string) {
     const message: StateManagerMessage =  {
         messageDomain: "graphQLStateMonitor",
         messageType: "stateManagerChange",
-        has,
-        version
+        stateManagerId
     };
     postMessage(message, "*");
 }
@@ -19,13 +18,13 @@ export function postSimpleStateMessage(
         const message: SimpleStateMessage = {
             messageDomain: "graphQLStateMonitor",
             messageType: "simpleStateChange",
+            stateManagerId: stateValue.stateInstance.scopedStateManager.stateManager.id,
             changeType,
             scopePath: stateValue.stateInstance.scopedStateManager.path,
             name: stateValue.stateInstance.state[" $name"],
             parameter: stateValue.args?.key ?? (stateValue.stateInstance.state[" $parameterized"] ? "" : undefined),
             data: changeType === "update" ? data : undefined 
         };
-        console.log('send', message);
         postMessage(message, "*");
     }
 }
@@ -38,12 +37,12 @@ interface AbstractMessage {
 
 export interface StateManagerMessage extends AbstractMessage {
     readonly messageType: "stateManagerChange";
-    readonly has: boolean;
-    readonly version: number;
+    readonly stateManagerId?: string;
 }
 
 export interface SimpleStateMessage extends AbstractMessage {
     readonly messageType: "simpleStateChange";
+    readonly stateManagerId: string;
     readonly changeType: ChangeType,
     readonly scopePath: string;
     readonly name: string;

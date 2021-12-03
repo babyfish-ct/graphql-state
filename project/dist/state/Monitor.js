@@ -1,12 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.postSimpleStateMessage = exports.postStateManagerMessage = void 0;
-function postStateManagerMessage(has, version) {
+function postStateManagerMessage(stateManagerId) {
     const message = {
         messageDomain: "graphQLStateMonitor",
         messageType: "stateManagerChange",
-        has,
-        version
+        stateManagerId
     };
     postMessage(message, "*");
 }
@@ -17,13 +16,13 @@ function postSimpleStateMessage(stateValue, changeType, data) {
         const message = {
             messageDomain: "graphQLStateMonitor",
             messageType: "simpleStateChange",
+            stateManagerId: stateValue.stateInstance.scopedStateManager.stateManager.id,
             changeType,
             scopePath: stateValue.stateInstance.scopedStateManager.path,
             name: stateValue.stateInstance.state[" $name"],
             parameter: (_c = (_b = stateValue.args) === null || _b === void 0 ? void 0 : _b.key) !== null && _c !== void 0 ? _c : (stateValue.stateInstance.state[" $parameterized"] ? "" : undefined),
             data: changeType === "update" ? data : undefined
         };
-        console.log('send', message);
         postMessage(message, "*");
     }
 }

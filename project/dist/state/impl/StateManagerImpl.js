@@ -9,6 +9,7 @@ const Monitor_1 = require("../Monitor");
 class StateManagerImpl {
     constructor(schema, network) {
         this.network = network;
+        this.id = `${new Date().getTime()}-${++sequenceNumber}`;
         this._rootScope = new ScopedStateManager_1.ScopedStateManager(this);
         this._stateValueChangeListeners = new Set();
         this._queryResultChangeListeners = new Set();
@@ -128,7 +129,9 @@ class StateManagerImpl {
         this._rootScope.dispose();
     }
     simpleStateMonitor() {
+        console.log("monitor: " + this.id);
         return this._rootScope.monitor();
     }
 }
 exports.StateManagerImpl = StateManagerImpl;
+let sequenceNumber = 0;

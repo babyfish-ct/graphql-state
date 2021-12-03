@@ -1,39 +1,31 @@
-import { Tab, Tabs } from "@material-ui/core";
+import 'antd/dist/antd.css';
 import { useCallback, useEffect, useState } from "react";
 import { GraphStateMonitor } from "./components/GraphStateMonitor";
 import { SimpleStateMonitor } from "./components/SimpleStateMonitor";
 import { Message } from "./common/Model";
-import { version } from "process";
+import { Tabs } from 'antd';
+import { StateManagerIdContextProvider } from './components/StateManagerContext';
 
 function App() {
 
-    const [hasStateManager, setHasStateManager] = useState(false);
+    const [stateManagerId, setStateManagerId] = useState<string>();
 
-    const [stateManagerVersion, setStateManagerVersion] = useState(0);
+    const [tabKey, setTabKey] = useState("simple-state");
 
-    const [version, setVersion] = useState(0);
-
-    const [tabValue, setTabValue] = useState("simple-state");
-
-    const onTabChange = useCallback((_, value: string) => {
-        setTabValue(value);
+    const onTabChange = useCallback((key: string) => {
+        setTabKey(key);
     }, []);
 
     const onMessage = useCallback((message: Message) => {
-        if (message.messageDomain === 'graphQLStateMonitor' && 
-            message.messageType === 'stateManagerChange' && (
-                message.version === 0 || message.version >= stateManagerVersion
-            )
-        ) {
-            setHasStateManager(message.has);
-            setStateManagerVersion(message.version);
+        if (message.messageDomain === 'graphQLStateMonitor' && message.messageType === 'stateManagerChange') {
+            setStateManagerId(message.stateManagerId);
         }
     }, []);
 
     useEffect(() => {
         chrome.devtools.inspectedWindow.eval(
-            `window.__STATE_MANAGER__ !== undefined`, 
-            result => setHasStateManager(result as boolean)
+            `window.__STATE_MANAGER__?.id`, 
+            result => setStateManagerId(result as string | undefined)
         );
         chrome.runtime.onMessage.addListener(onMessage);
         return () => {
@@ -41,18 +33,22 @@ function App() {
         }
     }, [onMessage]);
 
-    if (!hasStateManager) {
+    if (stateManagerId === undefined) {
         return <div style={{textAlign: "center", fontSize: "2rem", margin: ".5rem"}}>Web page does not retain StateManager</div>;
     }
     return (
-        <>
-            <Tabs value={tabValue} onChange={onTabChange}>
-                <Tab value="simple-state" label="Simple states"/>
-                <Tab value="graph-state" label="Graph states"/>
-            </Tabs>
-            { tabValue === "simple-state" && <SimpleStateMonitor version={version}/> }
-            { tabValue === "graph-state" && <GraphStateMonitor version={version}/> }
-        </>
+        <StateManagerIdContextProvider value={stateManagerId}>
+            <div style={{padding: 10}}>
+                <Tabs activeKey={tabKey} onChange={onTabChange}>
+                    <Tabs.TabPane key="simple-state" tab="Simple states">
+                        { tabKey === "simple-state" && <SimpleStateMonitor/> }
+                    </Tabs.TabPane>
+                    <Tabs.TabPane key="graph-state" tab="Graph states">
+                        { tabKey === "graph-state" && <GraphStateMonitor/> }
+                    </Tabs.TabPane>
+                </Tabs>
+            </div>
+        </StateManagerIdContextProvider>
     );
 }
 

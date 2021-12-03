@@ -1,11 +1,14 @@
 import produce from "immer";
+import { Card, Col, Row } from "antd";
 import { FC, memo, useCallback, useEffect, useState } from "react";
 import { Message, SimpleStateScope } from "../common/Model";
 import { getOrCreateScopeByPath, removeScopeByPath, setScopeValue } from "../common/util";
+import { SimpleStateTree } from "./SimpleStateTree";
+import { useStateManagerId } from "./StateManagerContext";
 
-export const SimpleStateMonitor: FC<{
-    readonly version: number
-}> = memo(({version}) => {
+export const SimpleStateMonitor: FC = memo(() => {
+
+    const stateManagerId = useStateManagerId();
 
     const [scope, setScope] = useState<SimpleStateScope>({
         name: "",
@@ -14,7 +17,10 @@ export const SimpleStateMonitor: FC<{
     });
 
     const onMessage = useCallback((message: Message) => {
-        if (message.messageDomain === 'graphQLStateMonitor' && message.messageType === 'simpleStateChange') {
+        if (message.messageDomain === 'graphQLStateMonitor' &&
+            message.messageType === 'simpleStateChange' &&
+            message.stateManagerId === stateManagerId
+        ) {
             setScope(old => produce(old, draft => {
                 if (message.changeType === "delete") {
                     removeScopeByPath(draft, message.scopePath);
@@ -24,7 +30,7 @@ export const SimpleStateMonitor: FC<{
                 }
             }));
         }
-    }, []);
+    }, [stateManagerId]);
 
     useEffect(() => {
         chrome.devtools.inspectedWindow.eval(MOUNT_SCRIPT, result => {
@@ -37,10 +43,19 @@ export const SimpleStateMonitor: FC<{
             chrome.runtime.onMessage.removeListener(onMessage);
             chrome.devtools.inspectedWindow.eval(UNMOUNT_SCRIPT);
         }
-    }, [version]);
+    }, [onMessage]);
 
     return (
-        <div>{JSON.stringify(scope)}</div>
+        <Row gutter={[10, 10]}>
+            <Col xs={24} sm={12}>
+                <SimpleStateTree scope={scope}/>
+            </Col>
+            <Col xs={24} sm={12}>
+                <Card title="selected state value">
+
+                </Card>
+            </Col>
+        </Row>
     );
 });
 

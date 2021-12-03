@@ -6,12 +6,12 @@ interface AbstractMessage {
 
 export interface StateManagerMessage extends AbstractMessage {
     readonly messageType: "stateManagerChange";
-    readonly has: boolean;
-    readonly version: number;
+    readonly stateManagerId?: string;
 }
 
 export interface SimpleStateMessage extends AbstractMessage {
     readonly messageType: "simpleStateChange";
+    readonly stateManagerId: string;
     readonly changeType: ChangeType,
     readonly scopePath: string;
     readonly name: string;
@@ -32,7 +32,7 @@ export interface SimpleState {
 }
 
 export interface SimpleStateParameterizedValue {
-    readonly parameter?: string;
+    readonly parameter: string;
     readonly value: any;
 }
 
