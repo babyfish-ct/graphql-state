@@ -1,0 +1,15 @@
+.value-number {
+    color: darkblue;
+}
+
+.value-string {
+    color: darkgreen;
+}
+
+.value-keyword {
+    color: salmon;
+}
+
+.value-composite {
+    padding-left: 20;
+}

@@ -141,11 +141,72 @@ export function visitScope0(
 
 export function childPathOf(path: string, childName: string, isChildScope: boolean): string {
     const name = isChildScope ? 
-        (childName === "" ? "globalScope" : `scope(${childName})`) : 
+        (childName === "" ? "scope(::)" : `scope(${childName})`) : 
         childName
     ;
     if (path === "" || path === "/") {
         return `/${name}`;
     }
     return `${path}/${name}`;
+}
+
+export function findValueRefByPath(rootScope: SimpleStateScope, mixedPath: string): ValueRef | undefined {
+    const names = mixedPath.split(/\s*\/\s*/);
+    let scope = rootScope;
+    let nameIndex = 0;
+    while (nameIndex < names.length) {
+        const name = names[nameIndex];
+        if (name === "") {
+            nameIndex++;
+            continue;
+        }
+        if (!name.startsWith("scope(")) {
+            break;
+        }
+        let scopeName = name.substring(6, name.length - 1);
+        if (scopeName === "::") {
+            nameIndex++;
+            continue;
+        }
+        const index = binarySearch(scope.scopes, "name", scopeName);
+        if (index < 0) {
+            return undefined;
+        }
+        scope = scope.scopes[index];
+        nameIndex++;
+    }
+    if (nameIndex + 1 !== names.length) {
+        return undefined;
+    }
+    const lastName = names[names.length - 1];
+    const colonIndex = lastName.indexOf(":");
+    let stateName: string;
+    let parameter: string;
+    if (colonIndex === -1) {
+        stateName = lastName;
+        parameter = "";
+    } else {
+        stateName = lastName.substring(0, colonIndex);
+        parameter = lastName.substring(colonIndex + 1);
+        if (parameter === "default") {
+            parameter = "";
+        }
+    }
+    const stateIndex = binarySearch(scope.states, "name", stateName);
+    if (stateIndex < 0) {
+        return undefined;
+    }
+    const state = scope.states[stateIndex];
+    if (state.parameterizedValues !== undefined) {
+        const parameterIndex = binarySearch(state.parameterizedValues, "parameter", parameter);
+        if (parameterIndex < 0) {
+            return undefined;
+        }
+        return { value: state.parameterizedValues[parameterIndex].value };
+    }
+    return { value: state.value };
+}
+
+export interface ValueRef {
+    value: any;
 }

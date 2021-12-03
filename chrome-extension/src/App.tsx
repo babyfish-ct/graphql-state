@@ -1,4 +1,5 @@
 import 'antd/dist/antd.css';
+import './App.css';
 import { useCallback, useEffect, useState } from "react";
 import { GraphStateMonitor } from "./components/GraphStateMonitor";
 import { SimpleStateMonitor } from "./components/SimpleStateMonitor";

@@ -5,8 +5,10 @@ import { SimpleState, SimpleStateScope } from "../common/Model";
 import { childPathOf, visitScope } from "../common/util";
 
 export const SimpleStateTree: FC<{
-    readonly scope: SimpleStateScope
-}> = memo(({scope}) => {
+    readonly scope: SimpleStateScope,
+    readonly value?: string,
+    readonly onChange?: (value?: string) => void
+}> = memo(({scope, value, onChange}) => {
 
     const allKeys = useMemo<string[]>(() => {
         const keys: string[] = [];
@@ -35,6 +37,16 @@ export const SimpleStateTree: FC<{
         setExpandedKeys(keys);
     }, []);
 
+    const onTreeSelect = useCallback((keys: any[]) => {
+        if (onChange !== undefined) {
+            if (keys.length === 0) {
+                onChange(undefined);
+            } else {
+                onChange(keys[0]);
+            }
+        }
+    }, [onChange]);
+
     return (
         <Card title="Simple states" extra={
             <div>
@@ -46,7 +58,11 @@ export const SimpleStateTree: FC<{
                 </Tooltip>
             </div>
         }>
-            <Tree expandedKeys={expandedKeys} onExpand={onExpand}>
+            <Tree 
+            expandedKeys={expandedKeys} 
+            onExpand={onExpand}
+            selectedKeys={value !== undefined ? [value] : undefined}
+            onSelect={onTreeSelect}>
                 {createScopeNode(scope, '/')}
             </Tree>
         </Card>

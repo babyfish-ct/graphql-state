@@ -1,8 +1,15 @@
 import produce from "immer";
 import { Card, Col, Row } from "antd";
-import { FC, memo, useCallback, useEffect, useState } from "react";
+import { FC, memo, useCallback, useEffect, useMemo, useState } from "react";
 import { Message, SimpleStateScope } from "../common/Model";
-import { getOrCreateScopeByPath, removeScopeByPath, setScopeValue } from "../common/util";
+import { 
+    findValueRefByPath, 
+    getOrCreateScopeByPath, 
+    removeScopeByPath, 
+    setScopeValue, 
+    ValueRef 
+} from "../common/util";
+import { createValueNode } from "../common/value";
 import { SimpleStateTree } from "./SimpleStateTree";
 import { useStateManagerId } from "./StateManagerContext";
 
@@ -15,6 +22,15 @@ export const SimpleStateMonitor: FC = memo(() => {
         states: [],
         scopes: []
     });
+
+    const [selectedValue, setSelectedValue] = useState<string>();
+
+    const valueRef = useMemo<ValueRef | undefined>(() => {
+        if (selectedValue === undefined) {
+            return undefined;
+        }
+        return findValueRefByPath(scope, selectedValue);
+    }, [scope, selectedValue]);
 
     const onMessage = useCallback((message: Message) => {
         if (message.messageDomain === 'graphQLStateMonitor' &&
@@ -48,11 +64,15 @@ export const SimpleStateMonitor: FC = memo(() => {
     return (
         <Row gutter={[10, 10]}>
             <Col xs={24} sm={12}>
-                <SimpleStateTree scope={scope}/>
+                <SimpleStateTree scope={scope} value={selectedValue} onChange={setSelectedValue}/>
             </Col>
             <Col xs={24} sm={12}>
                 <Card title="selected state value">
-
+                    {
+                        valueRef === undefined ?
+                        "No state value is selected" :
+                        createValueNode(valueRef.value) 
+                    }
                 </Card>
             </Col>
         </Row>

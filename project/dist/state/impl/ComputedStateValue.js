@@ -137,15 +137,15 @@ class ComputedStateValue extends StateValue_1.StateValue {
             });
         }
         else {
+            this._loadable = {
+                loading: false,
+                data: result
+            };
             this.stateInstance.scopedStateManager.stateManager.publishStateValueChangeEvent({
                 stateValue: this,
                 changedType: "RESULT_CHANGE"
             });
         }
-        this._loadable = {
-            loading: false,
-            data: result
-        };
         return result;
     }
 }
