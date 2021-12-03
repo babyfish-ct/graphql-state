@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.postSimpleStateMessage = exports.postStateManagerMessage = void 0;
+exports.postGraphStateMessage = exports.postSimpleStateMessage = exports.postStateManagerMessage = void 0;
+const util_1 = require("./impl/util");
 function postStateManagerMessage(stateManagerId) {
     const message = {
         messageDomain: "graphQLStateMonitor",
@@ -27,3 +28,57 @@ function postSimpleStateMessage(stateValue, changeType, data) {
     }
 }
 exports.postSimpleStateMessage = postSimpleStateMessage;
+function postGraphStateMessage(stateManagerId, event) {
+    var _a;
+    if (((_a = window.__GRAPHQL_STATE_MONITORS__) === null || _a === void 0 ? void 0 : _a.graphState) === true) {
+        const fields = [];
+        if (event.eventType === "evict") {
+            for (const key of event.evictedKeys) {
+                const fieldKey = fieldKeyOf(key);
+                const field = {
+                    fieldKey,
+                    oldValue: event.evictedValue(key)
+                };
+                fields.push(field);
+            }
+        }
+        else {
+            for (const key of event.changedKeys) {
+                const fieldKey = fieldKeyOf(key);
+                const field = {
+                    fieldKey,
+                    oldValue: event.changedType === 'insert' ? undefined : event.oldValue(key),
+                    newValue: event.changedType === 'delete' ? undefined : event.newValue(key)
+                };
+                fields.push(field);
+            }
+        }
+        fields.sort((a, b) => util_1.compare(a, b, "fieldKey"));
+        const message = {
+            messageDomain: "graphQLStateMonitor",
+            messageType: "graphStateChange",
+            stateManagerId,
+            changeType: event.eventType === 'evict' ?
+                (event.evictedType === 'row' ? 'evict-row' : 'evict-fields') :
+                event.changedType,
+            typeName: event.typeName,
+            id: event.typeName,
+            fields
+        };
+        postMessage(message, "*");
+    }
+}
+exports.postGraphStateMessage = postGraphStateMessage;
+function fieldKeyOf(key) {
+    if (typeof key === 'string') {
+        return key;
+    }
+    if (key.variables === undefined || key.variables === null) {
+        return key.name;
+    }
+    const parameter = JSON.stringify(key.variables);
+    if (parameter === '{}') {
+        return key.name;
+    }
+    return `${key.name}:${parameter}`;
+}

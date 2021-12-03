@@ -1,20 +1,39 @@
-import { FC, memo, useEffect } from "react";
+import { FC, memo, useCallback, useEffect, useState } from "react";
+import { Message } from "../common/Model";
+import { useStateManagerId } from "./StateManagerContext";
 
 export const GraphStateMonitor: FC = memo(() => {
 
+    const stateManagerId = useStateManagerId();
+
+    const [messages, setMessages] = useState<Message[]>([]);
+
+    const onMessage = useCallback((message: Message) => {
+        if (message.messageDomain === 'graphQLStateMonitor' &&
+            message.messageType === 'graphStateChange' &&
+            message.stateManagerId === stateManagerId
+        ) {
+            setMessages(old => [...old, message]);
+        }
+    }, [stateManagerId]);
+
     useEffect(() => {
         chrome.devtools.inspectedWindow.eval(MOUNT_SCRIPT, result => {
-            if (result !== undefined) {
-                
-            }
+            
         });
+        chrome.runtime.onMessage.addListener(onMessage);
         return () => {
+            chrome.runtime.onMessage.removeListener(onMessage);
             chrome.devtools.inspectedWindow.eval(UNMOUNT_SCRIPT);
         }
-    }, []);
+    }, [onMessage]);
 
     return (
-        <div>Graph state monitor</div>
+        <div>
+            Graph state monitor
+            <hr/>
+            {JSON.stringify(messages)}
+        </div>
     );
 });
 
@@ -23,9 +42,7 @@ const MOUNT_SCRIPT = `(function() {
         ...window.__GRAPHQL_STATE_MONITORS__,
         graphState: true
     };
-    if (window.__STATE_MANAGER__) {
-        return __STATE_MANAGER__.simpleStateMonitor();
-    }
+    
     return undefined;
 })()`;
 

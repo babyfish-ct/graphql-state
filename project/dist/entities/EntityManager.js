@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntityManager = void 0;
 const MergedDataService_1 = require("../data/MergedDataService");
 const RemoteDataService_1 = require("../data/RemoteDataService");
+const Monitor_1 = require("../state/Monitor");
 const ModificationContext_1 = require("./ModificationContext");
 const PaginationQueryResult_1 = require("./PaginationQueryResult");
 const QueryResult_1 = require("./QueryResult");
@@ -186,6 +187,7 @@ class EntityManager {
         (_a = this._evictListenerMap.get(typeName)) === null || _a === void 0 ? void 0 : _a.delete(listener);
     }
     publishEvictChangeEvent(e) {
+        Monitor_1.postGraphStateMessage(this.stateManager.id, e);
         this.refreshByEvictEvent(e);
         for (const [, set] of this._evictListenerMap) {
             for (const listener of set) {
@@ -211,6 +213,7 @@ class EntityManager {
         (_a = this._changeListenerMap.get(typeName)) === null || _a === void 0 ? void 0 : _a.delete(listener);
     }
     publishEntityChangeEvent(e) {
+        Monitor_1.postGraphStateMessage(this.stateManager.id, e);
         this.refreshByChangeEvent(e);
         for (const [, set] of this._changeListenerMap) {
             for (const listener of set) {
