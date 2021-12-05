@@ -1,4 +1,4 @@
-import { postSimpleStateMessage, SimpleState, SimpleStateParameterizedValue } from "../Monitor";
+import { postSimpleStateMessage, SimpleState, ParameterizedValue } from "../Monitor";
 import { State } from "../State";
 import { ReleasePolicy } from "../Types";
 import { VariableArgs } from "./Args";
@@ -62,7 +62,7 @@ export class StateInstance {
 
     mintor(): SimpleState {
         if (this.state[" $parameterized"]) {
-            const parameterizedValues: SimpleStateParameterizedValue[] = [];
+            const parameterizedValues: ParameterizedValue[] = [];
             this.valueMap.forEach((k, v) => {
                 const loadable = v.loadable;
                 parameterizedValues.push({

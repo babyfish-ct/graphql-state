@@ -3,6 +3,7 @@ import { FlatRow } from "../meta/Configuration";
 import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { VariableArgs } from "../state/impl/Args";
+import { GraphObject } from "../state/Monitor";
 import { RecordConnection } from "./assocaition/AssociationConnectionValue";
 import { BackReferences } from "./assocaition/BackReferences";
 import { EntityManager, Garbage } from "./EntityManager";
@@ -43,6 +44,7 @@ export declare class Record {
     collectGarbages(output: Garbage[]): void;
     toString(): string;
     private writeTo;
+    monitor(): GraphObject;
 }
 export declare const QUERY_OBJECT_ID = "____QUERY_OBJECT____";
 export declare function objectWithOnlyId(record: Record | undefined): any;

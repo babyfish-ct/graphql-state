@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.postGraphStateMessage = exports.postSimpleStateMessage = exports.postStateManagerMessage = void 0;
-const util_1 = require("./impl/util");
 function postStateManagerMessage(stateManagerId) {
     const message = {
         messageDomain: "graphQLStateMonitor",
@@ -53,7 +52,6 @@ function postGraphStateMessage(stateManagerId, event) {
                 fields.push(field);
             }
         }
-        fields.sort((a, b) => util_1.compare(a, b, "fieldKey"));
         const message = {
             messageDomain: "graphQLStateMonitor",
             messageType: "graphStateChange",
@@ -62,7 +60,7 @@ function postGraphStateMessage(stateManagerId, event) {
                 (event.evictedType === 'row' ? 'evict-row' : 'evict-fields') :
                 event.changedType,
             typeName: event.typeName,
-            id: event.typeName,
+            id: event.id,
             fields
         };
         postMessage(message, "*");

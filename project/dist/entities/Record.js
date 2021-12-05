@@ -4,6 +4,7 @@ exports.FlatRowImpl = exports.objectWithOnlyId = exports.QUERY_OBJECT_ID = expor
 const graphql_ts_client_api_1 = require("graphql-ts-client-api");
 const Args_1 = require("../state/impl/Args");
 const SpaceSavingMap_1 = require("../state/impl/SpaceSavingMap");
+const util_1 = require("../state/impl/util");
 const Association_1 = require("./assocaition/Association");
 const BackReferences_1 = require("./assocaition/BackReferences");
 class Record {
@@ -241,6 +242,52 @@ class Record {
         this.associationMap.forEachValue(association => {
             association.writeTo(writer);
         });
+    }
+    monitor() {
+        const fields = [];
+        const parameterizedScalarMap = new Map();
+        for (const [k, v] of this.scalarMap) {
+            const colonIndex = k.indexOf(":");
+            if (colonIndex !== -1) {
+                const name = k.substring(0, colonIndex);
+                const parameter = k.substring(colonIndex + 1);
+                let subMap = parameterizedScalarMap.get(name);
+                if (subMap === undefined) {
+                    subMap = new Map();
+                    parameterizedScalarMap.set(name, subMap);
+                }
+                subMap.set(parameter, v);
+            }
+        }
+        for (const [k, v] of this.scalarMap) {
+            const colonIndex = k.indexOf(":");
+            if (colonIndex === -1) {
+                fields.push({
+                    name: k,
+                    value: v
+                });
+            }
+        }
+        for (const [k, subMap] of parameterizedScalarMap) {
+            const arr = [];
+            for (const [parameter, value] of subMap) {
+                arr.push({ parameter, value });
+            }
+            arr.sort((a, b) => util_1.compare(a, b, "parameter"));
+            fields.push({
+                name: k,
+                parameterizedValues: arr
+            });
+        }
+        this.associationMap.forEachValue(association => {
+            fields.push(association.monitor());
+        });
+        fields.sort((a, b) => util_1.compare(a, b, "name"));
+        const obj = {
+            id: this.id,
+            fields
+        };
+        return obj;
     }
 }
 exports.Record = Record;

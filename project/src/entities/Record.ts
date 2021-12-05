@@ -5,6 +5,8 @@ import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { VariableArgs } from "../state/impl/Args";
 import { SpaceSavingMap } from "../state/impl/SpaceSavingMap";
+import { compare } from "../state/impl/util";
+import { GraphField, GraphObject, ParameterizedValue } from "../state/Monitor";
 import { Association } from "./assocaition/Association";
 import { RecordConnection } from "./assocaition/AssociationConnectionValue";
 import { BackReferences } from "./assocaition/BackReferences";
@@ -317,6 +319,53 @@ export class Record {
         this.associationMap.forEachValue(association => {
             association.writeTo(writer);
         });
+    }
+
+    monitor(): GraphObject {
+        const fields: GraphField[] = [];
+        const parameterizedScalarMap = new Map<string, Map<string, any>>();
+        for (const [k, v] of this.scalarMap) {
+            const colonIndex = k.indexOf(":");
+            if (colonIndex !== -1) {
+                const name = k.substring(0, colonIndex);
+                const parameter = k.substring(colonIndex + 1);
+                let subMap = parameterizedScalarMap.get(name);
+                if (subMap === undefined) {
+                    subMap = new Map<string, any>();
+                    parameterizedScalarMap.set(name, subMap);
+                }
+                subMap.set(parameter, v);
+            }
+        }
+        for (const [k, v] of this.scalarMap) {
+            const colonIndex = k.indexOf(":");
+            if (colonIndex === -1) {
+                fields.push({
+                    name: k,
+                    value: v
+                });
+            }
+        }
+        for (const [k, subMap] of parameterizedScalarMap) {
+            const arr: ParameterizedValue[] = [];
+            for (const [parameter, value] of subMap) {
+                arr.push({parameter, value});
+            }
+            arr.sort((a, b) => compare(a, b, "parameter"));
+            fields.push({
+                name: k,
+                parameterizedValues: arr
+            });
+        }
+        this.associationMap.forEachValue(association => {
+            fields.push(association.monitor());
+        });
+        fields.sort((a, b) => compare(a, b, "name"));
+        const obj: GraphObject = {
+            id: this.id,
+            fields
+        };
+        return obj;
     }
 }
 

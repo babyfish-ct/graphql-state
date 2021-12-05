@@ -6,6 +6,7 @@ import { RecordConnection } from "./AssociationConnectionValue";
 import { Pagination } from "../QueryArgs";
 import { TextWriter } from "graphql-ts-client-api";
 import { EntityChangeEvent, EntityEvictEvent } from "../EntityEvent";
+import { GraphField } from "../../state/Monitor";
 export declare class Association {
     readonly record: Record;
     readonly field: FieldMetadata;
@@ -29,4 +30,6 @@ export declare class Association {
     writeTo(writer: TextWriter): void;
     gcVisit(args: VariableArgs | undefined): void;
     collectGarbages(output: Garbage[]): void;
+    monitor(): GraphField;
+    private convertMonitorValue;
 }

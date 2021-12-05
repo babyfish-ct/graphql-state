@@ -1,7 +1,6 @@
 import { EntityChangeEvent, EntityEvictEvent } from "..";
 import { EntityKey } from "../entities/EntityEvent";
 import { StateValue } from "./impl/StateValue";
-import { compare } from "./impl/util";
 
 export function postStateManagerMessage(stateManagerId?: string) {
     const message: StateManagerMessage =  {
@@ -37,11 +36,11 @@ export function postGraphStateMessage(
     event: EntityEvictEvent | EntityChangeEvent
 ) {
     if ((window as any).__GRAPHQL_STATE_MONITORS__?.graphState === true) {
-        const fields: GraphRowField[] = [];
+        const fields: GraphEventField[] = [];
         if (event.eventType === "evict") {
             for (const key of event.evictedKeys) {
                 const fieldKey = fieldKeyOf(key);
-                const field: GraphRowField = {
+                const field: GraphEventField = {
                     fieldKey,
                     oldValue: event.evictedValue(key)
                 };
@@ -50,7 +49,7 @@ export function postGraphStateMessage(
         } else {
             for (const key of event.changedKeys) {
                 const fieldKey = fieldKeyOf(key);
-                const field: GraphRowField = {
+                const field: GraphEventField = {
                     fieldKey,
                     oldValue: event.changedType === 'insert' ? undefined : event.oldValue(key),
                     newValue: event.changedType === 'delete' ? undefined : event.newValue(key)
@@ -58,7 +57,6 @@ export function postGraphStateMessage(
                 fields.push(field);
             }
         }
-        fields.sort((a, b) => compare(a, b, "fieldKey"));
         const message: GraphStateMessage = {
             messageDomain: "graphQLStateMonitor",
             messageType: "graphStateChange",
@@ -67,7 +65,7 @@ export function postGraphStateMessage(
                 (event.evictedType === 'row' ? 'evict-row' : 'evict-fields') :
                 event.changedType,
             typeName: event.typeName,
-            id: event.typeName,
+            id: event.id,
             fields
         }
         postMessage(message, "*");
@@ -115,7 +113,7 @@ export interface GraphStateMessage extends AbstractMessage {
     readonly changeType: "evict-row" | "evict-fields" | ChangeType;
     readonly typeName: string;
     readonly id: any;
-    readonly fields: readonly GraphRowField[];
+    readonly fields: readonly GraphEventField[];
 }
 
 export interface SimpleStateScope {
@@ -127,15 +125,57 @@ export interface SimpleStateScope {
 export interface SimpleState {
     readonly name: string;
     readonly value?: any;
-    readonly parameterizedValues?: readonly SimpleStateParameterizedValue[];
+    readonly parameterizedValues?: readonly ParameterizedValue[];
 }
 
-export interface SimpleStateParameterizedValue {
+export interface GraphSnapshot {
+    readonly typeMetadataMap: { readonly [key: string]: GraphTypeMetadata };
+    readonly query?: GraphObject;
+    readonly types: readonly GraphType[]; 
+}
+
+export interface GraphTypeMetadata {
+    readonly name: string;
+    readonly superTypeName?: string;
+    readonly fieldMap: { readonly [key: string]: GraphFieldMetadata };
+}
+
+export interface GraphFieldMetadata {
+    readonly name: string;
+    readonly isParamerized: boolean;
+    readonly isConnection: boolean;
+    readonly targetTypeName?: string;
+}
+
+export interface GraphType {
+    readonly name: string;
+    readonly objects: readonly GraphObject[];
+}
+
+export interface GraphObject {
+    readonly id: string;
+    readonly fields: readonly GraphField[];
+}
+
+export interface GraphField {
+    readonly name: string;
+    readonly value?: any;
+    readonly parameterizedValues?: readonly ParameterizedValue[];
+}
+
+export type GraphValue = string | Readonly<string> | {
+    readonly edeges: ReadonlyArray<{
+        readonly node: string
+    }>,
+    readonly [key:string]: any
+};
+
+export interface ParameterizedValue {
     readonly parameter: string;
-    readonly value: any;
+    readonly value?: any;
 }
 
-export interface GraphRowField {
+export interface GraphEventField {
     readonly fieldKey: string;
     readonly oldValue?: any;
     readonly newValue?: any;

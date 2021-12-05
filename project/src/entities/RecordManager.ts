@@ -2,6 +2,8 @@ import { EntityChangeEvent } from "..";
 import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { VariableArgs } from "../state/impl/Args";
+import { compare } from "../state/impl/util";
+import { GraphObject, GraphType } from "../state/Monitor";
 import { EntityManager, Garbage } from "./EntityManager";
 import { Pagination } from "./QueryArgs";
 import { Record } from "./Record";
@@ -110,6 +112,24 @@ export class RecordManager {
                 record.collectGarbages(output);
             }
         }
+    }
+
+    monitor(): GraphType | undefined {
+        const objects: GraphObject[] = [];
+        for (const record of this.recordMap.values()) {
+            if (!record.isDeleted) {
+                objects.push(record.monitor());
+            }
+        }
+        if (objects.length === 0) {
+            return undefined;
+        }
+        objects.sort((a, b) => compare(a, b, "id"));
+        const type: GraphType = {
+            name: this.type.name,
+            objects
+        };
+        return type;
     }
 }
 

@@ -6,6 +6,7 @@ const Args_1 = require("../../state/impl/Args");
 const AssociationConnectionValue_1 = require("./AssociationConnectionValue");
 const AssociationListValue_1 = require("./AssociationListValue");
 const AssociationReferenceValue_1 = require("./AssociationReferenceValue");
+const util_1 = require("../../state/impl/util");
 class Association {
     constructor(record, field) {
         this.record = record;
@@ -239,6 +240,46 @@ class Association {
                 output.push({ record: this.record, field: this.field, args: value.args });
             }
         });
+    }
+    monitor() {
+        var _a;
+        let value = undefined;
+        let parameterizedValues;
+        if (this.field.isParameterized) {
+            const arr = [];
+            this.valueMap.forEach((k, v) => {
+                arr.push({
+                    parameter: k !== null && k !== void 0 ? k : "",
+                    value: this.convertMonitorValue(v.get())
+                });
+            });
+            arr.sort((a, b) => util_1.compare(a, b, "parameter"));
+            parameterizedValues = arr;
+        }
+        else {
+            value = this.convertMonitorValue((_a = this.valueMap.get(undefined)) === null || _a === void 0 ? void 0 : _a.get());
+        }
+        const field = {
+            name: this.field.name,
+            value,
+            parameterizedValues
+        };
+        return field;
+    }
+    convertMonitorValue(value) {
+        if (value === undefined) {
+            return undefined;
+        }
+        if (this.field.category === "LIST") {
+            return value.map((element) => element.id);
+        }
+        if (this.field.category === "CONNECTION") {
+            const conn = value;
+            return Object.assign({ edeges: conn.edges.map(edge => {
+                    return Object.assign(Object.assign({}, edge), { node: edge.node.id });
+                }) }, conn);
+        }
+        return value.id;
     }
 }
 exports.Association = Association;

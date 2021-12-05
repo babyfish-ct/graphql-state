@@ -10,6 +10,8 @@ import { AssociationReferenceValue } from "./AssociationReferenceValue";
 import { Pagination } from "../QueryArgs";
 import { TextWriter } from "graphql-ts-client-api";
 import { EntityChangeEvent, EntityEvictEvent } from "../EntityEvent";
+import { GraphField, ParameterizedValue, GraphValue } from "../../state/Monitor";
+import { compare } from "../../state/impl/util";
 
 export class Association {
 
@@ -285,5 +287,50 @@ export class Association {
                 output.push({record: this.record, field: this.field, args: value.args });
             }
         })
+    }
+
+    monitor(): GraphField {
+        let value: any = undefined;
+        let parameterizedValues: ParameterizedValue[] | undefined;
+        if (this.field.isParameterized) {
+            const arr: ParameterizedValue[] = [];
+            this.valueMap.forEach((k, v) => {
+                arr.push({
+                    parameter: k ?? "",
+                    value: this.convertMonitorValue(v.get())
+                });
+            });
+            arr.sort((a, b) => compare(a, b, "parameter"));
+            parameterizedValues = arr;
+        } else {
+            value = this.convertMonitorValue(
+                this.valueMap.get(undefined)?.get()
+            );
+        }
+        const field: GraphField = {
+            name: this.field.name,
+            value,
+            parameterizedValues
+        };
+        return field;
+    }
+
+    private convertMonitorValue(value: any): GraphValue | undefined {
+        if (value === undefined) {
+            return undefined;
+        }
+        if (this.field.category === "LIST") {
+            return value.map((element: any) => (element as Record).id);
+        }
+        if (this.field.category === "CONNECTION") {
+            const conn = value as RecordConnection;
+            return {
+                edeges: conn.edges.map(edge => {
+                    return { ...edge, node: edge.node.id }
+                }),
+                ...conn 
+            };
+        }
+        return (value as Record).id;
     }
 }

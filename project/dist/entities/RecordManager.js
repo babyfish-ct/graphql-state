@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RecordManager = void 0;
+const util_1 = require("../state/impl/util");
 const Record_1 = require("./Record");
 class RecordManager {
     constructor(entityManager, type) {
@@ -88,6 +89,23 @@ class RecordManager {
                 record.collectGarbages(output);
             }
         }
+    }
+    monitor() {
+        const objects = [];
+        for (const record of this.recordMap.values()) {
+            if (!record.isDeleted) {
+                objects.push(record.monitor());
+            }
+        }
+        if (objects.length === 0) {
+            return undefined;
+        }
+        objects.sort((a, b) => util_1.compare(a, b, "id"));
+        const type = {
+            name: this.type.name,
+            objects
+        };
+        return type;
     }
 }
 exports.RecordManager = RecordManager;

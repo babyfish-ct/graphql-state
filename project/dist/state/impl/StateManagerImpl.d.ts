@@ -10,7 +10,7 @@ import { StateManager } from "../StateManager";
 import { ReleasePolicy } from "../Types";
 import { ScopedStateManager } from "./ScopedStateManager";
 import { StateValue } from "./StateValue";
-import { SimpleStateScope } from "../Monitor";
+import { GraphSnapshot, SimpleStateScope } from "../Monitor";
 export declare class StateManagerImpl<TSchema extends SchemaType> implements StateManager<TSchema> {
     readonly network?: Network | undefined;
     readonly id: string;
@@ -50,6 +50,7 @@ export declare class StateManagerImpl<TSchema extends SchemaType> implements Sta
     suspendBidirectionalAssociationManagement<T>(action: () => T): T;
     dispose(): void;
     simpleStateMonitor(): SimpleStateScope;
+    graphStateMonitor(): GraphSnapshot;
 }
 export declare type StateValueChangeListener = (e: StateValueChangeEvent) => void;
 export interface StateValueChangeEvent {

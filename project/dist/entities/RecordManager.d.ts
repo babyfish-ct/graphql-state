@@ -2,6 +2,7 @@ import { EntityChangeEvent } from "..";
 import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { VariableArgs } from "../state/impl/Args";
+import { GraphType } from "../state/Monitor";
 import { EntityManager, Garbage } from "./EntityManager";
 import { Pagination } from "./QueryArgs";
 import { Record } from "./Record";
@@ -22,4 +23,5 @@ export declare class RecordManager {
     set(id: any, runtimeType: TypeMetadata, field: FieldMetadata, args: VariableArgs | undefined, value: any, pagination?: Pagination): void;
     refresh(field: FieldMetadata, e: EntityChangeEvent): void;
     collectGarbages(output: Garbage[]): void;
+    monitor(): GraphType | undefined;
 }

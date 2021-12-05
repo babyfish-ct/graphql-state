@@ -5,6 +5,7 @@ import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { VariableArgs } from "../state/impl/Args";
 import { StateManagerImpl } from "../state/impl/StateManagerImpl";
+import { GraphSnapshot } from "../state/Monitor";
 import { ReleasePolicy } from "../state/Types";
 import { EntityEvictEvent } from "./EntityEvent";
 import { ModificationContext } from "./ModificationContext";
@@ -54,6 +55,7 @@ export declare class EntityManager {
     private onGC;
     visit(shape: RuntimeShape, objOrArray: object | readonly object[], visitor: EntityFieldVisitor): void;
     private visitObj;
+    monitor(): GraphSnapshot;
 }
 export declare type EntityFieldVisitor = (id: any, runtimeType: TypeMetadata, field: FieldMetadata, args: VariableArgs | undefined, value: any) => void | boolean;
 export declare type Garbage = Record | FieldGarbage;

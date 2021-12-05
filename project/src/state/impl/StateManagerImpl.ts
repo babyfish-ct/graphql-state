@@ -11,7 +11,7 @@ import { StateManager } from "../StateManager";
 import { ReleasePolicy } from "../Types";
 import { ScopedStateManager } from "./ScopedStateManager";
 import { StateValue } from "./StateValue";
-import { postSimpleStateMessage, SimpleStateScope } from "../Monitor";
+import { GraphSnapshot, postSimpleStateMessage, SimpleStateScope } from "../Monitor";
 
 export class StateManagerImpl<TSchema extends SchemaType> implements StateManager<TSchema> {
 
@@ -192,8 +192,11 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
     }
 
     simpleStateMonitor(): SimpleStateScope {
-        console.log("monitor: " + this.id);
         return this._rootScope.monitor();
+    }
+
+    graphStateMonitor(): GraphSnapshot {
+        return this.entityManager.monitor();
     }
 }
 

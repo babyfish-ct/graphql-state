@@ -6,6 +6,8 @@ export class FieldMetadata {
 
     readonly name: string;
 
+    readonly isParameterized: boolean;
+
     readonly category: FieldMetadataCategory;
 
     readonly fullName: string;
@@ -33,6 +35,7 @@ export class FieldMetadata {
         field: FetchableField
     ) {
         this.name = field.name;
+        this.isParameterized = field.argGraphQLTypeMap.size !== 0;
         this.category = field.category;
         this.fullName = `${declaringType.name}.${field.name}`;
         this._connectionType = field.connectionTypeName;

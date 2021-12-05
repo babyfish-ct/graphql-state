@@ -129,8 +129,10 @@ class StateManagerImpl {
         this._rootScope.dispose();
     }
     simpleStateMonitor() {
-        console.log("monitor: " + this.id);
         return this._rootScope.monitor();
+    }
+    graphStateMonitor() {
+        return this.entityManager.monitor();
     }
 }
 exports.StateManagerImpl = StateManagerImpl;

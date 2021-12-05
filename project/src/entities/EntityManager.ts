@@ -7,7 +7,8 @@ import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { VariableArgs } from "../state/impl/Args";
 import { StateManagerImpl } from "../state/impl/StateManagerImpl";
-import { postGraphStateMessage } from "../state/Monitor";
+import { compare } from "../state/impl/util";
+import { GraphFieldMetadata, GraphSnapshot, GraphType, GraphTypeMetadata, postGraphStateMessage } from "../state/Monitor";
 import { ReleasePolicy } from "../state/Types";
 import { EntityEvictEvent } from "./EntityEvent";
 import { ModificationContext } from "./ModificationContext";
@@ -440,6 +441,45 @@ export class EntityManager {
                 }
             }
         }
+    }
+
+    monitor(): GraphSnapshot {
+        const typeMetadataMap: { [key: string]: GraphTypeMetadata } = {};
+        for (const type of this.schema.typeMap.values()) {
+            const fieldMap: { [key: string]: GraphFieldMetadata } = {};
+            for (const field of type.fieldMap.values()) {
+                if (field.isParameterized || field.targetType !== undefined) {
+                    fieldMap[field.name] = {
+                        name: field.name,
+                        isParamerized: field.isParameterized,
+                        isConnection: field.connectionType !== undefined,
+                        targetTypeName: field.targetType?.name
+                    };
+                }
+            }
+            typeMetadataMap[type.name] = {
+                name: type.name,
+                superTypeName: type?.superType?.name,
+                fieldMap
+            };
+        }
+        const queryRecord = this
+            ._recordManagerMap.get("Query")
+            ?.findRefById(QUERY_OBJECT_ID)
+            ?.value;
+        const types = Array
+            .from(this._recordManagerMap.values())
+            .filter(rm => rm.type.name !== "Query")
+            .map(rm => rm.monitor())
+            .filter(t => t !== undefined) as Array<GraphType>;
+        ;
+        types.sort((a, b) => compare(a, b, "name"));
+        const snapshot: GraphSnapshot = {
+            typeMetadataMap,
+            query: queryRecord?.monitor(),
+            types
+        };
+        return snapshot;
     }
 }
 

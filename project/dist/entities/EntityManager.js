@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntityManager = void 0;
 const MergedDataService_1 = require("../data/MergedDataService");
 const RemoteDataService_1 = require("../data/RemoteDataService");
+const util_1 = require("../state/impl/util");
 const Monitor_1 = require("../state/Monitor");
 const ModificationContext_1 = require("./ModificationContext");
 const PaginationQueryResult_1 = require("./PaginationQueryResult");
@@ -360,6 +361,43 @@ class EntityManager {
                 }
             }
         }
+    }
+    monitor() {
+        var _a, _b, _c, _d;
+        const typeMetadataMap = {};
+        for (const type of this.schema.typeMap.values()) {
+            const fieldMap = {};
+            for (const field of type.fieldMap.values()) {
+                if (field.isParameterized || field.targetType !== undefined) {
+                    fieldMap[field.name] = {
+                        name: field.name,
+                        isParamerized: field.isParameterized,
+                        isConnection: field.connectionType !== undefined,
+                        targetTypeName: (_a = field.targetType) === null || _a === void 0 ? void 0 : _a.name
+                    };
+                }
+            }
+            typeMetadataMap[type.name] = {
+                name: type.name,
+                superTypeName: (_b = type === null || type === void 0 ? void 0 : type.superType) === null || _b === void 0 ? void 0 : _b.name,
+                fieldMap
+            };
+        }
+        const queryRecord = (_d = (_c = this
+            ._recordManagerMap.get("Query")) === null || _c === void 0 ? void 0 : _c.findRefById(Record_1.QUERY_OBJECT_ID)) === null || _d === void 0 ? void 0 : _d.value;
+        const types = Array
+            .from(this._recordManagerMap.values())
+            .filter(rm => rm.type.name !== "Query")
+            .map(rm => rm.monitor())
+            .filter(t => t !== undefined);
+        ;
+        types.sort((a, b) => util_1.compare(a, b, "name"));
+        const snapshot = {
+            typeMetadataMap,
+            query: queryRecord === null || queryRecord === void 0 ? void 0 : queryRecord.monitor(),
+            types
+        };
+        return snapshot;
     }
 }
 exports.EntityManager = EntityManager;

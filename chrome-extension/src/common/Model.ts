@@ -25,7 +25,7 @@ export interface GraphStateMessage extends AbstractMessage {
     readonly changeType: "evict-row" | "evict-fields" | ChangeType;
     readonly typeName: string;
     readonly id: any;
-    readonly fields: readonly GraphRowField[];
+    readonly fields: readonly GraphEventField[];
 }
 
 export interface SimpleStateScope {
@@ -37,15 +37,57 @@ export interface SimpleStateScope {
 export interface SimpleState {
     readonly name: string;
     readonly value?: any;
-    readonly parameterizedValues?: readonly SimpleStateParameterizedValue[];
+    readonly parameterizedValues?: readonly ParameterizedValue[];
 }
 
-export interface SimpleStateParameterizedValue {
+export interface GraphSnapshot {
+    readonly typeMetadataMap: { readonly [key: string]: GraphTypeMetadata };
+    readonly query?: GraphObject;
+    readonly types: readonly GraphType[]; 
+}
+
+export interface GraphTypeMetadata {
+    readonly name: string;
+    readonly superTypeName?: string;
+    readonly fieldMap: { readonly [key: string]: GraphFieldMetadata };
+}
+
+export interface GraphFieldMetadata {
+    readonly name: string;
+    readonly isParamerized: boolean;
+    readonly isConnection: boolean;
+    readonly targetTypeName?: string;
+}
+
+export interface GraphType {
+    readonly name: string;
+    readonly objects: readonly GraphObject[];
+}
+
+export interface GraphObject {
+    readonly id: string;
+    readonly fields: readonly GraphField[];
+}
+
+export interface GraphField {
+    readonly name: string;
+    readonly value?: any;
+    readonly parameterizedValues?: readonly ParameterizedValue[];
+}
+
+export type GraphValue = string | Readonly<string> | {
+    readonly edeges: ReadonlyArray<{
+        readonly node: string
+    }>,
+    readonly [key:string]: any
+};
+
+export interface ParameterizedValue {
     readonly parameter: string;
-    readonly value: any;
+    readonly value?: any;
 }
 
-export interface GraphRowField {
+export interface GraphEventField {
     readonly fieldKey: string;
     readonly oldValue?: any;
     readonly newValue?: any;

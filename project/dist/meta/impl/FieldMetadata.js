@@ -8,6 +8,7 @@ class FieldMetadata {
         this._containingConfigured = false;
         this._positionConfiguered = false;
         this.name = field.name;
+        this.isParameterized = field.argGraphQLTypeMap.size !== 0;
         this.category = field.category;
         this.fullName = `${declaringType.name}.${field.name}`;
         this._connectionType = field.connectionTypeName;

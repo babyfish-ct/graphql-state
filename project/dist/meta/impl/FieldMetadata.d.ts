@@ -4,6 +4,7 @@ import { TypeMetadata } from "./TypeMetdata";
 export declare class FieldMetadata {
     readonly declaringType: TypeMetadata;
     readonly name: string;
+    readonly isParameterized: boolean;
     readonly category: FieldMetadataCategory;
     readonly fullName: string;
     private _inversed;
