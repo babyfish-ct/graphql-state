@@ -1,15 +1,27 @@
 import { TagFilled, TagsOutlined } from "@ant-design/icons";
 import { Button, Card, Tree } from "antd";
-import { FC, memo } from "react";
+import { FC, memo, useCallback } from "react";
 import { GraphObject, GraphTypeMetadata } from "../common/Model";
+import { createParameterNode } from "../common/value";
 
 export const GraphFieldTree: FC<{
     readonly typeMetadata: GraphTypeMetadata,
-    readonly obj: GraphObject
-}> = memo(({typeMetadata, obj}) => {
+    readonly obj: GraphObject,
+    readonly value?: string,
+    readonly onChange?: (value?: string) => void
+}> = memo(({typeMetadata, obj, value, onChange}) => {
+
+    const onTreeSelect = useCallback((keys: any[]) => {
+        if (onChange) {
+            onChange(keys.length === 0 ? undefined : keys[0])
+        }
+    }, [onChange]);
+
     return (
         <Card title={typeMetadata.name}>
-            <Tree>
+            <Tree 
+            selectedKeys={value === undefined ? [] : [value]}
+            onSelect={onTreeSelect}>
                 <Tree.TreeNode key="id" title={
                     <div>
                        <TagFilled/>id 
@@ -33,10 +45,10 @@ export const GraphFieldTree: FC<{
                                     </div>
                                 }>
                                     {field.parameterizedValues?.map(pv =>
-                                        <Tree.TreeNode key={pv.parameter} title={
+                                        <Tree.TreeNode key={`${field.name}:${pv.parameter}`} title={
                                             <div>
                                                 <TagFilled/>
-                                                {pv.parameter === "" ? "default" : pv.parameter}
+                                                {createParameterNode(pv.parameter)}
                                             </div>
                                         }/>
                                     )}
@@ -44,7 +56,7 @@ export const GraphFieldTree: FC<{
                             );
                         }
                         return (
-                            <Tree.TreeNode key={field.name} title={
+                            <Tree.TreeNode key={`${field.name}:`} title={
                                 <div>
                                     <TagFilled/>{field.name}
                                 </div>

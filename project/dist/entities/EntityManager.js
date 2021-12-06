@@ -379,7 +379,8 @@ class EntityManager {
             }
             typeMetadataMap[type.name] = {
                 name: type.name,
-                superTypeName: (_b = type === null || type === void 0 ? void 0 : type.superType) === null || _b === void 0 ? void 0 : _b.name,
+                superTypeName: (_b = type.superType) === null || _b === void 0 ? void 0 : _b.name,
+                idFieldName: type.category === "OBJECT" ? type.idField.name : undefined,
                 fieldMap
             };
         }

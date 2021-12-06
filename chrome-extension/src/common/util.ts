@@ -218,7 +218,7 @@ export function changeGraphSnapshot(
 ) {
     const typeMetadata = draft.typeMetadataMap[message.typeName];
     if (typeMetadata === undefined) {
-        throw new Error(`Illegal type '${message.typeName}' of graph state message`);
+        throw new Error(`Illegal type '${message.typeName}' of graph state message}`);
     }
     if (message.changeType === "evict-row" || message.changeType === "evict-fields" || message.changeType === "delete") {
         if (message.typeName === 'Query') {
@@ -249,7 +249,7 @@ export function changeGraphSnapshot(
                 draft.query = { id: "____QUERY_OBJECT____", fields: [] };
             }
             for (const field of message.fields) {
-                setField(typeMetadata, draft.query!, field.fieldKey, field.newValue);
+                setField(draft.typeMetadataMap, typeMetadata, draft.query!, field.fieldKey, field.newValue);
             }
         } else {
             const typeIndex = binarySearch(draft.types, "name", message.typeName);
@@ -269,7 +269,7 @@ export function changeGraphSnapshot(
                 obj = type.objects[objIndex];
             }
             for (const field of message.fields) {
-                setField(typeMetadata, obj, field.fieldKey, field.newValue);
+                setField(draft.typeMetadataMap, typeMetadata, obj, field.fieldKey, field.newValue);
             }
         }
     }
@@ -310,6 +310,7 @@ function clearFields(
 }
 
 function setField(
+    typeMetadataMap: { readonly [key: string]: GraphTypeMetadata },
     typeMetadata: GraphTypeMetadata,
     obj: Draft<GraphObject>, 
     fieldKey: string, 
@@ -333,17 +334,44 @@ function setField(
     } else {
         field = obj.fields[fieldIndex];
     }
-    if (typeMetadata.fieldMap[fieldName]?.isParamerized === true) {
+    const fieldMetadata = typeMetadata.fieldMap[fieldName];
+    let finalValue = value;
+    if (fieldMetadata?.targetTypeName && value !== undefined) {
+        const targetMetadata = typeMetadataMap[fieldMetadata.targetTypeName];
+        if (targetMetadata === undefined) {
+            throw new Error(`Cannot find target metadata for '${typeMetadata.name}.${fieldMetadata.name}'`);
+        }
+        const targetIdFieldName = targetMetadata.idFieldName;
+        if (targetIdFieldName === undefined) {
+            throw new Error(`Cannot find id property of '${targetMetadata.name}'`);
+        }
+        if (fieldMetadata.isConnection) {
+            finalValue = {
+                ...value,
+                edges: value.edges?.map((edge: any) => {
+                    return {
+                        ...edge,
+                        node: edge.node[targetIdFieldName]
+                    };
+                })
+            }
+        } else if (Array.isArray(value)) {
+            finalValue = value.map(element => element[targetIdFieldName]);
+        } else {
+            finalValue = value[targetIdFieldName];
+        }
+    }
+    if (fieldMetadata?.isParamerized === true) {
         if (field.parameterizedValues === undefined) {
             field.parameterizedValues = [];
         }
         const parameterIndex = binarySearch(field.parameterizedValues, "parameter", parameter);
         if (parameterIndex < 0) {
-            field.parameterizedValues.splice(-parameterIndex - 1, 0, {parameter, value});
+            field.parameterizedValues.splice(-parameterIndex - 1, 0, {parameter, value: finalValue});
         } else {
-            field.parameterizedValues[parameterIndex] = {parameter, value};
+            field.parameterizedValues[parameterIndex] = {parameter, value: finalValue};
         }
     } else {
-        field.value = value;
+        field.value = finalValue;
     }
 }

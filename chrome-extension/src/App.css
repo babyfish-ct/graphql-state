@@ -11,5 +11,9 @@
 }
 
 .value-composite {
-    padding-left: 20;
+    padding-left: 20px;
+}
+
+.full-width {
+    width: 100%;
 }

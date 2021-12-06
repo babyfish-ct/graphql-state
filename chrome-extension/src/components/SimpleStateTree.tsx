@@ -3,6 +3,7 @@ import { AppstoreOutlined, MinusOutlined, PlusOutlined, TagFilled, TagsOutlined 
 import { FC, memo, ReactNode, useCallback, useMemo, useState } from "react";
 import { SimpleState, SimpleStateScope } from "../common/Model";
 import { childPathOf, visitScope } from "../common/util";
+import { createParameterNode } from "../common/value";
 
 export const SimpleStateTree: FC<{
     readonly scope: SimpleStateScope,
@@ -105,7 +106,7 @@ function createStateNode(state: SimpleState, path: string): ReactNode {
                         <Tree.TreeNode 
                         key={`${childPath}:${parameter}`}
                         title={
-                            <div><TagFilled/>{parameter !== "" ? parameter : "default"}</div>
+                            <div><TagFilled/>{createParameterNode(parameter)}</div>
                         }/>
                     );   
                 })

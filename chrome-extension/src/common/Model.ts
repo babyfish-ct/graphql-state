@@ -49,6 +49,7 @@ export interface GraphSnapshot {
 export interface GraphTypeMetadata {
     readonly name: string;
     readonly superTypeName?: string;
+    readonly idFieldName?: string;
     readonly fieldMap: { readonly [key: string]: GraphFieldMetadata };
 }
 

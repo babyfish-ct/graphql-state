@@ -459,7 +459,8 @@ export class EntityManager {
             }
             typeMetadataMap[type.name] = {
                 name: type.name,
-                superTypeName: type?.superType?.name,
+                superTypeName: type.superType?.name,
+                idFieldName: type.category === "OBJECT" ? type.idField.name : undefined,
                 fieldMap
             };
         }

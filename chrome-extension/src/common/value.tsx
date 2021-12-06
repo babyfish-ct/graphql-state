@@ -1,5 +1,15 @@
 import { ReactNode } from "react";
 
+export function createParameterNode(parameter: string): ReactNode {
+    if (parameter === "") {
+        return "default";
+    }
+    if (parameter.length <= 30) {
+        return parameter;
+    }
+    return createValueNode(JSON.parse(parameter));
+}
+
 export function createValueNode(value: any): ReactNode {
     if (value === undefined) {
         return <span className="value-keyword">undefined</span>;
@@ -25,16 +35,16 @@ function createObjectValueNode(value: any): ReactNode {
         return (
             <>
                 [
-                <div className="value-composite">
-                    {
-                        value.map((element, index) => (
-                            <div>
-                                {createValueNode(element)}
-                                { index < len && ","}
-                            </div>
-                        ))
-                    }
-                </div>
+                    <div className="value-composite">
+                        {
+                            value.map((element, index) => (
+                                <div key={index}>
+                                    {createValueNode(element)}
+                                    { index < len && ","}
+                                </div>
+                            ))
+                        }
+                    </div>
                 ]
             </>
         );
@@ -47,7 +57,8 @@ function createObjectValueNode(value: any): ReactNode {
             <div className="value-composite">
                 {
                     keys.map((key, index) => (
-                        <div>
+                        <div key={key}>
+                            {key}: 
                             {createValueNode(value[key])}
                             { index < len && ","}
                         </div>
