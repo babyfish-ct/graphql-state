@@ -446,10 +446,10 @@ export class EntityManager {
     monitor(): GraphSnapshot {
         const typeMetadataMap: { [key: string]: GraphTypeMetadata } = {};
         for (const type of this.schema.typeMap.values()) {
-            const fieldMap: { [key: string]: GraphFieldMetadata } = {};
-            for (const field of type.fieldMap.values()) {
-                if (field.isParameterized || field.targetType !== undefined) {
-                    fieldMap[field.name] = {
+            const declaredFieldMap: { [key: string]: GraphFieldMetadata } = {};
+            for (const field of type.declaredFieldMap.values()) {
+                if (field.category !== "ID") {
+                    declaredFieldMap[field.name] = {
                         name: field.name,
                         isParamerized: field.isParameterized,
                         isConnection: field.connectionType !== undefined,
@@ -461,7 +461,7 @@ export class EntityManager {
                 name: type.name,
                 superTypeName: type.superType?.name,
                 idFieldName: type.category === "OBJECT" ? type.idField.name : undefined,
-                fieldMap
+                declaredFieldMap
             };
         }
         const queryRecord = this

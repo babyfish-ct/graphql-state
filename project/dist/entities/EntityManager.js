@@ -366,10 +366,10 @@ class EntityManager {
         var _a, _b, _c, _d;
         const typeMetadataMap = {};
         for (const type of this.schema.typeMap.values()) {
-            const fieldMap = {};
-            for (const field of type.fieldMap.values()) {
-                if (field.isParameterized || field.targetType !== undefined) {
-                    fieldMap[field.name] = {
+            const declaredFieldMap = {};
+            for (const field of type.declaredFieldMap.values()) {
+                if (field.category !== "ID") {
+                    declaredFieldMap[field.name] = {
                         name: field.name,
                         isParamerized: field.isParameterized,
                         isConnection: field.connectionType !== undefined,
@@ -381,7 +381,7 @@ class EntityManager {
                 name: type.name,
                 superTypeName: (_b = type.superType) === null || _b === void 0 ? void 0 : _b.name,
                 idFieldName: type.category === "OBJECT" ? type.idField.name : undefined,
-                fieldMap
+                declaredFieldMap
             };
         }
         const queryRecord = (_d = (_c = this

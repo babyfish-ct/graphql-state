@@ -37,7 +37,7 @@ export const GraphFieldTree: FC<{
                 }
                 {
                     obj.fields.map(field => {
-                        if (typeMetadata.fieldMap[field.name]?.isParamerized === true) {
+                        if (typeMetadata.declaredFieldMap[field.name]?.isParamerized === true) {
                             return (
                                 <Tree.TreeNode key={field.name} title={
                                     <div>

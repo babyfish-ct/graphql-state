@@ -1,4 +1,5 @@
 import { FieldNumberOutlined } from "@ant-design/icons";
+import { message } from "antd";
 import { Draft } from "immer";
 import { GraphField, GraphObject, GraphSnapshot, GraphStateMessage, GraphType, GraphTypeMetadata, SimpleState, SimpleStateScope } from "./Model";
 
@@ -216,60 +217,58 @@ export function changeGraphSnapshot(
     draft: Draft<GraphSnapshot>,
     message: GraphStateMessage
 ) {
-    const typeMetadata = draft.typeMetadataMap[message.typeName];
-    if (typeMetadata === undefined) {
-        throw new Error(`Illegal type '${message.typeName}' of graph state message}`);
-    }
-    if (message.changeType === "evict-row" || message.changeType === "evict-fields" || message.changeType === "delete") {
-        if (message.typeName === 'Query') {
-            if (draft.query !== undefined && message.changeType === 'evict-fields') {
-                for (const field of message.fields) {
-                    clearFields(typeMetadata, draft.query, field.fieldKey);
+    for (const typeMetadata of typeMetadatas(draft.typeMetadataMap, message.typeName)) {
+        if (message.changeType === "evict-row" || message.changeType === "evict-fields" || message.changeType === "delete") {
+            if (typeMetadata.name === 'Query') {
+                if (draft.query !== undefined && message.changeType === 'evict-fields') {
+                    for (const field of message.fields) {
+                        clearFields(typeMetadata, draft.query, field.fieldKey);
+                    }
                 }
-            }
-        } else {
-            const typeIndex = binarySearch(draft.types, "name", message.typeName);
-            if (typeIndex >= 0) {
-                const type = draft.types[typeIndex];
-                const objIndex = binarySearch(type.objects, "id", message.id);
-                if (objIndex >= 0) {
-                    if (message.changeType === "evict-fields") {
-                        for (const field of message.fields) {
-                            clearFields(typeMetadata, type.objects[objIndex], field.fieldKey);
+            } else {
+                const typeIndex = binarySearch(draft.types, "name", typeMetadata.name);
+                if (typeIndex >= 0) {
+                    const type = draft.types[typeIndex];
+                    const objIndex = binarySearch(type.objects, "id", message.id);
+                    if (objIndex >= 0) {
+                        if (message.changeType === "evict-fields") {
+                            for (const field of message.fields) {
+                                clearFields(typeMetadata, type.objects[objIndex], field.fieldKey);
+                            }
+                        } else {
+                            type.objects.splice(objIndex, 1);
                         }
-                    } else {
-                        type.objects.splice(objIndex, 1);
                     }
                 }
             }
-        }
-    } else {
-        if (message.typeName === 'Query') {
-            if (draft.query === undefined) {
-                draft.query = { id: "____QUERY_OBJECT____", fields: [] };
-            }
-            for (const field of message.fields) {
-                setField(draft.typeMetadataMap, typeMetadata, draft.query!, field.fieldKey, field.newValue);
-            }
         } else {
-            const typeIndex = binarySearch(draft.types, "name", message.typeName);
-            let type: Draft<GraphType>;
-            if (typeIndex < 0) {
-                type = { name: message.typeName, objects: [] };
-                draft.types.splice(-typeIndex - 1, 0, type);
+            if (typeMetadata.name === 'Query') {
+                if (draft.query === undefined) {
+                    draft.query = { id: "____QUERY_OBJECT____", fields: [] };
+                }
+                for (const field of message.fields) {
+                    setField(draft.typeMetadataMap, typeMetadata, draft.query!, field.fieldKey, field.newValue);
+                }
             } else {
-                type = draft.types[typeIndex];
-            }
-            const objIndex = binarySearch(type.objects, "id", message.id);
-            let obj: Draft<GraphObject>;
-            if (objIndex < 0) {
-                obj = { id: message.id, fields: [] };
-                type.objects.splice(-objIndex - 1, 0, obj);
-            } else {
-                obj = type.objects[objIndex];
-            }
-            for (const field of message.fields) {
-                setField(draft.typeMetadataMap, typeMetadata, obj, field.fieldKey, field.newValue);
+                const typeIndex = binarySearch(draft.types, "name", typeMetadata.name);
+                let type: Draft<GraphType>;
+                if (typeIndex < 0) {
+                    type = { name: typeMetadata.name, objects: [] };
+                    draft.types.splice(-typeIndex - 1, 0, type);
+                } else {
+                    type = draft.types[typeIndex];
+                }
+                const objIndex = binarySearch(type.objects, "id", message.id);
+                let obj: Draft<GraphObject>;
+                if (objIndex < 0) {
+                    obj = { id: message.id, fields: [] };
+                    type.objects.splice(-objIndex - 1, 0, obj);
+                } else {
+                    obj = type.objects[objIndex];
+                }
+                for (const field of message.fields) {
+                    setField(draft.typeMetadataMap, typeMetadata, obj, field.fieldKey, field.newValue);
+                }
             }
         }
     }
@@ -290,23 +289,26 @@ function clearFields(
         fieldName = fieldKey.substring(0, colonIndex);
         parameter = fieldKey.substring(colonIndex + 1);
     }
-    const fieldIndex = binarySearch(obj.fields, "name", fieldName);
-    if (fieldIndex >= 0) {
-        const field = obj.fields[fieldIndex];
-        if (typeMetadata.fieldMap[fieldName]?.isParamerized === true) {
-            if (field.parameterizedValues !== undefined) {
-                const paramIndex = binarySearch(field.parameterizedValues, "parameter", parameter);
-                if (paramIndex >= 0) {
-                    field.parameterizedValues.splice(paramIndex, 1);
-                    if (field.parameterizedValues.length === 0) {
-                        obj.fields.splice(fieldIndex, 1);
+    const fieldMetada = typeMetadata.declaredFieldMap[fieldName];
+    if (fieldMetada !== undefined) {
+        const fieldIndex = binarySearch(obj.fields, "name", fieldName);
+        if (fieldIndex >= 0) {
+            const field = obj.fields[fieldIndex];
+            if (fieldMetada.isParamerized) {
+                if (field.parameterizedValues !== undefined) {
+                    const paramIndex = binarySearch(field.parameterizedValues, "parameter", parameter);
+                    if (paramIndex >= 0) {
+                        field.parameterizedValues.splice(paramIndex, 1);
+                        if (field.parameterizedValues.length === 0) {
+                            obj.fields.splice(fieldIndex, 1);
+                        }
                     }
                 }
+            } else {
+                obj.fields.splice(fieldIndex, 1);
             }
-        } else {
-            obj.fields.splice(fieldIndex, 1);
-        }
-    } 
+        } 
+    }
 }
 
 function setField(
@@ -326,52 +328,71 @@ function setField(
         fieldName = fieldKey.substring(0, colonIndex);
         parameter = fieldKey.substring(colonIndex + 1);
     }
-    const fieldIndex = binarySearch(obj.fields, "name", fieldName);
-    let field: Draft<GraphField>;
-    if (fieldIndex < 0) {
-        field = { name: fieldName };
-        obj.fields.splice(-fieldIndex - 1, 0, field);
-    } else {
-        field = obj.fields[fieldIndex];
-    }
-    const fieldMetadata = typeMetadata.fieldMap[fieldName];
-    let finalValue = value;
-    if (fieldMetadata?.targetTypeName && value !== undefined) {
-        const targetMetadata = typeMetadataMap[fieldMetadata.targetTypeName];
-        if (targetMetadata === undefined) {
-            throw new Error(`Cannot find target metadata for '${typeMetadata.name}.${fieldMetadata.name}'`);
+    const fieldMetadata = typeMetadata.declaredFieldMap[fieldName];
+    if (fieldMetadata !== undefined) {
+        const fieldIndex = binarySearch(obj.fields, "name", fieldName);
+        let field: Draft<GraphField>;
+        if (fieldIndex < 0) {
+            field = { name: fieldName };
+            obj.fields.splice(-fieldIndex - 1, 0, field);
+        } else {
+            field = obj.fields[fieldIndex];
         }
-        const targetIdFieldName = targetMetadata.idFieldName;
-        if (targetIdFieldName === undefined) {
-            throw new Error(`Cannot find id property of '${targetMetadata.name}'`);
-        }
-        if (fieldMetadata.isConnection) {
-            finalValue = {
-                ...value,
-                edges: value.edges?.map((edge: any) => {
-                    return {
-                        ...edge,
-                        node: edge.node[targetIdFieldName]
-                    };
-                })
+        let finalValue = value;
+        if (fieldMetadata.targetTypeName && value !== undefined) {
+            const targetMetadata = typeMetadataMap[fieldMetadata.targetTypeName];
+            if (targetMetadata === undefined) {
+                throw new Error(`Cannot find target metadata for '${typeMetadata.name}.${fieldMetadata.name}'`);
             }
-        } else if (Array.isArray(value)) {
-            finalValue = value.map(element => element[targetIdFieldName]);
+            const targetIdFieldName = targetMetadata.idFieldName;
+            if (targetIdFieldName === undefined) {
+                throw new Error(`Cannot find id property of '${targetMetadata.name}'`);
+            }
+            if (fieldMetadata.isConnection) {
+                finalValue = {
+                    ...value,
+                    edges: value.edges?.map((edge: any) => {
+                        return {
+                            ...edge,
+                            node: edge.node[targetIdFieldName]
+                        };
+                    })
+                }
+            } else if (Array.isArray(value)) {
+                finalValue = value.map(element => element[targetIdFieldName]);
+            } else {
+                finalValue = value[targetIdFieldName];
+            }
+        }
+        if (fieldMetadata?.isParamerized === true) {
+            if (field.parameterizedValues === undefined) {
+                field.parameterizedValues = [];
+            }
+            const parameterIndex = binarySearch(field.parameterizedValues, "parameter", parameter);
+            if (parameterIndex < 0) {
+                field.parameterizedValues.splice(-parameterIndex - 1, 0, {parameter, value: finalValue});
+            } else {
+                field.parameterizedValues[parameterIndex] = {parameter, value: finalValue};
+            }
         } else {
-            finalValue = value[targetIdFieldName];
+            field.value = finalValue;
         }
     }
-    if (fieldMetadata?.isParamerized === true) {
-        if (field.parameterizedValues === undefined) {
-            field.parameterizedValues = [];
+}
+
+export function typeMetadatas(
+    typeMedataMap: {readonly [key: string]: GraphTypeMetadata},
+    typeName: string
+): ReadonlyArray<GraphTypeMetadata> {
+    const arr: GraphTypeMetadata[] = [];
+    let name: string | undefined = typeName;
+    while (name) {
+        const metadata: GraphTypeMetadata | undefined = typeMedataMap[name];
+        if (metadata === undefined) {
+            break;
         }
-        const parameterIndex = binarySearch(field.parameterizedValues, "parameter", parameter);
-        if (parameterIndex < 0) {
-            field.parameterizedValues.splice(-parameterIndex - 1, 0, {parameter, value: finalValue});
-        } else {
-            field.parameterizedValues[parameterIndex] = {parameter, value: finalValue};
-        }
-    } else {
-        field.value = finalValue;
+        arr.push(metadata);
+        name = metadata.superTypeName;
     }
+    return arr;
 }

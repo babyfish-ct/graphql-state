@@ -21,30 +21,22 @@ export const GraphStateMonitor: FC = memo(() => {
 
     const [selectedFieldId, setSelectedFieldId] = useState<string>();
 
-    const onMessage = useCallback((message: Message) => {
+    const onSyncSnapshot = useCallback((message: Message) => {
         if (message.messageDomain === 'graphQLStateMonitor' &&
             message.messageType === 'graphStateChange' &&
             message.stateManagerId === stateManagerId
         ) {
-            if (graphSnapshot.typeMetadataMap[message.typeName] === undefined) {
-                chrome.devtools.inspectedWindow.eval(MOUNT_SCRIPT, (result, exceptionInfo) => {
-                    if (result !== undefined) {
-                        const snaphsot = result as GraphSnapshot
-                        setGraphSnapshot(snaphsot);
-                        if (snaphsot.typeMetadataMap[message.typeName] !== undefined) {
-                            return;
-                        }
-                    }
-                    throw new Error(`No metadata for the type name '${message.typeName}'`);
-                });
-                return;
-            }
             setGraphSnapshot(old => produce(old, draft => {
-                if (draft.typeMetadataMap[message.typeName] === undefined) {
-                    throw { " $noMetadata": true };
-                }
                 changeGraphSnapshot(draft, message);
             }));
+        }
+    }, [stateManagerId]);
+
+    const onClearSelection = useCallback((message: Message) => {
+        if (message.messageDomain === 'graphQLStateMonitor' &&
+            message.messageType === 'graphStateChange' &&
+            message.stateManagerId === stateManagerId
+        ) {
             if (message.changeType === 'evict-row' || message.changeType === 'delete') {
                 if (selectedObjectId !== undefined && selectedObjectId === `${message.typeName}:${message.id}`) {
                     setSelectedObjectId(undefined);
@@ -64,17 +56,19 @@ export const GraphStateMonitor: FC = memo(() => {
                 setGraphSnapshot(result as GraphSnapshot);
             }
         });
+        chrome.runtime.onMessage.addListener(onSyncSnapshot);
         return () => {
+            chrome.runtime.onMessage.removeListener(onSyncSnapshot);
             chrome.devtools.inspectedWindow.eval(UNMOUNT_SCRIPT);
         }
-    }, [stateManagerId]);
+    }, [onSyncSnapshot]);
 
     useEffect(() => {
-        chrome.runtime.onMessage.addListener(onMessage);
+        chrome.runtime.onMessage.addListener(onClearSelection);
         return () => {
-            chrome.runtime.onMessage.removeListener(onMessage);
+            chrome.runtime.onMessage.removeListener(onClearSelection);
         }
-    }, [onMessage]);
+    }, [onClearSelection]);
 
     const [typeMetadata, obj] = useMemo<[GraphTypeMetadata | undefined, GraphObject | undefined]>(() => {
         if (selectedObjectId === undefined) {
@@ -127,7 +121,7 @@ export const GraphStateMonitor: FC = memo(() => {
             return [undefined, undefined, false];
         }
         const field = obj.fields[fieldIndex];
-        const metadata = typeMetadata.fieldMap[fieldName];
+        const metadata = typeMetadata.declaredFieldMap[fieldName];
         if (metadata?.isParamerized === true) {
             if (field.parameterizedValues !== undefined) {
                 const parameterIndex = binarySearch(field.parameterizedValues, "parameter", parameter);

@@ -50,7 +50,7 @@ export interface GraphTypeMetadata {
     readonly name: string;
     readonly superTypeName?: string;
     readonly idFieldName?: string;
-    readonly fieldMap: { readonly [key: string]: GraphFieldMetadata };
+    readonly declaredFieldMap: { readonly [key: string]: GraphFieldMetadata };
 }
 
 export interface GraphFieldMetadata {
