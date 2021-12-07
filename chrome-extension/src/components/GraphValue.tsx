@@ -99,5 +99,5 @@ const Reference: FC<{
             onLink(`${typeName}:${id}`);
         }
     }, [onLink, typeName, id]);
-    return <Button onClick={onClick}>{createValueNode(id)}</Button>;
+    return <Button type="link" onClick={onClick}>{createValueNode(id)}</Button>;
 });

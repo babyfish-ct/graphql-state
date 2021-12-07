@@ -6,6 +6,7 @@ import { SimpleStateMonitor } from "./components/SimpleStateMonitor";
 import { Message } from "./common/Model";
 import { Tabs } from 'antd';
 import { StateManagerIdContextProvider } from './components/StateManagerContext';
+import { RefetchLogMonitor } from './components/RefetchLogMonitor';
 
 function App() {
 
@@ -46,6 +47,9 @@ function App() {
                     </Tabs.TabPane>
                     <Tabs.TabPane key="graph-state" tab="Graph states">
                         { tabKey === "graph-state" && <GraphStateMonitor/> }
+                    </Tabs.TabPane>
+                    <Tabs.TabPane key="refetch-log" tab="Refetch logs">
+                        { tabKey === "refetch-log" && <RefetchLogMonitor/> }
                     </Tabs.TabPane>
                 </Tabs>
             </div>
