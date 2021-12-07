@@ -55,7 +55,7 @@ export const GraphObjectTree: FC<{
                     <Tree.TreeNode 
                     key={`Query:${snapshot.query.id}`}
                     title={
-                        <div><FileOutlined/>Query:{snapshot.query.id}</div>
+                        <div><FileOutlined/>Query</div>
                     }/>
                 }
                 {

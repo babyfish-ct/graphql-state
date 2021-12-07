@@ -116,13 +116,16 @@ export const GraphStateMonitor: FC = memo(() => {
         }
         const fieldName = selectedFieldId.substring(0, colonIndex);
         const parameter = selectedFieldId.substring(colonIndex + 1);
+        const metadata = typeMetadata.declaredFieldMap[fieldName];
+        if (metadata === undefined) {
+            return [undefined, undefined, false];
+        }
         const fieldIndex = binarySearch(obj.fields, "name", fieldName);
         if (fieldIndex < 0) {
             return [undefined, undefined, false];
         }
         const field = obj.fields[fieldIndex];
-        const metadata = typeMetadata.declaredFieldMap[fieldName];
-        if (metadata?.isParamerized === true) {
+        if (metadata.isParamerized) {
             if (field.parameterizedValues !== undefined) {
                 const parameterIndex = binarySearch(field.parameterizedValues, "parameter", parameter);
                 if (parameterIndex >= 0) {

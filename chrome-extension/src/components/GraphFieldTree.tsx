@@ -1,4 +1,4 @@
-import { TagFilled, TagsOutlined } from "@ant-design/icons";
+import { LineOutlined, TagFilled, TagsOutlined } from "@ant-design/icons";
 import { Button, Card, Tree } from "antd";
 import { FC, memo, useCallback } from "react";
 import { GraphObject, GraphTypeMetadata } from "../common/Model";
@@ -18,20 +18,32 @@ export const GraphFieldTree: FC<{
     }, [onChange]);
 
     return (
-        <Card title={typeMetadata.name}>
+        <Card title="Selected object">
             <Tree 
             selectedKeys={value === undefined ? [] : [value]}
             onSelect={onTreeSelect}>
-                <Tree.TreeNode key="id" title={
-                    <div>
-                       <TagFilled/>id 
-                    </div>
-                }/>
-                { typeMetadata.superTypeName &&
+                {
+                    <Tree.TreeNode key="__typename" title={
+                        <div>
+                            <LineOutlined/>
+                            type: {typeMetadata.name}
+                        </div>
+                    }/>
+                }
+                { 
+                    typeMetadata.superTypeName &&
                     <Tree.TreeNode key="super" title={
                         <div>
-                            <TagFilled/>
-                            <Button type="link">super</Button>
+                            <LineOutlined/>
+                            super: 
+                            <Button type="link">{typeMetadata.superTypeName}</Button>
+                        </div>
+                    }/>
+                }
+                {
+                    typeMetadata.name !== "Query" && <Tree.TreeNode key="id" title={
+                        <div>
+                            <TagFilled/>id
                         </div>
                     }/>
                 }
