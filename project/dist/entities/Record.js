@@ -285,6 +285,7 @@ class Record {
         fields.sort((a, b) => util_1.compare(a, b, "name"));
         const obj = {
             id: this.id,
+            runtimeTypeName: this.runtimeType.name,
             fields
         };
         return obj;

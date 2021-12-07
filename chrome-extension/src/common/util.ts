@@ -1,5 +1,3 @@
-import { FieldNumberOutlined } from "@ant-design/icons";
-import { message } from "antd";
 import { Draft } from "immer";
 import { GraphField, GraphObject, GraphSnapshot, GraphStateMessage, GraphType, GraphTypeMetadata, SimpleState, SimpleStateScope } from "./Model";
 
@@ -244,7 +242,7 @@ export function changeGraphSnapshot(
         } else {
             if (typeMetadata.name === 'Query') {
                 if (draft.query === undefined) {
-                    draft.query = { id: "____QUERY_OBJECT____", fields: [] };
+                    draft.query = { id: "____QUERY_OBJECT____", runtimeTypeName: "Query", fields: [] };
                 }
                 for (const field of message.fields) {
                     setField(draft.typeMetadataMap, typeMetadata, draft.query!, field.fieldKey, field.newValue);
@@ -261,7 +259,7 @@ export function changeGraphSnapshot(
                 const objIndex = binarySearch(type.objects, "id", message.id);
                 let obj: Draft<GraphObject>;
                 if (objIndex < 0) {
-                    obj = { id: message.id, fields: [] };
+                    obj = { id: message.id, runtimeTypeName: message.typeName, fields: [] };
                     type.objects.splice(-objIndex - 1, 0, obj);
                 } else {
                     obj = type.objects[objIndex];

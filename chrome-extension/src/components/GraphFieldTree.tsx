@@ -8,8 +8,9 @@ export const GraphFieldTree: FC<{
     readonly typeMetadata: GraphTypeMetadata,
     readonly obj: GraphObject,
     readonly value?: string,
-    readonly onChange?: (value?: string) => void
-}> = memo(({typeMetadata, obj, value, onChange}) => {
+    readonly onChange?: (value?: string) => void,
+    readonly onLink?: (selectObjectId: string) => void
+}> = memo(({typeMetadata, obj, value, onChange, onLink}) => {
 
     const onTreeSelect = useCallback((keys: any[]) => {
         if (onChange) {
@@ -17,16 +18,37 @@ export const GraphFieldTree: FC<{
         }
     }, [onChange]);
 
+    const onSuperClick = useCallback(() => {
+        if (onLink && typeMetadata.superTypeName !== undefined) {
+            onLink(`${typeMetadata.superTypeName}:${obj.id}`);
+        }
+    }, [typeMetadata, onLink, obj]);
+
+    const onRuntimeTypeClick = useCallback(() => {
+        if (onLink) {
+            onLink(`${obj.runtimeTypeName}:${obj.id}`);
+        }
+    }, [obj]);
+
     return (
         <Card title="Selected object">
             <Tree 
             selectedKeys={value === undefined ? [] : [value]}
             onSelect={onTreeSelect}>
                 {
-                    <Tree.TreeNode key="__typename" title={
+                    <Tree.TreeNode key="staticType" title={
                         <div>
                             <LineOutlined/>
-                            type: {typeMetadata.name}
+                            staticType: {typeMetadata.name}
+                        </div>
+                    }/>
+                }
+                {
+                    obj.runtimeTypeName !== typeMetadata.name && <Tree.TreeNode key="runtimeType" title={
+                        <div>
+                            <LineOutlined/>
+                            runtimeType: 
+                            <Button type="link" onClick={onRuntimeTypeClick}>{obj.runtimeTypeName}</Button>
                         </div>
                     }/>
                 }
@@ -36,7 +58,7 @@ export const GraphFieldTree: FC<{
                         <div>
                             <LineOutlined/>
                             super: 
-                            <Button type="link">{typeMetadata.superTypeName}</Button>
+                            <Button type="link" onClick={onSuperClick}>{typeMetadata.superTypeName}</Button>
                         </div>
                     }/>
                 }

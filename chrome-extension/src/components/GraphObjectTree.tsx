@@ -6,7 +6,7 @@ import { FileOutlined, FolderOutlined, MinusOutlined, PlusOutlined } from "@ant-
 export const GraphObjectTree: FC<{
     readonly snapshot: GraphSnapshot,
     readonly value?: string,
-    readonly onChange?: (value?: string) => void;
+    readonly onChange?: (value?: string) => void
 }> = memo(({snapshot, value, onChange}) => {
 
     const allKeys = useMemo<string[]>(() => {
@@ -33,6 +33,21 @@ export const GraphObjectTree: FC<{
             onChange(key);
         }
     }, [onChange]);
+
+    useEffect(() => {
+        if (value !== undefined) {
+            const colonIndex = value.indexOf(":");
+            if (colonIndex !== undefined) {
+                const typeName = value.substring(0, colonIndex);
+                setExpandedKeys(oldKeys => {
+                    if (oldKeys.indexOf(typeName) === -1) {
+                        return [...oldKeys, typeName];
+                    }
+                    return oldKeys;
+                })
+            }
+        }
+    }, [value]);
 
     return (
         <Card title="Graph objects" extra={

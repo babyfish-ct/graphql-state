@@ -363,6 +363,7 @@ export class Record {
         fields.sort((a, b) => compare(a, b, "name"));
         const obj: GraphObject = {
             id: this.id,
+            runtimeTypeName: this.runtimeType.name,
             fields
         };
         return obj;

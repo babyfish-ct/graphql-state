@@ -1,24 +1,26 @@
-import { Card } from "antd";
-import { FC, memo } from "react";
+import { Button, Card } from "antd";
+import { FC, memo, useCallback } from "react";
 import { GraphFieldMetadata } from "../common/Model";
 import { createValueNode } from "../common/value";
 
 export const GraphValue: FC<{
     readonly metadata?: GraphFieldMetadata,
-    readonly value: any
-}> = memo(({metadata, value}) => {
+    readonly value: any,
+    readonly onLink?: (selectObjectId: string) => void
+}> = memo(props => {
     
     return (
         <Card title="Selected field">
-            <Core metadata={metadata} value={value}/>
+            <Core {...props}/>
         </Card>
     );
 });
 
 const Core: FC<{
     readonly metadata?: GraphFieldMetadata,
-    readonly value: any
-}> = memo(({metadata, value}) => {
+    readonly value: any,
+    readonly onLink?: (selectObjectId: string) => void
+}> = memo(({metadata, value, onLink}) => {
 
     if (value === undefined || value === null) {
         return <>{createValueNode(undefined)}</>;
@@ -46,7 +48,7 @@ const Core: FC<{
                                             <div key={index}>
                                                 {"{"}
                                                     <div className="value-composite">
-                                                        node: <Reference typeName={metadata!.targetTypeName!} id={edge.node}/>
+                                                        node: <Reference typeName={metadata!.targetTypeName!} id={edge.node} onLink={onLink}/>
                                                         { edge.cursor && <>cursor: { createValueNode(edge.cursor) }</> }
                                                     </div>
                                                 {"}"}{ index < value.edges.length && "," }
@@ -72,7 +74,7 @@ const Core: FC<{
                             {
                                 value.map((element, index) => 
                                     <div key={index}>
-                                        <Reference typeName={metadata.targetTypeName!} id={element}/>
+                                        <Reference typeName={metadata.targetTypeName!} id={element} onLink={onLink}/>
                                         {index < value.length && ","}
                                     </div>
                                 )
@@ -82,14 +84,20 @@ const Core: FC<{
                 </>
             );
         }
-        return <Reference typeName={metadata.targetTypeName!} id={value}/>
+        return <Reference typeName={metadata.targetTypeName!} id={value} onLink={onLink}/>
     }
     return <>{createValueNode(value)}</>;
 });
 
 const Reference: FC<{
     readonly typeName: string,
-    readonly id: any
-}> = memo(({typeName, id}) => {
-    return <span>{createValueNode(id)}</span>;
+    readonly id: any,
+    readonly onLink?: (selectObjectId: string) => void
+}> = memo(({typeName, id, onLink}) => {
+    const onClick = useCallback(() => {
+        if (onLink) {
+            onLink(`${typeName}:${id}`);
+        }
+    }, [onLink, typeName, id]);
+    return <Button onClick={onClick}>{createValueNode(id)}</Button>;
 });

@@ -1,4 +1,4 @@
-import { Col, message, Row, Space } from "antd";
+import { Col, Row, Space } from "antd";
 import produce from "immer";
 import { FC, memo, useCallback, useEffect, useMemo, useState } from "react";
 import { GraphFieldMetadata, GraphObject, GraphSnapshot, GraphTypeMetadata, Message } from "../common/Model";
@@ -48,7 +48,7 @@ export const GraphStateMonitor: FC = memo(() => {
                 }
             }
         }
-    }, [stateManagerId, selectedObjectId, graphSnapshot]);
+    }, [stateManagerId, selectedObjectId, selectedFieldId, graphSnapshot]);
 
     useEffect(() => {
         chrome.devtools.inspectedWindow.eval(MOUNT_SCRIPT, result => {
@@ -154,10 +154,11 @@ export const GraphStateMonitor: FC = memo(() => {
                         typeMetadata={typeMetadata} 
                         obj={obj} 
                         value={selectedFieldId} 
-                        onChange={setSelectedFieldId}/>
+                        onChange={setSelectedFieldId}
+                        onLink={setSelectedObjectId}/>
                         {
                             hasValue &&
-                            <GraphValue metadata={fieldMetdata} value={value}/>
+                            <GraphValue metadata={fieldMetdata} value={value} onLink={setSelectedObjectId}/>
                         }
                     </Space>
                 }

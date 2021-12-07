@@ -65,6 +65,7 @@ export interface GraphType {
 }
 export interface GraphObject {
     readonly id: string;
+    readonly runtimeTypeName: string;
     readonly fields: readonly GraphField[];
 }
 export interface GraphField {
