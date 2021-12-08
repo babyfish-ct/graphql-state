@@ -22,3 +22,7 @@ UI状态的本质是什么?
 - [入门向导](./site/get-start_zh_CN.md)
 - [运行附带例子](./site/run-demo_zh_CN.md)
 - [文档](./doc/README_zh_CN.md)
+
+## Chrome扩展
+
+为了帮助开发人员调试，本框架支持chrome扩展
