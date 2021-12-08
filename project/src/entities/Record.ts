@@ -6,7 +6,7 @@ import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { VariableArgs } from "../state/impl/Args";
 import { SpaceSavingMap } from "../state/impl/SpaceSavingMap";
 import { compare } from "../state/impl/util";
-import { GraphField, GraphObject, ParameterizedValue, RefetchReasonType } from "../state/Monitor";
+import { GraphField, GraphObject, ParameterizedValue, EvictReasonType } from "../state/Monitor";
 import { Association } from "./assocaition/Association";
 import { RecordConnection } from "./assocaition/AssociationConnectionValue";
 import { BackReferences } from "./assocaition/BackReferences";
@@ -188,15 +188,15 @@ export class Record {
         field: FieldMetadata,
         args: VariableArgs | undefined,
         includeMoreStrictArgs: boolean = false,
-        refetchReason?: RefetchReasonType
+        evictReason?: EvictReasonType
     ) {
         if (field.declaringType !== this.staticType) {
             throw new Error(`'${field.fullName}' is not field of the type '${this.staticType.name}' of current record`);
         }
         if (field.isAssociation) {
-            this.associationMap.get(field)?.evict(entityManager, args, includeMoreStrictArgs, refetchReason);
+            this.associationMap.get(field)?.evict(entityManager, args, includeMoreStrictArgs, evictReason);
         } else {
-            entityManager.modificationContext.unset(this, field.name, undefined, refetchReason);
+            entityManager.modificationContext.unset(this, field.name, undefined, evictReason);
             this.scalarMap.delete(field.name);
         }
     }

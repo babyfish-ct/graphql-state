@@ -3,7 +3,7 @@ import { FlatRow } from "../meta/Configuration";
 import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { VariableArgs } from "../state/impl/Args";
-import { GraphObject, RefetchReasonType } from "../state/Monitor";
+import { GraphObject, EvictReasonType } from "../state/Monitor";
 import { RecordConnection } from "./assocaition/AssociationConnectionValue";
 import { BackReferences } from "./assocaition/BackReferences";
 import { EntityManager, Garbage } from "./EntityManager";
@@ -31,7 +31,7 @@ export declare class Record {
     unlink(entityManager: EntityManager, associationField: FieldMetadata, record: Record): void;
     contains(field: FieldMetadata, args: VariableArgs | undefined, target: Record, tryMoreStrictArgs: boolean): boolean;
     anyValueContains(field: FieldMetadata, target: Record): boolean | undefined;
-    evict(entityManager: EntityManager, field: FieldMetadata, args: VariableArgs | undefined, includeMoreStrictArgs?: boolean, refetchReason?: RefetchReasonType): void;
+    evict(entityManager: EntityManager, field: FieldMetadata, args: VariableArgs | undefined, includeMoreStrictArgs?: boolean, evictReason?: EvictReasonType): void;
     delete(entityManager: EntityManager): void;
     undelete(): boolean;
     toRow(): FlatRow<any>;

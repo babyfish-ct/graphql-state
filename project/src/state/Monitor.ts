@@ -72,8 +72,8 @@ export function postGraphStateMessage(
     }
 }
 
-export function isRefetchLogEnabled() {
-    return (window as any).__GRAPHQL_STATE_MONITORS__?.refetchLog === true;
+export function isEvictLogEnabled() {
+    return (window as any).__GRAPHQL_STATE_MONITORS__?.evictLog === true;
 }
 
 function fieldKeyOf(key: EntityKey): string {
@@ -90,7 +90,7 @@ function fieldKeyOf(key: EntityKey): string {
     return `${key.name}:${parameter}`;
 }
 
-export type Message = StateManagerMessage | SimpleStateMessage | GraphStateMessage | RefetchLogMessage;
+export type Message = StateManagerMessage | SimpleStateMessage | GraphStateMessage | EvictLogMessage;
 
 interface AbstractMessage {
     readonly messageDomain: "graphQLStateMonitor";
@@ -120,15 +120,15 @@ export interface GraphStateMessage extends AbstractMessage {
     readonly fields: readonly GraphEventField[];
 }
 
-export interface RefetchLogMessage extends AbstractMessage {
-    readonly messageType: "refetchLogCreate";
+export interface EvictLogMessage extends AbstractMessage {
+    readonly messageType: "evictLogCreate";
     readonly stateManagerId: string;
     readonly typeName: string;
     readonly id: string;
     readonly field: string;
     readonly parameter: string;
     readonly targetTypeName?: string;
-    readonly reason: RefetchReasonType;
+    readonly reason: EvictReasonType;
 }
 
 export interface SimpleStateScope {
@@ -201,7 +201,7 @@ export interface GraphEventField {
 
 export type ChangeType = "insert" | "delete" | "update";
 
-export type RefetchReasonType =
+export type EvictReasonType =
     "unknown-owner" |
     "no-contains" |
     "no-range" |

@@ -86,7 +86,7 @@ export const GraphStateMonitor: FC = memo(() => {
                 }
             }
         }
-    }, [stateManagerId, graphSnapshot, selectedObjectId, selectedFieldId]);
+    }, [stateManagerId, selectedObjectId, selectedFieldId]);
 
     useEffect(() => {
         initializeSnapshot();

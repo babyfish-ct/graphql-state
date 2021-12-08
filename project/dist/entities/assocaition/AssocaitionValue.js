@@ -80,7 +80,7 @@ class AssociationValue {
                 if (belongToMe === false) {
                     return;
                 }
-                let refetchReason = undefined;
+                let evictReason = undefined;
                 if (belongToMe === true) {
                     const result = (_a = this.association.field.associationProperties) === null || _a === void 0 ? void 0 : _a.contains(new Record_1.FlatRowImpl(ref.value), (_b = this.args) === null || _b === void 0 ? void 0 : _b.filterVariables);
                     if (result === true) {
@@ -98,12 +98,12 @@ class AssociationValue {
                         this.unlink(entityManager, [ref.value]);
                         return;
                     }
-                    refetchReason = this.association.unfilterableReason;
+                    evictReason = this.association.unfilterableReason;
                 }
-                else {
-                    refetchReason = "unknown-owner";
+                else if (Monitor_1.isEvictLogEnabled()) {
+                    evictReason = "unknown-owner";
                 }
-                this.evict(entityManager, refetchReason);
+                this.evict(entityManager, evictReason);
             }
         }
     }
@@ -137,25 +137,25 @@ class AssociationValue {
         }
         return undefined;
     }
-    evict(entityManager, refetchReason) {
-        this.association.evict(entityManager, this.args, false, refetchReason);
+    evict(entityManager, evictReason) {
+        this.association.evict(entityManager, this.args, false, evictReason);
     }
     get isLinkOptimizable() {
         var _a, _b;
         const paginationInfo = (_a = this.args) === null || _a === void 0 ? void 0 : _a.paginationInfo;
         if ((paginationInfo === null || paginationInfo === void 0 ? void 0 : paginationInfo.style) === "page") {
-            let refetchReason = undefined;
-            if (Monitor_1.isRefetchLogEnabled()) {
-                refetchReason = "page-style-pagination";
+            let evictReason = undefined;
+            if (Monitor_1.isEvictLogEnabled()) {
+                evictReason = "page-style-pagination";
             }
-            return [false, refetchReason];
+            return [false, evictReason];
         }
         if (paginationInfo !== undefined && ((_b = this.association.field.associationProperties) === null || _b === void 0 ? void 0 : _b.range) === undefined) {
-            let refetchReason = undefined;
-            if (Monitor_1.isRefetchLogEnabled()) {
-                refetchReason = "no-range";
+            let evictReason = undefined;
+            if (Monitor_1.isEvictLogEnabled()) {
+                evictReason = "no-range";
             }
-            return [false, refetchReason];
+            return [false, evictReason];
         }
         return [true, undefined];
     }

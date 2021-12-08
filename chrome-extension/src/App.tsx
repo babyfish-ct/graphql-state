@@ -6,18 +6,12 @@ import { SimpleStateMonitor } from "./components/SimpleStateMonitor";
 import { Message } from "./common/Model";
 import { Tabs } from 'antd';
 import { StateManagerIdContextProvider } from './components/StateManagerContext';
-import { RefetchLogMonitor } from './components/RefetchLogMonitor';
-import { RefetchLogProvider } from './components/RefetchLogProvider';
+import { EvictLogMonitor } from './components/EvictLogMonitor';
+import { EvictLogProvider } from './components/EvictLogProvider';
 
 function App() {
 
     const [stateManagerId, setStateManagerId] = useState<string>();
-
-    const [tabKey, setTabKey] = useState("simple-state");
-
-    const onTabChange = useCallback((key: string) => {
-        setTabKey(key);
-    }, []);
 
     const onMessage = useCallback((message: Message) => {
         if (message.messageDomain === 'graphQLStateMonitor' && message.messageType === 'stateManagerChange') {
@@ -42,19 +36,19 @@ function App() {
     return (
         <StateManagerIdContextProvider value={stateManagerId}>
             <div style={{padding: 10}}>
-                <RefetchLogProvider>
-                    <Tabs activeKey={tabKey} onChange={onTabChange} destroyInactiveTabPane={true}>
+                <EvictLogProvider>
+                    <Tabs destroyInactiveTabPane={true}>
                         <Tabs.TabPane key="simple-state" tab="Simple states">
                             <SimpleStateMonitor/>
                         </Tabs.TabPane>
                         <Tabs.TabPane key="graph-state" tab="Graph states">
                             <GraphStateMonitor/>
                         </Tabs.TabPane>
-                        <Tabs.TabPane key="refetch-log" tab="Refetch logs">
-                            <RefetchLogMonitor/>
+                        <Tabs.TabPane key="evict-log" tab="Evict logs">
+                            <EvictLogMonitor/>
                         </Tabs.TabPane>
                     </Tabs>
-                </RefetchLogProvider>
+                </EvictLogProvider>
             </div>
         </StateManagerIdContextProvider>
     );

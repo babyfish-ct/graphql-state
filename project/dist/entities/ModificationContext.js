@@ -63,16 +63,16 @@ class ModificationContext {
             const key = Args_1.VariableArgs.fieldKey(fieldName, args);
             (_a = pair.oldObj) === null || _a === void 0 ? void 0 : _a.set(key, oldValue);
             (_b = pair.newObj) === null || _b === void 0 ? void 0 : _b.set(key, newValue);
-            const map = pair.refetchReasonMap;
+            const map = pair.evictReasonMap;
             if (map !== undefined) {
                 map.delete(key);
                 if (map.size === 0) {
-                    pair.refetchReasonMap = undefined;
+                    pair.evictReasonMap = undefined;
                 }
             }
         }
     }
-    unset(record, fieldName, args, refetchReason) {
+    unset(record, fieldName, args, evictReason) {
         var _a;
         if (fieldName === record.runtimeType.idField.name) {
             throw new Error("Internal bug: the changed name cannot be id");
@@ -80,12 +80,12 @@ class ModificationContext {
         const pair = this.pair(record, true, true);
         const key = Args_1.VariableArgs.fieldKey(fieldName, args);
         (_a = pair.newObj) === null || _a === void 0 ? void 0 : _a.delete(key);
-        if (refetchReason !== undefined) {
-            let map = pair.refetchReasonMap;
+        if (evictReason !== undefined) {
+            let map = pair.evictReasonMap;
             if (map === undefined) {
-                pair.refetchReasonMap = map = new Map();
+                pair.evictReasonMap = map = new Map();
             }
-            map.set(key, refetchReason);
+            map.set(key, evictReason);
         }
     }
     pair(record, initializeOldObj, useNewObj) {
@@ -161,21 +161,21 @@ class ModificationContext {
             if (evictedValueMap.size !== 0) {
                 this.publishEvictEvent(new EntityEvictEventImpl(type.name, id, this.forGC, "fields", Array.from(evictedValueMap.keys()).map(parseEntityKey), evictedValueMap));
                 for (const key of evictedValueMap.keys()) {
-                    const refetchReason = (_a = pair.refetchReasonMap) === null || _a === void 0 ? void 0 : _a.get(key);
-                    if (refetchReason !== undefined) {
+                    const evictReason = (_a = pair.evictReasonMap) === null || _a === void 0 ? void 0 : _a.get(key);
+                    if (evictReason !== undefined) {
                         const index = key.indexOf(':');
                         const field = index === -1 ? key : key.substring(0, index);
                         const parameter = index === -1 ? "" : key.substring(index + 1);
                         const message = {
                             messageDomain: "graphQLStateMonitor",
-                            messageType: "refetchLogCreate",
+                            messageType: "evictLogCreate",
                             stateManagerId: this.stateManagerId,
                             typeName: type.name,
                             id,
                             field,
                             parameter,
                             targetTypeName: (_c = (_b = type.fieldMap.get(field)) === null || _b === void 0 ? void 0 : _b.targetType) === null || _c === void 0 ? void 0 : _c.name,
-                            reason: refetchReason
+                            reason: evictReason
                         };
                         postMessage(message, "*");
                     }

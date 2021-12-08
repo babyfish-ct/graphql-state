@@ -118,16 +118,16 @@ class Record {
         var _a;
         return (_a = this.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.anyValueContains(target);
     }
-    evict(entityManager, field, args, includeMoreStrictArgs = false, refetchReason) {
+    evict(entityManager, field, args, includeMoreStrictArgs = false, evictReason) {
         var _a;
         if (field.declaringType !== this.staticType) {
             throw new Error(`'${field.fullName}' is not field of the type '${this.staticType.name}' of current record`);
         }
         if (field.isAssociation) {
-            (_a = this.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.evict(entityManager, args, includeMoreStrictArgs, refetchReason);
+            (_a = this.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.evict(entityManager, args, includeMoreStrictArgs, evictReason);
         }
         else {
-            entityManager.modificationContext.unset(this, field.name, undefined, refetchReason);
+            entityManager.modificationContext.unset(this, field.name, undefined, evictReason);
             this.scalarMap.delete(field.name);
         }
     }

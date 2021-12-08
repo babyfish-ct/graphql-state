@@ -1,8 +1,8 @@
 import { createContext, FC, memo, PropsWithChildren, useCallback, useContext, useEffect, useState } from "react";
-import { Message, RefetchLogMessage } from "../common/Model";
+import { Message, EvictLogMessage } from "../common/Model";
 import { useStateManagerId } from "./StateManagerContext";
 
-export const RefetchLogProvider: FC<
+export const EvictLogProvider: FC<
     PropsWithChildren<{}>
 > = memo(({children}) => {
 
@@ -12,7 +12,7 @@ export const RefetchLogProvider: FC<
 
     const onMessage = useCallback((message: Message) => {
         if (message.messageDomain === 'graphQLStateMonitor' &&
-            message.messageType === 'refetchLogCreate' &&
+            message.messageType === 'evictLogCreate' &&
             message.stateManagerId === stateManagerId
         ) {
             const log: Log = {...message, logId: logIdSequence++};
@@ -24,7 +24,7 @@ export const RefetchLogProvider: FC<
                 return arr;
             });
         }
-    }, []);
+    }, [stateManagerId]);
 
     useEffect(() => {
         setLogs([]);
@@ -34,16 +34,16 @@ export const RefetchLogProvider: FC<
             chrome.runtime.onMessage.removeListener(onMessage);
             chrome.devtools.inspectedWindow.eval(UNMOUNT_SCRIPT);
         }
-    }, [stateManagerId, onMessage]);
+    }, [onMessage]);
 
     return (
-        <refetchLogContext.Provider value={logs}>
+        <evictLogContext.Provider value={logs}>
             {children}
-        </refetchLogContext.Provider>
+        </evictLogContext.Provider>
     );
 });
 
-export interface Log extends RefetchLogMessage {
+export interface Log extends EvictLogMessage {
     readonly logId: number;
 }
 
@@ -54,16 +54,16 @@ const MAX_COUNT = 200;
 const MOUNT_SCRIPT = `
 window.__GRAPHQL_STATE_MONITORS__ = {
     ...window.__GRAPHQL_STATE_MONITORS__,
-    refetchLog: true
+    evictLog: true
 };`;
 
 const UNMOUNT_SCRIPT = `
 if (window.__GRAPHQL_STATE_MONITORS__) {
-    delete window.__GRAPHQL_STATE_MONITORS__.refetchLog;
+    delete window.__GRAPHQL_STATE_MONITORS__.evictLog;
 }`;
 
-const refetchLogContext = createContext<Log[]>([]);
+const evictLogContext = createContext<Log[]>([]);
 
 export function useLogs(): Log[] {
-    return useContext(refetchLogContext);
+    return useContext(evictLogContext);
 }

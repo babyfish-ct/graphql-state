@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isRefetchLogEnabled = exports.postGraphStateMessage = exports.postSimpleStateMessage = exports.postStateManagerMessage = void 0;
+exports.isEvictLogEnabled = exports.postGraphStateMessage = exports.postSimpleStateMessage = exports.postStateManagerMessage = void 0;
 function postStateManagerMessage(stateManagerId) {
     const message = {
         messageDomain: "graphQLStateMonitor",
@@ -67,11 +67,11 @@ function postGraphStateMessage(stateManagerId, event) {
     }
 }
 exports.postGraphStateMessage = postGraphStateMessage;
-function isRefetchLogEnabled() {
+function isEvictLogEnabled() {
     var _a;
-    return ((_a = window.__GRAPHQL_STATE_MONITORS__) === null || _a === void 0 ? void 0 : _a.refetchLog) === true;
+    return ((_a = window.__GRAPHQL_STATE_MONITORS__) === null || _a === void 0 ? void 0 : _a.evictLog) === true;
 }
-exports.isRefetchLogEnabled = isRefetchLogEnabled;
+exports.isEvictLogEnabled = isEvictLogEnabled;
 function fieldKeyOf(key) {
     if (typeof key === 'string') {
         return key;

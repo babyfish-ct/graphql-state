@@ -59,14 +59,14 @@ class Association {
         this.refreshedVersion = entityManager.modificationVersion;
         this.value(args).set(entityManager, value, pagination);
     }
-    evict(entityManager, args, includeMoreStrictArgs, refetchReason) {
+    evict(entityManager, args, includeMoreStrictArgs, evictReason) {
         this.refreshedVersion = entityManager.modificationVersion;
         const ctx = entityManager.modificationContext;
         if (includeMoreStrictArgs) {
             const keys = [];
             this.valueMap.forEachValue(value => {
                 if (Args_1.VariableArgs.contains(value.args, args)) {
-                    ctx.unset(this.record, this.field.name, value.args, refetchReason);
+                    ctx.unset(this.record, this.field.name, value.args, evictReason);
                     keys.push(args === null || args === void 0 ? void 0 : args.key);
                 }
             });
@@ -77,7 +77,7 @@ class Association {
         else {
             const value = this.valueMap.get(args === null || args === void 0 ? void 0 : args.key);
             if (value !== undefined) {
-                ctx.unset(this.record, this.field.name, value.args, refetchReason);
+                ctx.unset(this.record, this.field.name, value.args, evictReason);
                 this.valueMap.remove(args === null || args === void 0 ? void 0 : args.key);
             }
         }
@@ -216,7 +216,7 @@ class Association {
         }
     }
     get unfilterableReason() {
-        if (Monitor_1.isRefetchLogEnabled()) {
+        if (Monitor_1.isEvictLogEnabled()) {
             if (this.field.isContainingConfigured) {
                 return "contains-returns-undefined";
             }

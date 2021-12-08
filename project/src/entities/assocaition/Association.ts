@@ -10,7 +10,7 @@ import { AssociationReferenceValue } from "./AssociationReferenceValue";
 import { Pagination } from "../QueryArgs";
 import { TextWriter } from "graphql-ts-client-api";
 import { EntityChangeEvent, EntityEvictEvent } from "../EntityEvent";
-import { GraphField, ParameterizedValue, GraphValue, isRefetchLogEnabled, RefetchReasonType } from "../../state/Monitor";
+import { GraphField, ParameterizedValue, GraphValue, isEvictLogEnabled, EvictReasonType } from "../../state/Monitor";
 import { compare } from "../../state/impl/util";
 
 export class Association {
@@ -82,7 +82,7 @@ export class Association {
         entityManager: EntityManager, 
         args: VariableArgs | undefined,
         includeMoreStrictArgs: boolean,
-        refetchReason?: RefetchReasonType
+        evictReason?: EvictReasonType
     ) {
         this.refreshedVersion = entityManager.modificationVersion;
         const ctx = entityManager.modificationContext;
@@ -90,7 +90,7 @@ export class Association {
             const keys: Array<string | undefined> = [];
             this.valueMap.forEachValue(value => {
                 if (VariableArgs.contains(value.args, args)) {
-                    ctx.unset(this.record, this.field.name, value.args, refetchReason);
+                    ctx.unset(this.record, this.field.name, value.args, evictReason);
                     keys.push(args?.key);
                 }
             });
@@ -100,7 +100,7 @@ export class Association {
         } else {
             const value = this.valueMap.get(args?.key);
             if (value !== undefined) {
-                ctx.unset(this.record, this.field.name, value.args, refetchReason);
+                ctx.unset(this.record, this.field.name, value.args, evictReason);
                 this.valueMap.remove(args?.key);
             }
         }
@@ -261,8 +261,8 @@ export class Association {
         }
     }
 
-    get unfilterableReason(): RefetchReasonType | undefined {
-        if (isRefetchLogEnabled()) {
+    get unfilterableReason(): EvictReasonType | undefined {
+        if (isEvictLogEnabled()) {
             if (this.field.isContainingConfigured) {
                 return "contains-returns-undefined";
             } 

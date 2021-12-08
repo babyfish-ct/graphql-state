@@ -28,7 +28,7 @@ export const GraphFieldTree: FC<{
         if (onLink) {
             onLink(`${obj.runtimeTypeName}:${obj.id}`);
         }
-    }, [obj]);
+    }, [onLink, obj]);
 
     return (
         <Card title="Selected object">

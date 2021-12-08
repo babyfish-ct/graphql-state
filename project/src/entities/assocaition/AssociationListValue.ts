@@ -1,5 +1,5 @@
 import { PositionType, FlatRow } from "../../meta/Configuration";
-import { isRefetchLogEnabled, RefetchReasonType } from "../../state/Monitor";
+import { isEvictLogEnabled, EvictReasonType } from "../../state/Monitor";
 import { EntityManager } from "../EntityManager";
 import { objectWithOnlyId, Record } from "../Record";
 import { AssociationValue } from "./AssocaitionValue";
@@ -93,7 +93,7 @@ export class AssociationListValue extends AssociationValue {
                     if (!ex[" $evict"]) {
                         throw ex;
                     }
-                    this.evict(entityManager, ex[" $refetchReason"]);
+                    this.evict(entityManager, ex[" $evictReason"]);
                     return;
                 }
             }
@@ -152,7 +152,7 @@ export class AssociationListValue extends AssociationValue {
             if (!ex[" $evict"]) {
                 throw ex;
             }
-            this.evict(entityManager, ex[" $refetchReason"]);
+            this.evict(entityManager, ex[" $evictReason"]);
             return;
         }
     }
@@ -234,11 +234,11 @@ class Appender {
                 this.filterVariables
             );
         if (pos === undefined) {
-            let refetchReason: RefetchReasonType | undefined = undefined;
-            if (isRefetchLogEnabled()) {
-                refetchReason = "position-returns-undefined";
+            let evictReason: EvictReasonType | undefined = undefined;
+            if (isEvictLogEnabled()) {
+                evictReason = "position-returns-undefined";
             }
-            throw { " $evict": true, " $refetchReason": refetchReason };
+            throw { " $evict": true, " $evictReason": evictReason };
         }
         const index = positionToIndex(pos, newElements.length);
         if (index === newElements.length) {

@@ -1,5 +1,5 @@
 import { VariableArgs } from "../state/impl/Args";
-import { RefetchReasonType } from "../state/Monitor";
+import { EvictReasonType } from "../state/Monitor";
 import { EntityChangeEvent, EntityEvictEvent } from "./EntityEvent";
 import { Record } from "./Record";
 export declare class ModificationContext {
@@ -15,7 +15,7 @@ export declare class ModificationContext {
     delete(record: Record): void;
     evict(record: Record): void;
     set(record: Record, fieldName: string, args: VariableArgs | undefined, oldValue: any, newValue: any): void;
-    unset(record: Record, fieldName: string, args: VariableArgs | undefined, refetchReason?: RefetchReasonType): void;
+    unset(record: Record, fieldName: string, args: VariableArgs | undefined, evictReason?: EvictReasonType): void;
     private pair;
     private publishEvents;
 }

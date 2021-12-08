@@ -118,7 +118,7 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
             if (!ex[" $evict"]) {
                 throw ex;
             }
-            this.evict(entityManager, ex[" $refetchReason"]);
+            this.evict(entityManager, ex[" $evictReason"]);
             return;
         }
     }
@@ -146,7 +146,7 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
             if (!ex[" $evict"]) {
                 throw ex;
             }
-            this.evict(entityManager, ex[" $refetchReason"]);
+            this.evict(entityManager, ex[" $evictReason"]);
             return;
         }
     }
@@ -157,19 +157,19 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
         }
         const style = this.args.paginationInfo.style;
         if (style === "page") {
-            let refetchReason = undefined;
-            if (Monitor_1.isRefetchLogEnabled()) {
-                refetchReason = "page-style-pagination";
+            let evictReason = undefined;
+            if (Monitor_1.isEvictLogEnabled()) {
+                evictReason = "page-style-pagination";
             }
-            throw { " $evict": true, " $refetchReason": refetchReason };
+            throw { " $evict": true, " $evictReason": evictReason };
         }
         const changeRange = (_b = this.association.field.associationProperties) === null || _b === void 0 ? void 0 : _b.range;
         if (changeRange === undefined) {
-            let refetchReason = undefined;
-            if (Monitor_1.isRefetchLogEnabled()) {
-                refetchReason = "no-range";
+            let evictReason = undefined;
+            if (Monitor_1.isEvictLogEnabled()) {
+                evictReason = "no-range";
             }
-            throw { " $evict": true, " $refetchReason": refetchReason };
+            throw { " $evict": true, " $evictReason": evictReason };
         }
         const oldConnection = this.connection;
         let range = {
@@ -219,7 +219,7 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
             if (!ex[" $evict"]) {
                 throw ex;
             }
-            this.evict(entityManager, ex[" $refetchReason"]);
+            this.evict(entityManager, ex[" $evictReason"]);
             return;
         }
     }
@@ -326,26 +326,26 @@ class Appender {
             0 :
             this.position(newNode.toRow(), newEdges.map(e => e.node.toRow()), this.direction, this.filterVariables);
         if (pos === undefined) {
-            let refetchReason = undefined;
-            if (Monitor_1.isRefetchLogEnabled()) {
-                refetchReason = "position-returns-undefined";
+            let evictReason = undefined;
+            if (Monitor_1.isEvictLogEnabled()) {
+                evictReason = "position-returns-undefined";
             }
-            throw { " $evict": true, " $refetchReason": refetchReason };
+            throw { " $evict": true, " $evictReason": evictReason };
         }
         const index = util_1.positionToIndex(pos, newEdges.length);
         if (index === 0 && this.direction === "backward" && this.hasMore !== false) {
-            let refetchReason = undefined;
-            if (Monitor_1.isRefetchLogEnabled()) {
-                refetchReason = "backward-head";
+            let evictReason = undefined;
+            if (Monitor_1.isEvictLogEnabled()) {
+                evictReason = "backward-head";
             }
-            throw { " $evict": true, " $refetchReason": refetchReason };
+            throw { " $evict": true, " $evictReason": evictReason };
         }
         if (index === newEdges.length && this.direction === "forward" && this.hasMore !== false) {
-            let refetchReason = undefined;
-            if (Monitor_1.isRefetchLogEnabled()) {
-                refetchReason = "forward-tail";
+            let evictReason = undefined;
+            if (Monitor_1.isEvictLogEnabled()) {
+                evictReason = "forward-tail";
             }
-            throw { " $evict": true, " $refetchReason": refetchReason };
+            throw { " $evict": true, " $evictReason": evictReason };
         }
         const cursor = "";
         if (index === newEdges.length) {

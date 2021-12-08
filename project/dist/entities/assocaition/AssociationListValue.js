@@ -70,7 +70,7 @@ class AssociationListValue extends AssocaitionValue_1.AssociationValue {
                     if (!ex[" $evict"]) {
                         throw ex;
                     }
-                    this.evict(entityManager, ex[" $refetchReason"]);
+                    this.evict(entityManager, ex[" $evictReason"]);
                     return;
                 }
             }
@@ -119,7 +119,7 @@ class AssociationListValue extends AssocaitionValue_1.AssociationValue {
             if (!ex[" $evict"]) {
                 throw ex;
             }
-            this.evict(entityManager, ex[" $refetchReason"]);
+            this.evict(entityManager, ex[" $evictReason"]);
             return;
         }
     }
@@ -176,11 +176,11 @@ class Appender {
             0 :
             this.position(newElement.toRow(), newElements.map(e => e.toRow()), this.direction, this.filterVariables);
         if (pos === undefined) {
-            let refetchReason = undefined;
-            if (Monitor_1.isRefetchLogEnabled()) {
-                refetchReason = "position-returns-undefined";
+            let evictReason = undefined;
+            if (Monitor_1.isEvictLogEnabled()) {
+                evictReason = "position-returns-undefined";
             }
-            throw { " $evict": true, " $refetchReason": refetchReason };
+            throw { " $evict": true, " $evictReason": evictReason };
         }
         const index = util_1.positionToIndex(pos, newElements.length);
         if (index === newElements.length) {

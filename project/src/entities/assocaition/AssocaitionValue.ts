@@ -6,7 +6,7 @@ import { VariableArgs } from "../../state/impl/Args";
 import { Association } from "./Association";
 import { ObjectConnection, RecordConnection } from "./AssociationConnectionValue";
 import { Pagination } from "../QueryArgs";
-import { isRefetchLogEnabled, RefetchReasonType } from "../../state/Monitor";
+import { isEvictLogEnabled, EvictReasonType } from "../../state/Monitor";
 
 export abstract class AssociationValue {
 
@@ -134,7 +134,7 @@ export abstract class AssociationValue {
                 if (belongToMe === false) {
                     return;
                 }
-                let refetchReason: RefetchReasonType | undefined = undefined;
+                let evictReason: EvictReasonType | undefined = undefined;
                 if (belongToMe === true) { 
                     const result = this.association.field.associationProperties?.contains(
                         new FlatRowImpl(ref.value),
@@ -154,11 +154,11 @@ export abstract class AssociationValue {
                         this.unlink(entityManager, [ref.value]);
                         return;
                     }
-                    refetchReason = this.association.unfilterableReason;
-                } else {
-                    refetchReason = "unknown-owner"
+                    evictReason = this.association.unfilterableReason;
+                } else if (isEvictLogEnabled()) {
+                    evictReason = "unknown-owner"
                 }
-                this.evict(entityManager, refetchReason);
+                this.evict(entityManager, evictReason);
             }
         }
     }
@@ -194,25 +194,25 @@ export abstract class AssociationValue {
         return undefined;
     }
 
-    evict(entityManager: EntityManager, refetchReason?: RefetchReasonType) {
-        this.association.evict(entityManager, this.args, false, refetchReason);
+    evict(entityManager: EntityManager, evictReason?: EvictReasonType) {
+        this.association.evict(entityManager, this.args, false, evictReason);
     }
 
-    get isLinkOptimizable(): [boolean, RefetchReasonType | undefined] {
+    get isLinkOptimizable(): [boolean, EvictReasonType | undefined] {
         const paginationInfo = this.args?.paginationInfo;
         if (paginationInfo?.style === "page") {
-            let refetchReason: RefetchReasonType | undefined = undefined;
-            if (isRefetchLogEnabled()) {
-                refetchReason = "page-style-pagination";
+            let evictReason: EvictReasonType | undefined = undefined;
+            if (isEvictLogEnabled()) {
+                evictReason = "page-style-pagination";
             }
-            return [false, refetchReason];
+            return [false, evictReason];
         }
         if (paginationInfo !== undefined && this.association.field.associationProperties?.range === undefined) {
-            let refetchReason: RefetchReasonType | undefined = undefined;
-            if (isRefetchLogEnabled()) {
-                refetchReason = "no-range";
+            let evictReason: EvictReasonType | undefined = undefined;
+            if (isEvictLogEnabled()) {
+                evictReason = "no-range";
             }
-            return [false, refetchReason];
+            return [false, evictReason];
         }
         return [true, undefined];
     }
