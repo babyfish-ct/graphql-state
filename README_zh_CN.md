@@ -1,5 +1,7 @@
 # 一个新的React状态管理框架
 
+#### 语言: [英文](https://github.com/babyfish-ct/graphql-state) | 中文
+
 ## 项目描述
 UI状态的本质是什么?
 
