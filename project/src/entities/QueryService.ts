@@ -37,7 +37,6 @@ export class QueryService {
                 if (!useDataService) {
                     throw new Error(reason);
                 }
-                console.debug(reason);
             }
         }
 

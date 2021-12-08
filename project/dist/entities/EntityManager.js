@@ -60,7 +60,7 @@ class EntityManager {
             return action();
         }
         else {
-            this._ctx = new ModificationContext_1.ModificationContext(() => { ++this._modificationVersion; }, this.publishEvictChangeEvent.bind(this), this.publishEntityChangeEvent.bind(this), forGC);
+            this._ctx = new ModificationContext_1.ModificationContext(() => { ++this._modificationVersion; }, this.publishEvictChangeEvent.bind(this), this.publishEntityChangeEvent.bind(this), this.stateManager.id, forGC);
             try {
                 return action();
             }

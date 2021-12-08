@@ -1,5 +1,6 @@
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { VariableArgs } from "../state/impl/Args";
+import { RefetchLogMessage, RefetchReasonType } from "../state/Monitor";
 import { EntityChangeEvent, EntityEvictEvent, EntityKey } from "./EntityEvent";
 import { Record } from "./Record";
 
@@ -11,6 +12,7 @@ export class ModificationContext {
         private versionIncreaser: () => void,
         private publishEvictEvent: (event: EntityEvictEvent) => void,
         private publishChangeEvent: (event: EntityChangeEvent) => void,
+        private stateManagerId: string,
         private forGC: boolean
     ) {
         this.versionIncreaser();
@@ -70,16 +72,30 @@ export class ModificationContext {
             const key = VariableArgs.fieldKey(fieldName, args);
             pair.oldObj?.set(key, oldValue);
             pair.newObj?.set(key, newValue);
+            const map = pair.refetchReasonMap;
+            if (map !== undefined) {
+                map.delete(key);
+                if (map.size === 0) {
+                    pair.refetchReasonMap = undefined;
+                }
+            }
         }
     }
 
-    unset(record: Record, fieldName: string, args: VariableArgs | undefined) {
+    unset(record: Record, fieldName: string, args: VariableArgs | undefined, refetchReason?: RefetchReasonType) {
         if (fieldName === record.runtimeType.idField.name) {
             throw new Error("Internal bug: the changed name cannot be id");
         }
         const pair = this.pair(record, true, true);
         const key = VariableArgs.fieldKey(fieldName, args);
         pair.newObj?.delete(key);
+        if (refetchReason !== undefined) {
+            let map = pair.refetchReasonMap;
+            if (map === undefined) {
+                pair.refetchReasonMap = map = new Map<string, RefetchReasonType>();
+            }
+            map.set(key, refetchReason);
+        }
     }
 
     private pair(record: Record, initializeOldObj: boolean, useNewObj: boolean): ObjectPair {
@@ -177,6 +193,26 @@ export class ModificationContext {
                         evictedValueMap
                     )
                 );
+                for (const key of evictedValueMap.keys()) {
+                    const refetchReason = pair.refetchReasonMap?.get(key);
+                    if (refetchReason !== undefined) {
+                        const index = key.indexOf(':');
+                        const field = index === -1 ? key : key.substring(0, index);
+                        const parameter = index === -1 ? "" : key.substring(index + 1);
+                        const message: RefetchLogMessage = {
+                            messageDomain: "graphQLStateMonitor",
+                            messageType: "refetchLogCreate",
+                            stateManagerId: this.stateManagerId,
+                            typeName: type.name,
+                            id,
+                            field,
+                            parameter,
+                            targetTypeName: type.fieldMap.get(field)?.targetType?.name,
+                            reason: refetchReason
+                        };
+                        postMessage(message, "*");
+                    }
+                }
             }
             if (oldValueMap.size !== 0 || newValueMap.size !== 0) {
                 this.publishChangeEvent(
@@ -204,6 +240,7 @@ function parseEntityKey(key: string): EntityKey {
 interface ObjectPair {
     oldObj?: Map<string, any>;
     newObj?: Map<string, any>;
+    refetchReasonMap?: Map<string, RefetchReasonType>;
     deleted: boolean;
 }
 

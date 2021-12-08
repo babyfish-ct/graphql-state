@@ -92,6 +92,7 @@ export class EntityManager {
                 () => { ++this._modificationVersion },
                 this.publishEvictChangeEvent.bind(this),
                 this.publishEntityChangeEvent.bind(this),
+                this.stateManager.id,
                 forGC
             );
             try {

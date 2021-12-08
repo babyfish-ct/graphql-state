@@ -1,4 +1,4 @@
-export type Message = StateManagerMessage | SimpleStateMessage | GraphStateMessage;
+export type Message = StateManagerMessage | SimpleStateMessage | GraphStateMessage | RefetchLogMessage;
 
 interface AbstractMessage {
     readonly messageDomain: "graphQLStateMonitor";
@@ -26,6 +26,17 @@ export interface GraphStateMessage extends AbstractMessage {
     readonly typeName: string;
     readonly id: any;
     readonly fields: readonly GraphEventField[];
+}
+
+export interface RefetchLogMessage extends AbstractMessage {
+    readonly messageType: "refetchLogCreate";
+    readonly stateManagerId: string;
+    readonly typeName: string;
+    readonly id: string;
+    readonly field: string;
+    readonly parameter: string;
+    readonly targetTypeName?: string;
+    readonly reason: RefetchReasonType;
 }
 
 export interface SimpleStateScope {
@@ -96,3 +107,14 @@ export interface GraphEventField {
 }
 
 export type ChangeType = "insert" | "delete" | "update";
+
+export type RefetchReasonType =
+    "unknown-owner" |
+    "no-contains" |
+    "no-range" |
+    "contains-returns-undefined" |
+    "position-returns-undefined" |
+    "page-style-pagination" |
+    "forward-tail" |
+    "backward-head"
+;

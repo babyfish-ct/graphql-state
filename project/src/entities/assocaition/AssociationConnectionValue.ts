@@ -7,6 +7,7 @@ import { objectWithOnlyId, Record } from "../Record";
 import { AssociationValue } from "./AssocaitionValue";
 import { positionToIndex, toRecordMap } from "./util";
 import { ConnectionRange } from "../../meta/Configuration";
+import { isRefetchLogEnabled, RefetchReasonType } from "../../state/Monitor";
 
 export class AssociationConnectionValue extends AssociationValue {
 
@@ -169,7 +170,7 @@ export class AssociationConnectionValue extends AssociationValue {
             if (!ex[" $evict"]) {
                 throw ex;
             }
-            this.evict(entityManager);
+            this.evict(entityManager, ex[" $refetchReason"]);
             return;
         }
     }
@@ -203,7 +204,7 @@ export class AssociationConnectionValue extends AssociationValue {
             if (!ex[" $evict"]) {
                 throw ex;
             }
-            this.evict(entityManager);
+            this.evict(entityManager, ex[" $refetchReason"]);
             return;
         }
     }
@@ -214,11 +215,19 @@ export class AssociationConnectionValue extends AssociationValue {
         }
         const style = this.args.paginationInfo.style;
         if (style === "page") {
-            throw { " $evict": true };
+            let refetchReason: RefetchReasonType | undefined = undefined;
+            if (isRefetchLogEnabled()) {
+                refetchReason = "page-style-pagination";
+            }
+            throw { " $evict": true, " $refetchReason": refetchReason };
         }
         const changeRange = this.association.field.associationProperties?.range;
         if (changeRange === undefined) {
-            throw { " $evict": true };
+            let refetchReason: RefetchReasonType | undefined = undefined;
+            if (isRefetchLogEnabled()) {
+                refetchReason = "no-range"
+            }
+            throw { " $evict": true, " $refetchReason": refetchReason };
         }
         const oldConnection = this.connection!;
         let range: ConnectionRange = {
@@ -275,7 +284,7 @@ export class AssociationConnectionValue extends AssociationValue {
             if (!ex[" $evict"]) {
                 throw ex;
             }
-            this.evict(entityManager);
+            this.evict(entityManager, ex[" $refetchReason"]);
             return;
         }
     }
@@ -409,7 +418,7 @@ class Appender {
 
     private hasMore?: boolean;
 
-    constructor(owner: AssociationConnectionValue) {
+    constructor(private owner: AssociationConnectionValue) {
         this.position = owner.association.field.associationProperties!.position;
         const style = owner.args?.paginationInfo?.style;
         if (style === "forward") {
@@ -435,14 +444,26 @@ class Appender {
                 this.filterVariables
             );
         if (pos === undefined) {
-            throw { " $evict": true };
+            let refetchReason: RefetchReasonType | undefined = undefined;
+            if (isRefetchLogEnabled()) {
+                refetchReason = "position-returns-undefined";
+            }
+            throw { " $evict": true, " $refetchReason": refetchReason };
         }
         const index = positionToIndex(pos, newEdges.length);
         if (index === 0 && this.direction === "backward" && this.hasMore !== false) {
-            throw { " $evict": true };
+            let refetchReason: RefetchReasonType | undefined = undefined;
+            if (isRefetchLogEnabled()) {
+                refetchReason = "backward-head";
+            }
+            throw { " $evict": true, " $refetchReason": refetchReason };
         }
         if (index === newEdges.length && this.direction === "forward" && this.hasMore !== false) {
-            throw { " $evict": true };
+            let refetchReason: RefetchReasonType | undefined = undefined;
+            if (isRefetchLogEnabled()) {
+                refetchReason = "forward-tail";
+            }
+            throw { " $evict": true, " $refetchReason": refetchReason };
         }
         const cursor = "";
         if (index === newEdges.length) {

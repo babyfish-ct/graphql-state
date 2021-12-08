@@ -7,6 +7,7 @@ import { Message } from "./common/Model";
 import { Tabs } from 'antd';
 import { StateManagerIdContextProvider } from './components/StateManagerContext';
 import { RefetchLogMonitor } from './components/RefetchLogMonitor';
+import { RefetchLogProvider } from './components/RefetchLogProvider';
 
 function App() {
 
@@ -41,17 +42,19 @@ function App() {
     return (
         <StateManagerIdContextProvider value={stateManagerId}>
             <div style={{padding: 10}}>
-                <Tabs activeKey={tabKey} onChange={onTabChange}>
-                    <Tabs.TabPane key="simple-state" tab="Simple states">
-                        { tabKey === "simple-state" && <SimpleStateMonitor/> }
-                    </Tabs.TabPane>
-                    <Tabs.TabPane key="graph-state" tab="Graph states">
-                        { tabKey === "graph-state" && <GraphStateMonitor/> }
-                    </Tabs.TabPane>
-                    <Tabs.TabPane key="refetch-log" tab="Refetch logs">
-                        { tabKey === "refetch-log" && <RefetchLogMonitor/> }
-                    </Tabs.TabPane>
-                </Tabs>
+                <RefetchLogProvider>
+                    <Tabs activeKey={tabKey} onChange={onTabChange} destroyInactiveTabPane={true}>
+                        <Tabs.TabPane key="simple-state" tab="Simple states">
+                            <SimpleStateMonitor/>
+                        </Tabs.TabPane>
+                        <Tabs.TabPane key="graph-state" tab="Graph states">
+                            <GraphStateMonitor/>
+                        </Tabs.TabPane>
+                        <Tabs.TabPane key="refetch-log" tab="Refetch logs">
+                            <RefetchLogMonitor/>
+                        </Tabs.TabPane>
+                    </Tabs>
+                </RefetchLogProvider>
             </div>
         </StateManagerIdContextProvider>
     );

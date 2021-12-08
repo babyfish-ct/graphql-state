@@ -10,7 +10,7 @@ import { AssociationReferenceValue } from "./AssociationReferenceValue";
 import { Pagination } from "../QueryArgs";
 import { TextWriter } from "graphql-ts-client-api";
 import { EntityChangeEvent, EntityEvictEvent } from "../EntityEvent";
-import { GraphField, ParameterizedValue, GraphValue } from "../../state/Monitor";
+import { GraphField, ParameterizedValue, GraphValue, isRefetchLogEnabled, RefetchReasonType } from "../../state/Monitor";
 import { compare } from "../../state/impl/util";
 
 export class Association {
@@ -81,7 +81,8 @@ export class Association {
     evict(
         entityManager: EntityManager, 
         args: VariableArgs | undefined,
-        includeMoreStrictArgs: boolean
+        includeMoreStrictArgs: boolean,
+        refetchReason?: RefetchReasonType
     ) {
         this.refreshedVersion = entityManager.modificationVersion;
         const ctx = entityManager.modificationContext;
@@ -89,7 +90,7 @@ export class Association {
             const keys: Array<string | undefined> = [];
             this.valueMap.forEachValue(value => {
                 if (VariableArgs.contains(value.args, args)) {
-                    ctx.unset(this.record, this.field.name, value.args);
+                    ctx.unset(this.record, this.field.name, value.args, refetchReason);
                     keys.push(args?.key);
                 }
             });
@@ -99,7 +100,7 @@ export class Association {
         } else {
             const value = this.valueMap.get(args?.key);
             if (value !== undefined) {
-                ctx.unset(this.record, this.field.name, value.args);
+                ctx.unset(this.record, this.field.name, value.args, refetchReason);
                 this.valueMap.remove(args?.key);
             }
         }
@@ -123,8 +124,9 @@ export class Association {
                 if (possibleRecords.length === 0) {
                     return;
                 }
-                if (!value.isLinkOptimizable) {
-                    this.evict(entityManager, value.args, false);
+                const [isLinkOptimizable, unoptimizableReason] = value.isLinkOptimizable;
+                if (!isLinkOptimizable) {
+                    this.evict(entityManager, value.args, false, unoptimizableReason);
                 } else if (VariableArgs.contains(mostStringentArgs?.filterArgs, value.args?.filterArgs)) {
                     value.link(entityManager, possibleRecords);
                 } else {
@@ -142,7 +144,7 @@ export class Association {
                         }
                     }
                     if (evict) {
-                        this.evict(entityManager, value.args, false);
+                        this.evict(entityManager, value.args, false, this.unfilterableReason);
                     } else if (exactRecords.length !== 0) {
                         value.link(entityManager, exactRecords);
                     }
@@ -169,8 +171,9 @@ export class Association {
                 if (possibleRecords.length === 0) {
                     return;
                 }
-                if (!value.isLinkOptimizable) {
-                    this.evict(entityManager, value.args, false);
+                const [isLinkOptimizable, unoptimizableReason] = value.isLinkOptimizable;
+                if (!isLinkOptimizable) {
+                    this.evict(entityManager, value.args, false, unoptimizableReason);
                 } else if (VariableArgs.contains(value.args?.filterArgs, leastStringentArgs?.filterArgs)) {
                     value.unlink(
                         entityManager, 
@@ -191,7 +194,7 @@ export class Association {
                         }
                     }
                     if (evict) {
-                        this.evict(entityManager, value.args, false);
+                        this.evict(entityManager, value.args, false, this.unfilterableReason);
                     } else if (exactRecords.length !== 0) {
                         value.unlink(entityManager, exactRecords);
                     }
@@ -256,6 +259,16 @@ export class Association {
                 value.referesh(entityManager, event); 
             }
         }
+    }
+
+    get unfilterableReason(): RefetchReasonType | undefined {
+        if (isRefetchLogEnabled()) {
+            if (this.field.isContainingConfigured) {
+                return "contains-returns-undefined";
+            } 
+            return "no-contains";
+        }
+        return undefined;
     }
 
     writeTo(writer: TextWriter) {

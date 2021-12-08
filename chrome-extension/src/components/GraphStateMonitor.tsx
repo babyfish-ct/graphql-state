@@ -1,7 +1,7 @@
 import { Col, Row, Space } from "antd";
 import produce from "immer";
 import { FC, memo, useCallback, useEffect, useMemo, useState } from "react";
-import { GraphFieldMetadata, GraphObject, GraphSnapshot, GraphTypeMetadata, Message } from "../common/Model";
+import { GraphFieldMetadata, GraphObject, GraphSnapshot, GraphStateMessage, GraphTypeMetadata, Message } from "../common/Model";
 import { binarySearch, changeGraphSnapshot } from "../common/util";
 import { GraphFieldTree } from "./GraphFieldTree";
 import { GraphObjectTree } from "./GraphObjectTree";
@@ -21,16 +21,49 @@ export const GraphStateMonitor: FC = memo(() => {
 
     const [selectedFieldId, setSelectedFieldId] = useState<string>();
 
+    const [initializing, setInitializing] = useState(false);
+
+    const [, setDelayedMessages] = useState<GraphStateMessage[]>([]);
+
+    const initializeSnapshot = useCallback(() => {
+        setInitializing(true);
+        chrome.devtools.inspectedWindow.eval(MOUNT_SCRIPT, result => {
+            if (result !== undefined) {
+                setGraphSnapshot(result as GraphSnapshot);
+            }
+            setInitializing(false);
+            setDelayedMessages(messages => {
+                try {
+                    if (messages.length !== 0) {
+                        for (const message of messages) {
+                            setGraphSnapshot(old => produce(old, draft => {
+                                changeGraphSnapshot(draft, message);
+                            }));
+                        }
+                    }
+                } finally {
+                    return [];
+                }
+            })
+        });
+    }, []);
+
     const onSyncSnapshot = useCallback((message: Message) => {
         if (message.messageDomain === 'graphQLStateMonitor' &&
             message.messageType === 'graphStateChange' &&
             message.stateManagerId === stateManagerId
         ) {
-            setGraphSnapshot(old => produce(old, draft => {
-                changeGraphSnapshot(draft, message);
-            }));
+            if (initializing) {
+                setDelayedMessages(old => [...old, message]);
+            } else if (graphSnapshot.typeMetadataMap[message.typeName] === undefined) {
+                initializeSnapshot();
+            } else {
+                setGraphSnapshot(produce(graphSnapshot, draft => {
+                    changeGraphSnapshot(draft, message);
+                }));
+            }
         }
-    }, [stateManagerId]);
+    }, [stateManagerId, graphSnapshot, initializing, initializeSnapshot]);
 
     const onClearSelection = useCallback((message: Message) => {
         if (message.messageDomain === 'graphQLStateMonitor' &&
@@ -48,18 +81,19 @@ export const GraphStateMonitor: FC = memo(() => {
                 }
             }
         }
-    }, [stateManagerId, selectedObjectId, selectedFieldId, graphSnapshot]);
+    }, [stateManagerId, graphSnapshot, selectedObjectId, selectedFieldId]);
 
     useEffect(() => {
-        chrome.devtools.inspectedWindow.eval(MOUNT_SCRIPT, result => {
-            if (result !== undefined) {
-                setGraphSnapshot(result as GraphSnapshot);
-            }
-        });
+        initializeSnapshot();
+        return () => {
+            chrome.devtools.inspectedWindow.eval(UNMOUNT_SCRIPT);
+        };
+    }, [initializeSnapshot, stateManagerId]);
+
+    useEffect(() => {
         chrome.runtime.onMessage.addListener(onSyncSnapshot);
         return () => {
             chrome.runtime.onMessage.removeListener(onSyncSnapshot);
-            chrome.devtools.inspectedWindow.eval(UNMOUNT_SCRIPT);
         }
     }, [onSyncSnapshot]);
 

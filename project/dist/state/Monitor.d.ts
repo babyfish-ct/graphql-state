@@ -3,7 +3,8 @@ import { StateValue } from "./impl/StateValue";
 export declare function postStateManagerMessage(stateManagerId?: string): void;
 export declare function postSimpleStateMessage(stateValue: StateValue, changeType: ChangeType, data?: any): void;
 export declare function postGraphStateMessage(stateManagerId: string, event: EntityEvictEvent | EntityChangeEvent): void;
-export declare type Message = StateManagerMessage | SimpleStateMessage | GraphStateMessage;
+export declare function isRefetchLogEnabled(): boolean;
+export declare type Message = StateManagerMessage | SimpleStateMessage | GraphStateMessage | RefetchLogMessage;
 interface AbstractMessage {
     readonly messageDomain: "graphQLStateMonitor";
 }
@@ -27,6 +28,16 @@ export interface GraphStateMessage extends AbstractMessage {
     readonly typeName: string;
     readonly id: any;
     readonly fields: readonly GraphEventField[];
+}
+export interface RefetchLogMessage extends AbstractMessage {
+    readonly messageType: "refetchLogCreate";
+    readonly stateManagerId: string;
+    readonly typeName: string;
+    readonly id: string;
+    readonly field: string;
+    readonly parameter: string;
+    readonly targetTypeName?: string;
+    readonly reason: RefetchReasonType;
 }
 export interface SimpleStateScope {
     readonly name: string;
@@ -89,4 +100,5 @@ export interface GraphEventField {
     readonly newValue?: any;
 }
 export declare type ChangeType = "insert" | "delete" | "update";
+export declare type RefetchReasonType = "unknown-owner" | "no-contains" | "no-range" | "contains-returns-undefined" | "position-returns-undefined" | "page-style-pagination" | "forward-tail" | "backward-head";
 export {};

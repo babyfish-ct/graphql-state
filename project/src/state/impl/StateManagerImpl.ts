@@ -192,10 +192,12 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
     }
 
     simpleStateMonitor(): SimpleStateScope {
+        console.log("simple monitor");
         return this._rootScope.monitor();
     }
 
     graphStateMonitor(): GraphSnapshot {
+        console.log("graph monitor");
         return this.entityManager.monitor();
     }
 }

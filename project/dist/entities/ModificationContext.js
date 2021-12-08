@@ -3,10 +3,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ModificationContext = void 0;
 const Args_1 = require("../state/impl/Args");
 class ModificationContext {
-    constructor(versionIncreaser, publishEvictEvent, publishChangeEvent, forGC) {
+    constructor(versionIncreaser, publishEvictEvent, publishChangeEvent, stateManagerId, forGC) {
         this.versionIncreaser = versionIncreaser;
         this.publishEvictEvent = publishEvictEvent;
         this.publishChangeEvent = publishChangeEvent;
+        this.stateManagerId = stateManagerId;
         this.forGC = forGC;
         this.objPairMap = new Map();
         this.versionIncreaser();
@@ -62,9 +63,16 @@ class ModificationContext {
             const key = Args_1.VariableArgs.fieldKey(fieldName, args);
             (_a = pair.oldObj) === null || _a === void 0 ? void 0 : _a.set(key, oldValue);
             (_b = pair.newObj) === null || _b === void 0 ? void 0 : _b.set(key, newValue);
+            const map = pair.refetchReasonMap;
+            if (map !== undefined) {
+                map.delete(key);
+                if (map.size === 0) {
+                    pair.refetchReasonMap = undefined;
+                }
+            }
         }
     }
-    unset(record, fieldName, args) {
+    unset(record, fieldName, args, refetchReason) {
         var _a;
         if (fieldName === record.runtimeType.idField.name) {
             throw new Error("Internal bug: the changed name cannot be id");
@@ -72,6 +80,13 @@ class ModificationContext {
         const pair = this.pair(record, true, true);
         const key = Args_1.VariableArgs.fieldKey(fieldName, args);
         (_a = pair.newObj) === null || _a === void 0 ? void 0 : _a.delete(key);
+        if (refetchReason !== undefined) {
+            let map = pair.refetchReasonMap;
+            if (map === undefined) {
+                pair.refetchReasonMap = map = new Map();
+            }
+            map.set(key, refetchReason);
+        }
     }
     pair(record, initializeOldObj, useNewObj) {
         const key = record.runtimeType;
@@ -107,6 +122,7 @@ class ModificationContext {
         return pair;
     }
     publishEvents(type, id, pair) {
+        var _a, _b, _c;
         if (pair.newObj === undefined) {
             const oldValueMap = new Map();
             if (pair.oldObj !== undefined) {
@@ -144,6 +160,26 @@ class ModificationContext {
             }
             if (evictedValueMap.size !== 0) {
                 this.publishEvictEvent(new EntityEvictEventImpl(type.name, id, this.forGC, "fields", Array.from(evictedValueMap.keys()).map(parseEntityKey), evictedValueMap));
+                for (const key of evictedValueMap.keys()) {
+                    const refetchReason = (_a = pair.refetchReasonMap) === null || _a === void 0 ? void 0 : _a.get(key);
+                    if (refetchReason !== undefined) {
+                        const index = key.indexOf(':');
+                        const field = index === -1 ? key : key.substring(0, index);
+                        const parameter = index === -1 ? "" : key.substring(index + 1);
+                        const message = {
+                            messageDomain: "graphQLStateMonitor",
+                            messageType: "refetchLogCreate",
+                            stateManagerId: this.stateManagerId,
+                            typeName: type.name,
+                            id,
+                            field,
+                            parameter,
+                            targetTypeName: (_c = (_b = type.fieldMap.get(field)) === null || _b === void 0 ? void 0 : _b.targetType) === null || _c === void 0 ? void 0 : _c.name,
+                            reason: refetchReason
+                        };
+                        postMessage(message, "*");
+                    }
+                }
             }
             if (oldValueMap.size !== 0 || newValueMap.size !== 0) {
                 this.publishChangeEvent(new EntityChangeEventImpl(type.name, id, Array.from((newValueMap !== null && newValueMap !== void 0 ? newValueMap : oldValueMap).keys()).map(parseEntityKey), oldValueMap.size !== 0 ? oldValueMap : undefined, newValueMap.size !== 0 ? newValueMap : undefined));

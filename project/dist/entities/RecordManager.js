@@ -57,7 +57,7 @@ class RecordManager {
     }
     evict(id) {
         var _a;
-        let record = this.recordMap.get(id);
+        const record = this.recordMap.get(id);
         if (record !== undefined) {
             this.entityManager.modificationContext.evict(record);
             this.recordMap.delete(id);

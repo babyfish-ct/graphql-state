@@ -6,6 +6,7 @@ import { VariableArgs } from "../../state/impl/Args";
 import { Association } from "./Association";
 import { ObjectConnection, RecordConnection } from "./AssociationConnectionValue";
 import { Pagination } from "../QueryArgs";
+import { isRefetchLogEnabled, RefetchReasonType } from "../../state/Monitor";
 
 export abstract class AssociationValue {
 
@@ -133,6 +134,7 @@ export abstract class AssociationValue {
                 if (belongToMe === false) {
                     return;
                 }
+                let refetchReason: RefetchReasonType | undefined = undefined;
                 if (belongToMe === true) { 
                     const result = this.association.field.associationProperties?.contains(
                         new FlatRowImpl(ref.value),
@@ -152,8 +154,11 @@ export abstract class AssociationValue {
                         this.unlink(entityManager, [ref.value]);
                         return;
                     }
+                    refetchReason = this.association.unfilterableReason;
+                } else {
+                    refetchReason = "unknown-owner"
                 }
-                this.evict(entityManager);
+                this.evict(entityManager, refetchReason);
             }
         }
     }
@@ -189,18 +194,26 @@ export abstract class AssociationValue {
         return undefined;
     }
 
-    evict(entityManager: EntityManager) {
-        this.association.evict(entityManager, this.args, false);
+    evict(entityManager: EntityManager, refetchReason?: RefetchReasonType) {
+        this.association.evict(entityManager, this.args, false, refetchReason);
     }
 
-    get isLinkOptimizable(): boolean {
+    get isLinkOptimizable(): [boolean, RefetchReasonType | undefined] {
         const paginationInfo = this.args?.paginationInfo;
         if (paginationInfo?.style === "page") {
-            return false;
+            let refetchReason: RefetchReasonType | undefined = undefined;
+            if (isRefetchLogEnabled()) {
+                refetchReason = "page-style-pagination";
+            }
+            return [false, refetchReason];
         }
         if (paginationInfo !== undefined && this.association.field.associationProperties?.range === undefined) {
-            return false;
+            let refetchReason: RefetchReasonType | undefined = undefined;
+            if (isRefetchLogEnabled()) {
+                refetchReason = "no-range";
+            }
+            return [false, refetchReason];
         }
-        return true;
+        return [true, undefined];
     }
 }
