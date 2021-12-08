@@ -1,4 +1,4 @@
-import { createContext, FC, memo, PropsWithChildren, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, FC, memo, PropsWithChildren, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { Message, EvictLogMessage } from "../common/Model";
 import { useStateManagerId } from "./StateManagerContext";
 
@@ -15,7 +15,7 @@ export const EvictLogProvider: FC<
             message.messageType === 'evictLogCreate' &&
             message.stateManagerId === stateManagerId
         ) {
-            const log: Log = {...message, logId: logIdSequence++};
+            const log: Log = {...message, logId: logIdSequence++, time: new Date() };
             setLogs(oldLogs => {
                 const arr = [log, ...oldLogs];
                 if (arr.length > MAX_COUNT) {
@@ -36,8 +36,20 @@ export const EvictLogProvider: FC<
         }
     }, [onMessage]);
 
+    const deleteLog = useCallback((logId: number) => {
+        setLogs(logs => logs.filter(log => log.logId !== logId));
+    }, []);
+
+    const clearLogs = useCallback(() => {
+        setLogs([]);
+    }, []);
+
+    const contextValue = useMemo<EvictLogInfo>(() => {
+        return {logs, deleteLog, clearLogs};
+    }, [logs, deleteLog, clearLogs])
+
     return (
-        <evictLogContext.Provider value={logs}>
+        <evictLogContext.Provider value={contextValue}>
             {children}
         </evictLogContext.Provider>
     );
@@ -45,6 +57,7 @@ export const EvictLogProvider: FC<
 
 export interface Log extends EvictLogMessage {
     readonly logId: number;
+    readonly time: Date;
 }
 
 let logIdSequence = 0;
@@ -62,8 +75,18 @@ if (window.__GRAPHQL_STATE_MONITORS__) {
     delete window.__GRAPHQL_STATE_MONITORS__.evictLog;
 }`;
 
-const evictLogContext = createContext<Log[]>([]);
+const evictLogContext = createContext<EvictLogInfo>({
+    logs: [],
+    deleteLog: (logId: number) => {},
+    clearLogs: () => {}
+});
 
-export function useLogs(): Log[] {
+export function useEvictLogInfo(): EvictLogInfo {
     return useContext(evictLogContext);
+}
+
+export interface EvictLogInfo {
+    readonly logs: Log[];
+    readonly deleteLog: (logId: number) => void;
+    readonly clearLogs: () => void;
 }

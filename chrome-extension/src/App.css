@@ -17,3 +17,24 @@
 .full-width {
     width: 100%;
 }
+
+.log-head {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.log-body {
+    margin-left: 2rem;
+    padding: 0.5rem;
+    background-color: #ffddbb;
+    border-left: solid 3px gray;
+}
+
+.important {
+    font-weight: bold;
+    color: blue;
+}
+
+.impossible {
+    color: red;
+}
