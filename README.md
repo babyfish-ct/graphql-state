@@ -25,3 +25,7 @@ The project name is "graphql-state". Don't worry, it's **"GraphQL style, but not
 - [Get start](./site/get-start.md)
 - [Run attached demos](./site/run-demo.md)
 - [Documentation](./doc/README.md)
+
+## Chrome extension
+
+In order to help developers debug, this framework supports chrome extension
