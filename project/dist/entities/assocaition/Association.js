@@ -287,9 +287,9 @@ class Association {
         }
         if (this.field.category === "CONNECTION") {
             const conn = value;
-            return Object.assign({ edeges: conn.edges.map(edge => {
+            return Object.assign(Object.assign({}, conn), { edges: conn.edges.map(edge => {
                     return Object.assign(Object.assign({}, edge), { node: edge.node.id });
-                }) }, conn);
+                }) });
         }
         return value.id;
     }

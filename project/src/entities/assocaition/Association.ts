@@ -338,10 +338,10 @@ export class Association {
         if (this.field.category === "CONNECTION") {
             const conn = value as RecordConnection;
             return {
-                edeges: conn.edges.map(edge => {
+                ...conn,
+                edges: conn.edges.map(edge => {
                     return { ...edge, node: edge.node.id }
-                }),
-                ...conn 
+                })
             };
         }
         return (value as Record).id;

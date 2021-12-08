@@ -1,5 +1,5 @@
 import produce from "immer";
-import { Card, Col, Row } from "antd";
+import { Card, Col, Result, Row } from "antd";
 import { FC, memo, useCallback, useEffect, useMemo, useState } from "react";
 import { Message, SimpleStateScope } from "../common/Model";
 import { 
@@ -22,6 +22,8 @@ export const SimpleStateMonitor: FC = memo(() => {
         states: [],
         scopes: []
     });
+
+    const [error, setError] = useState(false);
 
     const [selectedValue, setSelectedValue] = useState<string>();
 
@@ -52,6 +54,9 @@ export const SimpleStateMonitor: FC = memo(() => {
         chrome.devtools.inspectedWindow.eval(MOUNT_SCRIPT, result => {
             if (result !== undefined) {
                 setScope(result as SimpleStateScope);
+                setError(false);
+            } else {
+                setError(true);
             }
         });
         chrome.runtime.onMessage.addListener(onMessage);
@@ -61,6 +66,9 @@ export const SimpleStateMonitor: FC = memo(() => {
         }
     }, [onMessage]);
 
+    if (error) {
+        return <Result status="error" title="Cannot send whole simple state tree to chrome devtools"/>;
+    }
     return (
         <Row gutter={[10, 10]}>
             <Col xs={24} sm={12}>

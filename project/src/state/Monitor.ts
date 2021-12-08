@@ -181,8 +181,9 @@ export interface GraphField {
 }
 
 export type GraphValue = string | Readonly<string> | {
-    readonly edeges: ReadonlyArray<{
-        readonly node: string
+    readonly edges: ReadonlyArray<{
+        readonly node: string,
+        readonly [key: string]: any
     }>,
     readonly [key:string]: any
 };

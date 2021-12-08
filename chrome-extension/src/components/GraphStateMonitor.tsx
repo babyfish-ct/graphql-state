@@ -1,4 +1,4 @@
-import { Col, Row, Space } from "antd";
+import { Col, Result, Row, Space } from "antd";
 import produce from "immer";
 import { FC, memo, useCallback, useEffect, useMemo, useState } from "react";
 import { GraphFieldMetadata, GraphObject, GraphSnapshot, GraphStateMessage, GraphTypeMetadata, Message } from "../common/Model";
@@ -17,6 +17,8 @@ export const GraphStateMonitor: FC = memo(() => {
         types: []
     });
 
+    const [error, setError] = useState(false);
+
     const [selectedObjectId, setSelectedObjectId] = useState<string>();
 
     const [selectedFieldId, setSelectedFieldId] = useState<string>();
@@ -27,9 +29,12 @@ export const GraphStateMonitor: FC = memo(() => {
 
     const initializeSnapshot = useCallback(() => {
         setInitializing(true);
-        chrome.devtools.inspectedWindow.eval(MOUNT_SCRIPT, result => {
+        chrome.devtools.inspectedWindow.eval(MOUNT_SCRIPT, (result, exceptionInfo) => {
             if (result !== undefined) {
                 setGraphSnapshot(result as GraphSnapshot);
+                setError(false);
+            } else {
+                setError(true);
             }
             setInitializing(false);
             setDelayedMessages(messages => {
@@ -44,7 +49,7 @@ export const GraphStateMonitor: FC = memo(() => {
                 } finally {
                     return [];
                 }
-            })
+            });
         });
     }, []);
 
@@ -172,6 +177,9 @@ export const GraphStateMonitor: FC = memo(() => {
         }
     }, [selectedFieldId, typeMetadata, obj]);
 
+    if (error) {
+        return <Result status="error" title="Cannot send whole simple state tree to chrome devtools"/>;
+    }
     return (
         <Row gutter={[10, 10]}>
             <Col xs={24} sm={12}>

@@ -85,8 +85,9 @@ export interface GraphField {
     readonly parameterizedValues?: readonly ParameterizedValue[];
 }
 export declare type GraphValue = string | Readonly<string> | {
-    readonly edeges: ReadonlyArray<{
+    readonly edges: ReadonlyArray<{
         readonly node: string;
+        readonly [key: string]: any;
     }>;
     readonly [key: string]: any;
 };
