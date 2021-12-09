@@ -64,9 +64,10 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
 
     evict<TName extends keyof TSchema["entities"] & string>(
         typeName: TName, 
-        idOrArray?: TSchema["entities"][TName][" $id"] | ReadonlyArray<TSchema["entities"][TName][" $id"] | undefined> | undefined
+        idOrArray?: TSchema["entities"][TName][" $id"] | ReadonlyArray<TSchema["entities"][TName][" $id"] | undefined> | undefined,
+        fieldOrArray?: any
     ) {
-        this.entityManager.evict(typeName, idOrArray);
+        this.entityManager.evict(typeName, idOrArray, fieldOrArray);
     }
 
     addEntityEvictListener(listener: (e: EntityEvictEvent) => void): void {

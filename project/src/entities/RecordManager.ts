@@ -4,6 +4,7 @@ import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { VariableArgs } from "../state/impl/Args";
 import { compare } from "../state/impl/util";
 import { GraphObject, GraphType } from "../state/Monitor";
+import { EntityKey } from "./EntityEvent";
 import { EntityManager, Garbage } from "./EntityManager";
 import { Pagination } from "./QueryArgs";
 import { Record } from "./Record";
@@ -68,14 +69,39 @@ export class RecordManager {
         this.superManager?.delete(id);
     }
 
-    evict(id: any) {
+    evict(id: any, key?: EntityKey) {
+        if (key === undefined) {
+            this.evictObject(id);
+        } else {
+            const fieldName = typeof key === "string" ? key : key.name;
+            const variables = typeof key === "string" ? undefined : key.variables;
+            if (!this.evictField(id, fieldName, variables)) {
+                throw new Error(`Illegal evicted field name "${fieldName}"`);
+            }
+        }
+    }
+
+    private evictObject(id: any) {
         const record = this.recordMap.get(id);
         if (record !== undefined) {
             this.entityManager.modificationContext.evict(record);
             this.recordMap.delete(id);
             record.dispose(this.entityManager);
         }
-        this.superManager?.evict(id);
+        this.superManager?.evictObject(id);
+    }
+
+    private evictField(id: any, fieldName: string, variables?: any): boolean {
+        const record = this.recordMap.get(id);
+        if (record === undefined) {
+            return true;
+        }
+        const field = record.staticType.declaredFieldMap.get(fieldName);
+        if (field !== undefined) {
+            record.evict(this.entityManager, field, VariableArgs.of(variables));
+            return true;
+        }
+        return this.superManager?.evictField(id, fieldName, variables) === true;
     }
 
     forEach(visitor: (record: Record) => boolean | void) {

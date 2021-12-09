@@ -36,8 +36,8 @@ class StateManagerImpl {
     delete(typeName, idOrArray) {
         this.entityManager.delete(typeName, idOrArray);
     }
-    evict(typeName, idOrArray) {
-        this.entityManager.evict(typeName, idOrArray);
+    evict(typeName, idOrArray, fieldOrArray) {
+        this.entityManager.evict(typeName, idOrArray, fieldOrArray);
     }
     addEntityEvictListener(listener) {
         this.entityManager.addEvictListener(undefined, listener);

@@ -127,8 +127,8 @@ class Record {
             (_a = this.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.evict(entityManager, args, includeMoreStrictArgs, evictReason);
         }
         else {
-            entityManager.modificationContext.unset(this, field.name, undefined, evictReason);
-            this.scalarMap.delete(field.name);
+            entityManager.modificationContext.unset(this, field.name, args, evictReason);
+            this.scalarMap.delete(Args_1.VariableArgs.fieldKey(field.name, args));
         }
     }
     delete(entityManager) {

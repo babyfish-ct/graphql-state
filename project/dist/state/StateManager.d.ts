@@ -10,6 +10,14 @@ export interface StateManager<TSchema extends SchemaType> {
     evict(typeName: "Query"): void;
     evict<TName extends keyof TSchema["entities"] & string>(typeName: TName, id: TSchema["entities"][TName][" $id"] | undefined): void;
     evict<TName extends keyof TSchema["entities"] & string>(typeName: TName, ids: ReadonlyArray<TSchema["entities"][TName][" $id"] | undefined> | undefined): void;
+    evict<TName extends keyof TSchema["entities"], TFieldName extends keyof TSchema["entities"][TName][" $associationArgs"]>(typeName: TName, id: TSchema["entities"][TName][" $id"] | undefined, fieldKey: {
+        name: TFieldName;
+        variables?: TSchema["entities"][TName][" $associationArgs"][TFieldName];
+    }): void;
+    evict<TName extends keyof TSchema["entities"]>(typeName: TName, id: TSchema["entities"][TName][" $id"] | undefined, fieldName: string): void;
+    evict<TName extends keyof TSchema["entities"]>(typeName: TName, ids: Readonly<TSchema["entities"][TName][" $id"] | undefined> | undefined, fieldName: string): void;
+    evict<TName extends keyof TSchema["entities"]>(typeName: TName, id: TSchema["entities"][TName][" $id"] | undefined, fieldNames: ReadonlyArray<string>): void;
+    evict<TName extends keyof TSchema["entities"]>(typeName: TName, ids: Readonly<TSchema["entities"][TName][" $id"] | undefined> | undefined, fieldNames: ReadonlyArray<string>): void;
     addEntityEvictListener(listener: (e: EntityEvictEvent) => void): void;
     removeEntityEvictListener(listener: (e: EntityEvictEvent) => void): void;
     addEntityEvictListeners(listeners: {

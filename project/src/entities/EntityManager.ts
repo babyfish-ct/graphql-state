@@ -168,21 +168,22 @@ export class EntityManager {
 
     evict(
         typeName: string,
-        idOrArray: any
+        idOrArray: any,
+        fieldKeyOrArray?: any
     ): void {
         this.modify(() => {
             if (typeName === "Query") {
-                this.recordManager("Query").evict(QUERY_OBJECT_ID);
+                evictHelper(this.recordManager("Query"), QUERY_OBJECT_ID, fieldKeyOrArray);
             } else {
                 const recordManager = this.recordManager(typeName);
                 if (Array.isArray(idOrArray)) {
                     for (const id of idOrArray) {
                         if (id !== undefined && id !== null) {
-                            recordManager.delete(id);
+                            evictHelper(recordManager, id, fieldKeyOrArray);
                         }
                     }
                 } else if (idOrArray !== undefined && idOrArray !== null) {
-                    recordManager.evict(idOrArray);
+                    evictHelper(recordManager, idOrArray, fieldKeyOrArray);
                 }
             }
         });
@@ -499,4 +500,18 @@ interface FieldGarbage {
     readonly record: Record;
     readonly field: FieldMetadata;
     readonly args: VariableArgs | undefined;
+}
+
+function evictHelper(recordManager: RecordManager, id: any, fieldKeyOrArray?: any) {
+    if (fieldKeyOrArray === undefined) {
+        recordManager.evict(id);
+    } else if (Array.isArray(fieldKeyOrArray)) {
+        for (const fieldKey of fieldKeyOrArray) {
+            if (fieldKey !== undefined && fieldKey !== null) {
+                recordManager.evict(id, fieldKey);
+            }
+        }
+    } else if (fieldKeyOrArray !== undefined && fieldKeyOrArray !== null) {
+        recordManager.evict(id, fieldKeyOrArray);
+    }
 }

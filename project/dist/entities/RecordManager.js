@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RecordManager = void 0;
+const Args_1 = require("../state/impl/Args");
 const util_1 = require("../state/impl/util");
 const Record_1 = require("./Record");
 class RecordManager {
@@ -55,7 +56,19 @@ class RecordManager {
         }
         (_a = this.superManager) === null || _a === void 0 ? void 0 : _a.delete(id);
     }
-    evict(id) {
+    evict(id, key) {
+        if (key === undefined) {
+            this.evictObject(id);
+        }
+        else {
+            const fieldName = typeof key === "string" ? key : key.name;
+            const variables = typeof key === "string" ? undefined : key.variables;
+            if (!this.evictField(id, fieldName, variables)) {
+                throw new Error(`Illegal evicted field name "${fieldName}"`);
+            }
+        }
+    }
+    evictObject(id) {
         var _a;
         const record = this.recordMap.get(id);
         if (record !== undefined) {
@@ -63,7 +76,20 @@ class RecordManager {
             this.recordMap.delete(id);
             record.dispose(this.entityManager);
         }
-        (_a = this.superManager) === null || _a === void 0 ? void 0 : _a.evict(id);
+        (_a = this.superManager) === null || _a === void 0 ? void 0 : _a.evictObject(id);
+    }
+    evictField(id, fieldName, variables) {
+        var _a;
+        const record = this.recordMap.get(id);
+        if (record === undefined) {
+            return true;
+        }
+        const field = record.staticType.declaredFieldMap.get(fieldName);
+        if (field !== undefined) {
+            record.evict(this.entityManager, field, Args_1.VariableArgs.of(variables));
+            return true;
+        }
+        return ((_a = this.superManager) === null || _a === void 0 ? void 0 : _a.evictField(id, fieldName, variables)) === true;
     }
     forEach(visitor) {
         for (const [, record] of this.recordMap) {

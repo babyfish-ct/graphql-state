@@ -196,8 +196,8 @@ export class Record {
         if (field.isAssociation) {
             this.associationMap.get(field)?.evict(entityManager, args, includeMoreStrictArgs, evictReason);
         } else {
-            entityManager.modificationContext.unset(this, field.name, undefined, evictReason);
-            this.scalarMap.delete(field.name);
+            entityManager.modificationContext.unset(this, field.name, args, evictReason);
+            this.scalarMap.delete(VariableArgs.fieldKey(field.name, args));
         }
     }
 

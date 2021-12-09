@@ -112,22 +112,22 @@ class EntityManager {
             }
         });
     }
-    evict(typeName, idOrArray) {
+    evict(typeName, idOrArray, fieldKeyOrArray) {
         this.modify(() => {
             if (typeName === "Query") {
-                this.recordManager("Query").evict(Record_1.QUERY_OBJECT_ID);
+                evictHelper(this.recordManager("Query"), Record_1.QUERY_OBJECT_ID, fieldKeyOrArray);
             }
             else {
                 const recordManager = this.recordManager(typeName);
                 if (Array.isArray(idOrArray)) {
                     for (const id of idOrArray) {
                         if (id !== undefined && id !== null) {
-                            recordManager.delete(id);
+                            evictHelper(recordManager, id, fieldKeyOrArray);
                         }
                     }
                 }
                 else if (idOrArray !== undefined && idOrArray !== null) {
-                    recordManager.evict(idOrArray);
+                    evictHelper(recordManager, idOrArray, fieldKeyOrArray);
                 }
             }
         });
@@ -402,3 +402,18 @@ class EntityManager {
     }
 }
 exports.EntityManager = EntityManager;
+function evictHelper(recordManager, id, fieldKeyOrArray) {
+    if (fieldKeyOrArray === undefined) {
+        recordManager.evict(id);
+    }
+    else if (Array.isArray(fieldKeyOrArray)) {
+        for (const fieldKey of fieldKeyOrArray) {
+            if (fieldKey !== undefined && fieldKey !== null) {
+                recordManager.evict(id, fieldKey);
+            }
+        }
+    }
+    else if (fieldKeyOrArray !== undefined && fieldKeyOrArray !== null) {
+        recordManager.evict(id, fieldKeyOrArray);
+    }
+}

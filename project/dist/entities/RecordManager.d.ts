@@ -3,6 +3,7 @@ import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { VariableArgs } from "../state/impl/Args";
 import { GraphType } from "../state/Monitor";
+import { EntityKey } from "./EntityEvent";
 import { EntityManager, Garbage } from "./EntityManager";
 import { Pagination } from "./QueryArgs";
 import { Record } from "./Record";
@@ -18,7 +19,9 @@ export declare class RecordManager {
     saveId(id: any, runtimeType: TypeMetadata): Record;
     private insertId;
     delete(id: any): void;
-    evict(id: any): void;
+    evict(id: any, key?: EntityKey): void;
+    private evictObject;
+    private evictField;
     forEach(visitor: (record: Record) => boolean | void): void;
     set(id: any, runtimeType: TypeMetadata, field: FieldMetadata, args: VariableArgs | undefined, value: any, pagination?: Pagination): void;
     refresh(field: FieldMetadata, e: EntityChangeEvent): void;

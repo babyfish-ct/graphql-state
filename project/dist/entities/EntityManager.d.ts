@@ -36,7 +36,7 @@ export declare class EntityManager {
     save(shape: RuntimeShape, objOrArray: object | readonly object[], pagination?: Pagination): void;
     private save0;
     delete(typeName: string, idOrArray: any): void;
-    evict(typeName: string, idOrArray: any): void;
+    evict(typeName: string, idOrArray: any, fieldKeyOrArray?: any): void;
     saveId(typeName: string, id: any): Record;
     retain(args: QueryArgs): QueryResult;
     release(args: QueryArgs, releasePolicy?: ReleasePolicy<any>): void;
