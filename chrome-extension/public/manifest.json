@@ -4,6 +4,12 @@
   "version": "0.2.0",
   "manifest_version": 3,
   "devtools_page": "devtools.html",
+  "icons": {
+    "16": "images/16_16.png",
+    "32": "images/32_32.png",
+    "48": "images/48_48.png",
+    "128": "images/128_128.png"
+  },
   "content_scripts": [
     {
       "matches": ["http://*/*", "https://*/*"],
