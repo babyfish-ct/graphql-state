@@ -1,3 +1,4 @@
+![image](./chrome-extension/public/images/128_128.png "Logo")
 # A new react state management framework
 
 #### Language: English | [Chinese](./README_zh_CN.md)
