@@ -1,3 +1,4 @@
+[!impage](./chrome-extension/public/images/128_128.png)
 # A new react state management framework
 
 #### Language: English | [Chinese](./README_zh_CN.md)
