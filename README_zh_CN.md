@@ -14,7 +14,7 @@ UI状态的本质是什么?
 *相较于[Apollo client](https://github.com/apollographql/apollo-client)和[Relay](https://github.com/facebook/relay)，在变更之后，你只需要把主变更保存到本地缓存即可。既不需要在本地缓存中人为修改其它受影响的数据，也不需要指定哪些查询会被影响而需要重新获取，因为额外变更都会被自动处理。*
 
 ## 关于REST
-项目的名称是graphql-state。别担心, 它是**"GraphQL风格，但不仅仅是GraphQL"**，他可以把REST服务映射为GraphQL服务。
+项目的名称是graphql-state。别担心, 它是 **"GraphQL风格，但不仅仅是GraphQL"**，他可以把REST服务映射为GraphQL服务。
 
 ## 目录
 - [项目背景](./site/background_zh_CN.md)
