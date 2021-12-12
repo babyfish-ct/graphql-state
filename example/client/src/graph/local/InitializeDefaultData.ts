@@ -112,9 +112,3 @@ const alexBanksId = UUIDClass.generate();
 const danVanderkamId = UUIDClass.generate();
 const borisChernyId = UUIDClass.generate();
 const samerBunaId = UUIDClass.generate();
-
-export const defaultData = {
-    storeIds: [ oreillyId, manningId ],
-    bookIds: [ learningGraphQLId, effectiveTypeScriptId, programmingTypeScriptId, graphQLInActionId ],
-    authorIds: [ evePorcelloId, alexBanksId, danVanderkamId, borisChernyId, samerBunaId ]
-};
