@@ -5732,10 +5732,10 @@ graceful-fs@^4.1.11, graceful-fs@^4.1.15, graceful-fs@^4.1.2, graceful-fs@^4.1.6
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.8.tgz#e412b8d33f5e006593cbd3cee6df9f2cebbe802a"
   integrity sha512-qkIilPUYcNhJpd33n0GBXTB1MMPp14TxEsEs0pTrsSVucApsYzW5V+Q8Qxhik6KU3evy+qkAAowTByymK0avdg==
 
-graphql-state@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/graphql-state/-/graphql-state-0.2.0.tgz#d8e76c8b39b012cc8052caabc05bdf8e51319fbd"
-  integrity sha512-9SZai7AxZyZmuFk0aWPKGybjQkgXuxkbXdenoahBHVv7bViSwut7wFTiv9LSLnS71UOTRbtsgJ57uh+GhLRRyA==
+graphql-state@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/graphql-state/-/graphql-state-0.3.0.tgz#3088ee1008023ce8ecd1e246b9f1e76d4dab8241"
+  integrity sha512-4qP2BUKi4/exIFSxlWJ8+fuRTmlICoHwCBduJH1qm2trkwerkKQ7+CX129kLm3J0EalJnnymE+6DVG8XgQgFlA==
   dependencies:
     graphql-ts-client-api "^3.0.8"
 
