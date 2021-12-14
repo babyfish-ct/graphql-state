@@ -1,6 +1,6 @@
 ![image](./chrome-extension/public/images/128_128.png "Logo")
 
-# 一个新的React状态管理框架
+# 一个智能化的react状态管理框架
 
 #### 语言: [英文](https://github.com/babyfish-ct/graphql-state) | 中文
 
