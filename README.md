@@ -1,5 +1,5 @@
 ![image](./chrome-extension/public/images/128_128.png "Logo")
-# An intelligent state management framework
+# An intelligent react state management framework
 
 #### Language: English | [Chinese](./README_zh_CN.md)
 
