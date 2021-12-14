@@ -5,10 +5,6 @@ import { SchemaType } from "../meta/SchemaType";
 
 export interface StateManager<TSchema extends SchemaType> {
 
-    readonly undoManager: UndoManager;
-
-    transaction<TResult>(callback: (ts: TransactionStatus) => TResult): TResult;
-
     save<TName extends (keyof TSchema["entities"] & string) | "Query", T extends object, TVariables extends object = {}>(
         fetcher: ObjectFetcher<TName, T, any>,
         obj: T,
@@ -45,6 +41,50 @@ export interface StateManager<TSchema extends SchemaType> {
         ids: ReadonlyArray<TSchema["entities"][TName][" $id"] | undefined> | undefined
     ): void;
 
+    evict<
+        TName extends keyof TSchema["entities"],
+        TFieldName extends keyof TSchema["entities"][TName][" $associationArgs"]
+    >(
+        typeName: TName,
+        id: TSchema["entities"][TName][" $id"] | undefined,
+        fieldKey: {
+            name: TFieldName,
+            variables?: TSchema["entities"][TName][" $associationArgs"][TFieldName]
+        }
+    ): void;
+
+    evict<
+        TName extends keyof TSchema["entities"]
+    >(
+        typeName: TName,
+        id: TSchema["entities"][TName][" $id"] | undefined,
+        fieldName: string
+    ): void;
+
+    evict<
+        TName extends keyof TSchema["entities"]
+    >(
+        typeName: TName,
+        ids: Readonly<TSchema["entities"][TName][" $id"] | undefined> | undefined,
+        fieldName: string
+    ): void;
+
+    evict<
+        TName extends keyof TSchema["entities"]
+    >(
+        typeName: TName,
+        id: TSchema["entities"][TName][" $id"] | undefined,
+        fieldNames: ReadonlyArray<string>
+    ): void;
+
+    evict<
+        TName extends keyof TSchema["entities"]
+    >(
+        typeName: TName,
+        ids: Readonly<TSchema["entities"][TName][" $id"] | undefined> | undefined,
+        fieldNames: ReadonlyArray<string>
+    ): void;
+
     addEntityEvictListener(listener: (e: EntityEvictEvent) => void): void;
 
     removeEntityEvictListener(listener: (e: EntityEvictEvent) => void): void;
@@ -78,23 +118,6 @@ export interface StateManager<TSchema extends SchemaType> {
     ): void;
 
     suspendBidirectionalAssociationManagement<T>(action: () => T): T;
-}
-
-export interface UndoManager {
-
-    readonly isUndoable: boolean;
-
-    readonly isRedoable: boolean;
-
-    undo(): void;
-    
-    redo(): void;
-
-    clear(): void;
-}
-
-export interface TransactionStatus {
-    setRollbackOnly(): void;
 }
 
 export type RecursivePartial<T> = 

@@ -5,9 +5,11 @@ const EntityManager_1 = require("../../entities/EntityManager");
 const RuntimeShape_1 = require("../../entities/RuntimeShape");
 const SchemaMetadata_1 = require("../../meta/impl/SchemaMetadata");
 const ScopedStateManager_1 = require("./ScopedStateManager");
+const Monitor_1 = require("../Monitor");
 class StateManagerImpl {
     constructor(schema, network) {
         this.network = network;
+        this.id = `${new Date().getTime()}-${++sequenceNumber}`;
         this._rootScope = new ScopedStateManager_1.ScopedStateManager(this);
         this._stateValueChangeListeners = new Set();
         this._queryResultChangeListeners = new Set();
@@ -25,9 +27,6 @@ class StateManagerImpl {
     get entityManager() {
         return this._entityManager;
     }
-    get undoManager() {
-        throw new Error();
-    }
     save(fetcher, obj, variables) {
         if (!this.entityManager.schema.isAcceptable(fetcher.fetchableType)) {
             throw new Error("Cannot accept that fetcher because it is not configured in the state manager");
@@ -37,8 +36,8 @@ class StateManagerImpl {
     delete(typeName, idOrArray) {
         this.entityManager.delete(typeName, idOrArray);
     }
-    evict(typeName, idOrArray) {
-        this.entityManager.evict(typeName, idOrArray);
+    evict(typeName, idOrArray, fieldOrArray) {
+        this.entityManager.evict(typeName, idOrArray, fieldOrArray);
     }
     addEntityEvictListener(listener) {
         this.entityManager.addEvictListener(undefined, listener);
@@ -87,9 +86,6 @@ class StateManagerImpl {
     scope(path) {
         return this._rootScope.subScope(path);
     }
-    transaction(callback) {
-        throw new Error();
-    }
     addStateValueChangeListener(listener) {
         if (this._stateValueChangeListeners.has(listener)) {
             throw new Error(`Cannot add existing listener`);
@@ -102,6 +98,7 @@ class StateManagerImpl {
         this._stateValueChangeListeners.delete(listener);
     }
     publishStateValueChangeEvent(e) {
+        Monitor_1.postSimpleStateMessage(e.stateValue, "update", e.stateValue.rawData);
         for (const listener of this._stateValueChangeListeners) {
             listener(e);
         }
@@ -131,5 +128,12 @@ class StateManagerImpl {
         this._entityManager = new EntityManager_1.EntityManager(this, this._entityManager.schema);
         this._rootScope.dispose();
     }
+    simpleStateMonitor() {
+        return this._rootScope.monitor();
+    }
+    graphStateMonitor() {
+        return this.entityManager.monitor();
+    }
 }
 exports.StateManagerImpl = StateManagerImpl;
+let sequenceNumber = 0;

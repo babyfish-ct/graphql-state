@@ -39,7 +39,6 @@ class QueryService {
                 if (!useDataService) {
                     throw new Error(reason);
                 }
-                console.debug(reason);
             }
         }
         if (useDataService) {

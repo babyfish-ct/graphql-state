@@ -1,5 +1,6 @@
 import { createContext, FC, memo, PropsWithChildren, useContext, useEffect } from "react";
 import { StateManagerImpl } from "./impl/StateManagerImpl";
+import { postStateManagerMessage } from "./Monitor";
 import { StateManager } from "./StateManager";
 import { ReleasePolicy } from "./Types";
 
@@ -20,15 +21,19 @@ export const StateManagerProvider: FC<
         finallyUsedStateManager.releasePolicy = releasePolicy;
     }
 
-    // Use this to debug before chrome extension to visualize the data is supported in the future
-    (window as any).__STATE_MANAGER__ = finallyUsedStateManager;
-
     useEffect(() => {
+        
+        (window as any).__STATE_MANAGER__ = finallyUsedStateManager;
+        setTimeout(() => {
+            postStateManagerMessage(finallyUsedStateManager.id);
+        }, 0);
+
         return () => {
             (window as any).__STATE_MANAGER__ = undefined;
+            postStateManagerMessage(undefined);
             finallyUsedStateManager.dispose();
         }
-    }, [finallyUsedStateManager]);
+    }, [finallyUsedStateManager.id]);
 
     return (
         <stateContext.Provider value={finallyUsedStateManager}>

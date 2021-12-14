@@ -1,4 +1,8 @@
+![image](./chrome-extension/public/images/128_128.png "Logo")
+
 # 一个新的React状态管理框架
+
+#### 语言: [英文](https://github.com/babyfish-ct/graphql-state) | 中文
 
 ## 项目描述
 UI状态的本质是什么?
@@ -22,3 +26,11 @@ UI状态的本质是什么?
 - [入门向导](./site/get-start_zh_CN.md)
 - [运行附带例子](./site/run-demo_zh_CN.md)
 - [文档](./doc/README_zh_CN.md)
+
+## Chrome扩展
+
+为了帮助开发人员调试，本框架支持chrome扩展。
+
+*这个chrome扩展目前正在等待chrome web store的人工审核，这可能需要花几周时间。*
+
+*如果在此之前你想体验，你可以编译chrome-extension目录下的代码，并以unpacked-extension的方式使用。*

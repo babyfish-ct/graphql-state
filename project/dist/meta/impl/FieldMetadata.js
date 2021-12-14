@@ -8,6 +8,7 @@ class FieldMetadata {
         this._containingConfigured = false;
         this._positionConfiguered = false;
         this.name = field.name;
+        this.isParameterized = field.argGraphQLTypeMap.size !== 0;
         this.category = field.category;
         this.fullName = `${declaringType.name}.${field.name}`;
         this._connectionType = field.connectionTypeName;
@@ -151,8 +152,7 @@ function createDefaultAssociationProperties(field) {
             if (variables === undefined) {
                 return true;
             }
-            console.log(`Try to add new '${field.targetType.name}' object into the parameterized assocaition ${field.fullName}(${JSON.stringify(variables)}), but the assocaition properties of that parameterized assocition is not specified, ` +
-                `so the system does not known whether the new object should be added and evict that assocaition from cache`);
+            return undefined;
         },
         position: (_1, _2, paginationDirection, _4) => {
             return paginationDirection === "forward" ? "start" : "end";

@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AssociationListValue = void 0;
+const Monitor_1 = require("../../state/Monitor");
 const Record_1 = require("../Record");
 const AssocaitionValue_1 = require("./AssocaitionValue");
 const util_1 = require("./util");
@@ -69,7 +70,7 @@ class AssociationListValue extends AssocaitionValue_1.AssociationValue {
                     if (!ex[" $evict"]) {
                         throw ex;
                     }
-                    this.evict(entityManager);
+                    this.evict(entityManager, ex[" $evictReason"]);
                     return;
                 }
             }
@@ -118,7 +119,7 @@ class AssociationListValue extends AssocaitionValue_1.AssociationValue {
             if (!ex[" $evict"]) {
                 throw ex;
             }
-            this.evict(entityManager);
+            this.evict(entityManager, ex[" $evictReason"]);
             return;
         }
     }
@@ -162,6 +163,7 @@ exports.AssociationListValue = AssociationListValue;
 class Appender {
     constructor(owner) {
         var _a, _b, _c;
+        this.owner = owner;
         this.position = owner.association.field.associationProperties.position;
         const style = (_b = (_a = owner.args) === null || _a === void 0 ? void 0 : _a.paginationInfo) === null || _b === void 0 ? void 0 : _b.style;
         if (style !== "page") {
@@ -174,7 +176,11 @@ class Appender {
             0 :
             this.position(newElement.toRow(), newElements.map(e => e.toRow()), this.direction, this.filterVariables);
         if (pos === undefined) {
-            throw { " $evict": true };
+            let evictReason = undefined;
+            if (Monitor_1.isEvictLogEnabled()) {
+                evictReason = "position-returns-undefined";
+            }
+            throw { " $evict": true, " $evictReason": evictReason };
         }
         const index = util_1.positionToIndex(pos, newElements.length);
         if (index === newElements.length) {

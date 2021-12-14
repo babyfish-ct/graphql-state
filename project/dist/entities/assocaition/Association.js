@@ -6,6 +6,8 @@ const Args_1 = require("../../state/impl/Args");
 const AssociationConnectionValue_1 = require("./AssociationConnectionValue");
 const AssociationListValue_1 = require("./AssociationListValue");
 const AssociationReferenceValue_1 = require("./AssociationReferenceValue");
+const Monitor_1 = require("../../state/Monitor");
+const util_1 = require("../../state/impl/util");
 class Association {
     constructor(record, field) {
         this.record = record;
@@ -57,14 +59,14 @@ class Association {
         this.refreshedVersion = entityManager.modificationVersion;
         this.value(args).set(entityManager, value, pagination);
     }
-    evict(entityManager, args, includeMoreStrictArgs) {
+    evict(entityManager, args, includeMoreStrictArgs, evictReason) {
         this.refreshedVersion = entityManager.modificationVersion;
         const ctx = entityManager.modificationContext;
         if (includeMoreStrictArgs) {
             const keys = [];
             this.valueMap.forEachValue(value => {
                 if (Args_1.VariableArgs.contains(value.args, args)) {
-                    ctx.unset(this.record, this.field.name, value.args);
+                    ctx.unset(this.record, this.field.name, value.args, evictReason);
                     keys.push(args === null || args === void 0 ? void 0 : args.key);
                 }
             });
@@ -75,7 +77,7 @@ class Association {
         else {
             const value = this.valueMap.get(args === null || args === void 0 ? void 0 : args.key);
             if (value !== undefined) {
-                ctx.unset(this.record, this.field.name, value.args);
+                ctx.unset(this.record, this.field.name, value.args, evictReason);
                 this.valueMap.remove(args === null || args === void 0 ? void 0 : args.key);
             }
         }
@@ -93,8 +95,9 @@ class Association {
                 if (possibleRecords.length === 0) {
                     return;
                 }
-                if (!value.isLinkOptimizable) {
-                    this.evict(entityManager, value.args, false);
+                const [isLinkOptimizable, unoptimizableReason] = value.isLinkOptimizable;
+                if (!isLinkOptimizable) {
+                    this.evict(entityManager, value.args, false, unoptimizableReason);
                 }
                 else if (Args_1.VariableArgs.contains(mostStringentArgs === null || mostStringentArgs === void 0 ? void 0 : mostStringentArgs.filterArgs, (_b = value.args) === null || _b === void 0 ? void 0 : _b.filterArgs)) {
                     value.link(entityManager, possibleRecords);
@@ -114,7 +117,7 @@ class Association {
                         }
                     }
                     if (evict) {
-                        this.evict(entityManager, value.args, false);
+                        this.evict(entityManager, value.args, false, this.unfilterableReason);
                     }
                     else if (exactRecords.length !== 0) {
                         value.link(entityManager, exactRecords);
@@ -136,8 +139,9 @@ class Association {
                 if (possibleRecords.length === 0) {
                     return;
                 }
-                if (!value.isLinkOptimizable) {
-                    this.evict(entityManager, value.args, false);
+                const [isLinkOptimizable, unoptimizableReason] = value.isLinkOptimizable;
+                if (!isLinkOptimizable) {
+                    this.evict(entityManager, value.args, false, unoptimizableReason);
                 }
                 else if (Args_1.VariableArgs.contains((_b = value.args) === null || _b === void 0 ? void 0 : _b.filterArgs, leastStringentArgs === null || leastStringentArgs === void 0 ? void 0 : leastStringentArgs.filterArgs)) {
                     value.unlink(entityManager, possibleRecords);
@@ -157,7 +161,7 @@ class Association {
                         }
                     }
                     if (evict) {
-                        this.evict(entityManager, value.args, false);
+                        this.evict(entityManager, value.args, false, this.unfilterableReason);
                     }
                     else if (exactRecords.length !== 0) {
                         value.unlink(entityManager, exactRecords);
@@ -211,6 +215,15 @@ class Association {
             }
         }
     }
+    get unfilterableReason() {
+        if (Monitor_1.isEvictLogEnabled()) {
+            if (this.field.isContainingConfigured) {
+                return "contains-returns-undefined";
+            }
+            return "no-contains";
+        }
+        return undefined;
+    }
     writeTo(writer) {
         this.valueMap.forEachValue(value => {
             writer.seperator();
@@ -239,6 +252,46 @@ class Association {
                 output.push({ record: this.record, field: this.field, args: value.args });
             }
         });
+    }
+    monitor() {
+        var _a;
+        let value = undefined;
+        let parameterizedValues;
+        if (this.field.isParameterized) {
+            const arr = [];
+            this.valueMap.forEach((k, v) => {
+                arr.push({
+                    parameter: k !== null && k !== void 0 ? k : "",
+                    value: this.convertMonitorValue(v.get())
+                });
+            });
+            arr.sort((a, b) => util_1.compare(a, b, "parameter"));
+            parameterizedValues = arr;
+        }
+        else {
+            value = this.convertMonitorValue((_a = this.valueMap.get(undefined)) === null || _a === void 0 ? void 0 : _a.get());
+        }
+        const field = {
+            name: this.field.name,
+            value,
+            parameterizedValues
+        };
+        return field;
+    }
+    convertMonitorValue(value) {
+        if (value === undefined) {
+            return undefined;
+        }
+        if (this.field.category === "LIST") {
+            return value.map((element) => element.id);
+        }
+        if (this.field.category === "CONNECTION") {
+            const conn = value;
+            return Object.assign(Object.assign({}, conn), { edges: conn.edges.map(edge => {
+                    return Object.assign(Object.assign({}, edge), { node: edge.node.id });
+                }) });
+        }
+        return value.id;
     }
 }
 exports.Association = Association;

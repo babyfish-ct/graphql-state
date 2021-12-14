@@ -5,6 +5,7 @@ const PaginationFetcherProcessor_1 = require("../PaginationFetcherProcessor");
 const Record_1 = require("../Record");
 const AssocaitionValue_1 = require("./AssocaitionValue");
 const util_1 = require("./util");
+const Monitor_1 = require("../../state/Monitor");
 class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
     getAsObject() {
         if (this.connection === undefined) {
@@ -117,7 +118,7 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
             if (!ex[" $evict"]) {
                 throw ex;
             }
-            this.evict(entityManager);
+            this.evict(entityManager, ex[" $evictReason"]);
             return;
         }
     }
@@ -145,7 +146,7 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
             if (!ex[" $evict"]) {
                 throw ex;
             }
-            this.evict(entityManager);
+            this.evict(entityManager, ex[" $evictReason"]);
             return;
         }
     }
@@ -156,11 +157,19 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
         }
         const style = this.args.paginationInfo.style;
         if (style === "page") {
-            throw { " $evict": true };
+            let evictReason = undefined;
+            if (Monitor_1.isEvictLogEnabled()) {
+                evictReason = "page-style-pagination";
+            }
+            throw { " $evict": true, " $evictReason": evictReason };
         }
         const changeRange = (_b = this.association.field.associationProperties) === null || _b === void 0 ? void 0 : _b.range;
         if (changeRange === undefined) {
-            throw { " $evict": true };
+            let evictReason = undefined;
+            if (Monitor_1.isEvictLogEnabled()) {
+                evictReason = "no-range";
+            }
+            throw { " $evict": true, " $evictReason": evictReason };
         }
         const oldConnection = this.connection;
         let range = {
@@ -210,7 +219,7 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
             if (!ex[" $evict"]) {
                 throw ex;
             }
-            this.evict(entityManager);
+            this.evict(entityManager, ex[" $evictReason"]);
             return;
         }
     }
@@ -299,6 +308,7 @@ exports.AssociationConnectionValue = AssociationConnectionValue;
 class Appender {
     constructor(owner) {
         var _a, _b, _c, _d, _e;
+        this.owner = owner;
         this.position = owner.association.field.associationProperties.position;
         const style = (_b = (_a = owner.args) === null || _a === void 0 ? void 0 : _a.paginationInfo) === null || _b === void 0 ? void 0 : _b.style;
         if (style === "forward") {
@@ -316,14 +326,26 @@ class Appender {
             0 :
             this.position(newNode.toRow(), newEdges.map(e => e.node.toRow()), this.direction, this.filterVariables);
         if (pos === undefined) {
-            throw { " $evict": true };
+            let evictReason = undefined;
+            if (Monitor_1.isEvictLogEnabled()) {
+                evictReason = "position-returns-undefined";
+            }
+            throw { " $evict": true, " $evictReason": evictReason };
         }
         const index = util_1.positionToIndex(pos, newEdges.length);
         if (index === 0 && this.direction === "backward" && this.hasMore !== false) {
-            throw { " $evict": true };
+            let evictReason = undefined;
+            if (Monitor_1.isEvictLogEnabled()) {
+                evictReason = "backward-head";
+            }
+            throw { " $evict": true, " $evictReason": evictReason };
         }
         if (index === newEdges.length && this.direction === "forward" && this.hasMore !== false) {
-            throw { " $evict": true };
+            let evictReason = undefined;
+            if (Monitor_1.isEvictLogEnabled()) {
+                evictReason = "forward-tail";
+            }
+            throw { " $evict": true, " $evictReason": evictReason };
         }
         const cursor = "";
         if (index === newEdges.length) {

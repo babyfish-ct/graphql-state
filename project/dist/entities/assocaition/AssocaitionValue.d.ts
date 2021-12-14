@@ -5,6 +5,7 @@ import { VariableArgs } from "../../state/impl/Args";
 import { Association } from "./Association";
 import { ObjectConnection, RecordConnection } from "./AssociationConnectionValue";
 import { Pagination } from "../QueryArgs";
+import { EvictReasonType } from "../../state/Monitor";
 export declare abstract class AssociationValue {
     readonly association: Association;
     readonly args?: VariableArgs | undefined;
@@ -25,6 +26,6 @@ export declare abstract class AssociationValue {
     private refreshByChangeEvent;
     private isTargetChanged;
     private belongToMe;
-    evict(entityManager: EntityManager): void;
-    get isLinkOptimizable(): boolean;
+    evict(entityManager: EntityManager, evictReason?: EvictReasonType): void;
+    get isLinkOptimizable(): [boolean, EvictReasonType | undefined];
 }

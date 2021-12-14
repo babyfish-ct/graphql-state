@@ -6,6 +6,7 @@ import { VariableArgs } from "../../state/impl/Args";
 import { Association } from "./Association";
 import { ObjectConnection, RecordConnection } from "./AssociationConnectionValue";
 import { Pagination } from "../QueryArgs";
+import { isEvictLogEnabled, EvictReasonType } from "../../state/Monitor";
 
 export abstract class AssociationValue {
 
@@ -133,6 +134,7 @@ export abstract class AssociationValue {
                 if (belongToMe === false) {
                     return;
                 }
+                let evictReason: EvictReasonType | undefined = undefined;
                 if (belongToMe === true) { 
                     const result = this.association.field.associationProperties?.contains(
                         new FlatRowImpl(ref.value),
@@ -152,8 +154,11 @@ export abstract class AssociationValue {
                         this.unlink(entityManager, [ref.value]);
                         return;
                     }
+                    evictReason = this.association.unfilterableReason;
+                } else if (isEvictLogEnabled()) {
+                    evictReason = "unknown-owner"
                 }
-                this.evict(entityManager);
+                this.evict(entityManager, evictReason);
             }
         }
     }
@@ -189,18 +194,26 @@ export abstract class AssociationValue {
         return undefined;
     }
 
-    evict(entityManager: EntityManager) {
-        this.association.evict(entityManager, this.args, false);
+    evict(entityManager: EntityManager, evictReason?: EvictReasonType) {
+        this.association.evict(entityManager, this.args, false, evictReason);
     }
 
-    get isLinkOptimizable(): boolean {
+    get isLinkOptimizable(): [boolean, EvictReasonType | undefined] {
         const paginationInfo = this.args?.paginationInfo;
         if (paginationInfo?.style === "page") {
-            return false;
+            let evictReason: EvictReasonType | undefined = undefined;
+            if (isEvictLogEnabled()) {
+                evictReason = "page-style-pagination";
+            }
+            return [false, evictReason];
         }
         if (paginationInfo !== undefined && this.association.field.associationProperties?.range === undefined) {
-            return false;
+            let evictReason: EvictReasonType | undefined = undefined;
+            if (isEvictLogEnabled()) {
+                evictReason = "no-range";
+            }
+            return [false, evictReason];
         }
-        return true;
+        return [true, undefined];
     }
 }

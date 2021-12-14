@@ -2,6 +2,9 @@ import { EntityChangeEvent } from "..";
 import { FieldMetadata } from "../meta/impl/FieldMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { VariableArgs } from "../state/impl/Args";
+import { compare } from "../state/impl/util";
+import { GraphObject, GraphType } from "../state/Monitor";
+import { EntityKey } from "./EntityEvent";
 import { EntityManager, Garbage } from "./EntityManager";
 import { Pagination } from "./QueryArgs";
 import { Record } from "./Record";
@@ -66,14 +69,39 @@ export class RecordManager {
         this.superManager?.delete(id);
     }
 
-    evict(id: any) {
-        let record = this.recordMap.get(id);
+    evict(id: any, key?: EntityKey) {
+        if (key === undefined) {
+            this.evictObject(id);
+        } else {
+            const fieldName = typeof key === "string" ? key : key.name;
+            const variables = typeof key === "string" ? undefined : key.variables;
+            if (!this.evictField(id, fieldName, variables)) {
+                throw new Error(`Illegal evicted field name "${fieldName}"`);
+            }
+        }
+    }
+
+    private evictObject(id: any) {
+        const record = this.recordMap.get(id);
         if (record !== undefined) {
             this.entityManager.modificationContext.evict(record);
             this.recordMap.delete(id);
             record.dispose(this.entityManager);
         }
-        this.superManager?.evict(id);
+        this.superManager?.evictObject(id);
+    }
+
+    private evictField(id: any, fieldName: string, variables?: any): boolean {
+        const record = this.recordMap.get(id);
+        if (record === undefined) {
+            return true;
+        }
+        const field = record.staticType.declaredFieldMap.get(fieldName);
+        if (field !== undefined) {
+            record.evict(this.entityManager, field, VariableArgs.of(variables));
+            return true;
+        }
+        return this.superManager?.evictField(id, fieldName, variables) === true;
     }
 
     forEach(visitor: (record: Record) => boolean | void) {
@@ -110,6 +138,24 @@ export class RecordManager {
                 record.collectGarbages(output);
             }
         }
+    }
+
+    monitor(): GraphType | undefined {
+        const objects: GraphObject[] = [];
+        for (const record of this.recordMap.values()) {
+            if (!record.isDeleted) {
+                objects.push(record.monitor());
+            }
+        }
+        if (objects.length === 0) {
+            return undefined;
+        }
+        objects.sort((a, b) => compare(a, b, "id"));
+        const type: GraphType = {
+            name: this.type.name,
+            objects
+        };
+        return type;
     }
 }
 

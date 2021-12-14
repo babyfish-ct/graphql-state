@@ -7,6 +7,8 @@ import { SchemaMetadata } from "../meta/impl/SchemaMetadata";
 import { TypeMetadata } from "../meta/impl/TypeMetdata";
 import { VariableArgs } from "../state/impl/Args";
 import { StateManagerImpl } from "../state/impl/StateManagerImpl";
+import { compare } from "../state/impl/util";
+import { GraphFieldMetadata, GraphSnapshot, GraphType, GraphTypeMetadata, postGraphStateMessage } from "../state/Monitor";
 import { ReleasePolicy } from "../state/Types";
 import { EntityEvictEvent } from "./EntityEvent";
 import { ModificationContext } from "./ModificationContext";
@@ -90,6 +92,7 @@ export class EntityManager {
                 () => { ++this._modificationVersion },
                 this.publishEvictChangeEvent.bind(this),
                 this.publishEntityChangeEvent.bind(this),
+                this.stateManager.id,
                 forGC
             );
             try {
@@ -165,21 +168,22 @@ export class EntityManager {
 
     evict(
         typeName: string,
-        idOrArray: any
+        idOrArray: any,
+        fieldKeyOrArray?: any
     ): void {
         this.modify(() => {
             if (typeName === "Query") {
-                this.recordManager("Query").evict(QUERY_OBJECT_ID);
+                evictHelper(this.recordManager("Query"), QUERY_OBJECT_ID, fieldKeyOrArray);
             } else {
                 const recordManager = this.recordManager(typeName);
                 if (Array.isArray(idOrArray)) {
                     for (const id of idOrArray) {
                         if (id !== undefined && id !== null) {
-                            recordManager.delete(id);
+                            evictHelper(recordManager, id, fieldKeyOrArray);
                         }
                     }
                 } else if (idOrArray !== undefined && idOrArray !== null) {
-                    recordManager.evict(idOrArray);
+                    evictHelper(recordManager, idOrArray, fieldKeyOrArray);
                 }
             }
         });
@@ -245,6 +249,7 @@ export class EntityManager {
     }
 
     private publishEvictChangeEvent(e: EntityEvictEvent) {
+        postGraphStateMessage(this.stateManager.id, e);
         this.refreshByEvictEvent(e);
         for (const [, set] of this._evictListenerMap) {
             for (const listener of set) {
@@ -272,6 +277,7 @@ export class EntityManager {
     }
 
     private publishEntityChangeEvent(e: EntityChangeEvent) {
+        postGraphStateMessage(this.stateManager.id, e);
         this.refreshByChangeEvent(e);
         for (const [, set] of this._changeListenerMap) {
             for (const listener of set) {
@@ -438,6 +444,46 @@ export class EntityManager {
             }
         }
     }
+
+    monitor(): GraphSnapshot {
+        const typeMetadataMap: { [key: string]: GraphTypeMetadata } = {};
+        for (const type of this.schema.typeMap.values()) {
+            const declaredFieldMap: { [key: string]: GraphFieldMetadata } = {};
+            for (const field of type.declaredFieldMap.values()) {
+                if (field.category !== "ID") {
+                    declaredFieldMap[field.name] = {
+                        name: field.name,
+                        isParamerized: field.isParameterized,
+                        isConnection: field.connectionType !== undefined,
+                        targetTypeName: field.targetType?.name
+                    };
+                }
+            }
+            typeMetadataMap[type.name] = {
+                name: type.name,
+                superTypeName: type.superType?.name,
+                idFieldName: type.category === "OBJECT" ? type.idField.name : undefined,
+                declaredFieldMap
+            };
+        }
+        const queryRecord = this
+            ._recordManagerMap.get("Query")
+            ?.findRefById(QUERY_OBJECT_ID)
+            ?.value;
+        const types = Array
+            .from(this._recordManagerMap.values())
+            .filter(rm => rm.type.name !== "Query")
+            .map(rm => rm.monitor())
+            .filter(t => t !== undefined) as Array<GraphType>;
+        ;
+        types.sort((a, b) => compare(a, b, "name"));
+        const snapshot: GraphSnapshot = {
+            typeMetadataMap,
+            query: queryRecord?.monitor(),
+            types
+        };
+        return snapshot;
+    }
 }
 
 export type EntityFieldVisitor = (
@@ -454,4 +500,18 @@ interface FieldGarbage {
     readonly record: Record;
     readonly field: FieldMetadata;
     readonly args: VariableArgs | undefined;
+}
+
+function evictHelper(recordManager: RecordManager, id: any, fieldKeyOrArray?: any) {
+    if (fieldKeyOrArray === undefined) {
+        recordManager.evict(id);
+    } else if (Array.isArray(fieldKeyOrArray)) {
+        for (const fieldKey of fieldKeyOrArray) {
+            if (fieldKey !== undefined && fieldKey !== null) {
+                recordManager.evict(id, fieldKey);
+            }
+        }
+    } else if (fieldKeyOrArray !== undefined && fieldKeyOrArray !== null) {
+        recordManager.evict(id, fieldKeyOrArray);
+    }
 }

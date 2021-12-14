@@ -1,4 +1,5 @@
 import { PositionType, FlatRow } from "../../meta/Configuration";
+import { isEvictLogEnabled, EvictReasonType } from "../../state/Monitor";
 import { EntityManager } from "../EntityManager";
 import { objectWithOnlyId, Record } from "../Record";
 import { AssociationValue } from "./AssocaitionValue";
@@ -92,7 +93,7 @@ export class AssociationListValue extends AssociationValue {
                     if (!ex[" $evict"]) {
                         throw ex;
                     }
-                    this.evict(entityManager);
+                    this.evict(entityManager, ex[" $evictReason"]);
                     return;
                 }
             }
@@ -151,7 +152,7 @@ export class AssociationListValue extends AssociationValue {
             if (!ex[" $evict"]) {
                 throw ex;
             }
-            this.evict(entityManager);
+            this.evict(entityManager, ex[" $evictReason"]);
             return;
         }
     }
@@ -211,7 +212,7 @@ class Appender {
 
     private filterVariables?: any;
 
-    constructor(owner: AssociationListValue) {
+    constructor(private owner: AssociationListValue) {
         this.position = owner.association.field.associationProperties!.position;
         const style = owner.args?.paginationInfo?.style;
         if (style !== "page") {
@@ -233,7 +234,11 @@ class Appender {
                 this.filterVariables
             );
         if (pos === undefined) {
-            throw { " $evict": true };
+            let evictReason: EvictReasonType | undefined = undefined;
+            if (isEvictLogEnabled()) {
+                evictReason = "position-returns-undefined";
+            }
+            throw { " $evict": true, " $evictReason": evictReason };
         }
         const index = positionToIndex(pos, newElements.length);
         if (index === newElements.length) {

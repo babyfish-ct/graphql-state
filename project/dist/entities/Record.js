@@ -4,6 +4,7 @@ exports.FlatRowImpl = exports.objectWithOnlyId = exports.QUERY_OBJECT_ID = expor
 const graphql_ts_client_api_1 = require("graphql-ts-client-api");
 const Args_1 = require("../state/impl/Args");
 const SpaceSavingMap_1 = require("../state/impl/SpaceSavingMap");
+const util_1 = require("../state/impl/util");
 const Association_1 = require("./assocaition/Association");
 const BackReferences_1 = require("./assocaition/BackReferences");
 class Record {
@@ -117,17 +118,17 @@ class Record {
         var _a;
         return (_a = this.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.anyValueContains(target);
     }
-    evict(entityManager, field, args, includeMoreStrictArgs = false) {
+    evict(entityManager, field, args, includeMoreStrictArgs = false, evictReason) {
         var _a;
         if (field.declaringType !== this.staticType) {
             throw new Error(`'${field.fullName}' is not field of the type '${this.staticType.name}' of current record`);
         }
         if (field.isAssociation) {
-            (_a = this.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.evict(entityManager, args, includeMoreStrictArgs);
+            (_a = this.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.evict(entityManager, args, includeMoreStrictArgs, evictReason);
         }
         else {
-            entityManager.modificationContext.unset(this, field.name, undefined);
-            this.scalarMap.delete(field.name);
+            entityManager.modificationContext.unset(this, field.name, args, evictReason);
+            this.scalarMap.delete(Args_1.VariableArgs.fieldKey(field.name, args));
         }
     }
     delete(entityManager) {
@@ -241,6 +242,53 @@ class Record {
         this.associationMap.forEachValue(association => {
             association.writeTo(writer);
         });
+    }
+    monitor() {
+        const fields = [];
+        const parameterizedScalarMap = new Map();
+        for (const [k, v] of this.scalarMap) {
+            const colonIndex = k.indexOf(":");
+            if (colonIndex !== -1) {
+                const name = k.substring(0, colonIndex);
+                const parameter = k.substring(colonIndex + 1);
+                let subMap = parameterizedScalarMap.get(name);
+                if (subMap === undefined) {
+                    subMap = new Map();
+                    parameterizedScalarMap.set(name, subMap);
+                }
+                subMap.set(parameter, v);
+            }
+        }
+        for (const [k, v] of this.scalarMap) {
+            const colonIndex = k.indexOf(":");
+            if (colonIndex === -1) {
+                fields.push({
+                    name: k,
+                    value: v
+                });
+            }
+        }
+        for (const [k, subMap] of parameterizedScalarMap) {
+            const arr = [];
+            for (const [parameter, value] of subMap) {
+                arr.push({ parameter, value });
+            }
+            arr.sort((a, b) => util_1.compare(a, b, "parameter"));
+            fields.push({
+                name: k,
+                parameterizedValues: arr
+            });
+        }
+        this.associationMap.forEachValue(association => {
+            fields.push(association.monitor());
+        });
+        fields.sort((a, b) => util_1.compare(a, b, "name"));
+        const obj = {
+            id: this.id,
+            runtimeTypeName: this.runtimeType.name,
+            fields
+        };
+        return obj;
     }
 }
 exports.Record = Record;

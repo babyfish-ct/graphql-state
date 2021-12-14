@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ScopedStateManager = void 0;
 const StateInstance_1 = require("./StateInstance");
+const util_1 = require("./util");
 class ScopedStateManager {
     constructor(parent, name) {
         this.name = name;
@@ -113,6 +114,25 @@ class ScopedStateManager {
         if (exception !== undefined) {
             throw exception;
         }
+    }
+    monitor() {
+        var _a;
+        const states = Array
+            .from(this._instanceMap.values())
+            .map(value => value.mintor());
+        states.sort((a, b) => util_1.compare(a, b, "name"));
+        const scopes = [];
+        if (this._childMap !== undefined) {
+            for (const child of this._childMap.values()) {
+                scopes.push(child.monitor());
+            }
+        }
+        scopes.sort((a, b) => util_1.compare(a, b, "name"));
+        return {
+            name: (_a = this.name) !== null && _a !== void 0 ? _a : "",
+            states,
+            scopes
+        };
     }
 }
 exports.ScopedStateManager = ScopedStateManager;

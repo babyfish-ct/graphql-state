@@ -3,6 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.EntityManager = void 0;
 const MergedDataService_1 = require("../data/MergedDataService");
 const RemoteDataService_1 = require("../data/RemoteDataService");
+const util_1 = require("../state/impl/util");
+const Monitor_1 = require("../state/Monitor");
 const ModificationContext_1 = require("./ModificationContext");
 const PaginationQueryResult_1 = require("./PaginationQueryResult");
 const QueryResult_1 = require("./QueryResult");
@@ -58,7 +60,7 @@ class EntityManager {
             return action();
         }
         else {
-            this._ctx = new ModificationContext_1.ModificationContext(() => { ++this._modificationVersion; }, this.publishEvictChangeEvent.bind(this), this.publishEntityChangeEvent.bind(this), forGC);
+            this._ctx = new ModificationContext_1.ModificationContext(() => { ++this._modificationVersion; }, this.publishEvictChangeEvent.bind(this), this.publishEntityChangeEvent.bind(this), this.stateManager.id, forGC);
             try {
                 return action();
             }
@@ -110,22 +112,22 @@ class EntityManager {
             }
         });
     }
-    evict(typeName, idOrArray) {
+    evict(typeName, idOrArray, fieldKeyOrArray) {
         this.modify(() => {
             if (typeName === "Query") {
-                this.recordManager("Query").evict(Record_1.QUERY_OBJECT_ID);
+                evictHelper(this.recordManager("Query"), Record_1.QUERY_OBJECT_ID, fieldKeyOrArray);
             }
             else {
                 const recordManager = this.recordManager(typeName);
                 if (Array.isArray(idOrArray)) {
                     for (const id of idOrArray) {
                         if (id !== undefined && id !== null) {
-                            recordManager.delete(id);
+                            evictHelper(recordManager, id, fieldKeyOrArray);
                         }
                     }
                 }
                 else if (idOrArray !== undefined && idOrArray !== null) {
-                    recordManager.evict(idOrArray);
+                    evictHelper(recordManager, idOrArray, fieldKeyOrArray);
                 }
             }
         });
@@ -186,6 +188,7 @@ class EntityManager {
         (_a = this._evictListenerMap.get(typeName)) === null || _a === void 0 ? void 0 : _a.delete(listener);
     }
     publishEvictChangeEvent(e) {
+        Monitor_1.postGraphStateMessage(this.stateManager.id, e);
         this.refreshByEvictEvent(e);
         for (const [, set] of this._evictListenerMap) {
             for (const listener of set) {
@@ -211,6 +214,7 @@ class EntityManager {
         (_a = this._changeListenerMap.get(typeName)) === null || _a === void 0 ? void 0 : _a.delete(listener);
     }
     publishEntityChangeEvent(e) {
+        Monitor_1.postGraphStateMessage(this.stateManager.id, e);
         this.refreshByChangeEvent(e);
         for (const [, set] of this._changeListenerMap) {
             for (const listener of set) {
@@ -358,5 +362,58 @@ class EntityManager {
             }
         }
     }
+    monitor() {
+        var _a, _b, _c, _d;
+        const typeMetadataMap = {};
+        for (const type of this.schema.typeMap.values()) {
+            const declaredFieldMap = {};
+            for (const field of type.declaredFieldMap.values()) {
+                if (field.category !== "ID") {
+                    declaredFieldMap[field.name] = {
+                        name: field.name,
+                        isParamerized: field.isParameterized,
+                        isConnection: field.connectionType !== undefined,
+                        targetTypeName: (_a = field.targetType) === null || _a === void 0 ? void 0 : _a.name
+                    };
+                }
+            }
+            typeMetadataMap[type.name] = {
+                name: type.name,
+                superTypeName: (_b = type.superType) === null || _b === void 0 ? void 0 : _b.name,
+                idFieldName: type.category === "OBJECT" ? type.idField.name : undefined,
+                declaredFieldMap
+            };
+        }
+        const queryRecord = (_d = (_c = this
+            ._recordManagerMap.get("Query")) === null || _c === void 0 ? void 0 : _c.findRefById(Record_1.QUERY_OBJECT_ID)) === null || _d === void 0 ? void 0 : _d.value;
+        const types = Array
+            .from(this._recordManagerMap.values())
+            .filter(rm => rm.type.name !== "Query")
+            .map(rm => rm.monitor())
+            .filter(t => t !== undefined);
+        ;
+        types.sort((a, b) => util_1.compare(a, b, "name"));
+        const snapshot = {
+            typeMetadataMap,
+            query: queryRecord === null || queryRecord === void 0 ? void 0 : queryRecord.monitor(),
+            types
+        };
+        return snapshot;
+    }
 }
 exports.EntityManager = EntityManager;
+function evictHelper(recordManager, id, fieldKeyOrArray) {
+    if (fieldKeyOrArray === undefined) {
+        recordManager.evict(id);
+    }
+    else if (Array.isArray(fieldKeyOrArray)) {
+        for (const fieldKey of fieldKeyOrArray) {
+            if (fieldKey !== undefined && fieldKey !== null) {
+                recordManager.evict(id, fieldKey);
+            }
+        }
+    }
+    else if (fieldKeyOrArray !== undefined && fieldKeyOrArray !== null) {
+        recordManager.evict(id, fieldKeyOrArray);
+    }
+}

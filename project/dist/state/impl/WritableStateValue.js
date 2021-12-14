@@ -18,6 +18,9 @@ class WritableStateValue extends StateValue_1.StateValue {
     get result() {
         return this._lodable.data;
     }
+    get rawData() {
+        return this._lodable.data;
+    }
     get loadable() {
         return this._lodable;
     }

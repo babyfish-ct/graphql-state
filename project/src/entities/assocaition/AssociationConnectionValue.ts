@@ -7,6 +7,7 @@ import { objectWithOnlyId, Record } from "../Record";
 import { AssociationValue } from "./AssocaitionValue";
 import { positionToIndex, toRecordMap } from "./util";
 import { ConnectionRange } from "../../meta/Configuration";
+import { isEvictLogEnabled, EvictReasonType } from "../../state/Monitor";
 
 export class AssociationConnectionValue extends AssociationValue {
 
@@ -169,7 +170,7 @@ export class AssociationConnectionValue extends AssociationValue {
             if (!ex[" $evict"]) {
                 throw ex;
             }
-            this.evict(entityManager);
+            this.evict(entityManager, ex[" $evictReason"]);
             return;
         }
     }
@@ -203,7 +204,7 @@ export class AssociationConnectionValue extends AssociationValue {
             if (!ex[" $evict"]) {
                 throw ex;
             }
-            this.evict(entityManager);
+            this.evict(entityManager, ex[" $evictReason"]);
             return;
         }
     }
@@ -214,11 +215,19 @@ export class AssociationConnectionValue extends AssociationValue {
         }
         const style = this.args.paginationInfo.style;
         if (style === "page") {
-            throw { " $evict": true };
+            let evictReason: EvictReasonType | undefined = undefined;
+            if (isEvictLogEnabled()) {
+                evictReason = "page-style-pagination";
+            }
+            throw { " $evict": true, " $evictReason": evictReason };
         }
         const changeRange = this.association.field.associationProperties?.range;
         if (changeRange === undefined) {
-            throw { " $evict": true };
+            let evictReason: EvictReasonType | undefined = undefined;
+            if (isEvictLogEnabled()) {
+                evictReason = "no-range"
+            }
+            throw { " $evict": true, " $evictReason": evictReason };
         }
         const oldConnection = this.connection!;
         let range: ConnectionRange = {
@@ -275,7 +284,7 @@ export class AssociationConnectionValue extends AssociationValue {
             if (!ex[" $evict"]) {
                 throw ex;
             }
-            this.evict(entityManager);
+            this.evict(entityManager, ex[" $evictReason"]);
             return;
         }
     }
@@ -409,7 +418,7 @@ class Appender {
 
     private hasMore?: boolean;
 
-    constructor(owner: AssociationConnectionValue) {
+    constructor(private owner: AssociationConnectionValue) {
         this.position = owner.association.field.associationProperties!.position;
         const style = owner.args?.paginationInfo?.style;
         if (style === "forward") {
@@ -435,14 +444,26 @@ class Appender {
                 this.filterVariables
             );
         if (pos === undefined) {
-            throw { " $evict": true };
+            let evictReason: EvictReasonType | undefined = undefined;
+            if (isEvictLogEnabled()) {
+                evictReason = "position-returns-undefined";
+            }
+            throw { " $evict": true, " $evictReason": evictReason };
         }
         const index = positionToIndex(pos, newEdges.length);
         if (index === 0 && this.direction === "backward" && this.hasMore !== false) {
-            throw { " $evict": true };
+            let evictReason: EvictReasonType | undefined = undefined;
+            if (isEvictLogEnabled()) {
+                evictReason = "backward-head";
+            }
+            throw { " $evict": true, " $evictReason": evictReason };
         }
         if (index === newEdges.length && this.direction === "forward" && this.hasMore !== false) {
-            throw { " $evict": true };
+            let evictReason: EvictReasonType | undefined = undefined;
+            if (isEvictLogEnabled()) {
+                evictReason = "forward-tail";
+            }
+            throw { " $evict": true, " $evictReason": evictReason };
         }
         const cursor = "";
         if (index === newEdges.length) {

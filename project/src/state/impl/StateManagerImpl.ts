@@ -7,13 +7,15 @@ import { toRuntimeShape } from "../../entities/RuntimeShape";
 import { Network } from "../../meta/Network";
 import { SchemaMetadata } from "../../meta/impl/SchemaMetadata";
 import { SchemaType } from "../../meta/SchemaType";
-import { StateManager, TransactionStatus } from "../StateManager";
+import { StateManager } from "../StateManager";
 import { ReleasePolicy } from "../Types";
 import { ScopedStateManager } from "./ScopedStateManager";
 import { StateValue } from "./StateValue";
-import { UndoManagerImpl } from "./UndoManagerImpl";
+import { GraphSnapshot, postSimpleStateMessage, SimpleStateScope } from "../Monitor";
 
 export class StateManagerImpl<TSchema extends SchemaType> implements StateManager<TSchema> {
+
+    readonly id = `${new Date().getTime()}-${++sequenceNumber}`;
 
     releasePolicy: ReleasePolicy<any>;
     
@@ -41,10 +43,6 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
     get entityManager(): EntityManager {
         return this._entityManager;
     }
-    
-    get undoManager(): UndoManagerImpl {
-        throw new Error();
-    }
 
     save<T extends object, TVariables extends object = {}>(
         fetcher: ObjectFetcher<string, T, any>,
@@ -66,9 +64,10 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
 
     evict<TName extends keyof TSchema["entities"] & string>(
         typeName: TName, 
-        idOrArray?: TSchema["entities"][TName][" $id"] | ReadonlyArray<TSchema["entities"][TName][" $id"] | undefined> | undefined
+        idOrArray?: TSchema["entities"][TName][" $id"] | ReadonlyArray<TSchema["entities"][TName][" $id"] | undefined> | undefined,
+        fieldOrArray?: any
     ) {
-        this.entityManager.evict(typeName, idOrArray);
+        this.entityManager.evict(typeName, idOrArray, fieldOrArray);
     }
 
     addEntityEvictListener(listener: (e: EntityEvictEvent) => void): void {
@@ -143,10 +142,6 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
         return this._rootScope.subScope(path);
     }
 
-    transaction<TResult>(callback: (ts: TransactionStatus) => TResult): TResult {
-        throw new Error();
-    }
-
     addStateValueChangeListener(listener: StateValueChangeListener) {
         if (this._stateValueChangeListeners.has(listener)) {
             throw new Error(`Cannot add existing listener`);
@@ -161,6 +156,7 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
     }
 
     publishStateValueChangeEvent(e: StateValueChangeEvent) {
+        postSimpleStateMessage(e.stateValue, "update", e.stateValue.rawData);
         for (const listener of this._stateValueChangeListeners) {
             listener(e);
         }
@@ -195,6 +191,14 @@ export class StateManagerImpl<TSchema extends SchemaType> implements StateManage
         this._entityManager = new EntityManager(this, this._entityManager.schema);
         this._rootScope.dispose();
     }
+
+    simpleStateMonitor(): SimpleStateScope {
+        return this._rootScope.monitor();
+    }
+
+    graphStateMonitor(): GraphSnapshot {
+        return this.entityManager.monitor();
+    }
 }
 
 
@@ -211,3 +215,5 @@ export interface QueryResultChangeEvent {
     readonly queryResult: QueryResult;
     readonly changedType: "RESULT_CHANGE" | "ASYNC_STATE_CHANGE";
 }
+
+let sequenceNumber = 0;
