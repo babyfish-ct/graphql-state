@@ -1,7 +1,7 @@
 {
   "name": "GraphQL state",
   "description": "Data visualization for GraphQL state",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "manifest_version": 3,
   "devtools_page": "devtools.html",
   "icons": {
