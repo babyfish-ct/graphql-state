@@ -30,4 +30,5 @@ The project name is "graphql-state". Don't worry, it's **"GraphQL style, but not
 ## Chrome extension
 
 In order to help developers debug, this framework supports [chrome extension](https://chrome.google.com/webstore/detail/graphql-state/bhpeanmgkcpkpnkpmemoomlfflmaaddo).
+
 *(Chrome extension 0.3.0 has a bug, the new version 0.3.1 is pending on manual review of chrome web store)*
