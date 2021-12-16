@@ -23,12 +23,9 @@ export const GraphStateMonitor: FC = memo(() => {
 
     const [selectedFieldId, setSelectedFieldId] = useState<string>();
 
-    const [initializing, setInitializing] = useState(false);
-
     const [, setDelayedMessages] = useState<GraphStateMessage[]>([]);
 
     const initializeSnapshot = useCallback(() => {
-        setInitializing(true);
         chrome.devtools.inspectedWindow.eval(MOUNT_SCRIPT, (result, exceptionInfo) => {
             if (result !== undefined) {
                 setGraphSnapshot(result as GraphSnapshot);
@@ -36,20 +33,6 @@ export const GraphStateMonitor: FC = memo(() => {
             } else {
                 setError(true);
             }
-            setInitializing(false);
-            setDelayedMessages(messages => {
-                try {
-                    if (messages.length !== 0) {
-                        for (const message of messages) {
-                            setGraphSnapshot(old => produce(old, draft => {
-                                changeGraphSnapshot(draft, message);
-                            }));
-                        }
-                    }
-                } finally {
-                    return [];
-                }
-            });
         });
     }, []);
 
@@ -58,17 +41,11 @@ export const GraphStateMonitor: FC = memo(() => {
             message.messageType === 'graphStateChange' &&
             message.stateManagerId === stateManagerId
         ) {
-            if (initializing) {
-                setDelayedMessages(old => [...old, message]);
-            } else if (graphSnapshot.typeMetadataMap[message.typeName] === undefined) {
-                initializeSnapshot();
-            } else {
-                setGraphSnapshot(produce(graphSnapshot, draft => {
-                    changeGraphSnapshot(draft, message);
-                }));
-            }
+            setGraphSnapshot(old => produce(old, draft => {
+                changeGraphSnapshot(draft, message);
+            }));
         }
-    }, [stateManagerId, graphSnapshot, initializing, initializeSnapshot]);
+    }, [stateManagerId]);
 
     const onClearSelection = useCallback((message: Message) => {
         if (message.messageDomain === 'graphQLStateMonitor' &&
