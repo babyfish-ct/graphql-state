@@ -4,6 +4,8 @@
 
 #### 语言: [英文](https://github.com/babyfish-ct/graphql-state) | 中文
 
+## [视频展示](https://www.bilibili.com/video/BV1EP4y1H7JP/)
+
 ## 项目描述
 UI状态的本质是什么?
 
@@ -16,8 +18,6 @@ UI状态的本质是什么?
 **本框架允许用户只关注主变更, 而其它额外修改都会被自动处理。**
 
 *相较于[Apollo client](https://github.com/apollographql/apollo-client)和[Relay](https://github.com/facebook/relay)，在变更之后，你只需要把主变更保存到本地缓存即可。既不需要在本地缓存中人为修改其它受影响的数据，也不需要指定哪些查询会被影响而需要重新获取，因为额外变更都会被自动处理。*
-
-**[B站视频展示](https://www.bilibili.com/video/BV1EP4y1H7JP/)**
 
 ## 关于REST
 项目的名称是graphql-state。别担心, 它是 **"GraphQL风格，但不仅仅是GraphQL"**，他可以把REST服务映射为GraphQL服务。
