@@ -1,5 +1,5 @@
 ![image](./chrome-extension/public/images/128_128.png "Logo")
-# A new react state management framework
+# An intelligent react state management framework
 
 #### Language: English | [Chinese](./README_zh_CN.md)
 
@@ -29,8 +29,4 @@ The project name is "graphql-state". Don't worry, it's **"GraphQL style, but not
 
 ## Chrome extension
 
-In order to help developers debug, this framework supports chrome extension.
-
-*This chrome extension is currently awaiting manual review by the chrome web store, which may take several weeks.*
-
-*If you want to experience it before, you can compile the code in the chrome-extension directory and use it as unpacked-extension.*
+In order to help developers debug, this framework supports [chrome extension](https://chrome.google.com/webstore/detail/graphql-state/bhpeanmgkcpkpnkpmemoomlfflmaaddo).
