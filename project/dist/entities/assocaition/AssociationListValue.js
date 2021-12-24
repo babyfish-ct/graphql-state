@@ -59,7 +59,7 @@ class AssociationListValue extends AssocaitionValue_1.AssociationValue {
         var _a, _b;
         const elements = this.elements !== undefined ? [...this.elements] : [];
         const indexMap = this.indexMap;
-        const linkMap = util_1.toRecordMap(targets);
+        const linkMap = (0, util_1.toRecordMap)(targets);
         const appender = new Appender(this);
         for (const record of linkMap.values()) {
             if ((indexMap === null || indexMap === void 0 ? void 0 : indexMap.has(record.id)) !== true) {
@@ -83,7 +83,7 @@ class AssociationListValue extends AssocaitionValue_1.AssociationValue {
         var _a, _b;
         const elements = this.elements !== undefined ? [...this.elements] : [];
         const indexMap = this.indexMap;
-        const unlinkMap = util_1.toRecordMap(targets);
+        const unlinkMap = (0, util_1.toRecordMap)(targets);
         for (const record of unlinkMap.values()) {
             const index = indexMap === null || indexMap === void 0 ? void 0 : indexMap.get(record.id);
             if (index !== undefined) {
@@ -177,12 +177,12 @@ class Appender {
             this.position(newElement.toRow(), newElements.map(e => e.toRow()), this.direction, this.filterVariables);
         if (pos === undefined) {
             let evictReason = undefined;
-            if (Monitor_1.isEvictLogEnabled()) {
+            if ((0, Monitor_1.isEvictLogEnabled)()) {
                 evictReason = "position-returns-undefined";
             }
             throw { " $evict": true, " $evictReason": evictReason };
         }
-        const index = util_1.positionToIndex(pos, newElements.length);
+        const index = (0, util_1.positionToIndex)(pos, newElements.length);
         if (index === newElements.length) {
             newElements.push(newElement);
         }

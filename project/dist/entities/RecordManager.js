@@ -126,7 +126,7 @@ class RecordManager {
         if (objects.length === 0) {
             return undefined;
         }
-        objects.sort((a, b) => util_1.compare(a, b, "id"));
+        objects.sort((a, b) => (0, util_1.compare)(a, b, "id"));
         const type = {
             name: this.type.name,
             objects

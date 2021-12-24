@@ -188,7 +188,7 @@ class EntityManager {
         (_a = this._evictListenerMap.get(typeName)) === null || _a === void 0 ? void 0 : _a.delete(listener);
     }
     publishEvictChangeEvent(e) {
-        Monitor_1.postGraphStateMessage(this.stateManager.id, e);
+        (0, Monitor_1.postGraphStateMessage)(this.stateManager.id, e);
         this.refreshByEvictEvent(e);
         for (const [, set] of this._evictListenerMap) {
             for (const listener of set) {
@@ -214,7 +214,7 @@ class EntityManager {
         (_a = this._changeListenerMap.get(typeName)) === null || _a === void 0 ? void 0 : _a.delete(listener);
     }
     publishEntityChangeEvent(e) {
-        Monitor_1.postGraphStateMessage(this.stateManager.id, e);
+        (0, Monitor_1.postGraphStateMessage)(this.stateManager.id, e);
         this.refreshByChangeEvent(e);
         for (const [, set] of this._changeListenerMap) {
             for (const listener of set) {
@@ -392,7 +392,7 @@ class EntityManager {
             .map(rm => rm.monitor())
             .filter(t => t !== undefined);
         ;
-        types.sort((a, b) => util_1.compare(a, b, "name"));
+        types.sort((a, b) => (0, util_1.compare)(a, b, "name"));
         const snapshot = {
             typeMetadataMap,
             query: queryRecord === null || queryRecord === void 0 ? void 0 : queryRecord.monitor(),

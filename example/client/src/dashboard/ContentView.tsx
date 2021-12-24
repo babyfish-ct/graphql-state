@@ -21,7 +21,18 @@ export const ContentView: FC = memo(() =>{
             <Route path="/simpleState/asyncState" component={AsyncStateApp}/>
             <Route path="/simpleState/effect" component={EffectApp}/>
             <Route path="/simpleState/scope" component={ScopeApp}/>
-            <Route path="/graphState/localData" component={LocalDataApp}/>
+            <Route 
+                path="/graphState/localData/general" 
+                component={() => 
+                    <LocalDataApp deleteCascade={false}/>
+                }
+            />
+            <Route 
+                path="/graphState/localData/deleteCascade" 
+                component={() => 
+                    <LocalDataApp deleteCascade={true}/>
+                }
+            />
             <Route 
                 path="/graphState/graphqlServer/unoptimized" 
                 component={() =>

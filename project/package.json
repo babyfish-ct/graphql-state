@@ -1,6 +1,6 @@
 {
   "name": "graphql-state",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "New react state managment framework",
   "author": "ChenTao",
   "license": "MIT",
@@ -23,8 +23,7 @@
     "jest": "^27.2.5",
     "react": "link:../../project/node_modules/react",
     "react-dom": "link:../../project/node_modules/react-dom",
-    "ts-jest": "^27.0.5",
-    "typescript": "^4.4.3"
+    "ts-jest": "^27.0.5"
   },
   "scripts": {
     "test": "jest",
@@ -32,6 +31,7 @@
     "codegen": "node scripts/codegen.js"
   },
   "dependencies": {
-    "graphql-ts-client-api": "^3.0.8"
+    "graphql-ts-client-api": "^3.0.9",
+    "typescript": "^4.5.4"
   }
 }

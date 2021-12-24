@@ -100,7 +100,7 @@ class AssociationValue {
                     }
                     evictReason = this.association.unfilterableReason;
                 }
-                else if (Monitor_1.isEvictLogEnabled()) {
+                else if ((0, Monitor_1.isEvictLogEnabled)()) {
                     evictReason = "unknown-owner";
                 }
                 this.evict(entityManager, evictReason);
@@ -145,14 +145,14 @@ class AssociationValue {
         const paginationInfo = (_a = this.args) === null || _a === void 0 ? void 0 : _a.paginationInfo;
         if ((paginationInfo === null || paginationInfo === void 0 ? void 0 : paginationInfo.style) === "page") {
             let evictReason = undefined;
-            if (Monitor_1.isEvictLogEnabled()) {
+            if ((0, Monitor_1.isEvictLogEnabled)()) {
                 evictReason = "page-style-pagination";
             }
             return [false, evictReason];
         }
         if (paginationInfo !== undefined && ((_b = this.association.field.associationProperties) === null || _b === void 0 ? void 0 : _b.range) === undefined) {
             let evictReason = undefined;
-            if (Monitor_1.isEvictLogEnabled()) {
+            if ((0, Monitor_1.isEvictLogEnabled)()) {
                 evictReason = "no-range";
             }
             return [false, evictReason];

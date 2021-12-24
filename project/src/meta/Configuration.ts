@@ -49,7 +49,9 @@ export interface Configuration<TSchema extends SchemaType> {
         properties: ParameterizedAssociationProperties<
             TSchema["entities"][TTypeName][" $associationTargetTypes"][TFieldName],
             TSchema["entities"][TTypeName][" $associationArgs"][TFieldName]
-        >
+        > & {
+            readonly deleteCascade?: boolean;
+        }
     ): this;
 
     associationProperties<
@@ -63,7 +65,9 @@ export interface Configuration<TSchema extends SchemaType> {
         fieldName: TFieldName,
         properties: UnparameterizedAssociationProperties<
             TSchema["entities"][TTypeName][" $associationTargetTypes"][TFieldName]
-        >,
+        > & {
+            readonly deleteCascade?: boolean;
+        }
     ): this;
 
 
@@ -75,7 +79,7 @@ export interface Configuration<TSchema extends SchemaType> {
 }
 
 export interface ParameterizedAssociationProperties<TFlatType, TVariables> {
-    
+
     readonly contains?: (
         row: FlatRow<TFlatType>,
         variables?: TVariables

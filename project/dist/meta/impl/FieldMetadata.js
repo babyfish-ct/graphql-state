@@ -9,6 +9,7 @@ class FieldMetadata {
         this._positionConfiguered = false;
         this.name = field.name;
         this.isParameterized = field.argGraphQLTypeMap.size !== 0;
+        this.isUndefinable = field.isUndefinable;
         this.category = field.category;
         this.fullName = `${declaringType.name}.${field.name}`;
         this._connectionType = field.connectionTypeName;
@@ -100,16 +101,20 @@ class FieldMetadata {
         this.declaringType.schema[" $registerUnresolvedInversedField"](this);
     }
     setAssocaitionProperties(properties) {
-        var _a, _b, _c, _d;
+        var _a, _b, _c, _d, _e;
         if (!this.isAssociation) {
             throw new Error(`Cannot set assciation properties for '${this.fullName}' because its not asscoation field`);
         }
+        if (properties.deleteCascade === true && this.category !== "REFERENCE") {
+            throw new Error(`Cannot configure "deleteCascase" of "${this.fullName}" to be true, it isnot an many-to-one reference assocaition`);
+        }
         const defaultProperites = createDefaultAssociationProperties(this);
         this._associationProperties = {
-            contains: (_a = properties.contains) !== null && _a !== void 0 ? _a : defaultProperites.contains,
-            position: (_b = properties.position) !== null && _b !== void 0 ? _b : defaultProperites.position,
-            dependencies: (_c = properties.dependencies) !== null && _c !== void 0 ? _c : defaultProperites.dependencies,
-            range: (_d = properties.range) !== null && _d !== void 0 ? _d : defaultProperites.range
+            deleteCascade: (_a = properties.deleteCascade) !== null && _a !== void 0 ? _a : defaultProperites.deleteCascade,
+            contains: (_b = properties.contains) !== null && _b !== void 0 ? _b : defaultProperites.contains,
+            position: (_c = properties.position) !== null && _c !== void 0 ? _c : defaultProperites.position,
+            dependencies: (_d = properties.dependencies) !== null && _d !== void 0 ? _d : defaultProperites.dependencies,
+            range: (_e = properties.range) !== null && _e !== void 0 ? _e : defaultProperites.range
         };
         this._containingConfigured = properties.contains !== undefined;
         this._positionConfiguered = properties.position !== undefined;
@@ -148,6 +153,7 @@ function createDefaultAssociationProperties(field) {
         throw new Error(`Cannot create assocaition properties for the field ${field.fullName} because it's not association`);
     }
     return {
+        deleteCascade: false,
         contains: (_, variables) => {
             if (variables === undefined) {
                 return true;

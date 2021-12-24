@@ -71,7 +71,7 @@ class AbstractDataRequest {
         if (this._args.shape.toString() === args.shape.toString()) {
             return data;
         }
-        return util_1.reshapeObject(this._dataService.entityManager.schema, data, args.shape);
+        return (0, util_1.reshapeObject)(this._dataService.entityManager.schema, data, args.shape);
     }
 }
 exports.AbstractDataRequest = AbstractDataRequest;

@@ -5,6 +5,7 @@ export declare class FieldMetadata {
     readonly declaringType: TypeMetadata;
     readonly name: string;
     readonly isParameterized: boolean;
+    readonly isUndefinable: boolean;
     readonly category: FieldMetadataCategory;
     readonly fullName: string;
     private _inversed;
@@ -41,6 +42,7 @@ export interface FieldMetadataOptions {
     readonly mappedBy?: string;
 }
 export interface AssocaitionProperties {
+    readonly deleteCascade: boolean;
     readonly contains: (row: FlatRow<any>, variables?: any) => boolean | undefined;
     readonly position: (row: FlatRow<any>, rows: ReadonlyArray<FlatRow<any>>, paginationDirection?: "forward" | "backward", variables?: any) => PositionType | undefined;
     readonly dependencies: (variables?: any) => ReadonlyArray<string> | undefined;

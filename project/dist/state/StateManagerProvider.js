@@ -5,9 +5,9 @@ const jsx_runtime_1 = require("react/jsx-runtime");
 const react_1 = require("react");
 const StateManagerImpl_1 = require("./impl/StateManagerImpl");
 const Monitor_1 = require("./Monitor");
-exports.StateManagerProvider = react_1.memo(({ stateManager, releasePolicy, children }) => {
+exports.StateManagerProvider = (0, react_1.memo)(({ stateManager, releasePolicy, children }) => {
     var _a;
-    const externalStateManager = react_1.useContext(exports.stateContext);
+    const externalStateManager = (0, react_1.useContext)(exports.stateContext);
     if (externalStateManager !== undefined) {
         throw new Error(`<StateManagerProvider/> is not allowed to be nested`);
     }
@@ -15,17 +15,17 @@ exports.StateManagerProvider = react_1.memo(({ stateManager, releasePolicy, chil
     if (releasePolicy !== undefined) {
         finallyUsedStateManager.releasePolicy = releasePolicy;
     }
-    react_1.useEffect(() => {
+    (0, react_1.useEffect)(() => {
         window.__STATE_MANAGER__ = finallyUsedStateManager;
         setTimeout(() => {
-            Monitor_1.postStateManagerMessage(finallyUsedStateManager.id);
+            (0, Monitor_1.postStateManagerMessage)(finallyUsedStateManager.id);
         }, 0);
         return () => {
             window.__STATE_MANAGER__ = undefined;
-            Monitor_1.postStateManagerMessage(undefined);
+            (0, Monitor_1.postStateManagerMessage)(undefined);
             finallyUsedStateManager.dispose();
         };
     }, [finallyUsedStateManager.id]);
-    return (jsx_runtime_1.jsx(exports.stateContext.Provider, Object.assign({ value: finallyUsedStateManager }, { children: children }), void 0));
+    return ((0, jsx_runtime_1.jsx)(exports.stateContext.Provider, Object.assign({ value: finallyUsedStateManager }, { children: children }), void 0));
 });
-exports.stateContext = react_1.createContext(undefined);
+exports.stateContext = (0, react_1.createContext)(undefined);

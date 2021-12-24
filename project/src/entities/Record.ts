@@ -214,10 +214,20 @@ export class Record {
         this.scalarMap.clear();
         this.disposeAssocaitions(entityManager);
         this.backReferences.forEach((field, _, record) => {
-            record.associationMap.get(field)?.unlinkAll(
-                entityManager,
-                this
-            );
+            if (field.associationProperties?.deleteCascade === true) {
+                record.delete(entityManager);
+            } else if (field.isUndefinable || field.category !== "REFERENCE") {
+                record.associationMap.get(field)?.unlinkAll(
+                    entityManager,
+                    this
+                );
+            } else {
+                throw new Error(
+                    `Cannot delete the record of "${this.staticType.name}", ` +
+                    `the current object is referenced by other objects though the assocation "${field.fullName}"` +
+                    `but that field is neither undefinable nor configured by 'deleteCase = true'`
+                );
+            }
         });
         this.deleted = true;
         for (let record: Record | undefined = this.superRecord; record !== undefined; record = record.superRecord) {

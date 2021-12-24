@@ -12,7 +12,7 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
             return undefined;
         }
         return Object.assign(Object.assign({}, this.connection), { edges: this.connection.edges.map(edge => {
-                return Object.assign(Object.assign({}, edge), { node: Record_1.objectWithOnlyId(edge.node) });
+                return Object.assign(Object.assign({}, edge), { node: (0, Record_1.objectWithOnlyId)(edge.node) });
             }) });
     }
     get() {
@@ -100,7 +100,7 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
         }
         const edges = [...this.connection.edges];
         const indexMap = this.indexMap;
-        const linkMap = util_1.toRecordMap(targets);
+        const linkMap = (0, util_1.toRecordMap)(targets);
         const appender = new Appender(this);
         try {
             for (const record of linkMap.values()) {
@@ -128,7 +128,7 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
         }
         const edges = [...this.connection.edges];
         const indexMap = this.indexMap;
-        const unlinkMap = util_1.toRecordMap(targets);
+        const unlinkMap = (0, util_1.toRecordMap)(targets);
         for (const record of unlinkMap.values()) {
             const index = indexMap === null || indexMap === void 0 ? void 0 : indexMap.get(record.id);
             if (index !== undefined) {
@@ -158,7 +158,7 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
         const style = this.args.paginationInfo.style;
         if (style === "page") {
             let evictReason = undefined;
-            if (Monitor_1.isEvictLogEnabled()) {
+            if ((0, Monitor_1.isEvictLogEnabled)()) {
                 evictReason = "page-style-pagination";
             }
             throw { " $evict": true, " $evictReason": evictReason };
@@ -166,7 +166,7 @@ class AssociationConnectionValue extends AssocaitionValue_1.AssociationValue {
         const changeRange = (_b = this.association.field.associationProperties) === null || _b === void 0 ? void 0 : _b.range;
         if (changeRange === undefined) {
             let evictReason = undefined;
-            if (Monitor_1.isEvictLogEnabled()) {
+            if ((0, Monitor_1.isEvictLogEnabled)()) {
                 evictReason = "no-range";
             }
             throw { " $evict": true, " $evictReason": evictReason };
@@ -327,22 +327,22 @@ class Appender {
             this.position(newNode.toRow(), newEdges.map(e => e.node.toRow()), this.direction, this.filterVariables);
         if (pos === undefined) {
             let evictReason = undefined;
-            if (Monitor_1.isEvictLogEnabled()) {
+            if ((0, Monitor_1.isEvictLogEnabled)()) {
                 evictReason = "position-returns-undefined";
             }
             throw { " $evict": true, " $evictReason": evictReason };
         }
-        const index = util_1.positionToIndex(pos, newEdges.length);
+        const index = (0, util_1.positionToIndex)(pos, newEdges.length);
         if (index === 0 && this.direction === "backward" && this.hasMore !== false) {
             let evictReason = undefined;
-            if (Monitor_1.isEvictLogEnabled()) {
+            if ((0, Monitor_1.isEvictLogEnabled)()) {
                 evictReason = "backward-head";
             }
             throw { " $evict": true, " $evictReason": evictReason };
         }
         if (index === newEdges.length && this.direction === "forward" && this.hasMore !== false) {
             let evictReason = undefined;
-            if (Monitor_1.isEvictLogEnabled()) {
+            if ((0, Monitor_1.isEvictLogEnabled)()) {
                 evictReason = "forward-tail";
             }
             throw { " $evict": true, " $evictReason": evictReason };

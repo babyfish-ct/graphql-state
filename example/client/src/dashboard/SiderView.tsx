@@ -25,7 +25,7 @@ export const SiderView: FC = memo(() => {
         <Menu 
         mode="inline" 
         selectedKeys={selectedKeys}
-        defaultOpenKeys={["simpleState", "graphState", "graphqlServer", "httpOpitimizator"]}
+        defaultOpenKeys={["simpleState", "graphState", "localData", "graphqlServer", "httpOpitimizator"]}
         onClick={onMenuClick}>
             <Menu.SubMenu key="simpleState" title="Simple state">
                 <Menu.Item key="writableState">Writable State</Menu.Item>
@@ -35,7 +35,10 @@ export const SiderView: FC = memo(() => {
                 <Menu.Item key="scope">Scope</Menu.Item>
             </Menu.SubMenu>
             <Menu.SubMenu key="graphState" title="Graph state">
-                <Menu.Item key="localData" className={IMPORTANNT_CSS}>Local data</Menu.Item>
+                <Menu.SubMenu key="localData" title="Local Data">
+                    <Menu.Item key="general" className={IMPORTANNT_CSS}>General</Menu.Item>
+                    <Menu.Item key="deleteCascade" className={IMPORTANNT_CSS}>Delete cascade</Menu.Item>
+                </Menu.SubMenu>
                 <Menu.SubMenu key="graphqlServer" title="GraphQL server">
                     <Menu.Item key="unoptimized" className={IMPORTANNT_CSS}>Unoptimized</Menu.Item>
                     <Menu.Item key="optimized" className={IMPORTANNT_CSS}>Optimized</Menu.Item>

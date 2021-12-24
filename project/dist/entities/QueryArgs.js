@@ -37,7 +37,7 @@ class QueryArgs {
         if (pagination !== undefined) {
             const [connName, connAlias, paginationFetcher] = new PaginationFetcherProcessor_1.PaginationFetcherProcessor(pagination.schema).process(fetcher);
             const queryOptions = optionArgs.options;
-            return new QueryArgs(RuntimeShape_1.toRuntimeShape(fetcher, connName, (_a = optionArgs === null || optionArgs === void 0 ? void 0 : optionArgs.variableArgs) === null || _a === void 0 ? void 0 : _a.variables), paginationFetcher, {
+            return new QueryArgs((0, RuntimeShape_1.toRuntimeShape)(fetcher, connName, (_a = optionArgs === null || optionArgs === void 0 ? void 0 : optionArgs.variableArgs) === null || _a === void 0 ? void 0 : _a.variables), paginationFetcher, {
                 loadMode: pagination.loadMode,
                 windowId: queryOptions.windowId,
                 connName,
@@ -54,7 +54,7 @@ class QueryArgs {
                 throw new Error("undefined or null id not acceptable for object query whose object style is 'required'");
             }
         }
-        return new QueryArgs(RuntimeShape_1.toRuntimeShape(fetcher, undefined, (_e = optionArgs === null || optionArgs === void 0 ? void 0 : optionArgs.variableArgs) === null || _e === void 0 ? void 0 : _e.variables), fetcher, undefined, filteredIds, optionArgs);
+        return new QueryArgs((0, RuntimeShape_1.toRuntimeShape)(fetcher, undefined, (_e = optionArgs === null || optionArgs === void 0 ? void 0 : optionArgs.variableArgs) === null || _e === void 0 ? void 0 : _e.variables), fetcher, undefined, filteredIds, optionArgs);
     }
     newArgs(ids) {
         if (this.ids === undefined) {
@@ -74,7 +74,7 @@ class QueryArgs {
             variables.variables :
             variables;
         const optionArgs = Args_1.OptionArgs.of(Object.assign(Object.assign({}, (_a = this.optionArgs) === null || _a === void 0 ? void 0 : _a.options), { variables: Object.assign(Object.assign({}, (_c = (_b = this.optionArgs) === null || _b === void 0 ? void 0 : _b.options) === null || _c === void 0 ? void 0 : _c.variables), deltaVariables) }));
-        return new QueryArgs(RuntimeShape_1.toRuntimeShape(this.fetcher, (_d = this.pagination) === null || _d === void 0 ? void 0 : _d.connName, (_e = optionArgs === null || optionArgs === void 0 ? void 0 : optionArgs.variableArgs) === null || _e === void 0 ? void 0 : _e.variables), this.fetcher, this.pagination, this.ids, optionArgs);
+        return new QueryArgs((0, RuntimeShape_1.toRuntimeShape)(this.fetcher, (_d = this.pagination) === null || _d === void 0 ? void 0 : _d.connName, (_e = optionArgs === null || optionArgs === void 0 ? void 0 : optionArgs.variableArgs) === null || _e === void 0 ? void 0 : _e.variables), this.fetcher, this.pagination, this.ids, optionArgs);
     }
     withPaginationInfo() {
         if (this.pagination === undefined || this._hasPaginationInfo) {

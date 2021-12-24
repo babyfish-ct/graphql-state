@@ -5,8 +5,12 @@ export interface Configuration<TSchema extends SchemaType> {
     bidirectionalAssociation<TTypeName extends keyof TSchema["entities"] & string, TFieldName extends keyof TSchema["entities"][TTypeName][" $associationTypes"] & string, TOppositeFieldName extends keyof TSchema["entities"][TSchema["entities"][TTypeName][" $associationTypes"][TFieldName]][" $associationTypes"] & string>(typeName: TTypeName, fieldName: TFieldName, oppositeFieldName: TOppositeFieldName): this;
     rootAssociationProperties<TFieldName extends keyof TSchema["query"][" $associationArgs"] & string>(fieldName: TFieldName, properties: ParameterizedAssociationProperties<TSchema["query"][" $associationTargetTypes"][TFieldName], TSchema["query"][" $associationArgs"][TFieldName]>): this;
     rootAssociationProperties<TFieldName extends Exclude<keyof TSchema["query"][" $associationTypes"], keyof TSchema["query"][" $associationArgs"]> & string>(fieldName: TFieldName, properties: UnparameterizedAssociationProperties<TSchema["query"][" $associationTargetTypes"][TFieldName]>): this;
-    associationProperties<TTypeName extends keyof TSchema["entities"] & string, TFieldName extends keyof TSchema["entities"][TTypeName][" $associationArgs"] & string>(typeName: TTypeName, fieldName: TFieldName, properties: ParameterizedAssociationProperties<TSchema["entities"][TTypeName][" $associationTargetTypes"][TFieldName], TSchema["entities"][TTypeName][" $associationArgs"][TFieldName]>): this;
-    associationProperties<TTypeName extends keyof TSchema["entities"] & string, TFieldName extends Exclude<keyof TSchema["entities"][TTypeName][" $associationTypes"], keyof TSchema["entities"][TTypeName][" $associationArgs"]> & string>(typeName: TTypeName, fieldName: TFieldName, properties: UnparameterizedAssociationProperties<TSchema["entities"][TTypeName][" $associationTargetTypes"][TFieldName]>): this;
+    associationProperties<TTypeName extends keyof TSchema["entities"] & string, TFieldName extends keyof TSchema["entities"][TTypeName][" $associationArgs"] & string>(typeName: TTypeName, fieldName: TFieldName, properties: ParameterizedAssociationProperties<TSchema["entities"][TTypeName][" $associationTargetTypes"][TFieldName], TSchema["entities"][TTypeName][" $associationArgs"][TFieldName]> & {
+        readonly deleteCascade?: boolean;
+    }): this;
+    associationProperties<TTypeName extends keyof TSchema["entities"] & string, TFieldName extends Exclude<keyof TSchema["entities"][TTypeName][" $associationTypes"], keyof TSchema["entities"][TTypeName][" $associationArgs"]> & string>(typeName: TTypeName, fieldName: TFieldName, properties: UnparameterizedAssociationProperties<TSchema["entities"][TTypeName][" $associationTargetTypes"][TFieldName]> & {
+        readonly deleteCascade?: boolean;
+    }): this;
     network(network: Network): this;
     networkBuilder(networkBuilder: NetworkBuilder): this;
     buildStateManager(): StateManager<TSchema>;

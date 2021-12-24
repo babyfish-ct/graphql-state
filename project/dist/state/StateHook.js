@@ -6,7 +6,7 @@ const StateManagerProvider_1 = require("./StateManagerProvider");
 const Holder_1 = require("./impl/Holder");
 const StateScope_1 = require("./StateScope");
 function useStateManager() {
-    const stateManager = react_1.useContext(StateManagerProvider_1.stateContext);
+    const stateManager = (0, react_1.useContext)(StateManagerProvider_1.stateContext);
     if (stateManager === undefined) {
         throw new Error("'useStateManager' cannoly be used under <StateManagerProvider/>");
     }
@@ -105,8 +105,8 @@ function usePaginationQuery(fetcher, options) {
 exports.usePaginationQuery = usePaginationQuery;
 function useMutation(fetcher, options) {
     const stateManager = useStateManager();
-    const [, setMutationResultVersion] = react_1.useState(0);
-    const [holder] = react_1.useState(() => new Holder_1.MutationResultHolder(stateManager, setMutationResultVersion));
+    const [, setMutationResultVersion] = (0, react_1.useState)(0);
+    const [holder] = (0, react_1.useState)(() => new Holder_1.MutationResultHolder(stateManager, setMutationResultVersion));
     holder.set(fetcher, options);
     const result = holder.get();
     return {
@@ -177,13 +177,13 @@ class ManagedObjectHooksImpl {
 }
 function useInternalStateValueHolder(state, options) {
     const stateManager = useStateManager();
-    const [, setStateValueVersion] = react_1.useState(0);
-    const scopePath = StateScope_1.useScopePath();
-    const stateValueHolder = react_1.useMemo(() => {
+    const [, setStateValueVersion] = (0, react_1.useState)(0);
+    const scopePath = (0, StateScope_1.useScopePath)();
+    const stateValueHolder = (0, react_1.useMemo)(() => {
         return new Holder_1.StateValueHolder(stateManager, scopePath, setStateValueVersion);
     }, [stateManager, scopePath, setStateValueVersion]);
     stateValueHolder.set(state, scopePath, options);
-    react_1.useEffect(() => {
+    (0, react_1.useEffect)(() => {
         return () => {
             stateValueHolder.release();
         };
@@ -192,12 +192,12 @@ function useInternalStateValueHolder(state, options) {
 }
 function useInternalQueryResultHolder(fetcher, windowId, ids, options) {
     const stateManager = useStateManager();
-    const [, setQueryResultVersion] = react_1.useState(0);
-    const queryResultHolder = react_1.useMemo(() => {
+    const [, setQueryResultVersion] = (0, react_1.useState)(0);
+    const queryResultHolder = (0, react_1.useMemo)(() => {
         return new Holder_1.QueryResultHolder(stateManager, setQueryResultVersion);
     }, [stateManager, setQueryResultVersion]);
     queryResultHolder.set(fetcher, windowId, ids, options);
-    react_1.useEffect(() => {
+    (0, react_1.useEffect)(() => {
         return () => {
             queryResultHolder.release();
         };

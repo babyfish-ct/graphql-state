@@ -144,8 +144,18 @@ class Record {
         this.scalarMap.clear();
         this.disposeAssocaitions(entityManager);
         this.backReferences.forEach((field, _, record) => {
-            var _a;
-            (_a = record.associationMap.get(field)) === null || _a === void 0 ? void 0 : _a.unlinkAll(entityManager, this);
+            var _a, _b;
+            if (((_a = field.associationProperties) === null || _a === void 0 ? void 0 : _a.deleteCascade) === true) {
+                record.delete(entityManager);
+            }
+            else if (field.isUndefinable || field.category !== "REFERENCE") {
+                (_b = record.associationMap.get(field)) === null || _b === void 0 ? void 0 : _b.unlinkAll(entityManager, this);
+            }
+            else {
+                throw new Error(`Cannot delete the record of "${this.staticType.name}", ` +
+                    `the current object is referenced by other objects though the assocation "${field.fullName}"` +
+                    `but that field is neither undefinable nor configured by 'deleteCase = true'`);
+            }
         });
         this.deleted = true;
         for (let record = this.superRecord; record !== undefined; record = record.superRecord) {
@@ -273,7 +283,7 @@ class Record {
             for (const [parameter, value] of subMap) {
                 arr.push({ parameter, value });
             }
-            arr.sort((a, b) => util_1.compare(a, b, "parameter"));
+            arr.sort((a, b) => (0, util_1.compare)(a, b, "parameter"));
             fields.push({
                 name: k,
                 parameterizedValues: arr
@@ -282,7 +292,7 @@ class Record {
         this.associationMap.forEachValue(association => {
             fields.push(association.monitor());
         });
-        fields.sort((a, b) => util_1.compare(a, b, "name"));
+        fields.sort((a, b) => (0, util_1.compare)(a, b, "name"));
         const obj = {
             id: this.id,
             runtimeTypeName: this.runtimeType.name,

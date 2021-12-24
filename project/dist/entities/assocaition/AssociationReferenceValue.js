@@ -5,7 +5,7 @@ const Record_1 = require("../Record");
 const AssocaitionValue_1 = require("./AssocaitionValue");
 class AssociationReferenceValue extends AssocaitionValue_1.AssociationValue {
     getAsObject() {
-        return Record_1.objectWithOnlyId(this.referfence);
+        return (0, Record_1.objectWithOnlyId)(this.referfence);
     }
     get() {
         return this.referfence;
@@ -21,7 +21,7 @@ class AssociationReferenceValue extends AssocaitionValue_1.AssociationValue {
             this.releaseOldReference(entityManager, oldReference);
             this.referfence = reference;
             this.retainNewReference(entityManager, reference);
-            entityManager.modificationContext.set(this.association.record, association.field.name, this.args, Record_1.objectWithOnlyId(oldReference), Record_1.objectWithOnlyId(reference));
+            entityManager.modificationContext.set(this.association.record, association.field.name, this.args, (0, Record_1.objectWithOnlyId)(oldReference), (0, Record_1.objectWithOnlyId)(reference));
         }
     }
     link(entityManager, targets) {
@@ -34,7 +34,7 @@ class AssociationReferenceValue extends AssocaitionValue_1.AssociationValue {
         }
         const targetRecord = targets.length === 1 ? targets[0] : undefined;
         if (((_a = this.referfence) === null || _a === void 0 ? void 0 : _a.id) !== (targetRecord === null || targetRecord === void 0 ? void 0 : targetRecord.id)) {
-            this.association.set(entityManager, this.args, Record_1.objectWithOnlyId(targetRecord));
+            this.association.set(entityManager, this.args, (0, Record_1.objectWithOnlyId)(targetRecord));
         }
     }
     unlink(entityManager, targets) {

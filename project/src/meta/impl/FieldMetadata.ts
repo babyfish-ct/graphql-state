@@ -8,6 +8,8 @@ export class FieldMetadata {
 
     readonly isParameterized: boolean;
 
+    readonly isUndefinable: boolean;
+
     readonly category: FieldMetadataCategory;
 
     readonly fullName: string;
@@ -36,6 +38,7 @@ export class FieldMetadata {
     ) {
         this.name = field.name;
         this.isParameterized = field.argGraphQLTypeMap.size !== 0;
+        this.isUndefinable = field.isUndefinable;
         this.category = field.category;
         this.fullName = `${declaringType.name}.${field.name}`;
         this._connectionType = field.connectionTypeName;
@@ -142,8 +145,12 @@ export class FieldMetadata {
         if (!this.isAssociation) {
             throw new Error(`Cannot set assciation properties for '${this.fullName}' because its not asscoation field`);
         }
+        if (properties.deleteCascade === true && this.category !== "REFERENCE") {
+            throw new Error(`Cannot configure "deleteCascase" of "${this.fullName}" to be true, it isnot an many-to-one reference assocaition`);
+        }
         const defaultProperites = createDefaultAssociationProperties(this);
         this._associationProperties = {
+            deleteCascade: properties.deleteCascade ?? defaultProperites.deleteCascade,
             contains: properties.contains ?? defaultProperites.contains,
             position: properties.position ?? defaultProperites.position,
             dependencies: properties.dependencies ?? defaultProperites.dependencies,
@@ -191,6 +198,8 @@ export interface FieldMetadataOptions {
 
 export interface AssocaitionProperties {
 
+    readonly deleteCascade: boolean;
+
     readonly contains: (
         row: FlatRow<any>,
         variables?: any
@@ -223,6 +232,7 @@ function createDefaultAssociationProperties(field: FieldMetadata): AssocaitionPr
         throw new Error(`Cannot create assocaition properties for the field ${field.fullName} because it's not association`);
     }
     return {
+        deleteCascade: false,
         contains: (
             _: FlatRow<any>,
             variables?: any

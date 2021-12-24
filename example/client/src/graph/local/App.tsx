@@ -5,9 +5,11 @@ import { BookStoreList } from "./store/BookStoreList";
 import { AuthorList } from "./author/AuthorList";
 import { createStateManager } from "./Environment";
 
-export const App: FC = memo(() => {
+export const App: FC<{
+    readonly deleteCascade: boolean
+}> = memo(({deleteCascade}) => {
     
-    const stateManager = createStateManager();
+    const stateManager = createStateManager(deleteCascade);
 
     return (
         <StateManagerProvider stateManager={stateManager}>

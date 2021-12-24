@@ -216,7 +216,7 @@ class Association {
         }
     }
     get unfilterableReason() {
-        if (Monitor_1.isEvictLogEnabled()) {
+        if ((0, Monitor_1.isEvictLogEnabled)()) {
             if (this.field.isContainingConfigured) {
                 return "contains-returns-undefined";
             }
@@ -265,7 +265,7 @@ class Association {
                     value: this.convertMonitorValue(v.get())
                 });
             });
-            arr.sort((a, b) => util_1.compare(a, b, "parameter"));
+            arr.sort((a, b) => (0, util_1.compare)(a, b, "parameter"));
             parameterizedValues = arr;
         }
         else {

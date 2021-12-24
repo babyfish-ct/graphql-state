@@ -16,12 +16,12 @@ class StateInstance {
         const stateValue = this.valueMap.computeIfAbsent(args === null || args === void 0 ? void 0 : args.key, () => {
             const disposer = () => {
                 this.valueMap.remove(args === null || args === void 0 ? void 0 : args.key);
-                Monitor_1.postSimpleStateMessage(value, "delete");
+                (0, Monitor_1.postSimpleStateMessage)(value, "delete");
             };
             const value = this.state[" $stateType"] === "WRITABLE" ?
                 new WritableStateValue_1.WritableStateValue(this, args, disposer) :
                 new ComputedStateValue_1.ComputedStateValue(this, args, disposer);
-            Monitor_1.postSimpleStateMessage(value, "insert");
+            (0, Monitor_1.postSimpleStateMessage)(value, "insert");
             return value;
         });
         return stateValue.retain();
@@ -58,7 +58,7 @@ class StateInstance {
                     value: loadable.data
                 });
             });
-            parameterizedValues.sort((a, b) => util_1.compare(a, b, "parameter"));
+            parameterizedValues.sort((a, b) => (0, util_1.compare)(a, b, "parameter"));
             return {
                 name: this.state[" $name"],
                 parameterizedValues
