@@ -4,6 +4,8 @@
 
 #### 语言: [英文](https://github.com/babyfish-ct/graphql-state) | 中文
 
+## [视频展示](https://www.bilibili.com/video/BV1EP4y1H7JP/)
+
 ## 项目描述
 UI状态的本质是什么?
 

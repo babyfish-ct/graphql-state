@@ -3,6 +3,9 @@
 
 #### Language: English | [Chinese](./README_zh_CN.md)
 
+## Video introduction
+[https://www.youtube.com/watch?v=05Xx_t8GC18](https://www.youtube.com/watch?v=05Xx_t8GC18)
+
 ## Project description
 
 What is the essence of UI state?
