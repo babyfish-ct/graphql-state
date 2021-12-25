@@ -5,7 +5,7 @@
 
 ## Video introduction
 [https://www.youtube.com/watch?v=05Xx_t8GC18](https://www.youtube.com/watch?v=05Xx_t8GC18)
-*Sorry, English is not good, so I use AI to synthesize speech*
+*(Sorry, English is not good, so I use AI to synthesize speech)*
 
 ## Project description
 
