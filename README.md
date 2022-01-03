@@ -36,4 +36,4 @@ The project name is "graphql-state". Don't worry, it's **"GraphQL style, but not
 In order to help developers debug, this framework supports [chrome extension](https://chrome.google.com/webstore/detail/graphql-state/bhpeanmgkcpkpnkpmemoomlfflmaaddo).
 
 ## Dependencies
-[graphql-ts-client](https://github.com/babyfish-ct/babyfish), TypeScript DSL for GraphQL
+[graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client), TypeScript DSL for GraphQL
