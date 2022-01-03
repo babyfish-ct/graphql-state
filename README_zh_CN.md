@@ -31,4 +31,8 @@ UI状态的本质是什么?
 
 ## Chrome扩展
 
-为了帮助开发人员调试，本框架支持[chrome扩展](https://chrome.google.com/webstore/detail/graphql-state/bhpeanmgkcpkpnkpmemoomlfflmaaddo)。
+为了帮助开发人员调试，本框架支持[chrome扩展](https://chrome.google.com/webstore/detail/graphql-state/bhpeanmgkcpkpnkpmemoomlfflmaaddo)
+
+
+## 依赖
+[graphql-ts-client](https://github.com/babyfish-ct/graphql-ts-client), 针对GraphQL的TypeScript DSL
