@@ -35,7 +35,7 @@ export function toRuntimeShape0(
     variables?: object
 ): RuntimeShape {
     
-    const fieldNames = Array.from(fetcher.fieldMap.keys());
+    const fieldNames = Array.from(fetcher.fieldMap.values()).map(field => field.name);
     fieldNames.sort();
 
     const runtimeShapeFieldMap = new Map<string, RuntimeShapeField>();
@@ -44,7 +44,7 @@ export function toRuntimeShape0(
         addField(
             parentPath, 
             fieldName, 
-            fetcher.fieldMap.get(fieldName)!, 
+            fetcher.findFieldByName(fieldName)!, 
             runtimeShapeFieldMap, 
             paginationConnName,
             variables
@@ -67,10 +67,10 @@ function addField(
     if (fieldName.startsWith("...")) {
         if (field.childFetchers !== undefined) {
             for (const childFetcher of field.childFetchers) {
-                for (const [subFieldName, subField] of childFetcher.fieldMap) {
+                for (const subField of childFetcher.fieldMap.values()) {
                     addField(
                         parentPath, 
-                        subFieldName, 
+                        subField.name, 
                         subField, 
                         runtimeShapeFieldMap, 
                         undefined,

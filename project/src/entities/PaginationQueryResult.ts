@@ -25,10 +25,13 @@ export class PaginationQueryResult extends QueryResult {
         this._bindedLoadPrevious = this.loadPrevious.bind(this);
         
         const queryFetcher = this.entityManager.schema.fetcher("Query");
-        const connField = this.queryArgs.fetcher.fieldMap.get(this.queryArgs.pagination!.connName)!;
+        const connField = this.queryArgs.fetcher.findFieldByName(this.queryArgs.pagination!.connName);
+        if (connField === undefined) {
+            throw new Error(`No connection field "${this.queryArgs.pagination!.connName}" is declared in the query fetcher`);
+        }
         const loadMoreFetcher = (queryFetcher as any)["addField"](
             this.queryArgs.pagination!.connName,
-            connField?.args,
+            connField.args,
             connField.childFetchers![0],
             connField.fieldOptionsValue
         );

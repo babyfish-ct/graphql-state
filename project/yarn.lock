@@ -1297,10 +1297,10 @@ graceful-fs@^4.2.4:
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.8.tgz#e412b8d33f5e006593cbd3cee6df9f2cebbe802a"
   integrity sha512-qkIilPUYcNhJpd33n0GBXTB1MMPp14TxEsEs0pTrsSVucApsYzW5V+Q8Qxhik6KU3evy+qkAAowTByymK0avdg==
 
-graphql-ts-client-api@^3.0.9:
-  version "3.0.9"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.0.9.tgz#f944cfd4c0e52ac1e33b525947907c26f9eee5ce"
-  integrity sha512-jV/5Ego6fxHmqSNmYS0vZt/A42s0obW58VZPPDZ8wS19ogAecnpZrDyvrj+eeaFE4/SFgwbtDgknWn8VZ5jHIg==
+graphql-ts-client-api@^3.1.8:
+  version "3.1.8"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.1.8.tgz#493d39c3101569abf39680c2d3274343b3168a48"
+  integrity sha512-Dct05eoymzVLK7mScaWw8SD2cmHV5leOUOqiWmQw2IhjpHqsLSfuwnhPyGMv/QRzH1QO4ZQ7FbqUMzVR5/SZOA==
   dependencies:
     ts-md5 "^1.2.9"
 
@@ -2568,9 +2568,9 @@ ts-jest@^27.0.5:
     yargs-parser "20.x"
 
 ts-md5@^1.2.9:
-  version "1.2.9"
-  resolved "https://registry.yarnpkg.com/ts-md5/-/ts-md5-1.2.9.tgz#22c9fd2baafdfdebee1068ff4d2dc215ff51df77"
-  integrity sha512-/Efr7ZfGf8P+d9HXh0PLQD1CDipqD8j9apCFG96pODDoEaFLxXpV4En6tAc6y3fWyfhFGrqtNBRBS+eLVIB2uQ==
+  version "1.2.11"
+  resolved "https://registry.yarnpkg.com/ts-md5/-/ts-md5-1.2.11.tgz#0bbdf884eecf7da3952fe8671a109d7e55d322c6"
+  integrity sha512-vAwy9rEuRE6a8xa1MavIVkLFyyU0ydk4CLMFA5vOVccmQKLOuGb/BHm3oEN7XHf2FoqS+z0pSvhaad/ombd1Vg==
 
 type-check@~0.3.2:
   version "0.3.2"

@@ -55,20 +55,20 @@ class InternalComputedContext {
         }
     }
     getSelf(options) {
-        var _a, _b;
-        const args = Args_1.VariableArgs.of((_a = options) === null || _a === void 0 ? void 0 : _a.variables);
-        if (((_b = this.currentStateValue.args) === null || _b === void 0 ? void 0 : _b.key) === (args === null || args === void 0 ? void 0 : args.key)) {
+        var _a;
+        const args = Args_1.VariableArgs.of(options === null || options === void 0 ? void 0 : options.variables);
+        if (((_a = this.currentStateValue.args) === null || _a === void 0 ? void 0 : _a.key) === (args === null || args === void 0 ? void 0 : args.key)) {
             throw new Error("Cannot get the current state with same variables in the computing implementation, please support another variables");
         }
         return this.get(this.currentStateValue.stateInstance.state, options);
     }
     get(state, options) {
-        var _a, _b;
+        var _a;
         if (this.closed) {
             throw new Error("ComputedContext has been closed");
         }
-        const args = Args_1.VariableArgs.of((_a = options) === null || _a === void 0 ? void 0 : _a.variables);
-        const stateInstance = this.scope.instance(state, (_b = options === null || options === void 0 ? void 0 : options.scope) !== null && _b !== void 0 ? _b : "auto");
+        const args = Args_1.VariableArgs.of(options === null || options === void 0 ? void 0 : options.variables);
+        const stateInstance = this.scope.instance(state, (_a = options === null || options === void 0 ? void 0 : options.scope) !== null && _a !== void 0 ? _a : "auto");
         const stateValue = stateInstance.retain(args);
         let result;
         try {

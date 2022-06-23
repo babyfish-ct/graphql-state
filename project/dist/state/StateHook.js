@@ -14,7 +14,6 @@ function useStateManager() {
 }
 exports.useStateManager = useStateManager;
 function useStateValue(state, options) {
-    var _a;
     const stateValueHolder = useInternalStateValueHolder(state, options);
     try {
         const stateValue = stateValueHolder.get();
@@ -22,7 +21,7 @@ function useStateValue(state, options) {
             return stateValue.result;
         }
         const loadable = stateValue.loadable;
-        const asyncStyle = (_a = options) === null || _a === void 0 ? void 0 : _a.asyncStyle;
+        const asyncStyle = options === null || options === void 0 ? void 0 : options.asyncStyle;
         if (asyncStyle === "async-object") {
             return loadable;
         }

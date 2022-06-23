@@ -1,5 +1,7 @@
 import type { AcceptableVariables, UnresolvedVariables, FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
-import { ObjectFetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
+import { ENUM_INPUT_METADATA } from '../EnumInputMetadata';
+import type { ObjectFetcher } from 'graphql-ts-client-api';
+import { createFetcher, createFetchableType } from 'graphql-ts-client-api';
 import type { WithTypeName, ImplementationType } from '../CommonTypes';
 import { any$ } from './AnyFetcher';
 
@@ -82,7 +84,7 @@ export interface AuthorFetcher<T extends object, TVariables extends object> exte
     >(
         child: ObjectFetcher<'Book', X, XVariables>
     ): AuthorFetcher<
-        T & {readonly "books": readonly X[]}, 
+        T & {readonly "books": ReadonlyArray<X>}, 
         TVariables & XVariables & AuthorArgs["books"]
     >;
 
@@ -94,7 +96,7 @@ export interface AuthorFetcher<T extends object, TVariables extends object> exte
         args: XArgs, 
         child: ObjectFetcher<'Book', X, XVariables>
     ): AuthorFetcher<
-        T & {readonly "books": readonly X[]}, 
+        T & {readonly "books": ReadonlyArray<X>}, 
         TVariables & XVariables & UnresolvedVariables<XArgs, AuthorArgs['books']>
     >;
 
@@ -112,8 +114,8 @@ export interface AuthorFetcher<T extends object, TVariables extends object> exte
     ): AuthorFetcher<
         T & (
             XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-                {readonly [key in XAlias]?: readonly X[]} : 
-                {readonly [key in XAlias]: readonly X[]}
+                {readonly [key in XAlias]?: ReadonlyArray<X>} : 
+                {readonly [key in XAlias]: ReadonlyArray<X>}
         ), 
         TVariables & XVariables & AuthorArgs["books"] & XDirectiveVariables
     >;
@@ -134,8 +136,8 @@ export interface AuthorFetcher<T extends object, TVariables extends object> exte
     ): AuthorFetcher<
         T & (
             XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-                {readonly [key in XAlias]?: readonly X[]} : 
-                {readonly [key in XAlias]: readonly X[]}
+                {readonly [key in XAlias]?: ReadonlyArray<X>} : 
+                {readonly [key in XAlias]: ReadonlyArray<X>}
         ), 
         TVariables & XVariables & UnresolvedVariables<XArgs, AuthorArgs['books']> & XDirectiveVariables
     >;
@@ -157,6 +159,7 @@ export const author$: AuthorFetcher<{}, {}> =
                 }
             ]
         ), 
+        ENUM_INPUT_METADATA, 
         undefined
     )
 ;
@@ -176,7 +179,7 @@ export interface AuthorArgs {
 
 export interface AuthorFlatType {
     readonly name: string;
-    readonly books: readonly {
+    readonly books: ReadonlyArray<{
         readonly id: string
-    }[];
+    }>;
 }

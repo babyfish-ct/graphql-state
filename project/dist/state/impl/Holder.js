@@ -18,7 +18,7 @@ class StateValueHolder {
         return value;
     }
     set(state, scopePath, options) {
-        var _a, _b, _c, _d, _e, _f;
+        var _a, _b, _c, _d, _e;
         const serializableOptions = this.serializableOptions(options);
         const optionArgs = Args_1.OptionArgs.of(serializableOptions);
         if (((_b = (_a = this.stateValue) === null || _a === void 0 ? void 0 : _a.stateInstance) === null || _b === void 0 ? void 0 : _b.state[" $name"]) === state[" $name"] &&
@@ -41,7 +41,7 @@ class StateValueHolder {
             .stateManager
             .scope(scopePath)
             .instance(state, (_e = serializableOptions === null || serializableOptions === void 0 ? void 0 : serializableOptions.scope) !== null && _e !== void 0 ? _e : "auto")
-            .retain(Args_1.VariableArgs.of((_f = serializableOptions) === null || _f === void 0 ? void 0 : _f.variables));
+            .retain(Args_1.VariableArgs.of(serializableOptions === null || serializableOptions === void 0 ? void 0 : serializableOptions.variables));
         this.stateValueChangeListener = (e) => {
             if (e.stateValue === this.stateValue) {
                 const deferred = this.deferred;

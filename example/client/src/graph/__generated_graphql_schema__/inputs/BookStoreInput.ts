@@ -5,5 +5,5 @@
 export type BookStoreInput = {
     readonly id: string;
     readonly name: string;
-    readonly bookIds: readonly string[];
+    readonly bookIds: ReadonlyArray<string>;
 }

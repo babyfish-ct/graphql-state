@@ -16,14 +16,15 @@ class PaginationFetcherProcessor {
         const fetchableFieldMap = fetcher.fetchableType.fields;
         let connName = undefined;
         let connField = undefined;
-        for (const [name, field] of fetcher.fieldMap) {
-            const fetchableField = fetchableFieldMap.get(name);
+        for (const field of fetcher.fieldMap.values()) {
+            const fieldName = field.name;
+            const fetchableField = fetchableFieldMap.get(fieldName);
             if ((fetchableField === null || fetchableField === void 0 ? void 0 : fetchableField.category) === "CONNECTION") {
                 if (connName !== undefined) {
                     throw new Error(`Cannot parse pagiation query because there are two root connection fields of the fetcher: ` +
-                        `"${connName}" and "${name}"`);
+                        `"${connName}" and "${fieldName}"`);
                 }
-                connName = name;
+                connName = fieldName;
                 connField = field;
             }
         }
@@ -47,7 +48,6 @@ class PaginationFetcherProcessor {
         return fetcher["addField"](connName, Object.assign(Object.assign({}, connField.args), { first: graphql_ts_client_api_1.ParameterRef.of(exports.GRAPHQL_STATE_FIRST), after: graphql_ts_client_api_1.ParameterRef.of(exports.GRAPHQL_STATE_AFTER), last: graphql_ts_client_api_1.ParameterRef.of(exports.GRAPHQL_STATE_LAST), before: graphql_ts_client_api_1.ParameterRef.of(exports.GRAPHQL_STATE_BEFORE) }), this.adjustPageInfo(connField.childFetchers[0]), connField.fieldOptionsValue);
     }
     adjustPageInfo(connFetcher) {
-        var _a;
         const pageInfoFetchableField = connFetcher.fetchableType.fields.get("pageInfo");
         if (pageInfoFetchableField === undefined) {
             throw new Error(`No field "pageInfo" declared in "${connFetcher.fetchableType.name}"`);
@@ -77,7 +77,11 @@ class PaginationFetcherProcessor {
                 existingPageInfoFetcher = existingPageInfoFetcher[argName];
             }
         }
-        return connFetcher["addField"]("pageInfo", undefined, existingPageInfoFetcher, (_a = connFetcher.fieldMap.get("pageInfo")) === null || _a === void 0 ? void 0 : _a.fieldOptionsValue);
+        const pageInfoFields = connFetcher.findFieldsByName("pageInfo");
+        if (pageInfoFields.length > 1) {
+            throw new Error(`There field "$pageInfo" has been referenced twice, this is not allowed"`);
+        }
+        return connFetcher["addField"]("pageInfo", undefined, existingPageInfoFetcher, pageInfoFields.length === 0 ? undefined : pageInfoFields[0]);
     }
 }
 exports.PaginationFetcherProcessor = PaginationFetcherProcessor;

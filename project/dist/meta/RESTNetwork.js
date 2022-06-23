@@ -60,10 +60,10 @@ class RESTNetworkBuilder {
     }
     scalar(typeName, fieldName, loader) {
         if (typeof loader === "function") {
-            this._userLoaderMap.set(`${typeName}.${fieldName}`, { loader });
+            this._userLoaderMap.set(`${typeName.toString()}.${fieldName.toString()}`, { loader });
         }
         else {
-            this._userLoaderMap.set(`${typeName}.${fieldName}`, {
+            this._userLoaderMap.set(`${typeName.toString()}.${fieldName.toString()}`, {
                 batchLoader: loader.batchLoader,
                 batchSize: loader.batchSize
             });
@@ -203,8 +203,9 @@ class RESTLoader {
         }
         const fetchableType = fetcher.fetchableType;
         const existsNames = new Set(Object.keys(target));
-        for (const [name, fetcherField] of fetcher.fieldMap) {
-            if (name.startsWith("...")) {
+        for (const fetcherField of fetcher.fieldMap.values()) {
+            const fetcherFieldName = fetcherField.name;
+            if (fetcherField.name.startsWith("...")) {
                 if (fetcherField.childFetchers !== undefined) {
                     for (const childFetcher of fetcherField.childFetchers) {
                         this.add(target, childFetcher);
@@ -212,35 +213,35 @@ class RESTLoader {
                 }
                 continue;
             }
-            const field = type.fieldMap.get(name);
+            const field = type.fieldMap.get(fetcherFieldName);
             if (field === undefined) {
-                throw new Error(`Illegal field '${fetcher.fetchableType.name}.${name}'`);
+                throw new Error(`Illegal field '${fetcher.fetchableType.name}.${fetcherFieldName}'`);
             }
             if (field.category === "ID") {
                 continue;
             }
             const alias = (_a = fetcherField.fieldOptionsValue) === null || _a === void 0 ? void 0 : _a.alias;
-            if (alias !== undefined && alias !== name && fetchableType.name !== "Query") {
+            if (alias !== undefined && alias !== fetcherFieldName && fetchableType.name !== "Query") {
                 throw new Error(`In REST query, alias can only be used on field of 'Query' object, but alias is used on '${field.fullName}'`);
             }
             const childFetcher = fetcherField.childFetchers === undefined ? undefined : fetcherField.childFetchers[0];
-            const existsValue = target[alias !== null && alias !== void 0 ? alias : name];
+            const existsValue = target[alias !== null && alias !== void 0 ? alias : fetcherFieldName];
             if (existsValue !== undefined) {
                 if (childFetcher !== undefined) {
                     this.add(existsValue, childFetcher);
                 }
                 continue;
             }
-            if (existsNames.has(alias !== null && alias !== void 0 ? alias : name)) {
+            if (existsNames.has(alias !== null && alias !== void 0 ? alias : fetcherFieldName)) {
                 continue;
             }
             const resolvedArgs = this.resolveArgs(fetcherField);
-            const dataLoaderKey = dataLoaderKeyOf(field.declaringType.name, name, alias, resolvedArgs);
+            const dataLoaderKey = dataLoaderKeyOf(field.declaringType.name, fetcherFieldName, alias, resolvedArgs);
             let dataLoader = this.dataLoaderMap.get(dataLoaderKey);
             if (dataLoader === undefined) {
-                const userLoader = this.userLoaderMap.get(`${field.declaringType.name}.${name}`);
+                const userLoader = this.userLoaderMap.get(`${field.declaringType.name}.${field.name}`);
                 if (userLoader === undefined) {
-                    throw new Error(`No loader configuration for ${field.declaringType.name}.${name}`);
+                    throw new Error(`No loader configuration for ${field.declaringType.name}.${field.name}`);
                 }
                 dataLoader = {
                     field,
@@ -260,7 +261,7 @@ class RESTLoader {
             }
             else {
                 const idField = type.idField;
-                const idFetcherField = fetcher.fieldMap.get(idField.name);
+                const idFetcherField = fetcher.findFieldByName(idField.name);
                 if (idFetcherField === undefined) {
                     throw new Error(`The id field of "${fetchableType.name}" must be fetched`);
                 }

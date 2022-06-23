@@ -6,7 +6,7 @@ const react_1 = require("react");
 exports.StateScope = (0, react_1.memo)(({ name, children }) => {
     var _a;
     const path = (_a = (0, react_1.useContext)(pathContext)) !== null && _a !== void 0 ? _a : "";
-    return ((0, jsx_runtime_1.jsx)(pathContext.Provider, Object.assign({ value: `${path}/${name}` }, { children: children }), void 0));
+    return ((0, jsx_runtime_1.jsx)(pathContext.Provider, Object.assign({ value: `${path}/${name}` }, { children: children })));
 });
 function useScopePath() {
     var _a;

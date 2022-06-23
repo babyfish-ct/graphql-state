@@ -26,6 +26,6 @@ exports.StateManagerProvider = (0, react_1.memo)(({ stateManager, releasePolicy,
             finallyUsedStateManager.dispose();
         };
     }, [finallyUsedStateManager.id]);
-    return ((0, jsx_runtime_1.jsx)(exports.stateContext.Provider, Object.assign({ value: finallyUsedStateManager }, { children: children }), void 0));
+    return ((0, jsx_runtime_1.jsx)(exports.stateContext.Provider, Object.assign({ value: finallyUsedStateManager }, { children: children })));
 });
 exports.stateContext = (0, react_1.createContext)(undefined);

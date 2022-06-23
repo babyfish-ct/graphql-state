@@ -20,8 +20,11 @@ class PaginationQueryResult extends QueryResult_1.QueryResult {
         this._bindedLoadNext = this.loadNext.bind(this);
         this._bindedLoadPrevious = this.loadPrevious.bind(this);
         const queryFetcher = this.entityManager.schema.fetcher("Query");
-        const connField = this.queryArgs.fetcher.fieldMap.get(this.queryArgs.pagination.connName);
-        const loadMoreFetcher = queryFetcher["addField"](this.queryArgs.pagination.connName, connField === null || connField === void 0 ? void 0 : connField.args, connField.childFetchers[0], connField.fieldOptionsValue);
+        const connField = this.queryArgs.fetcher.findFieldByName(this.queryArgs.pagination.connName);
+        if (connField === undefined) {
+            throw new Error(`No connection field "${this.queryArgs.pagination.connName}" is declared in the query fetcher`);
+        }
+        const loadMoreFetcher = queryFetcher["addField"](this.queryArgs.pagination.connName, connField.args, connField.childFetchers[0], connField.fieldOptionsValue);
         this._loadNextQueryArgs = QueryArgs_1.QueryArgs.create(loadMoreFetcher, { schema: this.entityManager.schema, loadMode: "next" }, undefined, this.queryArgs.optionArgs);
         this._loadPreviousQueryArgs = QueryArgs_1.QueryArgs.create(loadMoreFetcher, { schema: this.entityManager.schema, loadMode: "previous" }, undefined, this.queryArgs.optionArgs);
     }

@@ -1,5 +1,7 @@
 import type { FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
-import { ObjectFetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
+import { ENUM_INPUT_METADATA } from '../EnumInputMetadata';
+import type { ObjectFetcher } from 'graphql-ts-client-api';
+import { createFetcher, createFetchableType } from 'graphql-ts-client-api';
 
 /*
  * Any instance of this interface is immutable,
@@ -20,7 +22,7 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
     >(
         child: ObjectFetcher<'BookStore', X, XVariables>
     ): QueryFetcher<
-        T & {readonly "bookStores": readonly X[]}, 
+        T & {readonly "bookStores": ReadonlyArray<X>}, 
         TVariables & XVariables
     >;
 
@@ -38,8 +40,8 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
     ): QueryFetcher<
         T & (
             XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-                {readonly [key in XAlias]?: readonly X[]} : 
-                {readonly [key in XAlias]: readonly X[]}
+                {readonly [key in XAlias]?: ReadonlyArray<X>} : 
+                {readonly [key in XAlias]: ReadonlyArray<X>}
         ), 
         TVariables & XVariables & XDirectiveVariables
     >;
@@ -51,7 +53,7 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
     >(
         child: ObjectFetcher<'Book', X, XVariables>
     ): QueryFetcher<
-        T & {readonly "books": readonly X[]}, 
+        T & {readonly "books": ReadonlyArray<X>}, 
         TVariables & XVariables
     >;
 
@@ -69,8 +71,8 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
     ): QueryFetcher<
         T & (
             XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-                {readonly [key in XAlias]?: readonly X[]} : 
-                {readonly [key in XAlias]: readonly X[]}
+                {readonly [key in XAlias]?: ReadonlyArray<X>} : 
+                {readonly [key in XAlias]: ReadonlyArray<X>}
         ), 
         TVariables & XVariables & XDirectiveVariables
     >;
@@ -82,7 +84,7 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
     >(
         child: ObjectFetcher<'Author', X, XVariables>
     ): QueryFetcher<
-        T & {readonly "authors": readonly X[]}, 
+        T & {readonly "authors": ReadonlyArray<X>}, 
         TVariables & XVariables
     >;
 
@@ -100,8 +102,8 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
     ): QueryFetcher<
         T & (
             XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-                {readonly [key in XAlias]?: readonly X[]} : 
-                {readonly [key in XAlias]: readonly X[]}
+                {readonly [key in XAlias]?: ReadonlyArray<X>} : 
+                {readonly [key in XAlias]: ReadonlyArray<X>}
         ), 
         TVariables & XVariables & XDirectiveVariables
     >;
@@ -131,18 +133,19 @@ export const query$: QueryFetcher<{}, {}> =
                 }
             ]
         ), 
+        ENUM_INPUT_METADATA, 
         undefined
     )
 ;
 
 export interface QueryFlatType {
-    readonly bookStores: readonly {
+    readonly bookStores: ReadonlyArray<{
         readonly id: string
-    }[];
-    readonly books: readonly {
+    }>;
+    readonly books: ReadonlyArray<{
         readonly id: string
-    }[];
-    readonly authors: readonly {
+    }>;
+    readonly authors: ReadonlyArray<{
         readonly id: string
-    }[];
+    }>;
 }

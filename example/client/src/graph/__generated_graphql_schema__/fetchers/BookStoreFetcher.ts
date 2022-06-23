@@ -1,5 +1,7 @@
 import type { AcceptableVariables, UnresolvedVariables, FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
-import { ObjectFetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
+import { ENUM_INPUT_METADATA } from '../EnumInputMetadata';
+import type { ObjectFetcher } from 'graphql-ts-client-api';
+import { createFetcher, createFetchableType } from 'graphql-ts-client-api';
 import type { WithTypeName, ImplementationType } from '../CommonTypes';
 import { any$ } from './AnyFetcher';
 
@@ -82,7 +84,7 @@ export interface BookStoreFetcher<T extends object, TVariables extends object> e
     >(
         child: ObjectFetcher<'Book', X, XVariables>
     ): BookStoreFetcher<
-        T & {readonly "books": readonly X[]}, 
+        T & {readonly "books": ReadonlyArray<X>}, 
         TVariables & XVariables & BookStoreArgs["books"]
     >;
 
@@ -94,7 +96,7 @@ export interface BookStoreFetcher<T extends object, TVariables extends object> e
         args: XArgs, 
         child: ObjectFetcher<'Book', X, XVariables>
     ): BookStoreFetcher<
-        T & {readonly "books": readonly X[]}, 
+        T & {readonly "books": ReadonlyArray<X>}, 
         TVariables & XVariables & UnresolvedVariables<XArgs, BookStoreArgs['books']>
     >;
 
@@ -112,8 +114,8 @@ export interface BookStoreFetcher<T extends object, TVariables extends object> e
     ): BookStoreFetcher<
         T & (
             XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-                {readonly [key in XAlias]?: readonly X[]} : 
-                {readonly [key in XAlias]: readonly X[]}
+                {readonly [key in XAlias]?: ReadonlyArray<X>} : 
+                {readonly [key in XAlias]: ReadonlyArray<X>}
         ), 
         TVariables & XVariables & BookStoreArgs["books"] & XDirectiveVariables
     >;
@@ -134,8 +136,8 @@ export interface BookStoreFetcher<T extends object, TVariables extends object> e
     ): BookStoreFetcher<
         T & (
             XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-                {readonly [key in XAlias]?: readonly X[]} : 
-                {readonly [key in XAlias]: readonly X[]}
+                {readonly [key in XAlias]?: ReadonlyArray<X>} : 
+                {readonly [key in XAlias]: ReadonlyArray<X>}
         ), 
         TVariables & XVariables & UnresolvedVariables<XArgs, BookStoreArgs['books']> & XDirectiveVariables
     >;
@@ -157,6 +159,7 @@ export const bookStore$: BookStoreFetcher<{}, {}> =
                 }
             ]
         ), 
+        ENUM_INPUT_METADATA, 
         undefined
     )
 ;
@@ -176,7 +179,7 @@ export interface BookStoreArgs {
 
 export interface BookStoreFlatType {
     readonly name: string;
-    readonly books: readonly {
+    readonly books: ReadonlyArray<{
         readonly id: string
-    }[];
+    }>;
 }

@@ -18,16 +18,17 @@ export class PaginationFetcherProcessor {
         const fetchableFieldMap = fetcher.fetchableType.fields;
         let connName: string | undefined = undefined;
         let connField: FetcherField | undefined = undefined;
-        for (const [name, field] of fetcher.fieldMap) {
-            const fetchableField = fetchableFieldMap.get(name);
+        for (const field of fetcher.fieldMap.values()) {
+            const fieldName = field.name;
+            const fetchableField = fetchableFieldMap.get(fieldName);
             if (fetchableField?.category === "CONNECTION") {
                 if (connName !== undefined) {
                     throw new Error(
                         `Cannot parse pagiation query because there are two root connection fields of the fetcher: ` +
-                        `"${connName}" and "${name}"`
+                        `"${connName}" and "${fieldName}"`
                     );
                 }
-                connName = name;
+                connName = fieldName;
                 connField = field;
             }
         }
@@ -103,11 +104,15 @@ export class PaginationFetcherProcessor {
                 existingPageInfoFetcher = existingPageInfoFetcher[argName];
             }
         }
+        const pageInfoFields = connFetcher.findFieldsByName("pageInfo");
+        if (pageInfoFields.length > 1) {
+            throw new Error(`There field "$pageInfo" has been referenced twice, this is not allowed"`);
+        }
         return connFetcher["addField"](
             "pageInfo",
             undefined,
             existingPageInfoFetcher,
-            connFetcher.fieldMap.get("pageInfo")?.fieldOptionsValue
+            pageInfoFields.length === 0 ? undefined : pageInfoFields[0]
         );
     }
 }

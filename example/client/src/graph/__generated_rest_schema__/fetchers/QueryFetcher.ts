@@ -1,5 +1,7 @@
 import type { AcceptableVariables, UnresolvedVariables, FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
-import { ObjectFetcher, ConnectionFetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
+import { ENUM_INPUT_METADATA } from '../EnumInputMetadata';
+import type { ObjectFetcher, ConnectionFetcher } from 'graphql-ts-client-api';
+import { createFetcher, createFetchableType } from 'graphql-ts-client-api';
 
 /*
  * Any instance of this interface is immutable,
@@ -20,7 +22,7 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
     >(
         child: ObjectFetcher<'BookStore', X, XVariables>
     ): QueryFetcher<
-        T & {readonly "findBookStores": readonly X[]}, 
+        T & {readonly "findBookStores": ReadonlyArray<X>}, 
         TVariables & XVariables & QueryArgs["findBookStores"]
     >;
 
@@ -32,7 +34,7 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
         args: XArgs, 
         child: ObjectFetcher<'BookStore', X, XVariables>
     ): QueryFetcher<
-        T & {readonly "findBookStores": readonly X[]}, 
+        T & {readonly "findBookStores": ReadonlyArray<X>}, 
         TVariables & XVariables & UnresolvedVariables<XArgs, QueryArgs['findBookStores']>
     >;
 
@@ -50,8 +52,8 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
     ): QueryFetcher<
         T & (
             XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-                {readonly [key in XAlias]?: readonly X[]} : 
-                {readonly [key in XAlias]: readonly X[]}
+                {readonly [key in XAlias]?: ReadonlyArray<X>} : 
+                {readonly [key in XAlias]: ReadonlyArray<X>}
         ), 
         TVariables & XVariables & QueryArgs["findBookStores"] & XDirectiveVariables
     >;
@@ -72,8 +74,8 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
     ): QueryFetcher<
         T & (
             XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-                {readonly [key in XAlias]?: readonly X[]} : 
-                {readonly [key in XAlias]: readonly X[]}
+                {readonly [key in XAlias]?: ReadonlyArray<X>} : 
+                {readonly [key in XAlias]: ReadonlyArray<X>}
         ), 
         TVariables & XVariables & UnresolvedVariables<XArgs, QueryArgs['findBookStores']> & XDirectiveVariables
     >;
@@ -252,6 +254,7 @@ export const query$: QueryFetcher<{}, {}> =
                 }
             ]
         ), 
+        ENUM_INPUT_METADATA, 
         undefined
     )
 ;
@@ -280,17 +283,17 @@ export interface QueryArgs {
 }
 
 export interface QueryFlatType {
-    readonly findBookStores: readonly {
+    readonly findBookStores: ReadonlyArray<{
         readonly id: string
-    }[];
+    }>;
     readonly findBooks: {
         readonly totalCount: number, 
-        readonly edges: readonly {
+        readonly edges: ReadonlyArray<{
             readonly node: {
                 readonly id: string
             }, 
             readonly cursor: string
-        }[], 
+        }>, 
         readonly pageInfo: {
             readonly hasNextPage: boolean, 
             readonly hasPreviousPage: boolean, 
@@ -300,12 +303,12 @@ export interface QueryFlatType {
     };
     readonly findAuthors: {
         readonly totalCount: number, 
-        readonly edges: readonly {
+        readonly edges: ReadonlyArray<{
             readonly node: {
                 readonly id: string
             }, 
             readonly cursor: string
-        }[], 
+        }>, 
         readonly pageInfo: {
             readonly hasNextPage: boolean, 
             readonly hasPreviousPage: boolean, 

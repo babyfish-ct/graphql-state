@@ -8,11 +8,11 @@ function toRuntimeShape(fetcher, paginationConnName, variables) {
 }
 exports.toRuntimeShape = toRuntimeShape;
 function toRuntimeShape0(parentPath, fetcher, paginationConnName, variables) {
-    const fieldNames = Array.from(fetcher.fieldMap.keys());
+    const fieldNames = Array.from(fetcher.fieldMap.values()).map(field => field.name);
     fieldNames.sort();
     const runtimeShapeFieldMap = new Map();
     for (const fieldName of fieldNames) {
-        addField(parentPath, fieldName, fetcher.fieldMap.get(fieldName), runtimeShapeFieldMap, paginationConnName, variables);
+        addField(parentPath, fieldName, fetcher.findFieldByName(fieldName), runtimeShapeFieldMap, paginationConnName, variables);
     }
     return new RuntimeShapeImpl(fetcher.fetchableType.name, runtimeShapeFieldMap);
 }
@@ -22,8 +22,8 @@ function addField(parentPath, fieldName, field, runtimeShapeFieldMap, pagination
     if (fieldName.startsWith("...")) {
         if (field.childFetchers !== undefined) {
             for (const childFetcher of field.childFetchers) {
-                for (const [subFieldName, subField] of childFetcher.fieldMap) {
-                    addField(parentPath, subFieldName, subField, runtimeShapeFieldMap, undefined, fetcherVaribles);
+                for (const subField of childFetcher.fieldMap.values()) {
+                    addField(parentPath, subField.name, subField, runtimeShapeFieldMap, undefined, fetcherVaribles);
                 }
             }
         }
