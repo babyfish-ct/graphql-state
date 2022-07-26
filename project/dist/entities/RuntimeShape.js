@@ -63,9 +63,10 @@ function addField(parentPath, fieldName, field, runtimeShapeFieldMap, pagination
     });
 }
 function standardizedDirectives(field, fetcherVaribles) {
+    var _a;
     const map = {};
     const names = [];
-    if (field.fieldOptionsValue !== undefined) {
+    if (((_a = field.fieldOptionsValue) === null || _a === void 0 ? void 0 : _a.directives) !== undefined) {
         for (const [name, variables] of field.fieldOptionsValue.directives) {
             names.push(name);
             map[name] = resolveParameterRefs(variables, fetcherVaribles);

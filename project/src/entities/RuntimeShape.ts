@@ -130,7 +130,7 @@ function standardizedDirectives(
 ): any {
     const map = {};
     const names: string[] = [];
-    if (field.fieldOptionsValue !== undefined) {
+    if (field.fieldOptionsValue?.directives !== undefined) {
         for (const [name, variables] of field.fieldOptionsValue.directives) {
             names.push(name);
             map[name] = resolveParameterRefs(variables, fetcherVaribles);

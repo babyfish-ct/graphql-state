@@ -222,9 +222,6 @@ function mapRecord(
             );
         } else if (shapeField.name !== type.idField.name) {
             const scalar = record.getSalar(shapeField.name);
-            if (scalar === undefined && !record.hasScalar(shapeField.name)) {
-                canNotFoundFromCache(`Cannot find the scalar field '${shapeField.name}' for object whose id is '${record.id}'`);
-            }
             entity[shapeField.alias ?? shapeField.name] = scalar;
         }
     }

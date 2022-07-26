@@ -174,9 +174,6 @@ function mapRecord(type, record, shape) {
         }
         else if (shapeField.name !== type.idField.name) {
             const scalar = record.getSalar(shapeField.name);
-            if (scalar === undefined && !record.hasScalar(shapeField.name)) {
-                canNotFoundFromCache(`Cannot find the scalar field '${shapeField.name}' for object whose id is '${record.id}'`);
-            }
             entity[(_e = shapeField.alias) !== null && _e !== void 0 ? _e : shapeField.name] = scalar;
         }
     }

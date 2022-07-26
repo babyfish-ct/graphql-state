@@ -5732,25 +5732,24 @@ graceful-fs@^4.1.11, graceful-fs@^4.1.15, graceful-fs@^4.1.2, graceful-fs@^4.1.6
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.8.tgz#e412b8d33f5e006593cbd3cee6df9f2cebbe802a"
   integrity sha512-qkIilPUYcNhJpd33n0GBXTB1MMPp14TxEsEs0pTrsSVucApsYzW5V+Q8Qxhik6KU3evy+qkAAowTByymK0avdg==
 
-graphql-state@^0.3.2:
-  version "0.3.2"
-  resolved "https://registry.yarnpkg.com/graphql-state/-/graphql-state-0.3.2.tgz#1060799e834161cdef99f95aec2c74a9e9173e15"
-  integrity sha512-ABzFLb7+jE+wNc68MRk7K3BQ1/aqKf7PW6EfXYsmaNvvcGXaqQtE04xIBlHqPpoGrddsPxRH2vNPCn3ZHNToDw==
+graphql-state@^0.3.4:
+  version "0.3.4"
+  resolved "https://registry.yarnpkg.com/graphql-state/-/graphql-state-0.3.4.tgz#2d9a370aafb6c7f80ab90674eace515d66380387"
+  integrity sha512-J57BiuCapDdKarZtqN8rZP1+qVfonBFDS3jGJjbJQYYv3inR5eBzjkACT8bDdSQokcIq1pXxxgDs5dmUi8M6XA==
   dependencies:
-    graphql-ts-client-api "^3.1.8"
     typescript "^4.5.4"
 
-graphql-ts-client-api@^3.1.8:
-  version "3.1.8"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.1.8.tgz#493d39c3101569abf39680c2d3274343b3168a48"
-  integrity sha512-Dct05eoymzVLK7mScaWw8SD2cmHV5leOUOqiWmQw2IhjpHqsLSfuwnhPyGMv/QRzH1QO4ZQ7FbqUMzVR5/SZOA==
+graphql-ts-client-api@^3.1.11:
+  version "3.1.11"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.1.11.tgz#2ab95b3653e4de46218c0da7950f5bb603b6a6fa"
+  integrity sha512-HSZFaJmfPYZnkaKw0tXjoE/f/Jb/EjwNtnnJHh2a2psFPf0+IIG8xy5wrTW9FCf12Vnd7xNkO6jInV4I++aHpg==
   dependencies:
     ts-md5 "^1.2.9"
 
-graphql-ts-client-codegen@^3.1.7:
-  version "3.1.7"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.1.7.tgz#155ceee50bc6410a35aa2ec65c337b67daf4909c"
-  integrity sha512-/DHUHhkD5wN2hfA/cxt4Vnv/ZCfhHIZ/ulLuT//8ZHo7d3RQ8k2YAv3hJd8mWRLQzsufaD5TCZnL2PKq26PAHA==
+graphql-ts-client-codegen@^3.1.11:
+  version "3.1.11"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.1.11.tgz#75376b1e1298eb9032088b3b3becc2107ebfb9cb"
+  integrity sha512-PIg1Re81xBKVmbIS1VXGNASC67A/2iS9zF6iGzO3w0+afmv5gXUVD8U/ed03WX4V5R++qgkqRFF6JIBZiBFTgg==
   dependencies:
     "@types/node" "^15.12.2"
     "@types/node-fetch" "^2.5.10"
