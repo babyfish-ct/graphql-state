@@ -1,7 +1,7 @@
 import { TypeMetadata } from "../../meta/impl/TypeMetdata";
 import { EntityChangeEvent, EntityEvictEvent, EntityKey } from "../EntityEvent";
 import { EntityManager } from "../EntityManager";
-import { Record, FlatRowImpl } from "../Record";
+import { Record, FlatRowImpl, QUERY_OBJECT_ID } from "../Record";
 import { VariableArgs } from "../../state/impl/Args";
 import { Association } from "./Association";
 import { ObjectConnection, RecordConnection } from "./AssociationConnectionValue";
@@ -53,7 +53,7 @@ export abstract class AssociationValue {
         oldReference: Record | undefined
     ) {
         const self = this.association.record;
-        if (oldReference !== undefined) {
+        if (oldReference !== undefined && self.id !== QUERY_OBJECT_ID) {
             oldReference.backReferences.remove(
                 this.association.field, 
                 this.args,
@@ -76,7 +76,7 @@ export abstract class AssociationValue {
         newReference: Record | undefined
     ) {
         const self = this.association.record;
-        if (newReference !== undefined) {
+        if (newReference !== undefined && self.id !== QUERY_OBJECT_ID) {
             newReference.backReferences.add(
                 this.association.field, 
                 this.args,

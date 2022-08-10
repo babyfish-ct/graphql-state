@@ -15,7 +15,7 @@ class AssociationValue {
     }
     releaseOldReference(entityManager, oldReference) {
         const self = this.association.record;
-        if (oldReference !== undefined) {
+        if (oldReference !== undefined && self.id !== Record_1.QUERY_OBJECT_ID) {
             oldReference.backReferences.remove(this.association.field, this.args, self);
             this.association.unlink(entityManager, oldReference, this.args, true);
             if (!entityManager.isBidirectionalAssociationManagementSuspending) {
@@ -30,7 +30,7 @@ class AssociationValue {
     }
     retainNewReference(entityManager, newReference) {
         const self = this.association.record;
-        if (newReference !== undefined) {
+        if (newReference !== undefined && self.id !== Record_1.QUERY_OBJECT_ID) {
             newReference.backReferences.add(this.association.field, this.args, self);
             this.association.link(entityManager, newReference, this.args, true);
             if (!entityManager.isBidirectionalAssociationManagementSuspending) {
