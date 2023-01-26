@@ -135,8 +135,8 @@ export class Record {
                 }
             } else {
                 const oldValue = this.scalarMap.get(fieldKey);
+                this.scalarMap.set(fieldKey, value);
                 if (oldValue !== value) {
-                    this.scalarMap.set(fieldKey, value);
                     entityManager.modificationContext.set(this, fieldKey, args, oldValue, value);
                 }
             }
