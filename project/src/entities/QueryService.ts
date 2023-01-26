@@ -207,13 +207,14 @@ function mapRecord(
                 );
             }
             const association = record.getAssociation(fieldMetadata, shapeField.args);
-            if (association === undefined && !record.hasAssociation(fieldMetadata, shapeField.args)) {
+            if ((association === undefined || association === null) && !record.hasAssociation(fieldMetadata, shapeField.args)) {
                 canNotFoundFromCache(
                     `Cannot find the associaton field '${
                         fieldMetadata.fullName
                     }${
                         `:${shapeField.args?.key}` ?? ""
-                    }' for object whose id is '${record.id}'`);
+                    }' for object whose id is '${record.id}'`
+                );
             }
             entity[shapeField.alias ?? shapeField.name] = mapAssociation(
                 fieldMetadata, 
@@ -222,6 +223,15 @@ function mapRecord(
             );
         } else if (shapeField.name !== type.idField.name) {
             const scalar = record.getSalar(shapeField.name);
+            if ((scalar == undefined || scalar === null) && !record.hasScalar(shapeField.name)) {
+                canNotFoundFromCache(
+                    `Cannot find the scalar field '${
+                        shapeField.name
+                    }${
+                        `:${shapeField.args?.key}` ?? ""
+                    }' for object whose id is '${record.id}'`
+                );
+            }
             entity[shapeField.alias ?? shapeField.name] = scalar;
         }
     }

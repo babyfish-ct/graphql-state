@@ -145,7 +145,7 @@ class QueryService {
 }
 exports.QueryService = QueryService;
 function mapRecord(type, record, shape) {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f, _g;
     if (record === undefined) {
         return undefined;
     }
@@ -167,14 +167,17 @@ function mapRecord(type, record, shape) {
                 throw new Error(`Cannot map the record whose type is ${type.name} because the shape field "${shapeField.name}" is not a concurrent field`);
             }
             const association = record.getAssociation(fieldMetadata, shapeField.args);
-            if (association === undefined && !record.hasAssociation(fieldMetadata, shapeField.args)) {
+            if ((association === undefined || association === null) && !record.hasAssociation(fieldMetadata, shapeField.args)) {
                 canNotFoundFromCache(`Cannot find the associaton field '${fieldMetadata.fullName}${(_c = `:${(_b = shapeField.args) === null || _b === void 0 ? void 0 : _b.key}`) !== null && _c !== void 0 ? _c : ""}' for object whose id is '${record.id}'`);
             }
             entity[(_d = shapeField.alias) !== null && _d !== void 0 ? _d : shapeField.name] = mapAssociation(fieldMetadata, association, fieldMetadata.category === "CONNECTION" ? shapeField.nodeShape : shapeField.childShape);
         }
         else if (shapeField.name !== type.idField.name) {
             const scalar = record.getSalar(shapeField.name);
-            entity[(_e = shapeField.alias) !== null && _e !== void 0 ? _e : shapeField.name] = scalar;
+            if ((scalar == undefined || scalar === null) && !record.hasScalar(shapeField.name)) {
+                canNotFoundFromCache(`Cannot find the scalar field '${shapeField.name}${(_f = `:${(_e = shapeField.args) === null || _e === void 0 ? void 0 : _e.key}`) !== null && _f !== void 0 ? _f : ""}' for object whose id is '${record.id}'`);
+            }
+            entity[(_g = shapeField.alias) !== null && _g !== void 0 ? _g : shapeField.name] = scalar;
         }
     }
     return entity;
